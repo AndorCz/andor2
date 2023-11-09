@@ -37,7 +37,7 @@ The initial version will be an experimental MVP, with limited functionality. No 
   - [SQLite3](https://www.sqlite.org/index.html) for database
 
   ### Front-end
-  - [Svelte](https://svelte.dev) for components
+  - [Svelte](https://svelte.dev) for UI components, within Astro
   - [Svelte Testing Library](https://testing-library.com/docs/svelte-testing-library/intro) for unit tests
 
   ### Third-party
