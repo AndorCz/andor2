@@ -1,19 +1,15 @@
 ---
+	import Layout from '../layouts/layout.astro'
+	import { Database } from 'bun:sqlite'
 
+	/* DB
+	const db = new Database(':memory:')
+	const query = db.query("select 'Hello world' as message;")
+	console.log(query.get())
+	*/
 ---
 
-<html lang='cs'>
-	<head>
-		<meta charset='utf-8' />
-		<meta name='viewport' content='width=device-width' />
-		<title>Andor2.cz - RPG hry online</title>
-		<link rel='preconnect' href='https://fonts.googleapis.com'>
-		<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
-		<link href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap' rel='stylesheet'>
-		<link rel='icon' href='/favicon.png' type='image/png' />
-		<link rel='stylesheet' href='/obsidian.css'>
-	</head>
-	<body>
-		<h1>Test</h1>
-	</body>
-</html>
+<Layout title='Hlavní strana'>
+  <h1>Test</h1>
+	<a href='/login'>Přihlášení</a>
+</Layout>

@@ -10,5 +10,8 @@
     "@astrojs/svelte": "^4.0.3",
     "astro": "^3.4.4",
     "svelte": "^4.0.0"
+  },
+  "devDependencies": {
+    "bun-types": "^1.0.11"
   }
 }
