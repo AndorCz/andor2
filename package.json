@@ -3,13 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "bun --bun run astro dev",
+    "build": "bun --bun run astro build"
   },
   "dependencies": {
-    "astro": "^3.4.4"
+    "@astrojs/svelte": "^4.0.3",
+    "astro": "^3.4.4",
+    "svelte": "^4.0.0"
   }
 }
