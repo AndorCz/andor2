@@ -5,5 +5,14 @@
 <Layout title='Přihlášení'>
   <a href='/'>Andor</a>
   <h1>Login</h1>
+
+  <button id='google'>Přihlásit přes Google</button>
 </Layout>
 
+<script>
+  const { signIn } = await import('auth-astro/client')
+
+  document.getElementById('google').addEventListener('click', () => {
+    signIn('google')
+  })
+</script>

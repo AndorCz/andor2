@@ -1,0 +1,15 @@
+---
+  import { getSession } from 'auth-astro/server'
+	import Layout from '../layouts/layout.astro'
+  
+  let session = await getSession(Astro.request)
+  if (!session) {
+    return Astro.redirect('/login')
+  }
+---
+
+<Layout title='Hry'>
+	<a href='/login'>Přihlášení</a>
+  <h1>Hry</h1>
+  <p>Hi {session.user.name}, only logged in users can see this page</p>
+</Layout>
