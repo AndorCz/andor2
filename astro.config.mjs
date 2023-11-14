@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config'
 import { loadEnv } from 'vite'
 import auth from 'auth-astro'
-import vercel from '@astrojs/vercel/serverless'
+import vercelEdge from '@astrojs/vercel/edge'
 import Google from '@auth/core/providers/google'
 
 const env = loadEnv('', process.cwd(), '')
@@ -21,5 +21,5 @@ export default defineConfig({
     })
   ],
   output: 'server',
-  adapter: vercel()
+  adapter: vercelEdge()
 })
