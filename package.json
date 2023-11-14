@@ -3,8 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "bun --bun run astro dev",
-    "build": "bun --bun run astro build"
+    "dev": "astro dev",
+    "build": "astro build"
   },
   "dependencies": {
     "@astrojs/svelte": "4.0.3",
@@ -13,8 +13,5 @@
     "astro": "3.5.3",
     "auth-astro": "3.0.1",
     "svelte": "4.0.0"
-  },
-  "devDependencies": {
-    "bun-types": "1.0.11"
   }
 }
