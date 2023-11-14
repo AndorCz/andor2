@@ -7,14 +7,14 @@
     "build": "bun --bun run astro build"
   },
   "dependencies": {
-    "@astrojs/svelte": "^4.0.3",
-    "@astrojs/vercel": "^5.2.0",
-    "@auth/core": "^0.18.1",
-    "astro": "^3.5.3",
-    "auth-astro": "^3.0.1",
-    "svelte": "^4.0.0"
+    "@astrojs/svelte": "4.0.3",
+    "@astrojs/vercel": "5.2.0",
+    "@auth/core": "0.18.1",
+    "astro": "3.5.3",
+    "auth-astro": "3.0.1",
+    "svelte": "4.0.0"
   },
   "devDependencies": {
-    "bun-types": "^1.0.11"
+    "bun-types": "1.0.11"
   }
 }
