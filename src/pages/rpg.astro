@@ -2,7 +2,8 @@
 	import Layout from '../layouts/layout.astro'
   import { getSession } from 'auth-astro/server'
 
-  let session = await getSession(Astro.request)
+  console.log('Astro.request', Astro.request)
+  // let session = await getSession(Astro.request)
   // if (!session) {
   //   return Astro.redirect('/login')
   // }
