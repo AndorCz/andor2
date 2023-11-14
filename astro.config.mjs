@@ -9,6 +9,9 @@ const env = loadEnv('', process.cwd(), '')
 // https://astro.build/config
 
 export default defineConfig({
+  vite: {
+    base: '/'
+  },
   integrations: [
     auth({
       secret: env.AUTH_SECRET,
