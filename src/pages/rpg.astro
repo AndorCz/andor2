@@ -1,8 +1,8 @@
 ---
-  import { getSession } from 'auth-astro/server'
 	import Layout from '../layouts/layout.astro'
-  
-  // let session = await getSession(Astro.request)
+  import { getSession } from 'auth-astro/server'
+
+  let session = await getSession(Astro.request)
   // if (!session) {
   //   return Astro.redirect('/login')
   // }

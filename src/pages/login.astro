@@ -12,7 +12,7 @@
 <script>
   const { signIn } = await import('auth-astro/client')
 
-  document.getElementById('google').addEventListener('click', () => {
+  document.getElementById('google')?.addEventListener('click', () => {
     signIn('google')
   })
 </script>

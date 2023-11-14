@@ -1,5 +1,8 @@
 ---
+import pkg from '../../package.json' assert { type: 'json' }
+
 const { title } = Astro.props
+const version = pkg.version
 ---
 
 <html lang='cs'>
@@ -17,6 +20,7 @@ const { title } = Astro.props
   </head>
 	<body>
     <slot />
+    v{version}
 	</body>
 </html>
 
