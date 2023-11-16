@@ -1,18 +1,16 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { getSession } from 'auth-astro/server'
+  import { isUser } from '@lib/supabase'
 
-  console.log('Astro.request', Astro.request)
-  // let session = await getSession(Astro.request)
-  // if (!session) {
-  //   return Astro.redirect('/login')
-  // }
+  if (isUser(Astro.cookies) !== true) {
+    return Astro.redirect('/login')
+  }
 ---
 
 <Layout title='Hry'>
 	<a href='/'>Andor</a>
   <h1>Hry</h1>
-  <!--
+  <!-- 2DO: read session
   <p>Hi {session.user?.name}, only logged in users can see this page</p>
   -->
 </Layout>

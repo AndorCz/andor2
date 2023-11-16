@@ -9,9 +9,8 @@
   "dependencies": {
     "@astrojs/svelte": "4.0.3",
     "@astrojs/vercel": "5.2.0",
-    "@auth/core": "0.18.1",
+    "@supabase/supabase-js": "^2.38.4",
     "astro": "3.5.3",
-    "auth-astro": "3.0.1",
     "svelte": "4.0.0"
   }
 }
