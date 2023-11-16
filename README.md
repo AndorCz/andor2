@@ -14,13 +14,13 @@ The initial version will be an experimental MVP, with limited functionality. No 
 
 ## Pages
 
-  ### Index: list of games
+  ### Index: List of games
     Components: Table with names - links to game pages
 
-  ### Game: game thread
+  ### Game: Game thread
     Components: Player and character management, text input, posts, paging
 
-  ### Login: login with Google
+  ### Login: Authenticate with Google
     Components: Google login button
 
   Folder structure is based on [Astro's recommended project structure](https://docs.astro.build/en/core-concepts/project-structure).
@@ -29,32 +29,28 @@ The initial version will be an experimental MVP, with limited functionality. No 
 
   ### Tools
   - [Git](https://git-scm.com) for version control
-  - [Bun](https://bun.sh) for development server, bundling and database
 
   ### Back-end
-  - [Bun](https://bun.sh) for deployment server and database
   - [Astro](https://docs.astro.build)
-  - [SQLite3](https://www.sqlite.org/index.html) for database
+  - [Supabase](https://supabase.com) - database, auth
+  - [OpenAI API](https://openai.com/blog/openai-api/), model GPT-4-turbo
 
   ### Front-end
   - [Svelte](https://svelte.dev) for UI components, within Astro
   - [Svelte Testing Library](https://testing-library.com/docs/svelte-testing-library/intro) for unit tests
 
-  ### Third-party
-  Feature of the AI storyteller is using [OpenAI API](https://openai.com/blog/openai-api/), model GPT-4-turbo.
-
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
 
-| Command               | Action                                           |
-| :---------------------| :----------------------------------------------- |
-| `bun install`         | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+| Command                   | Action                                           |
+| :-------------------------| :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
 
 # Astro
 
