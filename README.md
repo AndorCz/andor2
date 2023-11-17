@@ -54,6 +54,11 @@ All commands are run from the root of the project, from a terminal:
 
 # Astro
 
+The framework does server-side rendering. In case a client-side hydration is needed, use a directive such as this:
+```
+<UserPanel client:load />
+```
+
 ## 🚀 Project Structure
 
 ```text

@@ -1,8 +1,15 @@
 ---
 import pkg from '../../package.json' assert { type: 'json' }
+import { user } from '@lib/stores'
+import { supabase, isUser } from '@lib/supabase'
+import Top from '@components/Top.svelte'
+import UserPanel from '@components/UserPanel.svelte'
 
-const { title } = Astro.props
+const { title, padding } = Astro.props
 const version = pkg.version
+const { data, error } = await supabase.auth.getSession()
+
+user.set(isUser(Astro.cookies) && data.session ? data : null) // resets user store when cookies are missing
 ---
 
 <html lang='cs'>
@@ -19,12 +26,39 @@ const version = pkg.version
     <title>Andor2.cz ― {title}</title>
   </head>
 	<body>
-    <a href='./api/auth/login'>Odhlásit</a>
-    <br>
-    <slot />
-    <br>
-    v{version}
-	</body>
+    <div id='wrapper'>
+      <main>
+        <Top />
+        <div id='content' style={{ padding }}">
+          <slot />
+        </div>
+      </main>
+      <UserPanel />
+    </div>
+    <footer>v{version}</footer>
+  </body>
 </html>
 
+<style>
+  body {
+    margin: 20px;
+    margin-top: 0px;
+  }
 
+  #wrapper {
+    width: 100%;
+    margin: auto;
+    display: flex;
+  }
+
+  main {
+    flex: 1;
+    background-color: #2b2827;
+  }
+
+  footer {
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+</style>

@@ -1,6 +1,23 @@
 
-html {
-  background-color: #201c1b;
+:root {
+  --error: #E54B4B;
+}
+
+* { box-sizing: border-box }
+html { background-color: #201c1b }
+
+@font-face {
+  font-family: 'Alegreya Sans';
+  font-style: normal;
+  font-weight: 400 900;
+  src: url('./AlegreyaSans.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Alegreya Sans Italic';
+  font-style: italic;
+  font-weight: 400 900;
+  src: url('./AlegreyaSans-Italic.woff2') format('woff2');
 }
 
 body, a {
@@ -13,3 +30,20 @@ a {
   font-weight: bold;
   font-weight: normal;
 }
+
+button {
+  font-family: 'Alegreya Sans';
+  font-size: 14pt;
+  padding: 20px 40px;
+  border-radius: 5px;
+  color: #bcada0;
+  background-color: #3b322f;
+  border: 1px #433936 solid;
+  cursor: pointer;
+}
+
+  button:hover {
+    background-color: #433936;
+    transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
+    color: #dacfc6;
+  }
