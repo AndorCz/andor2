@@ -1,10 +1,15 @@
 
 :root {
   --error: #E54B4B;
+  --background: #201c1b;
+  --panel: #2b2827;
+  --text: #c4b6ab;
+  --accent: #a07150;
+  --buttonBg: #453934;
 }
 
 * { box-sizing: border-box }
-html { background-color: #201c1b }
+html { background-color: var(--background) }
 
 @font-face {
   font-family: 'Alegreya Sans';
@@ -23,7 +28,7 @@ html { background-color: #201c1b }
 body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   font-size: 14pt;
-  color: #c4b6ab;
+  color: var(--text);
 }
 
 h1, h2, h3, h4, h5 {
@@ -31,7 +36,7 @@ h1, h2, h3, h4, h5 {
 }
 
 a {
-  color: #a07150;
+  color: var(--accent);
   font-weight: bold;
   font-weight: normal;
 }
@@ -41,14 +46,15 @@ button {
   font-size: 14pt;
   padding: 15px 30px;
   border-radius: 5px;
-  color: #bcada0;
-  background-color: #3b322f;
-  border: 1px #433936 solid;
+  color: var(--text);
+  background-color: var(--buttonBg);
+  border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 10%) solid;
   cursor: pointer;
 }
 
   button:hover {
-    background-color: #433936;
+    background-color: color-mix(in srgb, var(--buttonBg), var(--accent) 10%);
+    border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 30%) solid;
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
     color: #dacfc6;
   }
