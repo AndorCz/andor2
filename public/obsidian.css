@@ -21,8 +21,13 @@ html { background-color: #201c1b }
 }
 
 body, a {
-  font-family: 'Alegreya', 'Times New Roman', Times, serif;
+  font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
+  font-size: 14pt;
   color: #c4b6ab;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
 a {
@@ -34,7 +39,7 @@ a {
 button {
   font-family: 'Alegreya Sans';
   font-size: 14pt;
-  padding: 20px 40px;
+  padding: 15px 30px;
   border-radius: 5px;
   color: #bcada0;
   background-color: #3b322f;

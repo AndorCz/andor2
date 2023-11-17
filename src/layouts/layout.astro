@@ -3,7 +3,7 @@ import pkg from '../../package.json' assert { type: 'json' }
 import { user } from '@lib/stores'
 import { supabase, isUser } from '@lib/supabase'
 import Top from '@components/Top.svelte'
-import UserPanel from '@components/UserPanel.svelte'
+import Sidebar from '@components/Sidebar.svelte'
 
 const { title, padding } = Astro.props
 const version = pkg.version
@@ -33,7 +33,7 @@ user.set(isUser(Astro.cookies) && data.session ? data : null) // resets user sto
           <slot />
         </div>
       </main>
-      <UserPanel />
+      <Sidebar />
     </div>
     <footer>v{version}</footer>
   </body>
