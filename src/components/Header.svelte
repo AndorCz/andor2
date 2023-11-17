@@ -1,6 +1,5 @@
 <script>
   export let path
-  console.log('url', path)
 </script>
 
 <header>

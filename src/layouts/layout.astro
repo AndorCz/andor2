@@ -30,7 +30,7 @@ user.set(isUser(Astro.cookies) && data.session ? data.session.user : null) // re
     <div id='wrapper'>
       <main>
         <Header path={path} />
-        <div id='content' style={{ padding }}">
+        <div id='content' style={{ padding }}>
           <slot />
         </div>
       </main>
