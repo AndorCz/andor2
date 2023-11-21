@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build"
+    "build": "astro build",
+    "db": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },
   "dependencies": {
     "@astrojs/svelte": "4.0.3",
