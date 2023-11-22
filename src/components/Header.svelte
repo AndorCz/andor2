@@ -35,7 +35,7 @@
     }
       nav a {
         font-family: 'Alegreya Sans';
-        font-weight: 600;
+        font-variation-settings: 'wght' 600;
         display: inline-block;
         padding: 13px 25px;
         text-decoration: none;
@@ -50,25 +50,25 @@
       nav a.active {
         color: var(--text);
         background-color: var(--panel);
-        border-radius: 5px 5px 0px 0px;
+        border-radius: 8px 8px 0px 0px;
         opacity: 1;
         position: relative;
       }
         .active:before, .active:after {
-            content: '';
-            position: absolute;
-            height: 5px;
-            width: 10px;
-            bottom: 0px;
+          content: '';
+          position: absolute;
+          height: 8px;
+          width: 16px;
+          bottom: 0px;
         }
         .active:after {
-          right: -10px;
-          border-radius: 0 0 0 5px;
-          box-shadow: -5px 0 0 0 var(--panel);
+          right: -16px;
+          border-radius: 0 0 0 8px;
+          box-shadow: -8px 0 0 0 var(--panel);
         }
         .active:before {
-          left: -10px;
-          border-radius: 0 0 5px 0;
-          box-shadow: 5px 0 0 0 var(--panel);
+          left: -16px;
+          border-radius: 0 0 8px 0;
+          box-shadow: 8px 0 0 0 var(--panel);
         }
 </style>

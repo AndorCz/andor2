@@ -1,0 +1,37 @@
+---
+	import Layout from '../layouts/layout.astro'
+  import { isUser } from '@lib/supabase'
+
+  const isLogged = isUser(Astro.cookies)
+---
+
+<Layout title='Vytvořit hru' padding='40px 60px 60px 60px'>
+  <h1>Vytvořit hru</h1>
+
+  {isLogged ? (
+    <table>
+      <tr>
+        <td>
+          <label for='name'>Název</label>
+        </td>
+        <td>
+          <input type='text' id='name' size='80' maxlength='80' />
+        </td>
+      </tr>
+    </table>
+    <br>
+    <center>
+      <button onclick=''>Vytvořit</button>
+    </center>
+  ) : (
+    <div>
+      <p>Pro vytvoření nové hry se musíš přihlásit.</p>
+    </div>
+  )}
+</Layout>
+
+<style>
+  td {
+    padding: 10px;
+  }
+</style>

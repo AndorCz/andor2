@@ -5,7 +5,7 @@
   --panel: #2b2827;
   --text: #c4b6ab;
   --accent: #a07150;
-  --buttonBg: #453934;
+  --buttonBg: #634b41;
 }
 
 * { box-sizing: border-box }
@@ -14,15 +14,15 @@ html { background-color: var(--background) }
 @font-face {
   font-family: 'Alegreya Sans';
   font-style: normal;
-  font-weight: 400 900;
-  src: url('./AlegreyaSans.woff2') format('woff2');
+  font-weight: 100 900;
+  src: url('./AlegreyaSans.woff2') format('woff2-variations');
 }
 
 @font-face {
   font-family: 'Alegreya Sans Italic';
   font-style: italic;
-  font-weight: 400 900;
-  src: url('./AlegreyaSans-Italic.woff2') format('woff2');
+  font-weight: 100 900;
+  src: url('./AlegreyaSans-Italic.woff2') format('woff2-variations');
 }
 
 body, a {
@@ -35,26 +35,46 @@ h1, h2, h3, h4, h5 {
   font-family: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
-a {
-  color: var(--accent);
-  font-weight: bold;
-  font-weight: normal;
+h1 {
+  font-variation-settings: 'wght' 600;
 }
 
-button {
+a {
+  color: var(--accent);
+  font-variation-settings: 'wght' 600;
+}
+
+/* FORM */
+
+button, .button {
   font-family: 'Alegreya Sans';
   font-size: 14pt;
   padding: 15px 30px;
   border-radius: 5px;
   color: var(--text);
   background-color: var(--buttonBg);
-  border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 10%) solid;
+  border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 15%) solid;
   cursor: pointer;
+  text-decoration: none;
 }
 
-  button:hover {
+  button:hover, .button:hover {
     background-color: color-mix(in srgb, var(--buttonBg), var(--accent) 10%);
     border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 30%) solid;
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
     color: #dacfc6;
+  }
+
+input[type=text], textarea {
+  padding: 15px 10px;
+  font-size: 14pt;
+  box-shadow: inset 1px 1px 6px #0006;
+  border: none;
+  border-bottom: 4px var(--buttonBg) solid;
+  color: var(--text);
+  background-color: transparent;
+}
+
+  input[type=text]:focus, textarea:focus {
+    outline: 2px var(--accent) solid;
   }
