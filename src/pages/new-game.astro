@@ -6,16 +6,18 @@
 ---
 
 <Layout title='Vytvořit hru' padding='40px 60px 60px 60px'>
+  <a href='javascript:history.back()'>zpět</a>
+
   <h1>Vytvořit hru</h1>
 
   {isLogged ? (
     <table>
       <tr>
-        <td>
+        <td class='labels'>
           <label for='name'>Název</label>
         </td>
         <td>
-          <input type='text' id='name' size='80' maxlength='80' />
+          <input type='text' id='name' maxlength='80' />
         </td>
       </tr>
     </table>
@@ -31,7 +33,18 @@
 </Layout>
 
 <style>
+  table {
+    width: 100%;
+  }
+  .labels {
+    width: 10%;
+    padding-right: 10px;
+  }
   td {
-    padding: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  input {
+    width: 100%;
   }
 </style>
