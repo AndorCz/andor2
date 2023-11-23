@@ -1,4 +1,8 @@
 
+* { box-sizing: border-box }
+
+/* VARIABLES */
+
 :root {
   --error: #E54B4B;
   --background: #201c1b;
@@ -8,8 +12,7 @@
   --buttonBg: #634b41;
 }
 
-* { box-sizing: border-box }
-html { background-color: var(--background) }
+/* FONTS */
 
 @font-face {
   font-family: 'Alegreya Sans';
@@ -25,9 +28,20 @@ html { background-color: var(--background) }
   src: url('./AlegreyaSans-Italic.woff2') format('woff2-variations');
 }
 
+/* UTILS */
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+/* BASICS */
+
+html { background-color: var(--background) }
+
 body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
-  font-size: 14pt;
+  font-size: 15pt;
   color: var(--text);
 }
 
@@ -48,14 +62,16 @@ a {
 
 button, .button {
   font-family: 'Alegreya Sans';
-  font-size: 14pt;
+  font-size: 16pt;
+  font-variation-settings: 'wght' 600;
   padding: 15px 30px;
-  border-radius: 5px;
+  border-radius: 10px;
   color: var(--text);
   background-color: var(--buttonBg);
   border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 15%) solid;
-  cursor: pointer;
   text-decoration: none;
+  cursor: pointer;
+  box-shadow: 2px 2px 3px #0003;
 }
 
   button:hover, .button:hover {
@@ -70,9 +86,11 @@ input[type=text], textarea {
   font-size: 14pt;
   box-shadow: inset 1px 1px 6px #0006;
   border: none;
-  border-bottom: 4px var(--buttonBg) solid;
+  /*border: 1px color-mix(in srgb, var(--buttonBg), var(--panel) 70%) solid;*/
+  border-bottom: 3px var(--buttonBg) solid;
   color: var(--text);
-  background-color: transparent;
+  background-color: color-mix(in srgb, var(--panel), var(--background) 15%);
+  border-radius: 10px;
 }
 
   input[type=text]:focus, textarea:focus {

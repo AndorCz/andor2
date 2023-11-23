@@ -1,16 +1,14 @@
 ---
 import pkg from '../../package.json' assert { type: 'json' }
-import { user } from '@lib/stores'
-import { supabase, isUser } from '@lib/supabase'
+import { getUser } from '@lib/supabase'
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/Sidebar.svelte'
 
 const version = pkg.version
 const path = new URL(Astro.url, Astro.site).pathname
 const { title, padding } = Astro.props
-const { data, error } = await supabase.auth.getSession()
 
-user.set(isUser(Astro.cookies) && data.session ? data.session.user : null) // resets user store when cookies are missing
+const user = await getUser(Astro.cookies)
 ---
 
 <html lang='cs'>
@@ -34,7 +32,7 @@ user.set(isUser(Astro.cookies) && data.session ? data.session.user : null) // re
           <slot />
         </div>
       </main>
-      <Sidebar />
+      <Sidebar {user} />
     </div>
     <footer>v{version}</footer>
   </body>
@@ -55,7 +53,7 @@ user.set(isUser(Astro.cookies) && data.session ? data.session.user : null) // re
   main {
     flex: 1;
     background-color: var(--panel);
-    border-radius: 0px 0px 5px 5px;
+    border-radius: 0px 0px 10px 10px;
   }
 
   footer {

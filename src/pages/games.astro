@@ -1,18 +1,20 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { isUser } from '@lib/supabase'
+  import { getUser } from '@lib/supabase'
 
-  const isLogged = isUser(Astro.cookies)
+  const user = await getUser(Astro.cookies)
 ---
 
 <Layout title='Hry' padding='40px 60px 60px 60px'>
-  <h1>Hry</h1>
-
-  {isLogged ? (
-    <div>
-      <a href='./new-game' class='button'>Vytvořit novou hru</a>
-    </div>
-  ) : (
+  <div class='headline'>
+    <h1>Hry</h1>
+    {user && (
+      <div>
+        <a href='./new-game' class='button'>Vytvořit novou hru</a>
+      </div>
+    )}
+  </div>
+  {!user && (
     <div>
       <p>Prosím přihlaš se pro vytvoření nové hry.</p>
     </div>

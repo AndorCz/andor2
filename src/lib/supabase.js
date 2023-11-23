@@ -15,3 +15,8 @@ export function isUser (cookies) {
   const refreshToken = cookies.get('sb-refresh-token')
   return !!(accessToken && refreshToken)
 }
+
+export async function getUser (cookies) {
+  const { data, error } = await supabase.auth.getSession()
+  return isUser(cookies) && data.session ? data.session.user : null
+}

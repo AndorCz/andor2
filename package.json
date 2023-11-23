@@ -4,8 +4,9 @@
   "version": "0.0.1",
   "scripts": {
     "build": "astro build",
-    "dev": "concurrently \"supabase start\" \"astro dev\"",
-    "db": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
+    "db": "supabase start",
+    "dev": "astro dev",
+    "sync": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },
   "dependencies": {
     "@astrojs/svelte": "4.0.3",

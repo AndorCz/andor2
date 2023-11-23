@@ -39,7 +39,7 @@
         display: inline-block;
         padding: 13px 25px;
         text-decoration: none;
-        font-size: 15pt;
+        font-size: 16pt;
         color: #fff;
         text-shadow: 2px 2px 2px #0003;
         opacity: 0.8;

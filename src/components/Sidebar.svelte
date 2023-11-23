@@ -1,10 +1,10 @@
 <script>
-  import { user } from '@lib/stores'
+  export let user
 </script>
 
 <aside>
-  {#if $user}
-    {$user.email}<br><br>
+  {#if user}
+    {user.email}<br><br>
     <a href='./api/auth/logout'>Odhlásit</a>
   {:else}
     <form action='/api/auth/login' method='post'>
@@ -19,7 +19,7 @@
     margin-left: 20px;
     padding: 20px;
     background-color: var(--panel);
-    border-radius: 0px 0px 5px 5px;
+    border-radius: 0px 0px 10px 10px;
   }
     aside a {
       font-family: 'Alegreya Sans';

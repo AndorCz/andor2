@@ -1,8 +1,21 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { isUser } from '@lib/supabase'
+  import { supabase, isUser } from '@lib/supabase'
 
   const isLogged = isUser(Astro.cookies)
+
+  if (Astro.request.method === 'POST') {
+    try {
+      const data = await Astro.request.formData()
+      const gameName = data.get('gameName')
+      const { error } = await supabase.from('games').insert({ name: gameName })
+      if (error) {
+        console.error(error)
+      } else {
+        return Astro.redirect('/games?toast=game-added')
+      }
+    } catch (e) { console.error(e) }
+  }
 ---
 
 <Layout title='Vytvořit hru' padding='40px 60px 60px 60px'>
@@ -11,20 +24,19 @@
   <h1>Vytvořit hru</h1>
 
   {isLogged ? (
-    <table>
-      <tr>
-        <td class='labels'>
-          <label for='name'>Název</label>
-        </td>
-        <td>
-          <input type='text' id='name' maxlength='80' />
-        </td>
-      </tr>
-    </table>
-    <br>
-    <center>
-      <button onclick=''>Vytvořit</button>
-    </center>
+    <form method='POST' autocomplete='off'>
+      <div class='flex'>
+        <div class='labels'>
+          <label for='gameName'>Název hry</label>
+        </div>
+        <div class='inputs'>
+          <input type='text' id='gameName' name='gameName' maxlength='80' />
+        </div>
+      </div>
+      <center>
+        <button type='submit'>Vytvořit</button>
+      </center>
+    </form>
   ) : (
     <div>
       <p>Pro vytvoření nové hry se musíš přihlásit.</p>
@@ -33,18 +45,24 @@
 </Layout>
 
 <style>
-  table {
+  form {
     width: 100%;
   }
-  .labels {
-    width: 10%;
-    padding-right: 10px;
-  }
-  td {
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  input {
-    width: 100%;
+    form div {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .labels {
+      width: 10%;
+      padding-right: 10px;
+    }
+    .inputs {
+      flex: 1;
+    }
+      input {
+        width: 100%;
+      }
+  center {
+    margin-top: 20px;
   }
 </style>
