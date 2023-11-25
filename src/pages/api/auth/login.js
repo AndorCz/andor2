@@ -1,5 +1,5 @@
 
-import { supabase } from '@lib/supabase'
+import { supabase } from '@lib/database'
 
 export const POST = async ({ request, cookies, redirect }) => {
   const formData = await request.formData()

@@ -13,6 +13,7 @@
     "@astrojs/vercel": "5.2.0",
     "@supabase/supabase-js": "^2.38.4",
     "astro": "3.5.3",
+    "notyf": "^3.10.0",
     "svelte": "4.0.0"
   }
 }

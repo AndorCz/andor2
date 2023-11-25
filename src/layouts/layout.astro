@@ -1,14 +1,11 @@
 ---
 import pkg from '../../package.json' assert { type: 'json' }
-import { getUser } from '@lib/supabase'
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/Sidebar.svelte'
 
 const version = pkg.version
 const path = new URL(Astro.url, Astro.site).pathname
-const { title, padding } = Astro.props
-
-const user = await getUser(Astro.cookies)
+const { title, padding, user, profile } = Astro.props
 ---
 
 <html lang='cs'>
@@ -32,9 +29,14 @@ const user = await getUser(Astro.cookies)
           <slot />
         </div>
       </main>
-      <Sidebar {user} />
+      <Sidebar {user} {profile} />
     </div>
     <footer>v{version}</footer>
+
+    <script>
+      import { showToast } from '@lib/toasts'
+      showToast()
+    </script>
   </body>
 </html>
 

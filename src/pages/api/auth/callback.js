@@ -1,5 +1,5 @@
 
-import { supabase } from '@lib/supabase'
+import { supabase } from '@lib/database'
 
 export const GET = async ({ url, cookies, redirect }) => {
   const authCode = url.searchParams.get('code')

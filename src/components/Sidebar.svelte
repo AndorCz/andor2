@@ -1,8 +1,12 @@
 <script>
   export let user
+  export let profile
 </script>
 
 <aside>
+  {#if profile}
+    {profile.name}
+  {/if}
   {#if user}
     {user.email}<br><br>
     <a href='./api/auth/logout'>Odhlásit</a>

@@ -1,12 +1,15 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { getUser } from '@lib/supabase'
+  import { supabase, getUser } from '@lib/database'
 
-  const user = await getUser(Astro.cookies)
+	const { user, profile } = await getUser(Astro.cookies)
+	if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
+
+  const { data, error } = await supabase.from('games').select('name, author') // author()
 ---
 
 <Layout title='Hry' padding='40px 60px 60px 60px'>
-  <div class='headline'>
+  <div class='headline flex'>
     <h1>Hry</h1>
     {user && (
       <div>
@@ -14,9 +17,50 @@
       </div>
     )}
   </div>
-  {!user && (
-    <div>
-      <p>Prosím přihlaš se pro vytvoření nové hry.</p>
-    </div>
-  )}
+
+  <table id='games'>
+    <tr>
+      <th>název</th>
+      <th>autor</th>
+    </tr>
+    {data.map(game => (
+      <tr class='game'>
+        <td><div class='name'><a href='./game?id='>{game.name}</a></div></td>
+        <td><div class='author'>{game.author}</div></td>
+      </tr>
+    ))}  
+  </table>
 </Layout>
+
+<style>
+  .headline {
+    justify-content: space-between;
+  }
+  #games {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 2px;
+  }
+    th {
+      text-align: left;
+      padding: 10px 0px;
+      font-variation-settings: 'wght' 300;
+      color: var(--dim);
+    }
+      th:first-child {
+        padding-left: 20px;
+      }
+    td {
+      background-color: var(--block);
+      margin-bottom: 2px;
+    }
+      .name a {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+      }
+      .name a:first-letter {
+        text-transform: uppercase;
+      }
+</style>

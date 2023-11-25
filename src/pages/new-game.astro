@@ -1,8 +1,9 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { supabase, isUser } from '@lib/supabase'
+  import { supabase, getUser } from '@lib/database'
 
-  const isLogged = isUser(Astro.cookies)
+  const { user, profile } = await getUser(Astro.cookies)
+	if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
 
   if (Astro.request.method === 'POST') {
     try {
@@ -23,7 +24,7 @@
 
   <h1>Vytvořit hru</h1>
 
-  {isLogged ? (
+  {user ? (
     <form method='POST' autocomplete='off'>
       <div class='flex'>
         <div class='labels'>

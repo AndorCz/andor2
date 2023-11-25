@@ -7,8 +7,14 @@
   --error: #E54B4B;
   --background: #201c1b;
   --panel: #2b2827;
+  --block: #33302f;
+  --prominent: #3f3431;
+  --green: #a5a740;
   --text: #c4b6ab;
-  --accent: #a07150;
+  --dim: #92857a;
+  --accent: #a97855;
+  --accent2: #a07150;
+  --highlight: #c8926b;
   --buttonBg: #634b41;
 }
 
@@ -43,6 +49,7 @@ body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   font-size: 15pt;
   color: var(--text);
+  text-decoration: none;
 }
 
 h1, h2, h3, h4, h5 {
@@ -57,19 +64,27 @@ a {
   color: var(--accent);
   font-variation-settings: 'wght' 600;
 }
+  a:hover {
+    color: var(--highlight);
+  }
+
+/* TOASTS */
+
+.notyf__toast {
+  border-radius: 10px !important;
+}
 
 /* FORM */
 
 button, .button {
   font-family: 'Alegreya Sans';
-  font-size: 16pt;
+  font-size: 15pt;
   font-variation-settings: 'wght' 600;
   padding: 15px 30px;
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--text);
   background-color: var(--buttonBg);
   border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 15%) solid;
-  text-decoration: none;
   cursor: pointer;
   box-shadow: 2px 2px 3px #0003;
 }

@@ -1,5 +1,5 @@
 
-import { supabase } from '@lib/supabase'
+import { supabase } from '@lib/database'
 
 export const GET = async ({ cookies, redirect }) => {
   const { error } = await supabase.auth.signOut()
