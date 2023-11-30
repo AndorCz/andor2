@@ -24,7 +24,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         cookies.delete('sb-refresh-token')
       }
       if (authData.user) {
-        saveAuthCookies(authData.session)
+        saveAuthCookies(cookies, authData.session)
         locals.user = { id: authData.user.id, email: authData.user.email }
       }
     }

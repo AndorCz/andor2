@@ -10,6 +10,6 @@ export const GET = async ({ url, cookies, redirect }) => {
   if (error) { return new Response(error.message, { status: 500 }) }
   // console.log('callback session data', data)
 
-  saveAuthCookies(data.session)
+  saveAuthCookies(cookies, data.session)
   return redirect('/')
 }
