@@ -19,7 +19,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       // try refreshing session
       const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
       if (error) {
-        // console.log('setSession error: ', error.message)
         // not possible to use tokens, clean up cookies
         cookies.delete('sb-access-token')
         cookies.delete('sb-refresh-token')

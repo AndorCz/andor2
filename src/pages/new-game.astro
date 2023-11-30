@@ -1,9 +1,8 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { supabase, getUser } from '@lib/database'
+  import { supabase } from '@lib/database'
 
-  const { user, profile } = await getUser(Astro.cookies)
-	if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
+  const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     try {
@@ -19,12 +18,12 @@
   }
 ---
 
-<Layout title='Vytvořit hru' padding='40px 60px 60px 60px'>
+<Layout title='Vytvořit hru'>
   <a href='javascript:history.back()'>zpět</a>
 
   <h1>Vytvořit hru</h1>
 
-  {user ? (
+  {user.id ? (
     <form method='POST' autocomplete='off'>
       <div class='flex'>
         <div class='labels'>

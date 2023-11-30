@@ -1,18 +1,15 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  // import { supabase } from '@lib/database'
+  import { supabase } from '@lib/database'
 
-	const user = null // const { user, profile } = await getUser(Astro.cookies)
-  const data = []
-	// if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
-
-  // const { data, error } = await supabase.from('games').select('name, author') // author()
+  const { user } = Astro.locals
+  const { data, error } = await supabase.from('games').select('name, author') // author()
 ---
 
-<Layout title='Hry' padding='40px 60px 60px 60px'>
+<Layout title='Hry'>
   <div class='headline flex'>
     <h1>Hry</h1>
-    {user && (
+    {user.id && (
       <div>
         <a href='./new-game' class='button'>Vytvořit novou hru</a>
       </div>

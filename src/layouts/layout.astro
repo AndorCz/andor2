@@ -6,7 +6,7 @@ import Sidebar from '@components/Sidebar.svelte'
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user } = Astro.locals
-const { title, padding } = Astro.props
+const { title } = Astro.props
 ---
 
 <html lang='cs'>
@@ -26,7 +26,7 @@ const { title, padding } = Astro.props
     <div id='wrapper'>
       <main>
         <Header {pathname} />
-        <div id='content' style={{ padding }}>
+        <div id='content'>
           <slot />
         </div>
       </main>
@@ -51,6 +51,10 @@ const { title, padding } = Astro.props
     width: 100%;
     margin: auto;
     display: flex;
+  }
+
+  #content {
+    padding: 40px 60px 60px 60px;
   }
 
   main {
