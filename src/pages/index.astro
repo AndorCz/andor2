@@ -1,12 +1,10 @@
 ---
 	import Layout from '@layouts/layout.astro'
-	import { getUser } from '@lib/database'
 
-	const { user, profile } = await getUser(Astro.cookies)
-	if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
+	// if (user && !profile && Astro.url.pathname !== '/onboarding') { return Astro.redirect('./onboarding') } // if profile is missing, go create it
 ---
 
-<Layout title='Hlavní strana' padding='40px 60px 60px 60px' {user} {profile}>
+<Layout title='Hlavní strana' padding='40px 60px 60px 60px'>
   <h1>Novinky</h1>
 
 	Tady bude zeď s novinkami.

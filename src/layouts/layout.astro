@@ -3,9 +3,10 @@ import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/Sidebar.svelte'
 
-const version = pkg.version
-const path = new URL(Astro.url, Astro.site).pathname
-const { title, padding, user, profile } = Astro.props
+const { version } = pkg
+const { pathname } = new URL(Astro.url, Astro.site)
+const { user } = Astro.locals
+const { title, padding } = Astro.props
 ---
 
 <html lang='cs'>
@@ -24,12 +25,12 @@ const { title, padding, user, profile } = Astro.props
 	<body>
     <div id='wrapper'>
       <main>
-        <Header path={path} />
+        <Header {pathname} />
         <div id='content' style={{ padding }}>
           <slot />
         </div>
       </main>
-      <Sidebar {user} {profile} />
+      <Sidebar {user} />
     </div>
     <footer>v{version}</footer>
 

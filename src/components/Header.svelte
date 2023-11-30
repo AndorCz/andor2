@@ -1,5 +1,5 @@
 <script>
-  export let path
+  export let pathname
 </script>
 
 <header>
@@ -7,8 +7,8 @@
     <img src='./logo.png' alt='Andor2.cz logo'>
   </a>
   <nav>
-    <a href='/' class={path === '/' ? 'active' : ''}>Novinky</a>
-    <a href='/games' class={path === '/games' ? 'active' : ''}>Hry</a>
+    <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
+    <a href='/games' class={pathname === '/games' ? 'active' : ''}>Hry</a>
   </nav>
 </header>
 

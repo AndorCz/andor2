@@ -1,10 +1,7 @@
 ---
 	import Layout from '../layouts/layout.astro'
-  import { getUser } from '@lib/database'
-
-  const { user, profile } = await getUser(Astro.cookies)
 ---
 
-<Layout title='Přezdívka' padding='40px 60px 60px 60px' {user} {profile}>
+<Layout title='Přezdívka' padding='40px 60px 60px 60px'>
   <h1>Dokončení registrace</h1>
 </Layout>
