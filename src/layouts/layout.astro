@@ -30,7 +30,7 @@ const { title } = Astro.props
           <slot />
         </div>
       </main>
-      <Sidebar {user} />
+      <Sidebar {user} client:load />
     </div>
     <footer>v{version}</footer>
 
