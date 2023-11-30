@@ -1,7 +1,80 @@
 ---
-	import Layout from '../layouts/layout.astro'
+	import Layout from '@layouts/layout.astro'
+  import { supabase } from '@lib/database'
+  import { showError } from '@lib/toasts'
+
+  const { user } = Astro.locals
+  let toast = false
+
+  if (Astro.request.method === 'POST') {
+    const data = await Astro.request.formData()
+    const userName = data.get('userName')
+    if (userName) {
+      const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
+      if (error) {
+        toast = 'Toto jméno je již zabrané'
+      } else {
+        return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
+      }
+    } else {
+      toast = 'Přezdívka nesmí být prázdná'
+    }
+  }
 ---
 
 <Layout title='Přezdívka'>
   <h1>Dokončení registrace</h1>
+
+  {user.id && !user.name ? (
+    <form method='POST' autocomplete='off'>
+      <div class='flex'>
+        <div class='labels'>
+          <label for='userName'>Přezdívka</label>
+        </div>
+        <div class='inputs'>
+          <input type='text' id='userName' name='userName' minlength='1' maxlength='30' />
+        </div>
+      </div>
+      <center>
+        <button type='submit'>Dokončit</button>
+      </center>
+    </form>
+  ) : (
+    <>
+      {user.id && user.name ? (
+        <p>Tato stránka slouží k doplnění přezdívky pro dokončení registrace, ale tvoje už je zdá se kompletní. Tvoje přezdívka je "{user.name}".<br> Pokud je to chyba, napiš mi prosím na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
+      ) : (
+        <p>Tato stránka slouží k dokončení registrace a potřebuje tvoje uživatelské id. To ale nebylo nalezeno.<br> Zkus prosím registrační proces znovu, nebo mi prosím napiš na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
+      )}
+    </>
+  )}
+
+  <script type='module' define:vars={{ toast }}>
+    import { showError } from '../src/lib/toasts.js'
+    if (toast) { showError(toast) }
+  </script>
 </Layout>
+
+<style>
+  form {
+    width: 50%;
+    margin: auto;
+  }
+    form div {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .labels {
+      width: 20%;
+      padding-right: 10px;
+    }
+    .inputs {
+      flex: 1;
+    }
+      input {
+        width: 100%;
+      }
+  center {
+    margin-top: 20px;
+  }
+</style>

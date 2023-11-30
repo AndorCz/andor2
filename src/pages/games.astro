@@ -1,64 +1,24 @@
 ---
-	import Layout from '../layouts/layout.astro'
   import { supabase } from '@lib/database'
+	import Layout from '@layouts/layout.astro'
+  import GameList from '@components/games/GameList.svelte'
 
   const { user } = Astro.locals
-  const { data, error } = await supabase.from('games').select('name, author') // author()
+
+  const { data, error } = await supabase.from('games').select('name, profiles ( name )')
+  if (error) { console.error('Error loading game list', error.message) }
 ---
 
 <Layout title='Hry'>
   <div class='headline flex'>
     <h1>Hry</h1>
-    {user.id && (
-      <div>
-        <a href='./new-game' class='button'>Vytvořit novou hru</a>
-      </div>
-    )}
+    {user.id && (<div><a href='./new-game' class='button'>Vytvořit novou hru</a></div>)}
   </div>
-
-  <table id='games'>
-    <tr>
-      <th>název</th>
-      <th>autor</th>
-    </tr>
-    {data.map(game => (
-      <tr class='game'>
-        <td><div class='name'><a href='./game?id='>{game.name}</a></div></td>
-        <td><div class='author'>{game.author}</div></td>
-      </tr>
-    ))}  
-  </table>
+  <GameList games={data} />
 </Layout>
 
 <style>
   .headline {
     justify-content: space-between;
   }
-  #games {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 2px;
-  }
-    th {
-      text-align: left;
-      padding: 10px 0px;
-      font-variation-settings: 'wght' 300;
-      color: var(--dim);
-    }
-      th:first-child {
-        padding-left: 20px;
-      }
-    td {
-      background-color: var(--block);
-      margin-bottom: 2px;
-    }
-      .name a {
-        display: inline-block;
-        width: 100%;
-        height: 100%;
-        padding: 20px;
-      }
-      .name a:first-letter {
-        text-transform: uppercase;
-      }
 </style>

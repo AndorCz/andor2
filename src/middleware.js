@@ -3,6 +3,8 @@ import { supabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
 export async function onRequest ({ cookies, locals, redirect, url }, next) {
+  locals.user = {} // empty default
+
   // get auth cookies
   const accessToken = cookies.get('sb-access-token')?.value
   const refreshToken = cookies.get('sb-refresh-token')?.value
@@ -31,7 +33,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
     // user exists, load profile data
     if (locals.user) {
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
-      if (profileData?.username) {
+      if (profileData?.name) {
         locals.user = { ...profileData, ...locals.user }
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
@@ -39,6 +41,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
   }
-  // console.log('locals: ', locals)
+  console.log('locals: ', locals)
   return next()
 }

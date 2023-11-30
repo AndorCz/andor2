@@ -3,8 +3,10 @@
 </script>
 
 <aside>
-  {#if user.name}{user.name}{/if}
-  {#if user.email}
+  {#if user.name}
+    {user.name}<br><br>
+    <a href='./api/auth/logout'>Odhlásit</a>
+  {:else if user.email}
     {user.email}<br><br>
     <a href='./api/auth/logout'>Odhlásit</a>
   {:else}

@@ -1,20 +1,18 @@
 ---
-	import Layout from '../layouts/layout.astro'
+	import Layout from '@layouts/layout.astro'
   import { supabase } from '@lib/database'
 
   const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
-    try {
-      const data = await Astro.request.formData()
-      const gameName = data.get('gameName')
-      const { error } = await supabase.from('games').insert({ name: gameName })
-      if (error) {
-        console.error(error)
-      } else {
-        return Astro.redirect('/games?toast=game-added')
-      }
-    } catch (e) { console.error(e) }
+    const data = await Astro.request.formData()
+    const gameName = data.get('gameName')
+    const { error } = await supabase.from('games').insert({ name: gameName })
+    if (error) {
+      console.error(error)
+    } else {
+      return Astro.redirect('/games?toastType=success&toastText=' + encodeURIComponent('Hra byla přidána'))
+    }
   }
 ---
 
