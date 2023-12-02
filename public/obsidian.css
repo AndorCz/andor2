@@ -111,3 +111,67 @@ input[type=text], textarea {
   input[type=text]:focus, textarea:focus {
     outline: 2px var(--accent) solid;
   }
+
+/* TABS */
+
+.tabs a, .tabs button {
+  font-family: 'Alegreya Sans';
+  font-variation-settings: 'wght' 600;
+  display: inline-block;
+  padding: 13px 25px;
+  text-decoration: none;
+  font-size: 16pt;
+  color: #fff;
+  text-shadow: 2px 2px 2px #0003;
+  opacity: 0.8;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+  .tabs a:hover, .tabs button:hover {
+    opacity: 1;          
+  }
+
+.tabs a.active, .tabs button.active {
+  color: var(--text);
+  background-color: var(--panel);
+  border-radius: 8px 8px 0px 0px;
+  opacity: 1;
+  position: relative;
+}
+  .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
+    content: '';
+    position: absolute;
+    height: 8px;
+    width: 16px;
+    bottom: 0px;
+  }
+  .tabs a.active:after, .tabs button.active:after {
+    right: -16px;
+    border-radius: 0 0 0 8px;
+    box-shadow: -8px 0 0 0 var(--panel);
+  }
+  .tabs a.active:before, .tabs button.active:before {
+    left: -16px;
+    border-radius: 0 0 8px 0;
+    box-shadow: 8px 0 0 0 var(--panel);
+  }
+
+  /* SECONDARY TABS */
+
+  .tabs.secondary {
+    border-bottom: 10px var(--block) solid;
+  }
+  .tabs button.active {
+    background-color: var(--block);
+  }
+    .tabs button.active:after {
+      box-shadow: -8px 0 0 0 var(--block);
+    }
+    .tabs button.active:before {
+      box-shadow: 8px 0 0 0 var(--block);
+    }
+    .tabs.secondary button:first-child::before {
+        content: none;
+    }
+  

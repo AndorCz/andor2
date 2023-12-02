@@ -41,6 +41,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
   }
-  console.log('locals: ', locals)
+  // console.log('locals: ', locals)
   return next()
 }
