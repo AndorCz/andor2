@@ -5,3 +5,5 @@ export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   cookies.set('sb-access-token', access_token, { sameSite: 'lax', path: '/', secure, maxAge })
   cookies.set('sb-refresh-token', refresh_token, { sameSite: 'lax', path: '/', secure, maxAge })
 }
+
+export function clone (source) { return source ? JSON.parse(JSON.stringify(source)) : source }

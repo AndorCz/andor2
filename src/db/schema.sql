@@ -14,6 +14,7 @@ CREATE TABLE games (
   id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   author UUID NOT NULL DEFAULT auth.uid(),
+  info TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT games_author_fkey FOREIGN KEY (author) REFERENCES profiles (id) ON DELETE RESTRICT
 );

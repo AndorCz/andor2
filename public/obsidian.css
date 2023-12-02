@@ -56,7 +56,7 @@ h1, h2, h3, h4, h5 {
   font-family: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
-h1 {
+h1, h2, h3 {
   font-variation-settings: 'wght' 600;
 }
 
@@ -162,6 +162,12 @@ input[type=text], textarea {
   .tabs.secondary {
     border-bottom: 10px var(--block) solid;
   }
+    .tabs.secondary button:not(.active) {
+      color: var(--accent);
+    }
+      .tabs.secondary button:not(.active):hover {
+        color: var(--accent);
+      }
   .tabs button.active {
     background-color: var(--block);
   }
