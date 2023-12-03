@@ -21,6 +21,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       // try refreshing session
       const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
       if (error) {
+        console.log('auth error', error.message)
         // not possible to use tokens, clean up cookies
         cookies.delete('sb-access-token')
         cookies.delete('sb-refresh-token')
@@ -31,7 +32,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
     // user exists, load profile data
-    if (locals.user) {
+    if (locals.user?.id) {
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
       if (profileData?.name) {
         locals.user = { ...profileData, ...locals.user }
@@ -41,6 +42,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
   }
-  // console.log('locals: ', locals)
+  console.log('locals: ', locals)
   return next()
 }

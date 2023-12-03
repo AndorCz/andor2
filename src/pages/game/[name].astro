@@ -6,7 +6,7 @@
   const { user } = Astro.locals
   const { name } = Astro.params
 
-  const { data, error } = await supabase.from('games').select('id, name, info, profiles ( id, name )').eq('name', name).single()
+  const { data, error } = await supabase.from('games').select('id, name, intro, info, profiles ( id, name )').eq('name', name).single()
   if (error) { console.error('Error loading game data', error.message) }
 ---
 

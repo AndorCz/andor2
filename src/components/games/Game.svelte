@@ -2,8 +2,9 @@
   import { writable } from 'svelte/store'
   import { gameStore } from '@lib/stores'
   import { supabase } from '@lib/database'
-  import { showSuccess, showError } from '@lib/toasts'
   import { clone } from '@lib/utils'
+  import { showSuccess, showError } from '@lib/toasts'
+  import EditableLong from '@components/misc/EditableLong.svelte'
   
   export let user
   export let name
@@ -11,6 +12,8 @@
 
   let store = gameStore(name, 'info') // save last used to localstorage
   let isAuthor = data.profiles.id === user.id
+
+  if (!isAuthor && $store.activeTab === 'chars') { $store.activeTab = 'info' } // if you get logged out
 
   async function updateGame () {
     const clean = clone(data)
@@ -25,30 +28,26 @@
 
 <nav class='tabs secondary'>
   <button on:click={() => { $store.activeTab = 'info' }} class={$store.activeTab === 'info' ? 'active' : ''}>Info</button>
-  <button on:click={() => { $store.activeTab = 'thread1' }} class={$store.activeTab === 'thread1' ? 'active' : ''}>Vlákno</button>
+  <button on:click={() => { $store.activeTab = 'chat' }} class={$store.activeTab === 'chat' ? 'active' : ''}>Chat</button>
+  <button on:click={() => { $store.activeTab = 'game' }} class={$store.activeTab === 'game' ? 'active' : ''}>Hra</button>
   {#if isAuthor}<!-- only for the author, for now -->
-    <button on:click={() => { $store.activeTab = 'settings' }} class={$store.activeTab === 'settings' ? 'active' : ''}>Nastavení</button>
+    <button on:click={() => { $store.activeTab = 'chars' }} class={$store.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
   {/if}
 </nav>
 
 <div class='content'>
   {#if $store.activeTab === 'info'}
-    <h3>Popis hry</h3>
-    {#if isAuthor}
-      Formátování markdown<br><br>
-      <textarea class='gameInfo' bind:value={data.info}></textarea>
-      <button class='saveGameInfo' on:click={updateGame}>Uložit</button>
-    {:else}
-      <p class='gameInfo'>{data.info}</p>
-    {/if}
-    <br><br>
+    <h2>Úvod</h2>
+    <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isAuthor} />
+    <h2>Pro hráče</h2>
+    <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isAuthor} />
     Autor: {data.profiles.name}
-    <br><br>
-    <h3>Veřejná diskuze</h3>
-    Mimoherní a náborová diskuze
-  {:else if $store.activeTab === 'thread1'}
-    Příspěvky
-  {:else if $store.activeTab === 'settings'}
+  {:else if $store.activeTab === 'chat'}
+    <h2>Veřejná diskuze</h2>
+    Tady bude mimoherní a náborová diskuze
+  {:else if $store.activeTab === 'game'}
+    Herní příspěvky
+  {:else if $store.activeTab === 'chars'}
     Postavy, vypravěči
   {/if}
 </div>
@@ -56,18 +55,5 @@
 <style>
   .content {
     padding: 40px;
-  }
-  .gameInfo {
-    width: 100%;
-    min-height: 100px;
-  }
-  p.gameInfo {
-    padding: 20px;
-    font-style: italic;
-    background-color: var(--block);
-  }
-  button.saveGameInfo {
-    float: right;
-    clear: both;
   }
 </style>

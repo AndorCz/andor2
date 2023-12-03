@@ -9,7 +9,7 @@
     "sync": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },
   "dependencies": {
-    "@astrojs/svelte": "4.0.3",
+    "@astrojs/svelte": "4.0.4",
     "@astrojs/vercel": "5.2.0",
     "@supabase/supabase-js": "^2.38.4",
     "astro": "3.5.3",
