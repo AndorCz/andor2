@@ -2,6 +2,9 @@ DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS games CASCADE;
 DROP TABLE IF EXISTS characters CASCADE;
 DROP TABLE IF EXISTS posts CASCADE;
+DROP TYPE IF EXISTS character_state;
+
+CREATE TYPE character_state AS ENUM ('alive', 'unconscious', 'dead');
 
 CREATE TABLE profiles (
   id UUID NOT NULL PRIMARY KEY,
@@ -25,23 +28,16 @@ CREATE TABLE characters (
   game UUID NOT NULL,
   author UUID NOT NULL,
   player UUID,
+  portrait TEXT,
   name TEXT,
+  bio TEXT,
+  open BOOLEAN,
+  hidden BOOLEAN,
+  state public.character_state NOT NULL DEFAULT 'alive'::character_state,
   FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (author) REFERENCES auth.users(id)
+  FOREIGN KEY (author) REFERENCES auth.users(id),
   FOREIGN KEY (player) REFERENCES auth.users(id)
 );
-
-  - Name
-- Icon
-- Bio
-  - Author
-  - Player
-  - Game
-- Open
-- Hidden
-- Conscious
-- Alive
-
 
 CREATE TABLE posts (
   id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),

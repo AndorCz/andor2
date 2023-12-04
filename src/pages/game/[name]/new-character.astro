@@ -1,0 +1,82 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import { supabase } from '@lib/database'
+  import PortraitInput from '@components/misc/PortraitInput.svelte'
+
+  const { user } = Astro.locals
+  const { name } = Astro.params
+
+  const character = {}
+
+  if (Astro.request.method === 'POST') {
+    const data = await Astro.request.formData()
+    character.name = data.get('charName')
+    character.bio = data.get('charBio')
+    character.portrait = data.get('charPortrait')
+    const { error } = await supabase.from('characters').insert(character)
+    if (error) {
+      console.error(error)
+    } else {
+      return Astro.redirect('/game/' + name + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
+    }
+  }
+---
+
+<Layout title='Vytvořit postavu'>
+  <a href='javascript:history.back()'>zpět</a>
+
+  <h1>Vytvořit postavu</h1>
+
+  {user.id ? (
+    <form method='POST' autocomplete='off'>
+      <table>
+        <tr>
+          <td class='labels'><label for='charName'>Jméno</label></td>
+          <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' /></td>
+        </tr>
+        <tr>
+          <td class='labels'><label for='charBio'>Popis</label></td>
+          <td class='inputs'><textarea id='charBio' name='charBio'></textarea></td>
+        </tr>
+        <tr>
+          <td class='labels'><label for='charIcon'>Portrét</label></td>
+          <td class='inputs'>
+            <PortraitInput identity={character} client:only />
+            <input type='hidden' name='charPortrait' value={character.portrait} />
+            <button type='reset' onclick="">Test</button>
+          </td>
+        </tr>
+      </table>
+      <center>
+        <button type='submit'>Vytvořit</button>
+      </center>
+    </form>
+  ) : (
+    <div>
+      <p>Pro vytvoření nové postavy se musíš přihlásit.</p>
+    </div>
+  )}
+</Layout>
+
+<style>
+  form, form table {
+    width: 100%;
+  }
+    td {
+      padding: 10px 0px;
+    }
+    .labels {
+      width: 20%;
+      padding-right: 10px;
+    }
+    #charName {
+      width: 400px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+    }
+  center {
+    margin-top: 20px;
+  }
+</style>

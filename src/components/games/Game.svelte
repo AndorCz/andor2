@@ -48,7 +48,9 @@
   {:else if $store.activeTab === 'game'}
     Herní příspěvky
   {:else if $store.activeTab === 'chars'}
-    Postavy, vypravěči
+    <h2>Volné postavy</h2>
+    <br>
+    <a href='./{name}/new-character' class='button'>Vytvořit novou postavu</a>
   {/if}
 </div>
 

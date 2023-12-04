@@ -10,6 +10,6 @@
   if (error) { console.error('Error loading game data', error.message) }
 ---
 
-<Layout title='Hry'>
+<Layout title={name}>
   <Game {name} {data} {user} client:only />
 </Layout>
