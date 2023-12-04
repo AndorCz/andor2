@@ -1,18 +1,18 @@
 ---
-  import { supabase } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import GameList from '@components/games/GameList.svelte'
 
   const { user } = Astro.locals
 
-  const { data, error } = await supabase.from('games').select('name, profiles ( name )')
-  if (error) { console.error('Error loading game list', error.message) }
+  const { data, error } = await supabase.from('games').select('id, name, profiles ( name )')
+  if (error) { handleError(error) }
 ---
 
 <Layout title='Hry'>
   <div class='headline flex'>
     <h1>Hry</h1>
-    {user.id && (<div><a href='./new-game' class='button'>Vytvořit novou hru</a></div>)}
+    {user.id && (<div><a href='./game-form' class='button'>Vytvořit novou hru</a></div>)}
   </div>
   <GameList games={data} />
 </Layout>

@@ -1,36 +1,35 @@
 <script>
   import { writable } from 'svelte/store'
   import { gameStore } from '@lib/stores'
-  import { supabase } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
   import { clone } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
   import EditableLong from '@components/misc/EditableLong.svelte'
   
   export let user
-  export let name
   export let data = {}
 
-  let store = gameStore(name, 'info') // save last used to localstorage
-  let isAuthor = data.profiles.id === user.id
+  let store = gameStore(data.id, 'info') // save last used to localstorage
+  let isOwner = data.profiles.id === user.id
 
-  if (!isAuthor && $store.activeTab === 'chars') { $store.activeTab = 'info' } // if you get logged out
+  if (!isOwner && $store.activeTab === 'chars') { $store.activeTab = 'info' } // if you get logged out
 
   async function updateGame () {
     const clean = clone(data)
     delete clean.profiles
     const { error } = await supabase.from('games').update(clean).eq('id', data.id)
-    if (error) ( showError('Aktualizace herních dat se nezdařila. Zkus to prosím později.') )
+    if (error) { handleError(error) }
     else { showSuccess('Uloženo') }
   }
 </script>
 
-<h1>{name}</h1>
+<h1>{data.name}</h1>
 
 <nav class='tabs secondary'>
   <button on:click={() => { $store.activeTab = 'info' }} class={$store.activeTab === 'info' ? 'active' : ''}>Info</button>
   <button on:click={() => { $store.activeTab = 'chat' }} class={$store.activeTab === 'chat' ? 'active' : ''}>Chat</button>
   <button on:click={() => { $store.activeTab = 'game' }} class={$store.activeTab === 'game' ? 'active' : ''}>Hra</button>
-  {#if isAuthor}<!-- only for the author, for now -->
+  {#if isOwner}<!-- only for the owner, for now -->
     <button on:click={() => { $store.activeTab = 'chars' }} class={$store.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
   {/if}
 </nav>
@@ -38,10 +37,10 @@
 <div class='content'>
   {#if $store.activeTab === 'info'}
     <h2>Úvod</h2>
-    <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isAuthor} />
+    <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isOwner} />
     <h2>Pro hráče</h2>
-    <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isAuthor} />
-    Autor: {data.profiles.name}
+    <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isOwner} />
+    Vlastník: {data.profiles.name}
   {:else if $store.activeTab === 'chat'}
     <h2>Veřejná diskuze</h2>
     Tady bude mimoherní a náborová diskuze
@@ -49,13 +48,23 @@
     Herní příspěvky
   {:else if $store.activeTab === 'chars'}
     <h2>Volné postavy</h2>
+    <ul>
+      {#each data.characters as character}
+        <li><img src={character.portrait} class='portrait' alt='portrét postavy'>{character.name}</li>
+      {:else}
+        <li>Žádné postavy</li>
+      {/each}
+    </ul>
     <br>
-    <a href='./{name}/new-character' class='button'>Vytvořit novou postavu</a>
+    <a href='./{data.id}/character-form' class='button'>Vytvořit novou postavu</a>
   {/if}
 </div>
 
 <style>
   .content {
     padding: 40px;
+  }
+  .portrait {
+    width: 100px;
   }
 </style>

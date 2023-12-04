@@ -1,0 +1,19 @@
+---
+  import { supabase, handleError } from '@lib/database'
+	import Layout from '@layouts/layout.astro'
+  import Game from '@components/games/Game.svelte'
+
+  const { user } = Astro.locals
+  const { gameId } = Astro.params
+
+  const { data, error } = await supabase.from('games').select('id, name, intro, info, profiles ( id, name )').eq('id', gameId).single()
+  if (error) { handleError(error) }
+
+  const { data: characterData, error2 } = await supabase.from('characters').select('*').eq('game', gameId)
+  if (error2) { handleError(error2) }
+  data.characters = characterData
+---
+
+<Layout title={data?.name}>
+  <Game {data} {user} client:only />
+</Layout>

@@ -1,16 +1,15 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import { supabase } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
 
   const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
     const gameName = data.get('gameName')
-    const { error } = await supabase.from('games').insert({ name: gameName })
-    if (error) {
-      console.error(error)
-    } else {
+    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id })
+    if (error) { handleError(error) }
+    else {
       return Astro.redirect('/games?toastType=success&toastText=' + encodeURIComponent('Hra byla přidána'))
     }
   }
@@ -51,7 +50,7 @@
       padding-bottom: 10px;
     }
     .labels {
-      width: 10%;
+      width: 15%;
       padding-right: 10px;
     }
     .inputs {

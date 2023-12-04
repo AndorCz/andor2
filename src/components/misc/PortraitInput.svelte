@@ -2,7 +2,7 @@
   import { showError } from '@lib/toasts'
   import { resizePortrait } from '@lib/utils'
 
-  export let identity = {}
+  export let identity = { portrait: '' }
 
   let files
   let uploading = false
@@ -39,6 +39,7 @@
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
   <button type='reset' class='clear material-symbols-rounded clean' on:click={clearPortrait} title='smazat'>close</button>
+  <input type='hidden' name='charPortrait' value={identity.portrait} />
 </div>
 
 <style>

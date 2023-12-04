@@ -14,19 +14,19 @@ CREATE TABLE profiles (
 );
 
 CREATE TABLE games (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id INT2 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   name TEXT UNIQUE NOT NULL,
-  author UUID NOT NULL DEFAULT auth.uid(),
+  owner UUID NOT NULL DEFAULT auth.uid(),
   intro TEXT NULL DEFAULT 'Popis světa, úvod do příběhu apod.'::TEXT,
   info TEXT NULL DEFAULT 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT games_author_fkey FOREIGN KEY (author) REFERENCES profiles (id) ON DELETE RESTRICT
+  CONSTRAINT games_owner_fkey FOREIGN KEY (owner) REFERENCES profiles (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE characters (
   id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  game UUID NOT NULL,
-  author UUID NOT NULL,
+  game INT2 NOT NULL,
+  owner UUID NOT NULL,
   player UUID,
   portrait TEXT,
   name TEXT,
@@ -35,16 +35,16 @@ CREATE TABLE characters (
   hidden BOOLEAN,
   state public.character_state NOT NULL DEFAULT 'alive'::character_state,
   FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (author) REFERENCES auth.users(id),
+  FOREIGN KEY (owner) REFERENCES auth.users(id),
   FOREIGN KEY (player) REFERENCES auth.users(id)
 );
 
 CREATE TABLE posts (
   id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  game UUID,
-  author UUID,
+  game INT2,
+  owner UUID,
   content TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (author) REFERENCES auth.users(id)
+  FOREIGN KEY (owner) REFERENCES auth.users(id)
 );

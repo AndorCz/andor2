@@ -1,23 +1,32 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import { supabase } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
   import PortraitInput from '@components/misc/PortraitInput.svelte'
 
   const { user } = Astro.locals
-  const { name } = Astro.params
+  const { gameId } = Astro.params
+  const id = Astro.url.searchParams.get('id') || ''
 
   const character = {}
 
+  if (id) { // edit
+    const { data, error } = await supabase.from('characters').select('*').eq('id', id).single()
+    if (error) { handleError(error) }
+    else { character = data }
+  }
+
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
-    character.name = data.get('charName')
-    character.bio = data.get('charBio')
-    character.portrait = data.get('charPortrait')
-    const { error } = await supabase.from('characters').insert(character)
-    if (error) {
-      console.error(error)
-    } else {
-      return Astro.redirect('/game/' + name + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
+    character.name = data.get('charName') || 'Beze jména'
+    character.bio = data.get('charBio') || ''
+    character.portrait = data.get('charPortrait') || ''
+    character.owner = user.id
+    if (gameId) { character.game = gameId }
+
+    const { error2 } = await supabase.from('characters').insert(character)
+    if (error2) { return handleError(error2) }
+    else {
+      return Astro.redirect('/game/' + gameId + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
     }
   }
 ---
@@ -40,11 +49,7 @@
         </tr>
         <tr>
           <td class='labels'><label for='charIcon'>Portrét</label></td>
-          <td class='inputs'>
-            <PortraitInput identity={character} client:only />
-            <input type='hidden' name='charPortrait' value={character.portrait} />
-            <button type='reset' onclick="">Test</button>
-          </td>
+          <td class='inputs'><PortraitInput identity={character} client:only /></td>
         </tr>
       </table>
       <center>
