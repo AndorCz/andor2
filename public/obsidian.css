@@ -186,8 +186,21 @@ input[type=text], textarea {
   /* SECONDARY TABS */
 
   .tabs.secondary {
+    position: relative;
     border-bottom: 10px var(--block) solid;
   }
+  
+  .tabs.secondary:after {
+    content: '';
+    width: 100%;
+    height: 10px;
+    background-color: var(--block);
+    position: absolute;
+    bottom: -10px;
+    left: 0px;
+    /* box-shadow: 2px 2px 2px #0003;*/
+  }
+
     .tabs.secondary button:not(.active) {
       color: var(--accent);
     }
@@ -196,6 +209,7 @@ input[type=text], textarea {
       }
   .tabs button.active {
     background-color: var(--block);
+    box-shadow: 2px 0px 2px #0003;
   }
     .tabs button.active:after {
       box-shadow: -8px 0 0 0 var(--block);
@@ -204,6 +218,6 @@ input[type=text], textarea {
       box-shadow: 8px 0 0 0 var(--block);
     }
     .tabs.secondary button:first-child::before {
-        content: none;
+      content: none;
     }
   

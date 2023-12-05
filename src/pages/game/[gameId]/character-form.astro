@@ -7,12 +7,12 @@
   const { gameId } = Astro.params
   const id = Astro.url.searchParams.get('id') || ''
 
-  const character = {}
+  let character = {}
 
   if (id) { // edit
-    const { data, error } = await supabase.from('characters').select('*').eq('id', id).single()
+    const { data: charData, error } = await supabase.from('characters').select('*').eq('id', id).single()
     if (error) { handleError(error) }
-    else { character = data }
+    else { character = charData }
   }
 
   if (Astro.request.method === 'POST') {
@@ -21,10 +21,11 @@
     character.bio = data.get('charBio') || ''
     character.portrait = data.get('charPortrait') || ''
     character.owner = user.id
+    character.player = user.id
     if (gameId) { character.game = gameId }
 
-    const { error2 } = await supabase.from('characters').insert(character)
-    if (error2) { return handleError(error2) }
+    const { error: error2 } = await supabase.from('characters').upsert(character)
+    if (error2) { handleError(error2) }
     else {
       return Astro.redirect('/game/' + gameId + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
     }
@@ -41,11 +42,11 @@
       <table>
         <tr>
           <td class='labels'><label for='charName'>Jméno</label></td>
-          <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' /></td>
+          <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name} /></td>
         </tr>
         <tr>
           <td class='labels'><label for='charBio'>Popis</label></td>
-          <td class='inputs'><textarea id='charBio' name='charBio'></textarea></td>
+          <td class='inputs'><textarea id='charBio' name='charBio'>{character.bio}</textarea></td>
         </tr>
         <tr>
           <td class='labels'><label for='charIcon'>Portrét</label></td>
@@ -53,7 +54,7 @@
         </tr>
       </table>
       <center>
-        <button type='submit'>Vytvořit</button>
+        <button type='submit'>{id ? 'Upravit' : 'Vytvořit'}</button>
       </center>
     </form>
   ) : (

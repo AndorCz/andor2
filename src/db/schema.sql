@@ -10,7 +10,7 @@ CREATE TABLE profiles (
   id UUID NOT NULL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE games (
@@ -20,7 +20,7 @@ CREATE TABLE games (
   intro TEXT NULL DEFAULT 'Popis světa, úvod do příběhu apod.'::TEXT,
   info TEXT NULL DEFAULT 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT games_owner_fkey FOREIGN KEY (owner) REFERENCES profiles (id) ON DELETE RESTRICT
+  CONSTRAINT games_owner_fkey FOREIGN KEY (owner) REFERENCES profiles(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE characters (
@@ -31,12 +31,13 @@ CREATE TABLE characters (
   portrait TEXT,
   name TEXT,
   bio TEXT,
-  open BOOLEAN,
-  hidden BOOLEAN,
+  open BOOLEAN NOT NULL DEFAULT false,
+  approved BOOLEAN NOT NULL DEFAULT false,
+  hidden BOOLEAN NOT NULL DEFAULT true,
   state public.character_state NOT NULL DEFAULT 'alive'::character_state,
   FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (owner) REFERENCES auth.users(id),
-  FOREIGN KEY (player) REFERENCES auth.users(id)
+  FOREIGN KEY (owner) REFERENCES profiles(id),
+  FOREIGN KEY (player) REFERENCES profiles(id)
 );
 
 CREATE TABLE posts (
@@ -46,5 +47,5 @@ CREATE TABLE posts (
   content TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (owner) REFERENCES auth.users(id)
+  FOREIGN KEY (owner) REFERENCES profiles(id)
 );

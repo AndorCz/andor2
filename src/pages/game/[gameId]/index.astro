@@ -9,7 +9,7 @@
   const { data, error } = await supabase.from('games').select('id, name, intro, info, profiles ( id, name )').eq('id', gameId).single()
   if (error) { handleError(error) }
 
-  const { data: characterData, error2 } = await supabase.from('characters').select('*').eq('game', gameId)
+  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, profiles!characters_player_fkey ( name ), portrait').eq('game', gameId)
   if (error2) { handleError(error2) }
   data.characters = characterData
 ---
