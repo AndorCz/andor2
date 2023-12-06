@@ -25,14 +25,14 @@ CREATE TABLE games (
 
 CREATE TABLE characters (
   id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  game INT2 NOT NULL,
+  game INT2,
   owner UUID NOT NULL,
   player UUID,
   portrait TEXT,
   name TEXT,
   bio TEXT,
   open BOOLEAN NOT NULL DEFAULT false,
-  approved BOOLEAN NOT NULL DEFAULT false,
+  accepted BOOLEAN NOT NULL DEFAULT false,
   hidden BOOLEAN NOT NULL DEFAULT true,
   state public.character_state NOT NULL DEFAULT 'alive'::character_state,
   FOREIGN KEY (game) REFERENCES games(id),

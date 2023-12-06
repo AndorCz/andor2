@@ -27,7 +27,7 @@
     const { error: error2 } = await supabase.from('characters').upsert(character)
     if (error2) { handleError(error2) }
     else {
-      return Astro.redirect('/game/' + gameId + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
+      return Astro.redirect('/game/' + gameId + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
     }
   }
 ---

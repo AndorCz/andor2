@@ -8,7 +8,7 @@
   let uploading = false
 
   async function processPortrait () {
-    if (files) {
+    if (files && files[0]) {
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
@@ -18,7 +18,7 @@
         const resized = resizePortrait(img, 256, 256) // returns base64 string
         img.src = resized
       }
-      identity.portrait = img.src
+      identity.portrait = img.src || ''
     }
   }
 
@@ -39,7 +39,7 @@
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
   <button type='reset' class='clear material-symbols-rounded clean' on:click={clearPortrait} title='smazat'>close</button>
-  <input type='hidden' name='charPortrait' value={identity.portrait} />
+  <input type='hidden' name='charPortrait' value={identity.portrait || ''} />
 </div>
 
 <style>

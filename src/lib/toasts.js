@@ -3,8 +3,8 @@ import { Notyf } from 'notyf'
 import 'notyf/notyf.min.css'
 
 export const notyf = new Notyf({
-  duration: 5000,
-  position: { x: 'right', y: 'top' },
+  duration: 10000,
+  position: { x: 'center', y: 'top' },
   types: [
     { type: 'success', background: 'var(--green)', icon: false },
     { type: 'error', background: 'var(--error)', icon: false }
