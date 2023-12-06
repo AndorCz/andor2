@@ -5,7 +5,7 @@
     // delete cookies
     document.cookie = 'sb-access-token=; Max-Age=-99999999;'
     document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
-    window.location.href = './api/auth/logout'
+    window.location.href = '/api/auth/logout'
   }
 </script>
 

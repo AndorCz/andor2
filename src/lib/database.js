@@ -18,7 +18,7 @@ export function handleError (error) {
   if (typeof window !== 'undefined') {
     if (!window.isWindowClosed) { // ignore fetch errors (cancelled fetches) when the page is closing/reloading
       console.error(error)
-      toastError('Chyba: ' + error.message)
+      window.showError('Chyba: ' + error.message)
       return Promise.reject(error)
     }
   } else {

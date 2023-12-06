@@ -33,7 +33,9 @@
 
   async function updateGame () {
     const clean = clone(data)
+    delete clean.id
     delete clean.profiles
+    delete clean.characters
     const { error } = await supabase.from('games').update(clean).eq('id', data.id)
     if (error) { handleError(error) }
     else { showSuccess('Uloženo') }
