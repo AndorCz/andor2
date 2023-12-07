@@ -26,10 +26,12 @@
       width: 100%;
       min-height: 100px;
       display: block;
+      padding-right: 80px;
     }
     p {
       font-style: italic;
       padding: 20px;
+      padding-right: 80px;
       background-color: var(--block);
     }
     button {

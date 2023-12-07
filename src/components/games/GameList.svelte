@@ -6,7 +6,7 @@
   <table id='games'>
     <tr>
       <th>název</th>
-      <th>vlastník</th>
+      <th>správce</th>
     </tr>
     {#each games as game}
       <tr class='game'>

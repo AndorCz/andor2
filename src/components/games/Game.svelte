@@ -59,7 +59,13 @@
     <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isOwner} />
     <h2>Pro hráče</h2>
     <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isOwner} />
-    Vlastník: {data.profiles.name}
+    {#if isOwner}
+      <h2>Podklady vypravěče <span>(hráčům skryté)</span></h2>
+      <EditableLong bind:value={data.secrets} onSave={updateGame} canEdit={isOwner} />
+      <button>Vygenerovat podklady</button>
+    {/if}
+    <br><br><br><br>
+    Správce hry: {data.profiles.name}
   {:else if $store.activeTab === 'chat'}
     <h2>Veřejná diskuze</h2>
     Tady bude mimoherní a náborová diskuze
@@ -106,5 +112,13 @@
   }
     .characters li {
       margin-left: 40px;
+    }
+  h2 {
+    margin-top: 50px;
+  }
+    h2 span {
+      font-size: 14pt;
+      font-style: italic;
+      opacity: 0.5;
     }
 </style>
