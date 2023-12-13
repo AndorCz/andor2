@@ -4,11 +4,19 @@
   export let canEdit = false
 
   let isEditing = false
+
+  let textareaHeight
+
+  function setHeight (node) {
+    let textareaRef = node.target || node
+    textareaRef.style.height = 'auto'
+    textareaRef.style.height = `${textareaRef.scrollHeight}px`
+  }
 </script>
 
 <div class='wrapper'>
   {#if isEditing}
-    <textarea bind:value={value}></textarea>
+    <textarea bind:value={value} use:setHeight on:input={setHeight}></textarea>
     <button on:click={() => { onSave(); isEditing = false }}><span class='material-symbols-rounded'>done</span></button>
   {:else}
     <p>{value}</p>
@@ -24,6 +32,7 @@
   }
     p, textarea {
       width: 100%;
+      height: auto;
       min-height: 100px;
       display: block;
       padding-right: 80px;

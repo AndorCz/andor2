@@ -5,7 +5,7 @@
 
   const { user } = Astro.locals
 
-  const { data, error } = await supabase.from('games').select('id, name, profiles ( name )')
+  const { data, error } = await supabase.from('games').select('id, name, system, profiles ( name )')
   if (error) { handleError(error) }
 ---
 

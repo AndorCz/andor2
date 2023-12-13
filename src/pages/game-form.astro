@@ -1,13 +1,23 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { supabase, handleError } from '@lib/database'
+  import { createThread } from '@lib/ai'
 
   const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
     const gameName = data.get('gameName')
-    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id })
+    const gameSystem = data.get('gameSystem')
+
+    const threadPublicId = await createThread()
+    console.log('thread public', threadPublicId)
+
+    const threadSecretId = await createThread()
+    console.log('thread secret', threadSecretId)
+
+    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, thread_public: threadPublicId, thread_secret: threadSecretId })
+
     if (error) { handleError(error) }
     else {
       return Astro.redirect('/games?toastType=success&toastText=' + encodeURIComponent('Hra byla přidána'))
@@ -28,6 +38,18 @@
         </div>
         <div class='inputs'>
           <input type='text' id='gameName' name='gameName' maxlength='80' />
+        </div>
+      </div>
+      <div class='flex'>
+        <div class='labels'>
+          <label for='gameSystem'>Herní systém</label>
+        </div>
+        <div class='inputs'>
+          <select id='gameSystem' name='gameSystem'>
+            <option value='drd1'>Dračí doupě e1.6</option>
+            <option value='vampire5e'>Vampire the Masquerade e5</option>
+            <option value='-'>Jiný / Bez systému</option>
+          </select>
         </div>
       </div>
       <center>

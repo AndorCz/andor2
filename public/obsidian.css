@@ -35,7 +35,7 @@
 }
 
 @font-face {
-  font-family: 'Material Symbols Rounded';
+  font-family: 'Material Symbols Sharp';
   font-display: block;
   font-style: normal;
   font-weight: 100 700;
@@ -45,7 +45,7 @@
 /* UTILS */
 
 .material-symbols-rounded {
-  font-family: 'Material Symbols Rounded';
+  font-family: 'Material Symbols Sharp';
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -138,6 +138,24 @@ input[type=text], textarea {
     outline: 2px var(--accent) solid;
   }
 
+select {
+  padding: 15px;
+  font-size: 14pt;
+  box-shadow: 1px 1px 6px #0006;
+  border: none;
+  border-top: 3px var(--buttonBg) solid;
+  color: var(--text);
+  border-radius: 10px;
+  cursor: pointer;
+  appearance: none;
+  position: relative;
+  background-color: color-mix(in srgb, var(--panel), var(--prominent) 15%);
+  background-image: url("data:image/svg+xml;utf8,<svg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' clip-rule='evenodd' d='M12 1.41024L10.59 0.000244079L6 4.58024L1.41 0.000243678L-6.16331e-08 1.41024L6 7.41024L12 1.41024Z' fill='%23c4b6ab'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 14px;
+}
+  
 /* TABS */
 
 .tabs a, .tabs button {
