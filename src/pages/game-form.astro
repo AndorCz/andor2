@@ -11,12 +11,8 @@
     const gameSystem = data.get('gameSystem')
 
     const threadPublicId = await createThread()
-    console.log('thread public', threadPublicId)
 
-    const threadSecretId = await createThread()
-    console.log('thread secret', threadSecretId)
-
-    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, thread_public: threadPublicId, thread_secret: threadSecretId })
+    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, thread_public: threadPublicId })
 
     if (error) { handleError(error) }
     else {

@@ -11,6 +11,7 @@
 
   let store = gameStore(data.id, 'info') // save last used to localstorage
   let isOwner = data.profiles.id === user.id
+  let generatingStory = false
 
   const characters = { playing: [], waiting: [], open: [] }
   data.characters.forEach((char) => {
@@ -40,6 +41,24 @@
     if (error) { handleError(error) }
     else { showSuccess('Uloženo') }
   }
+
+  async function generateStory () {
+    generatingStory = true
+    data.secrets = 'načítám...'
+    const res = await fetch('/api/game/generateStory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.profiles.id, system: data.system })
+    })
+    res.json().then((res) => {
+      if (res.error) { showError(res.error) }
+      else {
+        showSuccess('Vygenerováno')
+        generatingStory = false
+        data.secrets = res.story
+      }
+    })
+  }
 </script>
 
 <h1>{data.name}</h1>
@@ -61,8 +80,10 @@
     <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isOwner} />
     {#if isOwner}
       <h2>Podklady vypravěče <span>(hráčům skryté)</span></h2>
-      <EditableLong bind:value={data.secrets} onSave={updateGame} canEdit={isOwner} />
-      <button>Vygenerovat podklady</button>
+      <EditableLong bind:value={data.secrets} onSave={updateGame} canEdit={isOwner} loading={generatingStory} />
+      <br>
+      <button on:click={generateStory}>Vygenerovat podklady AI</button>
+      <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>
     {/if}
     <br><br><br><br>
     Správce hry: {data.profiles.name}
@@ -121,4 +142,7 @@
       font-style: italic;
       opacity: 0.5;
     }
+  .warning {
+    margin-left: 20px;
+  }
 </style>

@@ -24,7 +24,6 @@ CREATE TABLE games (
   secrets TEXT NULL DEFAULT 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. Primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::TEXT,
   system public.game_system NOT NULL DEFAULT '-'::game_system,
   thread_public TEXT NULL,
-  thread_secret TEXT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT games_owner_fkey FOREIGN KEY (owner) REFERENCES profiles(id) ON DELETE RESTRICT
 );

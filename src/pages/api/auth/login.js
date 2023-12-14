@@ -1,7 +1,7 @@
 
 import { supabase } from '@lib/database'
 
-export const POST = async ({ request, cookies, redirect }) => {
+export const POST = async ({ request, redirect }) => {
   const formData = await request.formData()
   const provider = formData.get('provider')?.toString()
 
