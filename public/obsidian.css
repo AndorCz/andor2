@@ -122,6 +122,13 @@ button, .button {
     color: #dacfc6;
   }
 
+  button:disabled {
+    color: var(--dim);
+    background-color: var(--block);
+    border: none;
+    cursor: wait;
+  }
+
 input[type=text], textarea {
   padding: 15px 10px;
   font-size: 14pt;
@@ -154,6 +161,11 @@ select {
   background-repeat: no-repeat;
   background-position: right 16px center;
   background-size: 14px 14px;
+}
+
+.editableLong p {
+  padding: 20px 0px;
+  margin: 0px;
 }
   
 /* TABS */
@@ -216,7 +228,7 @@ select {
     position: absolute;
     bottom: -10px;
     left: 0px;
-    /* box-shadow: 2px 2px 2px #0003;*/
+    box-shadow: 2px 2px 2px #0001;
   }
 
     .tabs.secondary button:not(.active) {

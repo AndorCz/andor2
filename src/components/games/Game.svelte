@@ -5,6 +5,7 @@
   import { showSuccess, showError } from '@lib/toasts'
   import EditableLong from '@components/misc/EditableLong.svelte'
   import Character from '@components/games/Character.svelte'
+  import Discussion from '@components/Discussion.svelte'
   
   export let user
   export let data = {}
@@ -74,6 +75,7 @@
 
 <div class='content'>
   {#if $store.activeTab === 'info'}
+
     <h2>Úvod</h2>
     <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isOwner} />
     <h2>Pro hráče</h2>
@@ -82,17 +84,23 @@
       <h2>Podklady vypravěče <span>(hráčům skryté)</span></h2>
       <EditableLong bind:value={data.secrets} onSave={updateGame} canEdit={isOwner} loading={generatingStory} />
       <br>
-      <button on:click={generateStory}>Vygenerovat podklady AI</button>
+      <button on:click={generateStory} disabled={generatingStory}>Vygenerovat podklady AI</button>
       <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>
     {/if}
     <br><br><br><br>
     Správce hry: {data.profiles.name}
+
   {:else if $store.activeTab === 'chat'}
+
     <h2>Veřejná diskuze</h2>
-    Tady bude mimoherní a náborová diskuze
+    <Discussion />
+
   {:else if $store.activeTab === 'game'}
-    Herní příspěvky
+
+    <h2>Herní příspěvky</h2>
+
   {:else if $store.activeTab === 'chars'}
+
     <h2>Ve hře</h2>
     <ul class='characters'>
       {#each characters.playing as character}
@@ -121,6 +129,7 @@
     <center>
       <a href='./character-form' class='button'>Vytvořit novou postavu</a>
     </center>
+
   {/if}
 </div>
 

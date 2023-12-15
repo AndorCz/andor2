@@ -25,7 +25,7 @@
     <textarea bind:value={value} use:setHeight on:input={setHeight}></textarea>
     <button on:click={() => { onSave(); isEditing = false }}><span class='material-symbols-rounded'>done</span></button>
   {:else}
-    <content>{@html marked(value)}</content>
+    <content class='editableLong'>{@html marked(value)}</content>
     {#if canEdit}
       <button on:click={() => { isEditing = true }}><span class='material-symbols-rounded'>edit</span></button>
     {/if}
@@ -44,12 +44,13 @@
       padding-right: 80px;
     }
     content {
-      padding: 20px;
+      padding: 0px 20px;
       padding-right: 80px;
       font-size: 15pt;
       line-height: 1.5;
       background-color: var(--block);
     }
+
     button {
       position: absolute;
       bottom: 0px;
