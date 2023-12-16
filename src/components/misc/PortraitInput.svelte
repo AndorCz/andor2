@@ -26,12 +26,16 @@
 
   // clear preview or identity portrait
   async function clearPortrait () {
+    if (window.prompt) {
+      const confirm = window.prompt('Opravdu smazat portrét? (ano/ne)')
+      if (confirm !== 'ano') { return }
+    }
     files = null
     identity.portrait = ''
   }
 </script>
 
-<div class='flex'>
+<div class='wrapper'>
   <label>
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
@@ -45,15 +49,13 @@
 </div>
 
 <style>
-  .flex {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 300px;
+  .wrapper {
+    position: relative;
+    width: 100px;
   }
     .portrait {
       cursor: pointer;
-      display: inline-flex;
+      display: block;
       object-fit: cover;
       object-position: top;
       width: var(--portrait-size, 100px);
@@ -65,6 +67,7 @@
       color: var(--accent);
       font-weight: bold;
       transition: background 0.2s ease-in-out, filter 0.2s ease-in-out;
+      border-radius: 10px;
     }
       .portrait:hover {
         background: var(--block);
@@ -73,12 +76,16 @@
     input[type=file] {
       display: none;
     }
+
     .clear {
-      display: inline-block;
+      position: absolute;
+      left: 1px;
+      bottom: 1px;
+      display: block;
       cursor: pointer;
-      padding: 10px;
-      margin-left: 20px;
+      padding: 5px;
       text-align: center;
+      border-radius: 0px 10px 0px 10px;
     }
       .clear:hover {
         font-size: 28px;
