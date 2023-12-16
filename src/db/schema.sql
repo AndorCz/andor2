@@ -1,56 +1,79 @@
-DROP TABLE IF EXISTS profiles CASCADE;
-DROP TABLE IF EXISTS games CASCADE;
-DROP TABLE IF EXISTS characters CASCADE;
-DROP TABLE IF EXISTS posts CASCADE;
-DROP TYPE IF EXISTS character_state;
-DROP TYPE IF EXISTS game_system;
+drop table if exists profiles cascade;
+drop table if exists threads cascade;
+drop table if exists games cascade;
+drop table if exists characters cascade;
+drop table if exists posts cascade;
 
-CREATE TYPE character_state AS ENUM ('alive', 'unconscious', 'dead');
-CREATE TYPE game_system AS ENUM ('-', 'vampire5e', 'drd1'); -- 'fate', 'dnd5e'
+drop type if exists character_state;
+drop type if exists game_system;
 
-CREATE TABLE profiles (
-  id UUID NOT NULL PRIMARY KEY,
-  name TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+create type character_state as enum ('alive', 'unconscious', 'dead');
+create type game_system as enum ('-', 'vampire5e', 'drd1'); -- 'fate', 'dnd5e'
+
+create table profiles (
+  id uuid not null primary key,
+  name text unique not null,
+  portrait text,
+  created_at timestamp with time zone default current_timestamp,
+  constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 
-CREATE TABLE games (
-  id INT2 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  name TEXT UNIQUE NOT NULL,
-  owner UUID NOT NULL DEFAULT auth.uid(),
-  intro TEXT NULL DEFAULT 'Popis světa, úvod do příběhu apod. Z tohoto textu vychází AI asistent pro přípravu `podkladů pro vypravěče` níže.'::TEXT,
-  info TEXT NULL DEFAULT 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::TEXT,
-  secrets TEXT NULL DEFAULT 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. Primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::TEXT,
-  system public.game_system NOT NULL DEFAULT '-'::game_system,
-  thread_public TEXT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT games_owner_fkey FOREIGN KEY (owner) REFERENCES profiles(id) ON DELETE RESTRICT
+create table threads (
+  id int2 primary key generated always as identity,
+  name text null,
+  created_at timestamp with time zone default current_timestamp
 );
 
-CREATE TABLE characters (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  game INT2,
-  owner UUID NOT NULL,
-  player UUID,
-  portrait TEXT,
-  name TEXT,
-  bio TEXT,
-  open BOOLEAN NOT NULL DEFAULT false,
-  accepted BOOLEAN NOT NULL DEFAULT false,
-  hidden BOOLEAN NOT NULL DEFAULT true,
-  state public.character_state NOT NULL DEFAULT 'alive'::character_state,
-  FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (owner) REFERENCES profiles(id),
-  FOREIGN KEY (player) REFERENCES profiles(id)
+create table games (
+  id int2 primary key generated always as identity,
+  name text unique not null,
+  owner uuid not null default auth.uid(),
+  intro text null default 'Popis světa, úvod do příběhu apod. Z tohoto textu vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.'::text,
+  info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
+  secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
+  system public.game_system not null default '-'::game_system,
+  discussion int2 null,
+  created_at timestamp with time zone default current_timestamp,
+  constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
+  constraint games_discussion_fkey foreign key (discussion) references threads(id) on delete cascade
 );
 
-CREATE TABLE posts (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  game INT2,
-  owner UUID,
-  content TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (game) REFERENCES games(id),
-  FOREIGN KEY (owner) REFERENCES profiles(id)
+create table characters (
+  id uuid not null primary key default gen_random_uuid(),
+  game int2,
+  owner uuid not null,
+  player uuid,
+  portrait text,
+  name text,
+  bio text,
+  open boolean not null default false,
+  accepted boolean not null default false,
+  hidden boolean not null default true,
+  state public.character_state not null default 'alive'::character_state,
+  foreign key (game) references games(id),
+  foreign key (owner) references profiles(id),
+  foreign key (player) references profiles(id)
 );
+
+create table posts (
+  id uuid not null primary key default gen_random_uuid(),
+  thread int2,
+  owner uuid,
+  content text,
+  created_at timestamp with time zone default current_timestamp,
+  foreign key (thread) references threads(id),
+  foreign key (owner) references profiles(id)
+);
+
+-- functions
+
+create or replace function add_game_discussion () returns trigger as $$
+begin
+  insert into threads (name, created_at) values (new.name, current_timestamp) returning id into new.discussion;
+  return new;
+end;
+$$ language plpgsql;
+
+-- triggers
+
+create or replace trigger add_game_discussion before insert on games for each row execute function add_game_discussion ();

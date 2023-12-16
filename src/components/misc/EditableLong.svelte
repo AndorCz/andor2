@@ -57,6 +57,7 @@
       right: 0px;
       border-radius: 0px;
       padding: 15px 20px;
+      border-radius: 10px 0px 10px 0px;
     }
 
     #dots {

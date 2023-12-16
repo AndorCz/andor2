@@ -93,7 +93,7 @@
   {:else if $store.activeTab === 'chat'}
 
     <h2>Veřejná diskuze</h2>
-    <Discussion />
+    <Discussion thread={data.discussion} />
 
   {:else if $store.activeTab === 'game'}
 

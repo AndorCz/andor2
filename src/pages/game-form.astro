@@ -1,7 +1,6 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { supabase, handleError } from '@lib/database'
-  import { createThread } from '@lib/ai'
 
   const { user } = Astro.locals
 
@@ -10,9 +9,7 @@
     const gameName = data.get('gameName')
     const gameSystem = data.get('gameSystem')
 
-    const threadPublicId = await createThread()
-
-    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, thread_public: threadPublicId })
+    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem })
 
     if (error) { handleError(error) }
     else {
