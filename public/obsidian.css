@@ -12,9 +12,8 @@
   --green: #a5a740;
   --text: #c4b6ab;
   --dim: #92857a;
-  --accent: #a97855;
-  --accent2: #a07150;
-  --highlight: #c8926b;
+  --accent: #a5a740;
+  --accent2: #a97855;
   --buttonBg: #634b41;
 }
 
@@ -91,7 +90,7 @@ a {
   font-variation-settings: 'wght' 600;
 }
   a:hover {
-    color: var(--highlight);
+    color: color-mix(in srgb, var(--accent), #FFF 15%);
   }
 
 /* TOASTS */
@@ -116,8 +115,8 @@ button, .button {
 }
 
   button:hover, .button:hover {
-    background-color: color-mix(in srgb, var(--buttonBg), var(--accent) 10%);
-    border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 30%) solid;
+    background-color: color-mix(in srgb, var(--buttonBg), var(--accent2) 20%);
+    border: 1px color-mix(in srgb, var(--buttonBg), var(--accent2) 30%) solid;
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
     color: #dacfc6;
   }

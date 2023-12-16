@@ -62,17 +62,19 @@
 <center>
   {#each posts as post}
     <div class='post'>
-      <div class='header'>
-        <span class='name'>{post.owner_name}</span>
-        <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
-      </div>
       {#if post.owner_portrait}
         <div class='icon'>
           <img src={post.owner_portrait} alt={post.owner_name} />
         </div>
       {/if}
-      <div class='content'>
-        {post.content}
+      <div class='body'>
+        <div class='header'>
+          <span class='name'>{post.owner_name}</span>
+          <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
+        </div>
+        <div class='content'>
+          {post.content}
+        </div>
       </div>
     </div>
   {:else}
@@ -108,16 +110,34 @@
     margin-top: 100px;
   }
     .post {
+      display: flex;
       width: 100%;
       margin-bottom: 20px;
-      background-color: var(--block);
       text-align: left;
+      gap: 10px;
     }
+      .icon {
+        width: 140px;
+      }
+        .icon img {
+          width: 100%;
+          display: block;
+        }
+    
+    .body {
+      flex: 1;
+      background-color: var(--block);
+    }
+      .content {
+        padding: 20px;
+      }
       .header {
+        width: 100%;
         display: flex;
         justify-content: space-between;
         background-color: var(--prominent);
-        padding: 10px 20px;
+        padding: 10px 15px;
+        box-shadow: 2px 2px 3px #0002;
       }
         .name {
           font-weight: bold;
@@ -125,7 +145,4 @@
         .time {
           color: var(--dim);
         }
-      .content {
-        padding: 20px;
-      }
 </style>
