@@ -141,8 +141,11 @@ input[type=text], textarea {
   border-radius: 10px;
 }
 
-  input[type=text]:focus, textarea:focus {
+  input[type=text]:focus, textarea:focus, select:focus {
     outline: 2px var(--buttonBg) solid;
+  }
+  option:checked {
+    background-color: var(--accent);
   }
 
 select {

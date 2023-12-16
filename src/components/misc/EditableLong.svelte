@@ -1,5 +1,6 @@
 <script>
   import { marked } from 'marked'
+  import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
   export let value
   export let onSave
@@ -15,6 +16,11 @@
     textareaRef.style.height = 'auto'
     textareaRef.style.height = `${textareaRef.scrollHeight}px`
   }
+
+  function onSaveWrapper () {
+    isEditing = false
+    onSave()
+  }
 </script>
 
 <div class='wrapper'>
@@ -22,8 +28,7 @@
     <div id='dots'></div>
   {/if}
   {#if isEditing}
-    <textarea bind:value={value} use:setHeight on:input={setHeight}></textarea>
-    <button on:click={() => { onSave(); isEditing = false }}><span class='material-symbols-rounded'>done</span></button>
+    <TextareaExpandable bind:value={value} onSave={onSaveWrapper} buttonIcon='done' />
   {:else}
     <content class='editableLong'>{@html marked(value)}</content>
     {#if canEdit}
@@ -36,14 +41,12 @@
   .wrapper {
     position: relative;
   }
-    content, textarea {
+    content {
       width: 100%;
       height: auto;
       min-height: 100px;
       display: block;
       padding-right: 80px;
-    }
-    content {
       padding: 0px 20px;
       padding-right: 80px;
       font-size: 15pt;

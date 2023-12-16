@@ -1,12 +1,13 @@
 <script>
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
-  import { onMount } from 'svelte'
+  import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
   export let thread
   
   let posts = []
-  let textarea
+  let textareaValue = ''
   let saving = false
 
   onMount(loadPosts)
@@ -20,20 +21,30 @@
   async function submitPost (e) {
     saving = true
     e.preventDefault()
-    const content = textarea.value
-    if (textarea.value.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
+    if (textareaValue.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
 
-    const { error } = await supabase.from('posts').insert({ content, thread })
+    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread })
     if (error) { return handleError(error) }
-    textarea.value = ''
+    textareaValue = ''
     await loadPosts()
     saving = false
   }
 </script>
 
-<div class='wrapper'>
-  <textarea bind:this={textarea}></textarea>
-  <button on:click={submitPost} disabled={saving}><span class='material-symbols-rounded'>send</span></button>
+<h2>Veřejná diskuze</h2>
+
+<div class='headlines'>
+  <h3 class='text'>Přidat příspěvek</h3>
+  <h3 class='sender'>Identita</h3>
+</div>
+<div class='addPostWrapper'>
+  <TextareaExpandable value={textareaValue} disabled={saving} onSave={submitPost} />
+  <div class='senderWrapper'>
+    <select size='4'>
+      <option>A</option>
+      <option>B</option>
+    </select>
+  </div>
 </div>
 
 <center>
@@ -58,24 +69,47 @@
 </center>
 
 <style>
-  .wrapper {
-    position: relative;
+  /* input */
+  .addPostWrapper {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+  } 
+    .textareaWrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+    }
+      textarea {
+        width: 100%;
+        display: block;
+        padding-right: 80px;
+      }
+      button {
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        border-radius: 0px;
+        padding: 15px 20px;
+        border-radius: 10px 0px 10px 0px;
+      }
+      select {
+        background: none;
+      }
+    .senderWrapper select {
+      width: 200px;
+    }
+  .headlines {
+    display: flex;
   }
-    textarea {
-      width: 100%;
-      height: auto;
-      min-height: 100px;
-      display: block;
-      padding-right: 80px;
+    .headlines .text {
+      flex: 1;
     }
-    button {
-      position: absolute;
-      bottom: 0px;
-      right: 0px;
-      border-radius: 0px;
-      padding: 15px 20px;
-      border-radius: 10px 0px 10px 0px;
+    .headlines .sender {
+      width: 200px;
     }
+
+  /* posts */
   center {
     margin-top: 100px;
   }
