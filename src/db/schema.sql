@@ -1,3 +1,4 @@
+
 drop table if exists profiles cascade;
 drop table if exists threads cascade;
 drop table if exists games cascade;
@@ -7,8 +8,13 @@ drop table if exists posts cascade;
 drop type if exists character_state;
 drop type if exists game_system;
 
+-- ENUMS
+
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('-', 'vampire5e', 'drd1'); -- 'fate', 'dnd5e'
+
+-- TABLES
+
 
 create table profiles (
   id uuid not null primary key,
@@ -50,9 +56,9 @@ create table characters (
   accepted boolean not null default false,
   hidden boolean not null default true,
   state public.character_state not null default 'alive'::character_state,
-  foreign key (game) references games(id),
-  foreign key (owner) references profiles(id),
-  foreign key (player) references profiles(id)
+  constraint characters_game_fkey foreign key (game) references games (id),
+  constraint characters_owner_fkey foreign key (owner) references profiles (id),
+  constraint characters_player_fkey foreign key (player) references profiles (id)
 );
 
 create table posts (
@@ -62,11 +68,27 @@ create table posts (
   owner_type text,
   content text,
   created_at timestamp with time zone default current_timestamp,
-  foreign key (thread) references threads(id)
-  -- foreign key (owner) references profiles(id)
+  constraint posts_thread_fkey foreign key (thread) references threads (id)
 );
 
--- functions
+-- VIEWS
+
+create or replace view posts_owner as
+  select
+    p.*,
+    case 
+      when p.owner_type = 'user' then profiles.name
+      when p.owner_type = 'character' then characters.name
+    end as owner_name,
+    case 
+      when p.owner_type = 'user' then profiles.portrait
+      when p.owner_type = 'character' then characters.portrait
+    end as owner_portrait
+  from posts p
+  left join profiles on p.owner = profiles.id and p.owner_type = 'user'
+  left join characters on p.owner = characters.id and p.owner_type = 'character';
+
+-- FUNCTIONS
 
 create or replace function add_game_discussion () returns trigger as $$
 begin
@@ -75,6 +97,6 @@ begin
 end;
 $$ language plpgsql;
 
--- triggers
+-- TRIGGERS
 
 create or replace trigger add_game_discussion before insert on games for each row execute function add_game_discussion ();

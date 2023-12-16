@@ -144,6 +144,10 @@ input[type=text], textarea {
   input[type=text]:focus, textarea:focus, select:focus {
     outline: 2px var(--buttonBg) solid;
   }
+
+option {
+  padding: 5px;
+}
   option:checked {
     background-color: var(--accent);
   }

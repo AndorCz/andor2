@@ -5,15 +5,19 @@
   import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
   export let thread
+  export let identities
   
   let posts = []
-  let textareaValue = ''
   let saving = false
+  let textareaValue = ''
+  let identitySelect
 
-  onMount(loadPosts)
+  onMount(() => {
+    loadPosts()
+  })
 
   async function loadPosts () {
-    const { data, error } = await supabase.from('posts').select('*').eq('thread', thread).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, created_at, content').eq('thread', thread).order('created_at', { ascending: false })
     if (error) { return handleError(error) }
     posts = data
   }
@@ -22,8 +26,8 @@
     saving = true
     e.preventDefault()
     if (textareaValue.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
-
-    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread })
+    const identity = identitySelect.value ? identities[identitySelect.value] : Object.values(identities)[0]
+    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread, owner: identity.id, owner_type: identity.type })
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadPosts()
@@ -38,11 +42,12 @@
   <h3 class='sender'>Identita</h3>
 </div>
 <div class='addPostWrapper'>
-  <TextareaExpandable value={textareaValue} disabled={saving} onSave={submitPost} />
+  <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
   <div class='senderWrapper'>
-    <select size='4'>
-      <option>A</option>
-      <option>B</option>
+    <select size='4' bind:this={identitySelect}>
+      {#each Object.keys(identities) as identity}
+        <option>{identity}</option>
+      {/each}
     </select>
   </div>
 </div>
@@ -51,7 +56,7 @@
   {#each posts as post}
     <div class='post'>
       <div class='header'>
-        <span class='name'></span>
+        <span class='name'>{post.owner_name}</span>
         <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
       </div>
       <!--
@@ -60,7 +65,7 @@
       </div>
       -->
       <div class='content'>
-        <p>{post.content}</p>
+        {post.content}
       </div>
     </div>
   {:else}
@@ -74,28 +79,10 @@
     display: flex;
     width: 100%;
     gap: 20px;
-  } 
-    .textareaWrapper {
-      position: relative;
-      flex: 1;
-      display: flex;
+  }
+    select {
+      background: none;
     }
-      textarea {
-        width: 100%;
-        display: block;
-        padding-right: 80px;
-      }
-      button {
-        position: absolute;
-        bottom: 0px;
-        right: 0px;
-        border-radius: 0px;
-        padding: 15px 20px;
-        border-radius: 10px 0px 10px 0px;
-      }
-      select {
-        background: none;
-      }
     .senderWrapper select {
       width: 200px;
     }
@@ -116,15 +103,22 @@
     .post {
       width: 100%;
       margin-bottom: 20px;
-      padding: 20px;
       background-color: var(--block);
       text-align: left;
     }
       .header {
         display: flex;
         justify-content: space-between;
+        background-color: var(--prominent);
+        padding: 10px 20px;
       }
+        .name {
+          font-weight: bold;
+        }
         .time {
           color: var(--dim);
         }
+      .content {
+        padding: 20px;
+      }
 </style>

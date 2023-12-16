@@ -2,10 +2,11 @@
   import { supabase, handleError } from '@lib/database'
 
   export let character
-  export let isOwner
   export let user
-
-  const isMine = character.profiles.id === user.id
+  export let isGameOwner
+  
+  const isOwner = character.owner.id === user.id
+  // const isPlayer = character.profiles.id === user.id
 
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
@@ -24,14 +25,15 @@
     <img src={character.portrait} class='portrait' alt='portrét postavy'>
   {/if}
   <div class='name'>
-    {#if isOwner || isMine}
+    {#if isGameOwner || isOwner}
       <a href='./character-form?id={character.id}'>{character.name}</a>
     {:else}
       {character.name}
     {/if}
   </div>
-  {#if isOwner}
-    <div class='player'>Hráč: <b>{character.profiles.name}</b></div>
+  {#if isGameOwner}
+    <div class='player'>Vlastník: <b>{character.owner.name}</b></div>
+    <div class='player'>Hráč: <b>{character.player.name}</b></div>
     {#if !character.accepted}
       <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
       <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
