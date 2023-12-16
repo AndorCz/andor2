@@ -4,14 +4,16 @@
   import { getGameStore } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
-  import EditableLong from '@components/misc/EditableLong.svelte'
   import Character from '@components/games/Character.svelte'
   import Discussion from '@components/Discussion.svelte'
-  
+  import GameThread from '@components/games/GameThread.svelte'
+  import GameCharacters from '@components/games/GameCharacters.svelte'
+  import GameInfo from '@components/games/GameInfo.svelte'
+
   export let user
   export let data = {}
-  
-  let generatingStory = false
+
+  // prepare store
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
 
@@ -20,6 +22,7 @@
     if (!isGameOwner && $gameStore.activeTab === 'chars') { $gameStore.activeTab = 'info' } // if you get logged out
   })
 
+  // sort characters
   const isCharPlayer = (char) => { return char.player?.id === user.id }
   const isCharOwner = (char) => { return char.owner?.id === user.id }
   const isVisible = (char) => { return !char.hidden || (isCharPlayer(char) || isCharOwner(char)) }
@@ -37,36 +40,9 @@
       }
     }
   })
+  data.characters = characters
 
-  async function updateGame () {
-    const clean = clone(data)
-    delete clean.id
-    delete clean.player
-    delete clean.owner
-    delete clean.characters
-    const { error } = await supabase.from('games').update(clean).eq('id', data.id)
-    if (error) { handleError(error) }
-    else { showSuccess('Uloženo') }
-  }
-
-  async function generateStory () {
-    generatingStory = true
-    data.secrets = 'načítám...'
-    const res = await fetch('/api/game/generateStory', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system })
-    })
-    res.json().then((res) => {
-      if (res.error) { showError(res.error) }
-      else {
-        showSuccess('Vygenerováno')
-        generatingStory = false
-        data.secrets = res.story
-      }
-    })
-  }
-
+  // prepare identities for discussion
   function getIdentities () {
     const identities = { [user.name]: { id: user.id, type: 'user' } }
     characters.mine.forEach((char) => { identities[char.name] = { id: char.id, type: 'character' } })
@@ -87,82 +63,18 @@
 
 <div class='content'>
   {#if $gameStore.activeTab === 'info'}
-
-    <h2>Úvod</h2>
-    <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isGameOwner} />
-    <h2>Pro hráče</h2>
-    <EditableLong bind:value={data.info} onSave={updateGame} canEdit={isGameOwner} />
-    {#if isGameOwner}
-      <h2>Podklady vypravěče <span>(hráčům skryté)</span></h2>
-      <EditableLong bind:value={data.secrets} onSave={updateGame} canEdit={isGameOwner} loading={generatingStory} />
-      <br>
-      <button on:click={generateStory} disabled={generatingStory}>Vygenerovat podklady AI</button>
-      <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>
-    {/if}
-    <br><br><br><br>
-    Správce hry: {data.owner.name}
-
+    <GameInfo {data} {isGameOwner} />
   {:else if $gameStore.activeTab === 'chat'}
-
     <Discussion thread={data.discussion} identities={getIdentities()} identityStore={gameStore} />
-
   {:else if $gameStore.activeTab === 'game'}
-
-    <h2>Herní příspěvky</h2>
-
+    <GameThread {data} />
   {:else if $gameStore.activeTab === 'chars'}
-
-    <h2>Ve hře</h2>
-    <ul class='characters'>
-      {#each characters.playing as character}
-        <Character {user} {character} {isGameOwner} />
-      {:else}
-        <li>Žádné postavy</li>
-      {/each}
-    </ul>
-    <h2>Hlásí se</h2>
-    <ul class='characters'>
-      {#each characters.waiting as character}
-        <Character {user} {character} {isGameOwner} />
-      {:else}
-        <li>Žádné postavy</li>
-      {/each}
-    </ul>
-    <h2>Volné</h2>
-    <ul class='characters'>
-      {#each characters.open as character}
-        <Character {user} {character} {isGameOwner} />
-      {:else}
-        <li>Žádné postavy</li>
-      {/each}
-    </ul>
-    <br>
-    <center>
-      <a href='./character-form' class='button'>Vytvořit novou postavu</a>
-    </center>
-
+    <GameCharacters {characters} {user} {isGameOwner} />
   {/if}
 </div>
 
 <style>
   .content {
     padding: 40px;
-  }
-  .characters {
-    padding: 0px;
-  }
-    .characters li {
-      margin-left: 40px;
-    }
-  h2 {
-    margin-top: 50px;
-  }
-    h2 span {
-      font-size: 14pt;
-      font-style: italic;
-      opacity: 0.5;
-    }
-  .warning {
-    margin-left: 20px;
   }
 </style>

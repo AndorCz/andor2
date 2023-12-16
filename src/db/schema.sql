@@ -52,6 +52,7 @@ create table characters (
   portrait text,
   name text,
   bio text,
+  storyteller boolean not null default false,
   open boolean not null default false,
   accepted boolean not null default false,
   hidden boolean not null default true,

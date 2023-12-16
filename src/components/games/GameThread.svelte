@@ -1,57 +1,48 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
-  import { showSuccess, showError } from '@lib/toasts'
   import { getGameStore } from '@lib/stores'
   import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
-  export let thread
-  export let identities
-  export let identityStore
-  
-  let posts = []
-  let saving = false
+  export let data = {}
+  export let posts = []
+
   let textareaValue = ''
   let identitySelect
+  let saving = false
+
+  const gameStore = getGameStore(data.id)
 
   onMount(() => {
-    loadPosts()
-    if ($identityStore.activeChatIdentity) { identitySelect.value = $identityStore.activeChatIdentity }
+    if ($gameStore.activeChatIdentity) { identitySelect.value = $gameStore.activeChatIdentity }
   })
 
-  async function loadPosts () {
-    const { data, error } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, created_at, content').eq('thread', thread).order('created_at', { ascending: false })
-    if (error) { return handleError(error) }
-    posts = data
+  async function submitPost () {
+    const res = await fetch('/api/game/addPost', {
+      method: 'POST',
+      body: JSON.stringify({ game: data.id }), // 2DO: implement api
+      headers: { 'Content-Type': 'application/json' }
+    })
+    res.json().then((res) => {
+      if (res.error) { return showError(res.error) }
+      // 2DO: reload posts
+    })
   }
 
-  async function submitPost (e) {
-    saving = true
-    e.preventDefault()
-    if (textareaValue.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
-    const identity = identitySelect.value ? identities[identitySelect.value] : Object.values(identities)[0]
-    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread, owner: identity.id, owner_type: identity.type })
-    if (error) { return handleError(error) }
-    textareaValue = ''
-    await loadPosts()
-    saving = false
-  }
-
-  function onSelect (e) { $identityStore.activeChatIdentity = e.target.value }
+  function onSelect (e) { $gameStore.activeGameCharacter = e.target.value }
 </script>
 
-<h2>Veřejná diskuze</h2>
+<h2>Herní příspěvky</h2>
 
 <div class='headlines'>
   <h3 class='text'>Přidat příspěvek</h3>
-  <h3 class='sender'>Identita</h3>
+  <h3 class='sender'>Postava</h3>
 </div>
 <div class='addPostWrapper'>
   <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
   <div class='senderWrapper'>
     <select size='4' bind:this={identitySelect} on:change={onSelect}>
-      {#each Object.keys(identities) as identity}
-        <option>{identity}</option>
+      {#each data.characters.mine as character}
+        <option>{character.name}</option>
       {/each}
     </select>
   </div>
