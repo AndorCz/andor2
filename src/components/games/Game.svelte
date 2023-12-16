@@ -1,6 +1,7 @@
 <script>
+  import { onMount } from 'svelte'
   import { clone } from '@lib/utils'
-  import { gameStore } from '@lib/stores'
+  import { getGameStore } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import EditableLong from '@components/misc/EditableLong.svelte'
@@ -9,15 +10,19 @@
   
   export let user
   export let data = {}
-
-  let store = gameStore(data.id, 'info') // save last used to localstorage
-  let isGameOwner = data.owner.id === user.id
+  
   let generatingStory = false
+  const gameStore = getGameStore(data.id)
+  const isGameOwner = data.owner.id === user.id
+
+  onMount(() => {
+    $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
+    if (!isGameOwner && $gameStore.activeTab === 'chars') { $gameStore.activeTab = 'info' } // if you get logged out
+  })
 
   const isCharPlayer = (char) => { return char.player?.id === user.id }
   const isCharOwner = (char) => { return char.owner?.id === user.id }
   const isVisible = (char) => { return !char.hidden || (isCharPlayer(char) || isCharOwner(char)) }
-
   const characters = { playing: [], waiting: [], open: [], mine: [] }
 
   data.characters.forEach((char) => {
@@ -32,8 +37,6 @@
       }
     }
   })
-
-  if (!isGameOwner && $store.activeTab === 'chars') { $store.activeTab = 'info' } // if you get logged out
 
   async function updateGame () {
     const clean = clone(data)
@@ -74,16 +77,16 @@
 <h1>{data.name}</h1>
 
 <nav class='tabs secondary'>
-  <button on:click={() => { $store.activeTab = 'info' }} class={$store.activeTab === 'info' ? 'active' : ''}>Info</button>
-  <button on:click={() => { $store.activeTab = 'chat' }} class={$store.activeTab === 'chat' ? 'active' : ''}>Chat</button>
-  <button on:click={() => { $store.activeTab = 'game' }} class={$store.activeTab === 'game' ? 'active' : ''}>Hra</button>
-  {#if isGameOwner}<!-- only for the owner, for now -->
-    <button on:click={() => { $store.activeTab = 'chars' }} class={$store.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
+  <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>Info</button>
+  <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''}>Chat</button>
+  <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
+  {#if isGameOwner} <!-- only for the owner, for now -->
+    <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
   {/if}
 </nav>
 
 <div class='content'>
-  {#if $store.activeTab === 'info'}
+  {#if $gameStore.activeTab === 'info'}
 
     <h2>Úvod</h2>
     <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isGameOwner} />
@@ -99,15 +102,15 @@
     <br><br><br><br>
     Správce hry: {data.owner.name}
 
-  {:else if $store.activeTab === 'chat'}
+  {:else if $gameStore.activeTab === 'chat'}
 
-    <Discussion thread={data.discussion} identities={getIdentities()} />
+    <Discussion thread={data.discussion} identities={getIdentities()} identityStore={gameStore} />
 
-  {:else if $store.activeTab === 'game'}
+  {:else if $gameStore.activeTab === 'game'}
 
     <h2>Herní příspěvky</h2>
 
-  {:else if $store.activeTab === 'chars'}
+  {:else if $gameStore.activeTab === 'chars'}
 
     <h2>Ve hře</h2>
     <ul class='characters'>

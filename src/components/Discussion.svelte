@@ -2,10 +2,12 @@
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
+  import { getGameStore } from '@lib/stores'
   import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
   export let thread
   export let identities
+  export let identityStore
   
   let posts = []
   let saving = false
@@ -14,6 +16,7 @@
 
   onMount(() => {
     loadPosts()
+    if ($identityStore.activeChatIdentity) { identitySelect.value = $identityStore.activeChatIdentity }
   })
 
   async function loadPosts () {
@@ -33,6 +36,10 @@
     await loadPosts()
     saving = false
   }
+
+  function onSelect (e) {
+    $identityStore.activeChatIdentity = e.target.value
+  }
 </script>
 
 <h2>Veřejná diskuze</h2>
@@ -44,7 +51,7 @@
 <div class='addPostWrapper'>
   <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
   <div class='senderWrapper'>
-    <select size='4' bind:this={identitySelect}>
+    <select size='4' bind:this={identitySelect} on:change={onSelect}>
       {#each Object.keys(identities) as identity}
         <option>{identity}</option>
       {/each}
@@ -59,11 +66,11 @@
         <span class='name'>{post.owner_name}</span>
         <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
       </div>
-      <!--
-      <div class='icon'>
-        <img src={post.profiles.avatar} alt={post.profiles.name} />
-      </div>
-      -->
+      {#if post.owner_portrait}
+        <div class='icon'>
+          <img src={post.owner_portrait} alt={post.owner_name} />
+        </div>
+      {/if}
       <div class='content'>
         {post.content}
       </div>

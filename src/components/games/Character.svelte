@@ -4,7 +4,7 @@
   export let character
   export let user
   export let isGameOwner
-  
+
   const isOwner = character.owner.id === user.id
   // const isPlayer = character.profiles.id === user.id
 
