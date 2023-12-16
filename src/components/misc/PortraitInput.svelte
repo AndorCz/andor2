@@ -3,6 +3,7 @@
   import { resizePortrait } from '@lib/utils'
 
   export let identity = { portrait: '' }
+  export let onPortraitChange
 
   let files
   let uploading = false
@@ -19,6 +20,7 @@
         img.src = resized
       }
       identity.portrait = img.src || ''
+      if (onPortraitChange) { onPortraitChange(identity.portrait) }
     }
   }
 
@@ -34,7 +36,7 @@
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
     {:else}
-      <div class='portrait blank' title='Fotka bude zmenšená na 256×256 px, oříznutá zespodu'>Nahrát</div>
+      <div class='portrait blank' title='Fotka bude zmenšená na 256×256 px, oříznutá zespodu'>Nahrát portrét</div>
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
@@ -54,11 +56,12 @@
       display: inline-flex;
       object-fit: cover;
       object-position: top;
-      width: var(--portrait-size, 150px);
-      height: var(--portrait-size, 200px);
+      width: var(--portrait-size, 100px);
+      height: var(--portrait-size, 150px);
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;
+      text-align: center;
       color: var(--accent);
       font-weight: bold;
       transition: background 0.2s ease-in-out, filter 0.2s ease-in-out;

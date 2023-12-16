@@ -1,5 +1,13 @@
 <script>
+  import PortraitInput from '@components/misc/PortraitInput.svelte'
+  import { supabase, handleError } from '@lib/database'
+
   export let user
+
+  async function onPortraitChange (portrait) {
+    const {data, error} = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
+    if (error) { handleError(error) }
+  }
 
   function logout () {
     // delete cookies
@@ -10,11 +18,9 @@
 </script>
 
 <aside>
-  {#if user.name}
-    {user.name}<br><br>
-    <button on:click={logout}>Odhlásit</button>
-  {:else if user.email}
-    {user.email}<br><br>
+  {#if user.name || user.email}
+    <PortraitInput identity={user} {onPortraitChange} /><br>
+    {user.name || user.email}<br><br>
     <button on:click={logout}>Odhlásit</button>
   {:else}
     <form action='/api/auth/login' method='post'>
