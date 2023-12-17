@@ -41,7 +41,7 @@
   <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
   <div class='senderWrapper'>
     <select size='4' bind:this={identitySelect} on:change={onSelect}>
-      {#each data.characters.mine as character}
+      {#each data.characters.myPlaying as character}
         <option>{character.name}</option>
       {/each}
     </select>

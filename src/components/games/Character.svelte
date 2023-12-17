@@ -20,50 +20,60 @@
   }
 </script>
 
-<li class='char'>
-  {#if character.portrait}
-    <img src={character.portrait} class='portrait' alt='portrét postavy'>
-  {/if}
-  <div class='name'>
+<tr class='character'>
+  <td class='portrait'>
+    {#if character.portrait}
+      <img src={character.portrait} class='portrait' alt='portrét postavy'>
+    {/if}
+  </td>
+  <td class='name'>
     {#if isGameOwner || isOwner}
       <a href='./character-form?id={character.id}'>{character.name}</a>
     {:else}
       {character.name}
     {/if}
-  </div>
+  </td>
   {#if isGameOwner}
-    <div class='player'>Vlastník: <b>{character.owner.name}</b></div>
-    <div class='player'>Hráč: <b>{character.player.name}</b></div>
-    {#if !character.accepted}
-      <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
-      <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
-    {/if}
+    <td class='owner'>{character.owner.name}</td>
+    <td class='player'>{character.player.name}</td>
+    <td class='tools'>
+      {#if !character.accepted}
+        <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
+        <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
+      {/if}
+    </td>
   {/if}
-</li>
+</tr>
 
 <style>
-  .char {
-    list-style: none;
-    display: flex;
-    align-items: center;
+  .character {
     background-color: var(--block);
-    margin-left: 0px;
     margin-bottom: 2px;
     padding: 10px;
   }
-  .portrait {
-    width: 60px;
-  }
-  .name {
-    padding-left: 20px;
-    flex: 1;
-  }
-    .name a {
-      font-size: 16pt;
+    td {
+      vertical-align: middle;
     }
-  .player {
-    margin-right: 20px;
-  }
+    .portrait {
+      width: 60px;
+    }
+      .portrait img {
+        display: block;
+      }
+    .name {
+      width: 100%;
+    }
+    .name, .owner, .player, .tools {
+      padding: 15px;
+      min-width: 100px;
+    }
+      .name a {
+        font-size: 16pt;
+      }
+    .owner, .player {
+      margin-right: 20px;
+      font-weight: bold;
+    }
   button {
     margin: 5px;
   }

@@ -26,15 +26,16 @@
   const isCharPlayer = (char) => { return char.player?.id === user.id }
   const isCharOwner = (char) => { return char.owner?.id === user.id }
   const isVisible = (char) => { return !char.hidden || (isCharPlayer(char) || isCharOwner(char)) }
-  const characters = { playing: [], waiting: [], open: [], mine: [] }
+  const characters = { playing: [], waiting: [], open: [], myPlaying: [], storytellers: [] }
 
   data.characters.forEach((char) => {
+    if (char.storyteller) { characters.storytellers.push(char) } // storytellers
     if (char.open) { // open
       characters.open.push(char)
     } else if (char.player) {
       if (char.accepted) { // playing
         if (isVisible(char)) { characters.playing.push(char) } // don't show hidden to players
-        if (isCharPlayer(char)) { characters.mine.push(char) } // mine
+        if (isCharPlayer(char)) { characters.myPlaying.push(char) } // mine
       } else { // waiting
         characters.waiting.push(char)
       }
@@ -45,7 +46,7 @@
   // prepare identities for discussion
   function getIdentities () {
     const identities = { [user.name]: { id: user.id, type: 'user' } }
-    characters.mine.forEach((char) => { identities[char.name] = { id: char.id, type: 'character' } })
+    characters.myPlaying.forEach((char) => { identities[char.name] = { id: char.id, type: 'character' } })
     return identities
   }
 </script>
