@@ -3,7 +3,7 @@
   import { resizePortrait } from '@lib/utils'
 
   export let identity = { portrait: '' }
-  export let onPortraitChange
+  export let onPortraitChange = null
 
   let files
   let uploading = false

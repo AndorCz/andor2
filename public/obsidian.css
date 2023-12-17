@@ -128,20 +128,36 @@ button, .button {
     cursor: wait;
   }
 
-input[type=text], textarea {
+input[type=text], textarea, input[type=checkbox] {
   padding: 15px 10px;
+  margin: 0px;
   font-size: 14pt;
-  box-shadow: inset 1px 1px 6px #0006;
   border: none;
-  /*border: 1px color-mix(in srgb, var(--buttonBg), var(--panel) 70%) solid;*/
-  border-bottom: 3px var(--buttonBg) solid;
   color: var(--text);
+  border-bottom: 3px var(--buttonBg) solid;
   background-color: color-mix(in srgb, var(--panel), var(--background) 15%);
+  box-shadow: inset 1px 1px 6px #0006;
   border-radius: 10px;
+  appearance: none;
+  min-width: 40px;
+  min-height: 40px;
 }
 
   input[type=text]:focus, textarea:focus, select:focus {
     outline: 2px var(--buttonBg) solid;
+  }
+
+  input[type=checkbox] {
+    cursor: pointer;
+  }
+
+  input[type=checkbox]:checked {
+    background-color: var(--accent);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='20' viewBox='0 -960 960 960' width='20'><path d='M395-253 194-455l83-83 118 117 288-287 83 84-371 371Z' fill='%23201c1b'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 35px 35px;
+    box-shadow: 1px 1px 6px #0006;
   }
 
 option {
