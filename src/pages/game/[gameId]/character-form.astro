@@ -24,9 +24,10 @@
     character.name = data.get('charName') || 'Beze jména'
     character.bio = data.get('charBio') || ''
     character.portrait = data.get('charPortrait') || ''
-    character.storyteller = data.get('storyteller')
+    character.storyteller = data.get('storyteller') || false
     character.owner = user.id
     character.player = user.id
+    if (character.storyteller) { character.accepted = true }
     if (gameId) { character.game = gameId }
 
     const { error: error2 } = await supabase.from('characters').upsert(character)
@@ -56,7 +57,7 @@
         {isGameOwner && (
           <tr>
             <td class='labels'><label for='storyteller'>Vypravěč</label></td>
-            <td class='inputs'><input type='checkbox' id='storyteller' name='storyteller' /></td>
+            <td class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></td>
           </tr>
         )}
         <tr>

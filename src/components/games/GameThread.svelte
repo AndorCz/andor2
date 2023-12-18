@@ -13,7 +13,7 @@
   const gameStore = getGameStore(data.id)
 
   onMount(() => {
-    if ($gameStore.activeChatIdentity) { identitySelect.value = $gameStore.activeChatIdentity }
+    if ($gameStore.activeGameCharacter) { identitySelect.value = $gameStore.activeGameCharacter }
   })
 
   async function submitPost () {

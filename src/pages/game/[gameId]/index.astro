@@ -9,7 +9,7 @@
   const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, system').eq('id', gameId).single() // @ts-nocheck
   if (error) { handleError(error) }
 
-  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles!characters_player_fkey(id, name), owner:profiles!characters_owner_fkey(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId) // @ts-nocheck
+  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId) // @ts-nocheck
   if (error2) { handleError(error2) } // @ts-ignore
   if (gameData && characterData) { gameData.characters = characterData }
 ---

@@ -55,7 +55,7 @@
   }
     .portrait {
       cursor: pointer;
-      display: block;
+      display: flex;
       object-fit: cover;
       object-position: top;
       width: var(--portrait-size, 100px);

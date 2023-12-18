@@ -47,7 +47,6 @@ create table games (
 create table characters (
   id uuid not null primary key default gen_random_uuid(),
   game int2,
-  owner uuid not null,
   player uuid,
   portrait text,
   name text,
@@ -57,8 +56,7 @@ create table characters (
   accepted boolean not null default false,
   hidden boolean not null default true,
   state public.character_state not null default 'alive'::character_state,
-  constraint characters_game_fkey foreign key (game) references games (id),
-  constraint characters_owner_fkey foreign key (owner) references profiles (id),
+  constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
   constraint characters_player_fkey foreign key (player) references profiles (id)
 );
 
@@ -93,7 +91,14 @@ create or replace view posts_owner as
 
 create or replace function add_game_discussion () returns trigger as $$
 begin
-  insert into threads (name, created_at) values (new.name, current_timestamp) returning id into new.discussion;
+  insert into threads (name) values (new.name) returning id into new.discussion;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function add_storyteller() returns trigger as $$
+begin
+  insert into characters (name, game, player, hidden, accepted, storyteller) values ('Vypravěč', new.id, new.owner, false, true, true);
   return new;
 end;
 $$ language plpgsql;
@@ -101,3 +106,4 @@ $$ language plpgsql;
 -- TRIGGERS
 
 create or replace trigger add_game_discussion before insert on games for each row execute function add_game_discussion ();
+create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();

@@ -17,25 +17,25 @@
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
 
+  // sort characters
+  const isCharPlayer = (char) => { return char.player?.id === user.id }
+  const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
+  const characters = { playing: [], waiting: [], open: [], myPlaying: [], storytellers: [] }
+
   onMount(() => {
     $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
     if (!isGameOwner && $gameStore.activeTab === 'chars') { $gameStore.activeTab = 'info' } // if you get logged out
   })
 
-  // sort characters
-  const isCharPlayer = (char) => { return char.player?.id === user.id }
-  const isCharOwner = (char) => { return char.owner?.id === user.id }
-  const isVisible = (char) => { return !char.hidden || (isCharPlayer(char) || isCharOwner(char)) }
-  const characters = { playing: [], waiting: [], open: [], myPlaying: [], storytellers: [] }
-
   data.characters.forEach((char) => {
-    if (char.storyteller) { characters.storytellers.push(char) } // storytellers
-    if (char.open) { // open
+    if (isCharPlayer(char)) { characters.myPlaying.push(char) } // mine
+    if (char.storyteller) { // storytellers
+      characters.storytellers.push(char)
+    } else if (char.open) { // open
       characters.open.push(char)
     } else if (char.player) {
       if (char.accepted) { // playing
         if (isVisible(char)) { characters.playing.push(char) } // don't show hidden to players
-        if (isCharPlayer(char)) { characters.myPlaying.push(char) } // mine
       } else { // waiting
         characters.waiting.push(char)
       }
@@ -51,31 +51,37 @@
   }
 </script>
 
-<h1>{data.name}</h1>
+<main>
 
-<nav class='tabs secondary'>
-  <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>Info</button>
-  <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''}>Chat</button>
-  <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
-  {#if isGameOwner} <!-- only for the owner, for now -->
-    <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
-  {/if}
-</nav>
+  <h1>{data.name}</h1>
 
-<div class='content'>
-  {#if $gameStore.activeTab === 'info'}
-    <GameInfo {data} {isGameOwner} />
-  {:else if $gameStore.activeTab === 'chat'}
-    <Discussion thread={data.discussion} identities={getIdentities()} identityStore={gameStore} />
-  {:else if $gameStore.activeTab === 'game'}
-    <GameThread {data} />
-  {:else if $gameStore.activeTab === 'chars'}
-    <GameCharacters {characters} {user} {isGameOwner} />
-  {/if}
-</div>
+  <nav class='tabs secondary'>
+    <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>Info</button>
+    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''}>Chat</button>
+    <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
+    {#if isGameOwner} <!-- only for the owner, for now -->
+      <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
+    {/if}
+  </nav>
+
+  <div class='content'>
+    {#if $gameStore.activeTab === 'info'}
+      <GameInfo {data} {isGameOwner} />
+    {:else if $gameStore.activeTab === 'chat'}
+      <Discussion thread={data.discussion} identities={getIdentities()} identityStore={gameStore} />
+    {:else if $gameStore.activeTab === 'game'}
+      <GameThread {data} />
+    {:else if $gameStore.activeTab === 'chars'}
+      <GameCharacters {characters} {user} {isGameOwner} />
+    {/if}
+  </div>
+</main>
 
 <style>
-  .content {
-    padding: 40px;
+  main {
+    position: relative;
   }
+    .content {
+      padding: 40px;
+    }
 </style>

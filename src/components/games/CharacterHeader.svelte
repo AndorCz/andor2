@@ -5,10 +5,9 @@
 <tr>
   <th class='portrait'></th>
   <th class='name'>Jméno</th>
-  <th class='owner'>Vlastník</th>
   <th class='player'>Hráč</th>
   {#if isGameOwner}
-    <th class='tools'>Nástroje</th>
+    <th class='tools'></th>
   {/if}
 </tr>
 

@@ -5,8 +5,7 @@
   export let user
   export let isGameOwner
 
-  const isOwner = character.owner.id === user.id
-  // const isPlayer = character.profiles.id === user.id
+  const isPlayer = character.player.id === user.id
 
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
@@ -27,19 +26,23 @@
     {/if}
   </td>
   <td class='name'>
-    {#if isGameOwner || isOwner}
+    {#if character.storyteller}
+      <span class='material-symbols-rounded star' title='Vypravěč'>star</span>
+    {/if}
+    {#if isGameOwner || isPlayer}
       <a href='./character-form?id={character.id}'>{character.name}</a>
     {:else}
       {character.name}
     {/if}
   </td>
   {#if isGameOwner}
-    <td class='owner'>{character.owner.name}</td>
     <td class='player'>{character.player.name}</td>
-    <td class='tools'>
+    <td class='options'>
       {#if !character.accepted}
-        <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
-        <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
+        <div class='accept'>
+          <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
+          <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
+        </div>
       {/if}
     </td>
   {/if}
@@ -47,7 +50,6 @@
 
 <style>
   .character {
-    background-color: var(--block);
     margin-bottom: 2px;
     padding: 10px;
   }
@@ -56,25 +58,43 @@
     }
     .portrait {
       width: 60px;
+      min-width: 60px;
+      padding: 0px;
     }
       .portrait img {
         display: block;
       }
     .name {
       width: 100%;
+      vertical-align: middle;
     }
-    .name, .owner, .player, .tools {
+      .name .star {
+        color: var(--accent);
+        font-size: 13pt;
+        margin-right: 5px;
+      }
+
+    .name, .player {
+      background-color: var(--block);
       padding: 15px;
       min-width: 100px;
     }
       .name a {
         font-size: 16pt;
       }
-    .owner, .player {
+      .accept {
+        display: flex;
+        gap: 10px;
+        height: 100%;
+      }
+        .accept button {
+          padding: 10px;
+        }
+    .options {
+      padding-left: 10px;
+    }
+    .player {
       margin-right: 20px;
       font-weight: bold;
     }
-  button {
-    margin: 5px;
-  }
 </style>
