@@ -26,5 +26,12 @@ export const lookForToast = () => {
   }
 }
 
-export const showSuccess = (text) => { notyf.success(text) }
-export const showError = (text) => { notyf.error(text) }
+export const showSuccess = (text) => {
+  console.log(text)
+  notyf.success(text)
+}
+
+export const showError = (text) => {
+  console.error(text)
+  notyf.error(text)
+}

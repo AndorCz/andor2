@@ -1,5 +1,5 @@
 
-import { generateStory } from '@lib/ai'
+import { generateStory } from '@lib/openai'
 import { supabase } from '@lib/database'
 
 export const POST = async ({ request, redirect, locals }) => {

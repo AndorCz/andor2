@@ -6,7 +6,7 @@
   const { user } = Astro.locals
   const { gameId } = Astro.params
 
-  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, system').eq('id', gameId).single() // @ts-nocheck
+  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, system, openai_thread').eq('id', gameId).single() // @ts-nocheck
   if (error) { handleError(error) }
 
   const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId) // @ts-nocheck

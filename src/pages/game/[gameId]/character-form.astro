@@ -25,7 +25,6 @@
     character.bio = data.get('charBio') || ''
     character.portrait = data.get('charPortrait') || ''
     character.storyteller = data.get('storyteller') || false
-    character.owner = user.id
     character.player = user.id
     if (character.storyteller) { character.accepted = true }
     if (gameId) { character.game = gameId }

@@ -39,6 +39,7 @@ create table games (
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default '-'::game_system,
   discussion int2 null,
+  openai_thread text null,
   created_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_fkey foreign key (discussion) references threads(id) on delete cascade

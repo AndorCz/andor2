@@ -63,17 +63,20 @@ const getAllAIResponses = async (threadId) => {
   return aiResponses.join('\n\n')
 }
 
+export const savePost = async (threadId, content, characterId) => {
+  return await openai.beta.threads.messages.create(threadId, { role: 'user', content, metadata: { characterId } })
+}
+
 export const generateStory = async (prompt, system) => {
   try {
     const assistantId = getAssistant(system)
     const threadId = await createThread()
 
     // write the basic setting (place)
-    await openai.beta.threads.messages.create(threadId, { role: 'user',
-      content: `Vycházej z tohoto zadání pro hru: ${prompt}
+    savePost(threadId, `Vycházej z tohoto zadání pro hru: ${prompt}
         Nyní popiš první kategorii podkladů:
         1. Místo: Kde se hra odehrává? Kdy? Vypiš na jeden řádek stručně tyto dvě faktické informace. Na další řádek přidej jednu větu kterou shrneš (či vymyslíš) aktuální setting a druhou větu o čem v kampani půjde.`
-    })
+    )
     await processRun(threadId, assistantId)
 
     // write factions

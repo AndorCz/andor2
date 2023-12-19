@@ -1,19 +1,21 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { supabase, handleError } from '@lib/database'
+  import { createThread } from '@lib/openai'
 
   const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
-    const data = await Astro.request.formData()
-    const gameName = data.get('gameName')
-    const gameSystem = data.get('gameSystem')
+    const formData = await Astro.request.formData()
+    const gameName = formData.get('gameName')
+    const gameSystem = formData.get('gameSystem')
+    const openAiThread = await createThread()
 
-    const { error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem })
+    const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread }).select().single()
 
     if (error) { handleError(error) }
     else {
-      return Astro.redirect('/games?toastType=success&toastText=' + encodeURIComponent('Hra byla přidána'))
+      return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
     }
   }
 ---
@@ -73,6 +75,9 @@
     }
       input {
         width: 100%;
+      }
+      select {
+        width: 400px;
       }
   center {
     margin-top: 20px;
