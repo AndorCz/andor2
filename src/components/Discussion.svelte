@@ -5,7 +5,7 @@
   import { getGameStore } from '@lib/stores'
   import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
-  export let thread
+  export let discussion
   export let identities
   export let identityStore
   
@@ -20,7 +20,7 @@
   })
 
   async function loadPosts () {
-    const { data, error } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, created_at, content').eq('thread', thread).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, created_at, content').eq('thread', discussion).order('created_at', { ascending: false })
     if (error) { return handleError(error) }
     posts = data
   }
@@ -30,7 +30,7 @@
     e.preventDefault()
     if (textareaValue.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
     const identity = identitySelect.value ? identities[identitySelect.value] : Object.values(identities)[0]
-    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread, owner: identity.id, owner_type: identity.type })
+    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: discussion, owner: identity.id, owner_type: identity.type })
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadPosts()
@@ -124,9 +124,9 @@
     
     .body {
       flex: 1;
-      background-color: var(--block);
     }
-      .content {
+    .content {
+        background-color: var(--block);
         padding: 20px;
       }
       .header {

@@ -68,7 +68,7 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion thread={data.discussion} identities={getIdentities()} identityStore={gameStore} />
+      <Discussion discussion={data.discussion} identities={getIdentities()} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} />
     {:else if $gameStore.activeTab === 'chars'}

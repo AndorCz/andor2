@@ -6,12 +6,17 @@
   const { user } = Astro.locals
   const { gameId } = Astro.params
 
-  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, system, openai_thread').eq('id', gameId).single() // @ts-nocheck
+  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, game, system, openai_thread').eq('id', gameId).single()
   if (error) { handleError(error) }
 
-  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId) // @ts-nocheck
+  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId)
   if (error2) { handleError(error2) } // @ts-ignore
-  if (gameData && characterData) { gameData.characters = characterData }
+
+  const { data: threadData, error: error3 } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, content, created_at').eq('thread', gameData.game)
+  if (error3) { handleError(error3) }
+
+  if (gameData && characterData) { gameData.characters = characterData } // @ts-nocheck
+  if (gameData && threadData) { gameData.thread = threadData } // @ts-nocheck
 ---
 
 <Layout title={gameData?.name}>

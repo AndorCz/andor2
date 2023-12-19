@@ -39,10 +39,12 @@ create table games (
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default '-'::game_system,
   discussion int2 null,
+  game int2 null,
   openai_thread text null,
   created_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
-  constraint games_discussion_fkey foreign key (discussion) references threads(id) on delete cascade
+  constraint games_discussion_fkey foreign key (discussion) references threads(id),
+  constraint games_game_fkey foreign key (game) references threads (id)
 );
 
 create table characters (
@@ -90,13 +92,6 @@ create or replace view posts_owner as
 
 -- FUNCTIONS
 
-create or replace function add_game_discussion () returns trigger as $$
-begin
-  insert into threads (name) values (new.name) returning id into new.discussion;
-  return new;
-end;
-$$ language plpgsql;
-
 create or replace function add_storyteller() returns trigger as $$
 begin
   insert into characters (name, game, player, hidden, accepted, storyteller) values ('Vypravěč', new.id, new.owner, false, true, true);
@@ -104,7 +99,24 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function add_game_threads () returns trigger as $$
+begin
+  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion;
+  insert into threads (name) values (new.name || ' - game') returning id into new.game;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function delete_game_threads() returns trigger as $$
+begin
+  delete from threads where id = old.discussion;
+  delete from threads where id = old.game;
+  return old;
+end;
+$$ language plpgsql;
+
 -- TRIGGERS
 
-create or replace trigger add_game_discussion before insert on games for each row execute function add_game_discussion ();
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
+create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads ();
+create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();

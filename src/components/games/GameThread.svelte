@@ -5,7 +5,6 @@
   import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
 
   export let data = {}
-  export let posts = []
 
   // let activeCharacter
   let textareaValue = ''
@@ -40,7 +39,7 @@
   async function submitPost () {
     const res = await fetch('/api/game/addPost', {
       method: 'POST',
-      body: JSON.stringify({ game: data.id, post: textareaValue, thread: data.openai_thread, character: $gameStore.activeGameCharacterId }),
+      body: JSON.stringify({ game: data.game, content: textareaValue, openAiThread: data.openai_thread, character: $gameStore.activeGameCharacterId }),
       headers: { 'Content-Type': 'application/json' }
     })
     res.json().then((res) => {
@@ -74,7 +73,7 @@
 {/if}
 
 <center>
-  {#each posts as post}
+  {#each data.thread as post}
     <div class='post'>
       {#if post.owner_portrait}
         <div class='icon'>
@@ -140,16 +139,17 @@
     
     .body {
       flex: 1;
-      background-color: var(--block);
     }
-      .content {
+    .content {
+        background-color: var(--block);
         padding: 20px;
       }
       .header {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        background-color: var(--prominent);
+        background-color: var(--block);
+        opacity: 0.5;
         padding: 10px 15px;
         box-shadow: 2px 2px 3px #0002;
       }
