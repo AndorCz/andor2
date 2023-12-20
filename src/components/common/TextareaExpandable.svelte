@@ -2,20 +2,31 @@
   export let value
   export let onSave
   export let disabled = false
-
-  let textareaHeight
-  let buttonIcon = 'send'
+  export let editing = false
+  export let buttonIcon = 'send'
 
   function setHeight (node) {
-    let textareaRef = node.target || node
+    const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
     textareaRef.style.height = `${textareaRef.scrollHeight}px`
+  }
+
+  function cancelEdit () {
+    editing = false
+    value = ''
   }
 </script>
 
 <div class='wrapper'>
   <textarea bind:value={value} use:setHeight on:input={setHeight}></textarea>
-  <button on:click={onSave} {disabled}><span class='material-symbols-rounded'>{buttonIcon}</span></button>
+  <button on:click={onSave} {disabled} class='save'>
+    <span class='material-symbols'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
+  </button>
+  {#if editing}
+    <button on:click={cancelEdit} class='cancel'>
+      <span class='material-symbols'>close</span>
+    </button>
+  {/if}
 </div>
 
 <style>
@@ -32,10 +43,15 @@
 
     button {
       position: absolute;
-      bottom: 0px;
       right: 0px;
-      border-radius: 0px;
       padding: 15px 20px;
-      border-radius: 10px 0px 10px 0px;
     }
+      .save {
+        bottom: 0px;
+        border-radius: 10px 0px 10px 0px;
+      }
+      .cancel {
+        top: 0px;
+        border-radius: 0px 10px 0px 10px;
+      }
 </style>

@@ -8,13 +8,14 @@ drop table if exists posts cascade;
 drop type if exists character_state;
 drop type if exists game_system;
 
+drop view if exists posts_owner;
+
 -- ENUMS
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('-', 'vampire5e', 'drd1'); -- 'fate', 'dnd5e'
 
 -- TABLES
-
 
 create table profiles (
   id uuid not null primary key,
@@ -76,7 +77,7 @@ create table posts (
 
 -- VIEWS
 
-create or replace view posts_owner as
+create view posts_owner as
   select
     p.*,
     case 

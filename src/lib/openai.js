@@ -17,6 +17,7 @@ const getAssistant = (system) => {
   }
 }
 
+/*
 const getStoryteller = (system) => {
   switch (system) {
     case 'drd1': return 'asst_CRxxTBltj9E8WPB0Cis37OlQ'
@@ -25,6 +26,7 @@ const getStoryteller = (system) => {
     default: return 'asst_MZGE6HVoCoelTCvJnKoESBpq'
   }
 }
+*/
 
 const maxDuration = 300000 // 5 minutes
 const pollInterval = 5000 // 5 seconds
@@ -68,6 +70,13 @@ export const getPosts = async ({ threadId, role, order = 'asc' }) => {
 
 export const savePost = async (threadId, content, characterId) => {
   return await openai.beta.threads.messages.create(threadId, { role: 'user', content, metadata: { characterId } })
+}
+
+export const editPost = async (threadId, messageId, newContent) => {
+  const message = await openai.beta.threads.messages.update(threadId, messageId, { content: [{ type: 'text', text: { value: newContent } }] })
+    .catch(error => console.error('openai api error: ', error))
+  console.log('updated message', message)
+  return message
 }
 
 export const generateStory = async (prompt, system) => {

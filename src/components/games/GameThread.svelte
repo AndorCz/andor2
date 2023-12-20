@@ -13,6 +13,7 @@
   let textareaValue = ''
   let identitySelect
   let saving = false
+  let editing = false
 
   const gameStore = getGameStore(data.id)
 
@@ -50,11 +51,16 @@
 
   async function deletePost (id) {
     if (!window.confirm('Opravdu smazat příspěvek?')) { return }
-    const res = await fetch('/api/post?id=' + id, { method: 'DELETE' })
+    const res = await fetch(`/api/post?id=${id}&thread=${data.openai_thread}`, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek smazán')
     await loadPosts()
+  }
+
+  async function editPost (id, content) {
+    editing = true
+    textareaValue = content
   }
 </script>
 
@@ -66,7 +72,7 @@
     <h3 class='sender'>Postava</h3>
   </div>
   <div class='addPostWrapper'>
-    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
+    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
     <div class='senderWrapper'>
       <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
         {#each data.characters.myPlaying as character}
@@ -79,7 +85,7 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} onEdit={editPost} />
 
 <style>
   .addPostWrapper {

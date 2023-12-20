@@ -32,7 +32,7 @@
   {:else}
     <content class='editableLong'>{@html marked(value)}</content>
     {#if canEdit}
-      <button on:click={() => { isEditing = true }}><span class='material-symbols-rounded'>edit</span></button>
+      <button on:click={() => { isEditing = true }}><span class='material-symbols'>edit</span></button>
     {/if}
   {/if}
 </div>

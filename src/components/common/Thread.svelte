@@ -1,10 +1,9 @@
 <script>
-  import { showSuccess, showError } from '@lib/toasts'
-
   export let posts
   export let canDeleteAll
   export let myIdentities
   export let onDelete
+  export let onEdit
 
   const isMyPost = (id) => {
     return myIdentities.find((identity) => { return identity.id === id })
@@ -24,7 +23,8 @@
           <span class='name'>{post.owner_name}</span>
           <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
           {#if canDeleteAll || isMyPost(post.owner)}
-            <button on:click={() => onDelete(post.id)} class='material-symbols-rounded delete' title='smazat příspěvek'>delete</button>
+            <button on:click={() => onEdit(post.id, post.content)} class='material-symbols edit' title='upravit příspěvek'>edit</button>
+            <button on:click={() => onDelete(post.id)} class='material-symbols delete' title='smazat příspěvek'>delete</button>
           {/if}
         </div>
         <div class='content'>
@@ -56,7 +56,7 @@
           width: 100%;
           display: block;
         }
-    
+
     .body {
       flex: 1;
     }
@@ -83,14 +83,14 @@
           color: var(--dim);
           opacity: 0.5;
         }
-        .delete {
+        .delete, .edit {
           margin-left: 10px;
           padding: 5px;
           font-size: 14pt;
           cursor: pointer;
           opacity: 0.5;
         }
-          .delete:hover {
+          .delete:hover, .edit:hover {
             opacity: 1;
           }
 
