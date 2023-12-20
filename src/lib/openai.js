@@ -53,14 +53,14 @@ const processRun = async (threadId, assistantId, returnLastMessage = false) => {
   })
 }
 
-const getAllAIResponses = async (threadId) => {
-  const messages = await openai.beta.threads.messages.list(threadId, { order: 'asc' })
-
-  const aiResponses = messages.data
-    .filter(message => message.role === 'assistant')
-    .map(assistantMessage => assistantMessage.content[0].text.value)
-
-  return aiResponses.join('\n\n')
+export const getPosts = async ({ threadId, role, order = 'asc' }) => {
+  const messages = await openai.beta.threads.messages.list(threadId, { order })
+  if (role) {
+    return messages.data.filter(message => message.role === role)
+      .map(assistantMessage => assistantMessage.content[0].text.value)
+  } else {
+    return messages
+  }
 }
 
 export const savePost = async (threadId, content, characterId) => {
@@ -96,10 +96,10 @@ export const generateStory = async (prompt, system) => {
     await processRun(threadId, assistantId)
 
     // clear the thread and return all AI messages
-    const response = getAllAIResponses(threadId, assistantId)
+    const responses = await getPosts({ threadId, role: 'assistant', order: 'asc' })
 
     await openai.beta.threads.del(threadId)
-    return response
+    return responses.join('\n\n')
   } catch (error) {
     console.error(error)
     return error

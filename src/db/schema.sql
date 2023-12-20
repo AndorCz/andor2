@@ -67,7 +67,7 @@ create table posts (
   id uuid not null primary key default gen_random_uuid(),
   thread int2,
   owner uuid,
-  owner_type text,
+  owner_type text not null,
   content text,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id)

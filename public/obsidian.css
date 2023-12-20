@@ -128,6 +128,13 @@ button, .button {
     cursor: wait;
   }
 
+  button.material-symbols-rounded {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0px;
+  }
+
 input[type=text], textarea, input[type=checkbox] {
   padding: 15px 10px;
   margin: 0px;

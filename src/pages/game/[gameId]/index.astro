@@ -12,7 +12,7 @@
   const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId)
   if (error2) { handleError(error2) } // @ts-ignore
 
-  const { data: threadData, error: error3 } = await supabase.from('posts_owner').select('id, owner_name, owner_portrait, content, created_at').eq('thread', gameData.game)
+  const { data: threadData, error: error3 } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, content, created_at').eq('thread', gameData.game).order('created_at', { ascending: false })
   if (error3) { handleError(error3) }
 
   if (gameData && characterData) { gameData.characters = characterData } // @ts-nocheck

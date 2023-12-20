@@ -1,5 +1,5 @@
 <script>
-  import PortraitInput from '@components/misc/PortraitInput.svelte'
+  import PortraitInput from '@components/common/PortraitInput.svelte'
   import { supabase, handleError } from '@lib/database'
 
   export let user

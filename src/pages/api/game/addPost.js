@@ -11,7 +11,7 @@ export const POST = async ({ request, redirect, locals }) => {
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 
     // send to open ai thread
-    // savePost(data.openAiThread, data.content, data.character)
+    savePost(data.openAiThread, data.content, data.character)
 
     return new Response('{}', { status: 200 })
   } else {

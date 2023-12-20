@@ -1,0 +1,21 @@
+---
+  import { getPosts } from '@lib/openai'
+
+  const { threadId } = Astro.params
+  const { data } = await getPosts({ threadId, order: 'desc' })
+---
+
+<div>
+  {data.map((post, index) => (
+    <div>
+      <p>{post.content[0].text.value}</p>
+    </div>
+  ))}
+</div>
+
+<style>
+  html {
+    background-color: black;
+    color: white;
+  }
+</style>

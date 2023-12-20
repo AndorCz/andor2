@@ -1,5 +1,5 @@
 <script>
-  import EditableLong from '@components/misc/EditableLong.svelte'
+  import EditableLong from '@components/common/EditableLong.svelte'
 
   export let data
   export let isGameOwner

@@ -1,6 +1,6 @@
 <script>
   import { marked } from 'marked'
-  import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let value
   export let onSave

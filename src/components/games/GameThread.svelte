@@ -2,9 +2,11 @@
   import { onMount } from 'svelte'
   import { getGameStore } from '@lib/stores'
   import { showError } from '@lib/toasts'
-  import TextareaExpandable from '@components/misc/TextareaExpandable.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import Thread from '@components/common/Thread.svelte'
 
   export let data = {}
+  export let isGameOwner
 
   // let activeCharacter
   let textareaValue = ''
@@ -44,11 +46,10 @@
     })
     res.json().then((res) => {
       if (res.error) { return showError(res.error) }
-      // 2DO: reload posts
+      textareaValue = ''
+      location.reload()
     })
   }
-
-  /* function onSelect (e) { console.log('$gameStore.activeGameCharacterId', $gameStore.activeGameCharacterId) } */
 </script>
 
 <h2>Herní příspěvky</h2>
@@ -59,9 +60,9 @@
     <h3 class='sender'>Postava</h3>
   </div>
   <div class='addPostWrapper'>
-    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} /> <!-- identity={this.activeCharacter} -->
+    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} />
     <div class='senderWrapper'>
-      <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}> <!-- on:change={onSelect} -->
+      <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
         {#each data.characters.myPlaying as character}
           <option value={character.id}>{character.name}</option>
         {/each}
@@ -72,31 +73,9 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<center>
-  {#each data.thread as post}
-    <div class='post'>
-      {#if post.owner_portrait}
-        <div class='icon'>
-          <img src={post.owner_portrait} alt={post.owner_name} />
-        </div>
-      {/if}
-      <div class='body'>
-        <div class='header'>
-          <span class='name'>{post.owner_name}</span>
-          <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
-        </div>
-        <div class='content'>
-          {post.content}
-        </div>
-      </div>
-    </div>
-  {:else}
-    Žádné příspěvky
-  {/each}
-</center>
+<Thread posts={data.thread} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} />
 
 <style>
-  /* input */
   .addPostWrapper {
     display: flex;
     width: 100%;
@@ -117,46 +96,4 @@
     .headlines .sender {
       width: 200px;
     }
-
-  /* posts */
-  center {
-    margin-top: 100px;
-  }
-    .post {
-      display: flex;
-      width: 100%;
-      margin-bottom: 20px;
-      text-align: left;
-      gap: 10px;
-    }
-      .icon {
-        width: 140px;
-      }
-        .icon img {
-          width: 100%;
-          display: block;
-        }
-    
-    .body {
-      flex: 1;
-    }
-    .content {
-        background-color: var(--block);
-        padding: 20px;
-      }
-      .header {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        background-color: var(--block);
-        opacity: 0.5;
-        padding: 10px 15px;
-        box-shadow: 2px 2px 3px #0002;
-      }
-        .name {
-          font-weight: bold;
-        }
-        .time {
-          color: var(--dim);
-        }
 </style>

@@ -40,15 +40,10 @@
         characters.waiting.push(char)
       }
     }
+    char.type = 'character'
   })
   data.characters = characters
-
-  // prepare identities for discussion
-  function getIdentities () {
-    const identities = { [user.name]: { id: user.id, type: 'user' } }
-    characters.myPlaying.forEach((char) => { identities[char.name] = { id: char.id, type: 'character' } })
-    return identities
-  }
+  data.identities = [{ name: user.name, id: user.id, type: 'user' }, ...characters.myPlaying]
 </script>
 
 <main>
@@ -68,9 +63,9 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion discussion={data.discussion} identities={getIdentities()} identityStore={gameStore} />
+      <Discussion {data} {isGameOwner} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} />
+      <GameThread {data} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {characters} {user} {isGameOwner} />
     {/if}
