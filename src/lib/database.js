@@ -29,7 +29,7 @@ export function handleError (error) {
 // browser only
 export async function sendPost (data) {
   if (data.content.trim().length === 0) { return window.showError('Příspěvek nesmí být prázdný') }
-  const res = await fetch('/api/game/post', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })
+  const res = await fetch('/api/post', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })
   const json = await res.json()
   if (res.error || json.error) { return window.showError(res.error || json.error) }
   return json

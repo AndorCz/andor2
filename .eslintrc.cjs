@@ -6,7 +6,8 @@ module.exports = {
   },
   extends: [
     'standard',
-    'plugin:svelte/recommended'
+    'plugin:svelte/recommended',
+    'plugin:astro/recommended'
   ],
   parserOptions: {
     ecmaVersion: 'latest', // latest ECMAScript standards
@@ -20,6 +21,16 @@ module.exports = {
       files: ['*.svelte'],
       rules: {
         // Custom rules for Svelte files
+      }
+    }, {
+      files: ['*.astro'],
+      parser: 'astro-eslint-parser',
+      parserOptions: {
+        parser: '@typescript-eslint/parser',
+        extraFileExtensions: ['.astro']
+      },
+      rules: {
+        // Custom rules for Astro files
       }
     }
   ],
