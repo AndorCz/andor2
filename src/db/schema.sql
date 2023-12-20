@@ -71,7 +71,7 @@ create table posts (
   content text,
   openai_post text null,
   created_at timestamp with time zone default current_timestamp,
-  constraint posts_thread_fkey foreign key (thread) references threads (id)
+  constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
 );
 
 -- VIEWS

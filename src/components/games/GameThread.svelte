@@ -1,15 +1,15 @@
 <script>
   import { onMount } from 'svelte'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { getGameStore } from '@lib/stores'
-  import { showError } from '@lib/toasts'
-  import { sendPost } from '@lib/database'
+  import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
   export let data = {}
   export let isGameOwner
 
-  // let activeCharacter
+  let posts = []
   let textareaValue = ''
   let identitySelect
   let saving = false
@@ -31,15 +31,21 @@
     if (identitySelect) { // might not exist if no character
       $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
     }
+    loadPosts()
   })
+
+  async function loadPosts () {
+    const { data: postData, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content').eq('thread', data.game).order('created_at', { ascending: false })
+    if (error) { return handleError(error) }
+    posts = postData
+  }
 
   async function submitPost () {
     saving = true
-    const res = await sendPost({ thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
-    if (res) {
-      textareaValue = ''
-      location.reload()
-    }
+    await sendPost({ thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
+    textareaValue = ''
+    await loadPosts()
+    saving = false
   }
 
   async function deletePost (id) {
@@ -47,7 +53,8 @@
     const res = await fetch('/api/post?id=' + id, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Příspěvek smazán')
+    showSuccess('Příspěvek smazán')
+    await loadPosts()
   }
 </script>
 
@@ -72,7 +79,7 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<Thread posts={data.thread} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} />
 
 <style>
   .addPostWrapper {

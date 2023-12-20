@@ -68,7 +68,7 @@
   </div>
 </div>
 
-<Thread posts={posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} />
 
 <style>
 
