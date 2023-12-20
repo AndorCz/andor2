@@ -69,6 +69,7 @@ create table posts (
   owner uuid,
   owner_type text not null,
   content text,
+  openai_post text null,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id)
 );

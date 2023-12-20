@@ -1,7 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// Create a single supabase client for interacting with your database
+// create a supabase client
 export const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_URL,
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
@@ -24,4 +24,13 @@ export function handleError (error) {
   } else {
     console.error(error)
   }
+}
+
+// browser only
+export async function sendPost (data) {
+  if (data.content.trim().length === 0) { return window.showError('Příspěvek nesmí být prázdný') }
+  const res = await fetch('/api/game/post', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })
+  const json = await res.json()
+  if (res.error || json.error) { return window.showError(res.error || json.error) }
+  return json
 }

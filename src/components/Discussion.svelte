@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { getGameStore } from '@lib/stores'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -8,7 +8,7 @@
 
   export let data
   export let isGameOwner
-  
+
   let posts = []
   let saving = false
   let textareaValue = ''
@@ -32,16 +32,22 @@
     return data.identities.find((identity) => { return identity.id === id })
   }
 
-  async function submitPost (e) {
+  async function submitPost () {
     saving = true
-    e.preventDefault()
-    if (textareaValue.trim().length === 0) { return showError('Příspěvek nesmí být prázdný') }
     const identity = getIdentity($gameStore.activeChatIdentity)
-    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: data.discussion, owner: identity.id, owner_type: identity.type })
-    if (error) { return handleError(error) }
+    await sendPost({ thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
     textareaValue = ''
     await loadPosts()
     saving = false
+  }
+
+  async function deletePost (id) {
+    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
+    const res = await fetch('/api/post?id=' + id, { method: 'DELETE' })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+    showSuccess('Příspěvek smazán')
+    await loadPosts()
   }
 </script>
 
@@ -62,7 +68,7 @@
   </div>
 </div>
 
-<Thread posts={posts} canDeleteAll={isGameOwner} myIdentities={data.identities} />
+<Thread posts={posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} />
 
 <style>
 

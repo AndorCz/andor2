@@ -5,8 +5,9 @@
   export let user
 
   async function onPortraitChange (portrait) {
-    const {data, error} = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
-    if (error) { handleError(error) }
+    const { data, error } = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
+    if (error) { return handleError(error) }
+    return data
   }
 
   function logout () {

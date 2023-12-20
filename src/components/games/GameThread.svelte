@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { getGameStore } from '@lib/stores'
   import { showError } from '@lib/toasts'
+  import { sendPost } from '@lib/database'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
@@ -25,30 +26,28 @@
 
   // set activeGameCharacterId
   $gameStore.activeGameCharacterId = getActiveCharacter() // set default value
-  // console.log('constructor', $gameStore.activeGameCharacterId)
-  
-  onMount (() => { // set select value on mount
+
+  onMount(() => { // set select value on mount
     if (identitySelect) { // might not exist if no character
       $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
     }
-    // console.log('onMount $gameStore.activeGameCharacterId', $gameStore.activeGameCharacterId)
   })
 
-  function getCharacterName (id) {
-    return data.characters.myPlaying.find((char) => { return char.id === id }).name
-  }
-
   async function submitPost () {
-    const res = await fetch('/api/game/addPost', {
-      method: 'POST',
-      body: JSON.stringify({ game: data.game, content: textareaValue, openAiThread: data.openai_thread, character: $gameStore.activeGameCharacterId }),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    res.json().then((res) => {
-      if (res.error) { return showError(res.error) }
+    saving = true
+    const res = await sendPost({ thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
+    if (res) {
       textareaValue = ''
       location.reload()
-    })
+    }
+  }
+
+  async function deletePost (id) {
+    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
+    const res = await fetch('/api/post?id=' + id, { method: 'DELETE' })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+    window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Příspěvek smazán')
   }
 </script>
 
@@ -73,7 +72,7 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<Thread posts={data.thread} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} />
+<Thread posts={data.thread} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} />
 
 <style>
   .addPostWrapper {

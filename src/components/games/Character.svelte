@@ -9,13 +9,13 @@
 
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
-    if (error) { handleError(error) }
-    else { window.location.href = `./?toastType=success&toastText=`  + encodeURIComponent('Postava byla přijata') }
+    if (error) { return handleError(error) }
+    window.location.href = './?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
   async function rejectCharacter (id) {
     const { error } = await supabase.from('characters').update({ game: null }).eq('id', id)
-    if (error) { handleError(error) }
-    else { window.location.href = `./?toastType=success&toastText=`  + encodeURIComponent('Postava byla odmítnuta') }
+    if (error) { return handleError(error) }
+    window.location.href = './?toastType=success&toastText=' + encodeURIComponent('Postava byla odmítnuta')
   }
 </script>
 

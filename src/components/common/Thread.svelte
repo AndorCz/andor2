@@ -1,14 +1,13 @@
 <script>
+  import { showSuccess, showError } from '@lib/toasts'
+
   export let posts
   export let canDeleteAll
   export let myIdentities
+  export let onDelete
 
   const isMyPost = (id) => {
     return myIdentities.find((identity) => { return identity.id === id })
-  }
-
-  function deletePost () {
-    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
   }
 </script>
 
@@ -25,7 +24,7 @@
           <span class='name'>{post.owner_name}</span>
           <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
           {#if canDeleteAll || isMyPost(post.owner)}
-            <button on:click={deletePost} class='material-symbols-rounded delete' title='smazat příspěvek'>delete</button>
+            <button on:click={() => onDelete(post.id)} class='material-symbols-rounded delete' title='smazat příspěvek'>delete</button>
           {/if}
         </div>
         <div class='content'>
@@ -61,32 +60,38 @@
     .body {
       flex: 1;
     }
-    .content {
+      .content {
         background-color: var(--block);
         padding: 20px;
+        box-shadow: 2px 2px 3px #0002;
       }
       .header {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: var(--block);
-        opacity: 0.5;
+        background-color: color-mix(in srgb, var(--block), var(--panel) 50%);
         padding: 10px 15px;
         box-shadow: 2px 2px 3px #0002;
       }
         .name {
           font-weight: bold;
           flex: 1;
+          opacity: 0.5;
         }
         .time {
           color: var(--dim);
+          opacity: 0.5;
         }
         .delete {
           margin-left: 10px;
           padding: 5px;
           font-size: 14pt;
           cursor: pointer;
+          opacity: 0.5;
         }
+          .delete:hover {
+            opacity: 1;
+          }
 
 </style>

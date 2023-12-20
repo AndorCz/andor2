@@ -126,6 +126,7 @@ button, .button {
     background-color: var(--block);
     border: none;
     cursor: wait;
+    opacity: 0.5;
   }
 
   button.material-symbols-rounded {

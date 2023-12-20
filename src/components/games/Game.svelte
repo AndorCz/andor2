@@ -1,10 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { clone } from '@lib/utils'
   import { getGameStore } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
-  import { showSuccess, showError } from '@lib/toasts'
-  import Character from '@components/games/Character.svelte'
   import Discussion from '@components/Discussion.svelte'
   import GameThread from '@components/games/GameThread.svelte'
   import GameCharacters from '@components/games/GameCharacters.svelte'

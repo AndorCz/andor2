@@ -1,9 +1,12 @@
 <script>
   import EditableLong from '@components/common/EditableLong.svelte'
+  import { supabase, handleError } from '@lib/database'
+  import { showError, showSuccess } from '@lib/toasts'
+  import { clone } from '@lib/utils'
 
   export let data
   export let isGameOwner
-  
+
   let generatingStory = false
 
   async function generateStory () {
@@ -14,14 +17,11 @@
       body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system }),
       headers: { 'Content-Type': 'application/json' }
     })
-    res.json().then((res) => {
-      if (res.error) { showError(res.error) }
-      else {
-        showSuccess('Vygenerováno')
-        generatingStory = false
-        data.secrets = res.story
-      }
-    })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+    showSuccess('Vygenerováno')
+    generatingStory = false
+    data.secrets = res.story
   }
 
   async function updateGame () {
@@ -31,11 +31,10 @@
     delete clean.owner
     delete clean.characters
     const { error } = await supabase.from('games').update(clean).eq('id', data.id)
-    if (error) { handleError(error) }
-    else { showSuccess('Uloženo') }
+    if (error) { return handleError(error) }
+    showSuccess('Uloženo')
   }
 </script>
-
 
 <h2>Úvod</h2>
 
