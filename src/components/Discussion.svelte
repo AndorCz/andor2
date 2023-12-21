@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, sendPost } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
+  import { sendPost } from '@lib/helpers'
   import { showSuccess, showError } from '@lib/toasts'
   import { getGameStore } from '@lib/stores'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -36,10 +37,15 @@
   async function submitPost () {
     saving = true
     const identity = getIdentity($gameStore.activeChatIdentity)
-    await sendPost({ thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
+    if (editing) {
+      await sendPost('PATCH', { id: editing, thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
+    } else {
+      await sendPost('POST', { thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
+    }
     textareaValue = ''
     await loadPosts()
     saving = false
+    editing = false
   }
 
   async function deletePost (id) {
@@ -51,9 +57,10 @@
     await loadPosts()
   }
 
-  async function editPost (id, content) {
-    editing = true
+  async function startEdit (id, content) {
+    editing = id
     textareaValue = content
+    // saving is done in submitPost
   }
 </script>
 
@@ -74,7 +81,7 @@
   </div>
 </div>
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} onEdit={editPost} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} onEdit={startEdit} />
 
 <style>
 

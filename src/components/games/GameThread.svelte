@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, sendPost } from '@lib/database'
   import { getGameStore } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
+  import { sendPost } from '@lib/helpers'
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -43,10 +44,15 @@
 
   async function submitPost () {
     saving = true
-    await sendPost({ thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
+    if (editing) {
+      await sendPost('PATCH', { id: editing, thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
+    } else {
+      await sendPost('POST', { thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character' })
+    }
     textareaValue = ''
     await loadPosts()
     saving = false
+    editing = false
   }
 
   async function deletePost (id) {
@@ -58,9 +64,10 @@
     await loadPosts()
   }
 
-  async function editPost (id, content) {
-    editing = true
+  async function startEdit (id, content) {
+    editing = id
     textareaValue = content
+    // saving is done in submitPost
   }
 </script>
 
@@ -85,7 +92,7 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} onEdit={editPost} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} onEdit={startEdit} />
 
 <style>
   .addPostWrapper {
