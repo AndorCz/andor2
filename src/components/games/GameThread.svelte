@@ -23,8 +23,8 @@
   const gameStore = getGameStore(data.id)
 
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
-  const otherCharacters = data.characters.filter((char) => { return char.accepted && !char.hidden && char.player?.id !== user.id })
-  otherCharacters.push({ id: '*', name: 'Všem' })
+  const otherCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id !== user.id })
+  otherCharacters.unshift({ id: '*', name: 'Všem' })
 
   const getActiveCharacter = () => {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
