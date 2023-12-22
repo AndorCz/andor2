@@ -36,8 +36,7 @@
   }
 </script>
 
-<h2>Úvod</h2>
-
+<h2 class='first'>Úvod</h2>
 <EditableLong bind:value={data.intro} onSave={updateGame} canEdit={isGameOwner} />
 
 <h2>Pro hráče</h2>
@@ -57,6 +56,9 @@ Správce hry: {data.owner.name}
 <style>
   h2 {
     margin-top: 50px;
+  }
+  h2.first {
+    margin-top: 0px;
   }
     h2 span {
       font-size: 14pt;

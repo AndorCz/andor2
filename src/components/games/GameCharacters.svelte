@@ -2,9 +2,28 @@
   import Character from '@components/games/Character.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 
+  export let user = {}
+  export let data = {}
   export let isGameOwner
-  export let characters
-  export let user
+
+  // sort character categories
+  const isCharPlayer = (char) => { return char.player?.id === user.id }
+  const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
+  const characters = { playing: [], waiting: [], open: [], storytellers: [] }
+
+  data.characters.forEach((char) => {
+    if (char.storyteller) { // storytellers
+      characters.storytellers.push(char)
+    } else if (char.open) { // open
+      characters.open.push(char)
+    } else if (char.player) {
+      if (char.accepted) { // playing
+        if (isVisible(char)) { characters.playing.push(char) } // don't show hidden to players
+      } else { // waiting
+        characters.waiting.push(char)
+      }
+    }
+  })
 </script>
 
 <main>
@@ -60,6 +79,9 @@
 </main>
 
 <style>
+  h2 {
+    margin-top: 0px;
+  }
   .characters {
     width: 100%;
     margin-bottom: 50px;

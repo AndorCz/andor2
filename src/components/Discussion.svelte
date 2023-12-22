@@ -7,7 +7,8 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
-  export let data
+  export let user = {}
+  export let data = {}
   export let isGameOwner
 
   let posts = []
@@ -18,8 +19,16 @@
 
   const gameStore = getGameStore(data.id)
 
+  // set identities for discussion
+  const getMyCharacters = () => {
+    const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
+    myCharacters.forEach((char) => { char.type = 'character' })
+    return myCharacters
+  }
+  const identities = [{ name: user.name, id: user.id, type: 'user' }, ...getMyCharacters()]
+
   onMount(() => {
-    $gameStore.activeChatIdentity = $gameStore.activeChatIdentity || data.identities[0].id
+    $gameStore.activeChatIdentity = $gameStore.activeChatIdentity || identities[0].id
     identitySelect.value = $gameStore.activeChatIdentity
     loadPosts()
   })
@@ -31,7 +40,7 @@
   }
 
   function getIdentity (id) {
-    return data.identities.find((identity) => { return identity.id === id })
+    return identities.find((identity) => { return identity.id === id })
   }
 
   async function submitPost () {
@@ -74,17 +83,19 @@
   <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
   <div class='senderWrapper'>
     <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-      {#each data.identities as identity}
+      {#each identities as identity}
         <option value={identity.id}>{identity.name}</option>
       {/each}
     </select>
   </div>
 </div>
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.identities} onDelete={deletePost} onEdit={startEdit} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} />
 
 <style>
-
+  h2 {
+    margin-top: 0px;
+  }
   .addPostWrapper {
     display: flex;
     width: 100%;
@@ -105,5 +116,4 @@
     .headlines .sender {
       width: 200px;
     }
-
 </style>

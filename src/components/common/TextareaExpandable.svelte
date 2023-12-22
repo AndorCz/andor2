@@ -5,10 +5,12 @@
   export let editing = false
   export let buttonIcon = 'send'
 
+  const minHeight = 140
+
   function setHeight (node) {
     const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
-    textareaRef.style.height = `${textareaRef.scrollHeight}px`
+    textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
   }
 
   function cancelEdit () {

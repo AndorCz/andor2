@@ -7,22 +7,26 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
+  export let user = {}
   export let data = {}
   export let isGameOwner
 
   let posts = []
   let textareaValue = ''
   let identitySelect
+  let audienceSelect
   let saving = false
   let editing = false
 
   const gameStore = getGameStore(data.id)
+  const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
+  const otherCharacters = data.characters.filter((char) => { return char.player?.id !== user.id })
 
   const getActiveCharacter = () => {
-    if (data.characters.myPlaying.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
+    if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
       return $gameStore.activeGameCharacterId // set character from localStorage
-    } else if (data.characters.myPlaying[0]) {
-      return data.characters.myPlaying[0].id // no character in localStorage, set first character
+    } else if (myCharacters[0]) {
+      return myCharacters[0].id // no character in localStorage, set first character
     } else { return null } // no character
   }
 
@@ -71,18 +75,22 @@
   }
 </script>
 
-<h2>Herní příspěvky</h2>
-
 {#if $gameStore.activeGameCharacterId}
-  <div class='headlines'>
-    <h3 class='text'>Přidat příspěvek</h3>
-    <h3 class='sender'>Postava</h3>
-  </div>
+  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
   <div class='addPostWrapper'>
     <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
-    <div class='senderWrapper'>
+    <div class='headlineWrapper'>
+      <h3 class='text'>Za postavu</h3>
+      <h3 class='text'>Jen následujícím</h3>
+    </div>
+    <div class='selectWrapper'>
       <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
-        {#each data.characters.myPlaying as character}
+        {#each myCharacters as character}
+          <option value={character.id}>{character.name}</option>
+        {/each}
+      </select>
+      <select size='4' bind:this={audienceSelect} bind:value={$gameStore.activeGameAudienceIds}>
+        {#each otherCharacters as character}
           <option value={character.id}>{character.name}</option>
         {/each}
       </select>
@@ -92,27 +100,21 @@
   <center>Nemáš ve hře žádnou postavu</center>
 {/if}
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={data.characters.myPlaying} onDelete={deletePost} onEdit={startEdit} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={startEdit} />
 
 <style>
   .addPostWrapper {
-    display: flex;
     width: 100%;
-    gap: 20px;
   }
-    select {
-      background: none;
-    }
-    .senderWrapper select {
-      width: 200px;
-    }
-  .headlines {
+  .headlineWrapper, .selectWrapper {
     display: flex;
+    gap: 40px;
   }
-    .headlines .text {
+    .headlineWrapper h3 {
       flex: 1;
     }
-    .headlines .sender {
-      width: 200px;
+    .selectWrapper select {
+      background: none;
+      flex: 1;
     }
 </style>

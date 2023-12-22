@@ -6,40 +6,17 @@
   import GameCharacters from '@components/games/GameCharacters.svelte'
   import GameInfo from '@components/games/GameInfo.svelte'
 
-  export let user
+  export let user = {}
   export let data = {}
 
   // prepare store
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
 
-  // sort characters
-  const isCharPlayer = (char) => { return char.player?.id === user.id }
-  const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
-  const characters = { playing: [], waiting: [], open: [], myPlaying: [], storytellers: [] }
-
   onMount(() => {
     $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
     if (!isGameOwner && $gameStore.activeTab === 'chars') { $gameStore.activeTab = 'info' } // if you get logged out
   })
-
-  data.characters.forEach((char) => {
-    if (isCharPlayer(char)) { characters.myPlaying.push(char) } // mine
-    if (char.storyteller) { // storytellers
-      characters.storytellers.push(char)
-    } else if (char.open) { // open
-      characters.open.push(char)
-    } else if (char.player) {
-      if (char.accepted) { // playing
-        if (isVisible(char)) { characters.playing.push(char) } // don't show hidden to players
-      } else { // waiting
-        characters.waiting.push(char)
-      }
-    }
-    char.type = 'character'
-  })
-  data.characters = characters
-  data.identities = [{ name: user.name, id: user.id, type: 'user' }, ...characters.myPlaying]
 </script>
 
 <main>
@@ -59,11 +36,11 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion {data} {isGameOwner} />
+      <Discussion {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} {isGameOwner} />
+      <GameThread {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chars'}
-      <GameCharacters {characters} {user} {isGameOwner} />
+      <GameCharacters {data} {user} {isGameOwner} />
     {/if}
   </div>
 </main>
