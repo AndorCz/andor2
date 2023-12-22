@@ -7,9 +7,9 @@
   export let isGameOwner
 
   // sort character categories
+  // const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
   const isCharPlayer = (char) => { return char.player?.id === user.id }
-  const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
-  const characters = { playing: [], waiting: [], open: [], storytellers: [] }
+  const characters = { playing: [], waiting: [], open: [], storytellers: [], myWaiting: [] }
 
   data.characters.forEach((char) => {
     if (char.storyteller) { // storytellers
@@ -18,9 +18,13 @@
       characters.open.push(char)
     } else if (char.player) {
       if (char.accepted) { // playing
-        if (isVisible(char)) { characters.playing.push(char) } // don't show hidden to players
+        characters.playing.push(char)
       } else { // waiting
-        characters.waiting.push(char)
+        if (isGameOwner) { // all waiting to owner
+          characters.waiting.push(char)
+        } else if (isCharPlayer(char)) { // only their to player
+          characters.waiting.push(char)
+        }
       }
     }
   })
@@ -51,17 +55,19 @@
     {/if}
   </table>
 
-  <h2>Hlásí se</h2>
-  <table class='characters'>
-    {#if characters.waiting.length > 0}
-      <CharacterHeader {isGameOwner} />
-      {#each characters.waiting as character}
-        <Character {user} {character} {isGameOwner} />
-      {/each}
-    {:else}
-      <tr><td class='none'>Žádné postavy</td></tr>
-    {/if}
-  </table>
+  {#if isGameOwner || characters.waiting.length > 0}
+    <h2>Hlásí se</h2>
+    <table class='characters'>
+      {#if characters.waiting.length > 0}
+        <CharacterHeader {isGameOwner} />
+        {#each characters.waiting as character}
+          <Character {user} {character} {isGameOwner} />
+        {/each}
+      {:else}
+        <tr><td class='none'>Žádné postavy</td></tr>
+      {/if}
+    </table>
+  {/if}
 
   <h2>Volné</h2>
   <table class='characters'>

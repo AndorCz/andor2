@@ -18,9 +18,13 @@
   let saving = false
   let editing = false
 
+  let activeGameAudienceIds = [] // temp
+
   const gameStore = getGameStore(data.id)
-  const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
-  const otherCharacters = data.characters.filter((char) => { return char.player?.id !== user.id })
+
+  const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
+  const otherCharacters = data.characters.filter((char) => { return char.accepted && !char.hidden && char.player?.id !== user.id })
+  otherCharacters.push({ id: '*', name: 'Všem' })
 
   const getActiveCharacter = () => {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
@@ -80,8 +84,8 @@
   <div class='addPostWrapper'>
     <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
     <div class='headlineWrapper'>
-      <h3 class='text'>Za postavu</h3>
-      <h3 class='text'>Jen následujícím</h3>
+      <h3 class='text'>Jako</h3>
+      <h3 class='text'>Komu</h3>
     </div>
     <div class='selectWrapper'>
       <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
@@ -89,7 +93,7 @@
           <option value={character.id}>{character.name}</option>
         {/each}
       </select>
-      <select size='4' bind:this={audienceSelect} bind:value={$gameStore.activeGameAudienceIds}>
+      <select size='4' bind:this={audienceSelect} bind:value={activeGameAudienceIds} multiple>
         {#each otherCharacters as character}
           <option value={character.id}>{character.name}</option>
         {/each}

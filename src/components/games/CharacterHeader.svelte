@@ -2,14 +2,14 @@
   export let isGameOwner = false
 </script>
 
-<tr>
-  <th class='portrait'></th>
-  <th class='name'>Jméno</th>
-  <th class='player'>Hráč</th>
-  {#if isGameOwner}
+{#if isGameOwner}
+  <tr>
+    <th class='portrait'></th>
+    <th class='name'>Jméno</th>
+    <th class='player'>Hráč</th>
     <th class='tools'></th>
-  {/if}
-</tr>
+  </tr>
+{/if}
 
 <style>
   th {
