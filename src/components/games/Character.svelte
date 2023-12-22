@@ -10,12 +10,12 @@
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
     if (error) { return handleError(error) }
-    window.location.href = './?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
+    window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
   async function rejectCharacter (id) {
     const { error } = await supabase.from('characters').update({ game: null }).eq('id', id)
     if (error) { return handleError(error) }
-    window.location.href = './?toastType=success&toastText=' + encodeURIComponent('Postava byla odmítnuta')
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla odmítnuta')
   }
 </script>
 
@@ -27,7 +27,7 @@
   </td>
   <td class='name'>
     {#if character.storyteller}
-      <span class='material-symbols star' title='Vypravěč'>star</span>
+      <span class='material-symbols-rounded star' title='Vypravěč'>star</span>
     {/if}
     {#if isGameOwner || isPlayer}
       <a href='./character-form?id={character.id}'>{character.name}</a>
