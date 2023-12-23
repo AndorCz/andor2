@@ -70,6 +70,7 @@ create table posts (
   owner uuid,
   owner_type text not null,
   content text,
+  audience uuid[] null,
   openai_post text null,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
@@ -87,7 +88,8 @@ create view posts_owner as
     case 
       when p.owner_type = 'user' then profiles.portrait
       when p.owner_type = 'character' then characters.portrait
-    end as owner_portrait
+    end as owner_portrait,
+    get_character_names(p.audience) AS audience_names
   from posts p
   left join profiles on p.owner = profiles.id and p.owner_type = 'user'
   left join characters on p.owner = characters.id and p.owner_type = 'character';
@@ -114,6 +116,18 @@ begin
   delete from threads where id = old.discussion;
   delete from threads where id = old.game;
   return old;
+end;
+$$ language plpgsql;
+
+create or replace function get_character_names(audience_ids uuid[])
+returns text[] as $$
+declare
+    names text[];
+begin
+    select array_agg(name) into names
+    from unnest(audience_ids) as audience_id
+    join characters on characters.id = audience_id;
+    return names;
 end;
 $$ language plpgsql;
 

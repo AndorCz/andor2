@@ -8,6 +8,8 @@ export function saveAuthCookies (cookies, { access_token, refresh_token }) {
 
 export function clone (source) { return source ? JSON.parse(JSON.stringify(source)) : source }
 
+export function isFilledArray (array) { return Array.isArray(array) && array.length }
+
 export function resizePortrait (img, width, height) {
   const { width: imgWidth, height: imgHeight } = img
   const imgRatio = imgWidth / imgHeight

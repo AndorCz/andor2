@@ -20,7 +20,12 @@
       {/if}
       <div class='body'>
         <div class='header'>
-          <span class='name'>{post.owner_name}</span>
+          <span class='title'>
+            <b>{post.owner_name}</b>
+            {#if post.audience_names}
+              <span class='audience'>jen pro: <b>{post.audience_names.join(', ')}</b></span>
+            {/if}
+          </span>
           <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
           {#if canDeleteAll || isMyPost(post.owner)}
             <button on:click={() => onEdit(post.id, post.content)} class='material-symbols edit' title='upravit příspěvek'>edit</button>
@@ -40,7 +45,7 @@
 <style>
 
   center {
-    margin-top: 100px;
+    margin-top: 50px;
   }
     .post {
       display: flex;
@@ -73,14 +78,16 @@
         background-color: color-mix(in srgb, var(--block), var(--panel) 50%);
         padding: 10px 15px;
         box-shadow: 2px 2px 3px #0002;
+        color: var(--dim);
       }
-        .name {
-          font-weight: bold;
+        .title {
           flex: 1;
-          opacity: 0.5;
+        }
+        .audience {
+          font-size: 11pt;
+          padding-left: 5px;
         }
         .time {
-          color: var(--dim);
           opacity: 0.5;
         }
         .delete, .edit {
@@ -93,5 +100,4 @@
           .delete:hover, .edit:hover {
             opacity: 1;
           }
-
 </style>
