@@ -1,4 +1,5 @@
-// browser only
+
+// BROWSER HELPERS
 
 export async function sendPost (method = 'POST', data) {
   if (data.content.trim().length === 0) { return window.showError('Příspěvek nesmí být prázdný') }

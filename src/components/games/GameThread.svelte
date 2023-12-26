@@ -18,6 +18,7 @@
   let saving = false
   let editing = false
   let filterActive = false
+  // let generatingPost = false
 
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   const otherCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id !== user.id })
@@ -101,10 +102,29 @@
     if ($gameStore.activeGameAudienceIds.includes('*')) { $gameStore.activeGameAudienceIds = ['*'] } // set all
     loadPosts() // filter posts based on audience selection
   }
+
+  /* waiting for option to delete posts in openai api
+  async function generatePost () {
+    if (textareaValue) { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
+    generatingPost = true
+    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system, thread: data.openai_thread }) })
+    if (res.error) { return showError(res.error) }
+    const json = await res.json()
+    textareaValue = json.post
+    generatingPost = false
+  }
+  */
 </script>
 
 {#if $gameStore.activeGameCharacterId}
-  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+  <div class='headlineWrapper'>
+    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+    <!--
+    {#if isGameOwner}
+      <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
+    {/if}
+    -->
+  </div>
   <div class='addPostWrapper'>
     <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
     <div class='headlineWrapper'>
@@ -139,6 +159,11 @@
   .addPostWrapper {
     width: 100%;
   }
+  /*
+  .generate {
+    height: fit-content;
+  }
+  */
   .headlineWrapper, .selectWrapper {
     display: flex;
     gap: 40px;

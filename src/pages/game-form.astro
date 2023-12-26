@@ -1,7 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { supabase, handleError } from '@lib/database'
-  import { createThread } from '@lib/openai'
+  import { createThread, createStoryteller } from '@lib/openai'
 
   const { user } = Astro.locals
 
@@ -9,9 +9,11 @@
     const formData = await Astro.request.formData()
     const gameName = formData.get('gameName')
     const gameSystem = formData.get('gameSystem')
-    const openAiThread = await createThread()
 
-    const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread }).select().single()
+    const openAiThread = await createThread()
+    const openAiStoryteller = await createStoryteller('Vypravěč pro ' + gameName, gameSystem)
+
+    const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
 
     if (error) { handleError(error) }
     else {

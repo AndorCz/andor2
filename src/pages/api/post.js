@@ -7,8 +7,9 @@ import { isFilledArray } from '@lib/utils'
 export const GET = async ({ url, request }) => {
   const { game, ownersToFilter, audienceToFilter } = Object.fromEntries(url.searchParams)
   const query = supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, audience, audience_names').eq('thread', game)
-  if (isFilledArray(audienceToFilter)) { query.overlaps('audience', audienceToFilter) }
-  if (isFilledArray(ownersToFilter)) { query.in('owner', ownersToFilter) }
+  if (isFilledArray(audienceToFilter)) { query.overlaps('audience', audienceToFilter) } // add private posts
+  if (isFilledArray(ownersToFilter)) { query.in('owner', ownersToFilter) } // add your posts
+  query.is('audience', null) // add public posts
   query.order('created_at', { ascending: false })
   const { data: postData, error } = await query
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
