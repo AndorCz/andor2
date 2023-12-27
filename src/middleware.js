@@ -42,5 +42,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
   }
+  console.log('middleware: last line fired')
   return next()
 }
