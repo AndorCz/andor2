@@ -9,6 +9,7 @@
   let uploading = false
 
   async function processPortrait () {
+    uploading = true
     if (files && files[0]) {
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
@@ -20,8 +21,9 @@
         img.src = resized
       }
       identity.portrait = img.src || ''
-      if (onPortraitChange) { onPortraitChange(identity.portrait) }
+      if (onPortraitChange) { await onPortraitChange(identity.portrait) }
     }
+    uploading = false
   }
 
   // clear preview or identity portrait

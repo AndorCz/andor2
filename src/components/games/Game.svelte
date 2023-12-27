@@ -5,6 +5,7 @@
   import GameThread from '@components/games/GameThread.svelte'
   import GameCharacters from '@components/games/GameCharacters.svelte'
   import GameInfo from '@components/games/GameInfo.svelte'
+  import GameSettings from '@components/games/GameSettings.svelte'
 
   export let user = {}
   export let data = {}
@@ -29,7 +30,7 @@
     <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
     {#if isGameOwner}
-      <!-- 2DO: show settings -->
+      <button on:click={() => { $gameStore.activeTab = 'set' }} class={$gameStore.activeTab === 'set' ? 'active' : ''}>Nastavení</button>
     {/if}
   </nav>
 
@@ -42,6 +43,8 @@
       <GameThread {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} />
+    {:else if $gameStore.activeTab === 'set'}
+      <GameSettings {data} {isGameOwner} />
     {/if}
   </div>
 </main>

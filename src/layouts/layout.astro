@@ -7,7 +7,7 @@ import { ViewTransitions } from 'astro:transitions'
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user } = Astro.locals
-const { title } = Astro.props
+const { title, header } = Astro.props
 ---
 
 <html lang='cs'>
@@ -27,7 +27,7 @@ const { title } = Astro.props
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} />
+        <Header {pathname} customImage={header} client:only />
         <div id='content'>
           <slot />
         </div>

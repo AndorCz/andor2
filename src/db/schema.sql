@@ -43,6 +43,7 @@ create table games (
   game int2 null,
   openai_thread text null,
   openai_storyteller text null,
+  custom_header boolean null,
   created_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_fkey foreign key (discussion) references threads(id),
