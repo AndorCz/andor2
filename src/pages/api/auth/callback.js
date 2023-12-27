@@ -3,8 +3,6 @@ import { supabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
 export const GET = async ({ url, cookies, redirect }) => {
-  console.log('callback api GET fired')
-
   const authCode = url.searchParams.get('code')
   if (!authCode) { return new Response('No code provided', { status: 400 }) }
 

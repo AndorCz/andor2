@@ -14,14 +14,14 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
     try {
       // try reading user from jwt payload
       decoded = jwt.verify(accessToken, import.meta.env.SUPABASE_JWT_SECRET)
-    } catch (e) { console.log('jwt verify error: ', e.message) }
+    } catch (e) { console.log('jwt verify error: ', e.message) } // log to not trigger sentry
     if (decoded) {
       locals.user = { id: decoded.sub, email: decoded.email }
     } else {
       // try refreshing session
       const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
       if (error) {
-        console.log('auth error', error.message)
+        console.log('auth error', error.message) // log to not trigger sentry
         // not possible to use tokens, clean up cookies
         cookies.delete('sb-access-token')
         cookies.delete('sb-refresh-token')
@@ -42,6 +42,5 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       }
     }
   }
-  console.log('middleware: last line fired')
   return next()
 }

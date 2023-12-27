@@ -2,13 +2,10 @@
 import { supabase } from '@lib/database'
 
 export const GET = async ({ request, redirect }) => {
-  console.log('landed on GET request')
   return new Response('Login selhal', { status: 400 })
 }
 
 export const POST = async ({ request, redirect }) => {
-  console.log('login api POST fired')
-
   const formData = await request.formData()
   const provider = formData.get('provider')?.toString()
 
