@@ -126,7 +126,7 @@
     -->
   </div>
   <div class='addPostWrapper'>
-    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
+    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
     <div class='headlineWrapper'>
       <h3 class='text'>Jako</h3>
       <h3 class='text'>Komu</h3>

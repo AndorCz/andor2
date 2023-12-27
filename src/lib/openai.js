@@ -79,13 +79,12 @@ export async function getPosts ({ threadId, role, order = 'asc' }) {
 
 export async function savePost (threadId, content, characterId) {
   return await openai.beta.threads.messages.create(threadId, { role: 'user', content, metadata: { characterId } })
+    .catch(error => console.error('openai api error: ', error))
 }
 
 export async function editPost (threadId, messageId, newContent) {
-  const message = await openai.beta.threads.messages.update(threadId, messageId, { content: [{ type: 'text', text: { value: newContent } }] })
+  return await openai.beta.threads.messages.update(threadId, messageId, { content: [{ type: 'text', text: { value: newContent } }] })
     .catch(error => console.error('openai api error: ', error))
-  console.log('updated message', message)
-  return message
 }
 
 export async function generateStory (prompt, system) {
@@ -138,4 +137,14 @@ export async function generatePost (thread, secrets, system) {
     console.error(error)
     return error
   }
+}
+
+export async function generatePortrait (appearance, user) {
+  return await openai.images.generate({
+    model: 'dall-e-3',
+    prompt: `Digital painting, no text, RPG character portrait: ${appearance}`,
+    size: '1024x1024',
+    user
+  })
+    .catch(error => console.error('openai api error: ', error))
 }

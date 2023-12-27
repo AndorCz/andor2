@@ -1,7 +1,7 @@
 ---
-	import Layout from '@layouts/layout.astro'
   import { supabase, handleError } from '@lib/database'
-  import PortraitInput from '@components/common/PortraitInput.svelte'
+	import Layout from '@layouts/layout.astro'
+  import CharacterForm from '@components/games/CharacterForm.svelte'
 
   const { user } = Astro.locals
   const { gameId } = Astro.params
@@ -22,6 +22,7 @@
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
     character.name = data.get('charName') || 'Beze jména'
+    character.appearance = data.get('charLooks') || ''
     character.bio = data.get('charBio') || ''
     character.portrait = data.get('charPortrait') || ''
     character.storyteller = data.get('storyteller') || false
@@ -41,59 +42,5 @@
   <a href='javascript:history.back()'>zpět</a>
 
   <h1>Vytvořit postavu</h1>
-
-  {user.id ? (
-    <form method='POST' autocomplete='off'>
-      <table>
-        <tr>
-          <td class='labels'><label for='charName'>Jméno</label></td>
-          <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name} /></td>
-        </tr>
-        <tr>
-          <td class='labels'><label for='charBio'>Popis</label></td>
-          <td class='inputs'><textarea id='charBio' name='charBio'>{character.bio}</textarea></td>
-        </tr>
-        {isGameOwner && (
-          <tr>
-            <td class='labels'><label for='storyteller'>Vypravěč</label></td>
-            <td class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></td>
-          </tr>
-        )}
-        <tr>
-          <td class='labels'><label for='charIcon'>Portrét</label></td>
-          <td class='inputs'><PortraitInput identity={character} client:only /></td>
-        </tr>
-      </table>
-      <center>
-        <button type='submit'>{id ? 'Upravit' : 'Vytvořit'}</button>
-      </center>
-    </form>
-  ) : (
-    <div>
-      <p>Pro vytvoření nové postavy se musíš přihlásit.</p>
-    </div>
-  )}
+  <CharacterForm {character} {isGameOwner} userId={user.id} client:only />
 </Layout>
-
-<style>
-  form, form table {
-    width: 100%;
-  }
-    td {
-      padding: 10px 0px;
-    }
-    .labels {
-      width: 20%;
-      padding-right: 10px;
-    }
-    #charName {
-      width: 400px;
-    }
-    textarea {
-      width: 100%;
-      min-height: 200px;
-    }
-  center {
-    margin-top: 20px;
-  }
-</style>

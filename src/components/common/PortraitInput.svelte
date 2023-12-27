@@ -42,7 +42,7 @@
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
     {:else}
-      <div class='portrait blank' title='Fotka bude zmenšená na 200×200 px, oříznutá zespodu'>Nahrát portrét</div>
+      <div class='portrait blank' title='Fotka bude zmenšená na 200×200 px, oříznutá zespodu'>Nahrát<br>portrét</div>
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
@@ -53,15 +53,15 @@
 <style>
   .wrapper {
     position: relative;
-    width: 100px;
+    width: 140px;
   }
     .portrait {
       cursor: pointer;
       display: flex;
       object-fit: cover;
       object-position: top;
-      width: var(--portrait-size, 100px);
-      height: var(--portrait-size, 150px);
+      width: var(--portrait-size, 140px);
+      height: var(--portrait-size, 200px);
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;

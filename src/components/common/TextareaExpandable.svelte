@@ -1,8 +1,10 @@
 <script>
   export let value
   export let onSave
+  export let name
   export let disabled = false
   export let editing = false
+  export let showButton = false
   export let buttonIcon = 'send'
 
   const minHeight = 140
@@ -20,10 +22,12 @@
 </script>
 
 <div class='wrapper'>
-  <textarea bind:value={value} use:setHeight on:input={setHeight}></textarea>
-  <button on:click={onSave} {disabled} class='save'>
-    <span class='material-symbols'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
-  </button>
+  <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
+  {#if showButton}
+    <button on:click={onSave} {disabled} class='save'>
+      <span class='material-symbols'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
+    </button>
+  {/if}
   {#if editing}
     <button on:click={cancelEdit} class='cancel'>
       <span class='material-symbols'>close</span>
@@ -40,8 +44,10 @@
       width: 100%;
       min-height: 100%;
       display: block;
-      padding-right: 80px;
     }
+      .withButton {
+        padding-right: 80px;
+      }
 
     button {
       position: absolute;

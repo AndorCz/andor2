@@ -28,7 +28,7 @@
     <div id='dots'></div>
   {/if}
   {#if isEditing}
-    <TextareaExpandable bind:value={value} onSave={onSaveWrapper} buttonIcon='done' />
+    <TextareaExpandable bind:value={value} onSave={onSaveWrapper} buttonIcon='done' showButton />
   {:else}
     <content class='editableLong'>{@html marked(value)}</content>
     {#if canEdit}

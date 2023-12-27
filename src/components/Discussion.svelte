@@ -80,7 +80,7 @@
   <h3 class='sender'>Identita</h3>
 </div>
 <div class='addPostWrapper'>
-  <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} />
+  <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
   <div class='senderWrapper'>
     <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
       {#each identities as identity}

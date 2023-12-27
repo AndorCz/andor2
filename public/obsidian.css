@@ -137,7 +137,7 @@ button, .button {
   }
 
 input[type=text], textarea, input[type=checkbox] {
-  padding: 15px 10px;
+  padding: 20px;
   margin: 0px;
   font-size: 14pt;
   border: none;
@@ -149,6 +149,11 @@ input[type=text], textarea, input[type=checkbox] {
   appearance: none;
   min-width: 40px;
   min-height: 40px;
+}
+
+textarea {
+  font-size: 12pt;
+  line-height: 140%;
 }
 
   input[type=text]:focus, textarea:focus, select:focus {
