@@ -14,10 +14,10 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      if (img.naturalWidth < 256 || img.naturalHeight < 256) {
+      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
         return showError('Obrázek je příliš malý')
-      } else { // if (img.naturalWidth >= 256 || img.naturalHeight >= 256)
-        const resized = resizePortrait(img, 256, 256) // returns base64 string
+      } else {
+        const resized = resizePortrait(img, 200, 200) // returns base64 string
         img.src = resized
       }
       identity.portrait = img.src || ''
@@ -42,7 +42,7 @@
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
     {:else}
-      <div class='portrait blank' title='Fotka bude zmenšená na 256×256 px, oříznutá zespodu'>Nahrát portrét</div>
+      <div class='portrait blank' title='Fotka bude zmenšená na 200×200 px, oříznutá zespodu'>Nahrát portrét</div>
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>

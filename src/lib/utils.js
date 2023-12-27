@@ -30,3 +30,12 @@ export function resizePortrait (img, width, height) {
   cropCtx.drawImage(canvas, startX, startY, width, height, 0, 0, width, height)
   return cropCanvas.toDataURL()
 }
+
+export function getImage (file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => { resolve(img) }
+    img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
+    img.src = URL.createObjectURL(file)
+  })
+}

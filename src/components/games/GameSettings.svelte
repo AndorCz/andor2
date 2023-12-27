@@ -2,6 +2,7 @@
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
+  import { getImage } from '@lib/utils'
 
   export let data
   export let isGameOwner
@@ -20,13 +21,18 @@
     uploading = true
     const file = files[0]
     if (file.size < 400000) {
-      $headerPreview = URL.createObjectURL(file)
-      const { error: error1 } = await supabase.storage.from('headers').upload(data.name, file, { upsert: true })
-      const { error: error2 } = await supabase.from('games').update({ custom_header: true }).eq('id', data.id)
-      if (error1 || error2) { return handleError(error1 || error2) }
-      data.custom_header = true
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      showSuccess('Hlavička byla uložena')
+      const image = await getImage(file)
+      if (image.width > 1100 && image.height === 226) {
+        $headerPreview = URL.createObjectURL(file)
+        const { error: error1 } = await supabase.storage.from('headers').upload(data.name, file, { upsert: true })
+        const { error: error2 } = await supabase.from('games').update({ custom_header: true }).eq('id', data.id)
+        if (error1 || error2) { return handleError(error1 || error2) }
+        data.custom_header = true
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        showSuccess('Hlavička byla uložena')
+      } else {
+        showError('Nesprávné rozměry obrázku (226 px na výšku, 1100+ px na šířku)')
+      }
     } else {
       showError('Obrázek je datově příliš velký (max. 400kB)')
     }
