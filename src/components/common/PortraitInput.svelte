@@ -14,10 +14,10 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
+      if (img.naturalWidth < 140 || img.naturalHeight < 200) {
         return showError('Obrázek je příliš malý')
       } else {
-        const resized = resizePortrait(img, 200, 200) // returns base64 string
+        const resized = resizePortrait(img, 140, 200) // returns base64 string
         img.src = resized
       }
       identity.portrait = img.src || ''
@@ -27,13 +27,14 @@
   }
 
   // clear preview or identity portrait
-  async function clearPortrait () {
-    if (window.prompt) {
-      const confirm = window.prompt('Opravdu smazat portrét? (ano/ne)')
-      if (confirm !== 'ano') { return }
-    }
+  async function clearPortrait (e) {
+    e.preventDefault()
+    const confirm = window.prompt('Opravdu smazat portrét? (ano/ne)')
+    if (confirm !== 'ano') { return }
     files = null
+    console.log('identity before', identity)
     identity.portrait = ''
+    console.log('identity after', identity)
   }
 </script>
 
@@ -46,7 +47,7 @@
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
-  <button type='reset' class='clear material-symbols clean' on:click={clearPortrait} title='smazat'>close</button>
+  <button class='clear material-symbols clean' on:click={clearPortrait} title='smazat'>close</button>
   <input type='hidden' name='charPortrait' value={identity.portrait || ''} />
 </div>
 

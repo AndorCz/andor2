@@ -31,6 +31,15 @@ export function resizePortrait (img, width, height) {
   return cropCanvas.toDataURL()
 }
 
+export function loadBase64Image (base64String) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = 'data:image/png;base64,' + base64String
+  })
+}
+
 export function getImage (file) {
   return new Promise((resolve, reject) => {
     const img = new Image()

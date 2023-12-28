@@ -144,6 +144,7 @@ export async function generatePortrait (appearance, user) {
     model: 'dall-e-3',
     prompt: `Digital painting, no text, RPG character portrait: ${appearance}`,
     size: '1024x1024',
+    response_format: 'b64_json',
     user
   })
     .catch(error => console.error('openai api error: ', error))
