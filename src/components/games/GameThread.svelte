@@ -6,6 +6,7 @@
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
+  import DiceBox from '@components/games/DiceBox.svelte'
 
   export let user = {}
   export let data = {}
@@ -18,6 +19,7 @@
   let saving = false
   let editing = false
   let filterActive = false
+  let showDiceBox = false
   // let generatingPost = false
 
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
@@ -63,7 +65,7 @@
     } else {
       filterActive = false
     }
-    const res = await fetch(`/api/post?game=${data.game}&owners=${JSON.stringify(ownersToFilter)}&audience=${JSON.stringify(myCharacters.map(char => char.id))}`, { method: 'GET' })
+    const res = await fetch(`/api/post?game=${data.game}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}&audience=${encodeURIComponent(JSON.stringify(myCharacters.map(char => char.id)))}`, { method: 'GET' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     posts = json
@@ -118,7 +120,16 @@
 
 {#if $gameStore.activeGameCharacterId}
   <div class='headlineWrapper'>
-    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+    <h3>
+      {#if editing}Upravit příspěvek{:else if showDiceBox}Vrhnout kostky{:else}Přidat příspěvek{/if}
+    </h3>
+    <div class='tools'>
+      {#if showDiceBox}
+        <button on:click={() => { showDiceBox = false }} class='material-symbols diceToggle' title='Psát příspěvek'>edit</button>
+      {:else}
+        <button on:click={() => { showDiceBox = true }} class='material-symbols diceToggle' title='Házet kostky'>casino</button>
+      {/if}
+    </div>
     <!--
     {#if isGameOwner}
       <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
@@ -126,10 +137,14 @@
     -->
   </div>
   <div class='addPostWrapper'>
-    <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+    {#if showDiceBox}
+      <DiceBox threadId={data.game} gameId={data.id} onRoll={loadPosts} />
+    {:else}
+      <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+    {/if}
     <div class='headlineWrapper'>
-      <h3 class='text'>Jako</h3>
-      <h3 class='text'>Komu</h3>
+      <h3>Jako</h3>
+      <h3>Komu</h3>
     </div>
     <div class='selectWrapper'>
       <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
@@ -174,6 +189,9 @@
     .selectWrapper select {
       background: none;
       flex: 1;
+    }
+    .diceToggle {
+      padding: 15px;
     }
   .filterHeadline {
     margin-top: 50px;

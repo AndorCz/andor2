@@ -1,7 +1,7 @@
 <script>
   export let value
   export let onSave
-  export let name
+  export let name = 'textarea'
   export let disabled = false
   export let editing = false
   export let showButton = false

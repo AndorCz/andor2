@@ -32,9 +32,7 @@
             <button on:click={() => onDelete(post.id)} class='material-symbols delete' title='smazat příspěvek'>delete</button>
           {/if}
         </div>
-        <div class='content'>
-          {post.content}
-        </div>
+        <div class='content'>{@html post.content}</div>
       </div>
     </div>
   {:else}
@@ -60,6 +58,7 @@
         .icon img {
           width: 100%;
           display: block;
+          box-shadow: 2px 2px 3px #0002;
         }
 
     .body {

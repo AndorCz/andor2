@@ -286,3 +286,16 @@ select {
       content: none;
     }
   
+
+/* MISC */
+
+
+.diceRoll {
+  line-height: 200%;
+}
+  .diceRoll h3 {
+    margin: 0px;
+  }
+  .diceRoll b {
+    font-size: 20pt;
+  }
