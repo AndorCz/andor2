@@ -31,7 +31,7 @@ export const GET = async ({ url, redirect, locals }) => {
         readableResults[type] = rollDice(sides, count)
       }
     })
-    Object.entries(readableResults).forEach(([type, rolls]) => { post += `${type}: <b>${rolls.join(', ')}</b><br>` })
+    Object.entries(readableResults).forEach(([type, rolls]) => { post += `<div class='row'><span class='type'>${rolls.length}${type}:</span><b>${rolls.join(' ')}</b> = ${rolls.reduce((a, b) => a + b, 0)}</div>` })
     post += '</div>'
 
     // save as a post to db

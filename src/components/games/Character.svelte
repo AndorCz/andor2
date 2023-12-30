@@ -27,7 +27,7 @@
   </td>
   <td class='name'>
     {#if character.storyteller}
-      <span class='material-symbols star' title='Vypravěč'>star</span>
+      <span class='material star' title='Vypravěč'>star</span>
     {/if}
     {#if isGameOwner || isPlayer}
       <a href='./character-form?id={character.id}'>{character.name}</a>

@@ -28,8 +28,8 @@
           </span>
           <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
           {#if canDeleteAll || isMyPost(post.owner)}
-            <button on:click={() => onEdit(post.id, post.content)} class='material-symbols edit' title='upravit příspěvek'>edit</button>
-            <button on:click={() => onDelete(post.id)} class='material-symbols delete' title='smazat příspěvek'>delete</button>
+            <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='upravit příspěvek'>edit</button>
+            <button on:click={() => onDelete(post.id)} class='material delete' title='smazat příspěvek'>delete</button>
           {/if}
         </div>
         <div class='content'>{@html post.content}</div>

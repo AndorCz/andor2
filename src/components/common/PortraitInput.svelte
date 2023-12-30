@@ -47,7 +47,7 @@
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
-  <button class='clear material-symbols clean' on:click={clearPortrait} title='smazat'>close</button>
+  <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
   <input type='hidden' name='charPortrait' value={identity.portrait || ''} />
 </div>
 

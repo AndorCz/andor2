@@ -43,7 +43,7 @@
 
 /* UTILS */
 
-.material-symbols {
+.material {
   font-family: 'Material Symbols Sharp';
   font-weight: normal;
   font-style: normal;
@@ -205,6 +205,10 @@ select {
   
 /* TABS */
 
+.tabs {
+  position: relative;
+}
+
 .tabs a, .tabs button {
   font-family: 'Alegreya Sans';
   font-variation-settings: 'wght' 600;
@@ -251,10 +255,8 @@ select {
   /* SECONDARY TABS */
 
   .tabs.secondary {
-    position: relative;
     border-bottom: 10px var(--block) solid;
   }
-  
   .tabs.secondary:after {
     content: '';
     width: 100%;
@@ -265,27 +267,32 @@ select {
     left: 0px;
     box-shadow: 2px 2px 2px #0001;
   }
-
     .tabs.secondary button:not(.active) {
       color: var(--accent);
     }
       .tabs.secondary button:not(.active):hover {
         color: var(--accent);
       }
-  .tabs button.active {
+  .tabs.secondary button.active {
     background-color: var(--block);
     box-shadow: 2px 0px 2px #0003;
   }
-    .tabs button.active:after {
+    .tabs.secondary button.active:after {
       box-shadow: -8px 0 0 0 var(--block);
     }
-    .tabs button.active:before {
+    .tabs.secondary button.active:before {
       box-shadow: 8px 0 0 0 var(--block);
     }
     .tabs.secondary button:first-child::before {
       content: none;
     }
-  
+
+  /* TERTIARY TABS */
+
+  .tabs.tertiary button {
+    color: var(--accent);
+  }
+
 
 /* MISC */
 
@@ -295,6 +302,13 @@ select {
 }
   .diceRoll h3 {
     margin: 0px;
+  }
+  .diceRoll .row {
+    font-family: courier, courier new, sans-serif;
+  }
+  .diceRoll .type {
+    display: inline-block;
+    width: 80px;
   }
   .diceRoll b {
     font-size: 20pt;

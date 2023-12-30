@@ -25,12 +25,12 @@
   <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
   {#if showButton}
     <button on:click={onSave} {disabled} class='save'>
-      <span class='material-symbols'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
+      <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}
   {#if editing}
     <button on:click={cancelEdit} class='cancel'>
-      <span class='material-symbols'>close</span>
+      <span class='material'>close</span>
     </button>
   {/if}
 </div>

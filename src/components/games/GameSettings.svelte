@@ -59,13 +59,13 @@
   <div class='flex'>
     <label class='button' for='header'>Nahrát obrázek</label>
     <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
-    <button class='material-symbols clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+    <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
   </div>
 
   <h2>Smazání hry</h2>
   Pozor, toto je nevratná akce.<br><br>
   <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
-    <span class='material-symbols'>warning</span><span>Smazat hru</span>
+    <span class='material'>warning</span><span>Smazat hru</span>
   </button>
 {:else}
   Tato sekce je jen pro vlastníka hry.

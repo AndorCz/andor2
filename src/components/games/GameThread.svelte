@@ -119,17 +119,14 @@
 </script>
 
 {#if $gameStore.activeGameCharacterId}
-  <div class='headlineWrapper'>
-    <h3>
-      {#if editing}Upravit příspěvek{:else if showDiceBox}Vrhnout kostky{:else}Přidat příspěvek{/if}
-    </h3>
-    <div class='tools'>
-      {#if showDiceBox}
-        <button on:click={() => { showDiceBox = false }} class='material-symbols diceToggle' title='Psát příspěvek'>edit</button>
-      {:else}
-        <button on:click={() => { showDiceBox = true }} class='material-symbols diceToggle' title='Házet kostky'>casino</button>
-      {/if}
-    </div>
+  <div class='toggleWrapper tabs tertiary'>
+    {#if showDiceBox}
+      <button on:click={() => { showDiceBox = false }} class='diceToggle tab'>Psát příspěvek</button>
+      <h3>Házet kostky</h3>
+    {:else}
+      <h3>{#if editing}Upravit příspěvek{:else}Psát příspěvek{/if}</h3>
+      <button on:click={() => { showDiceBox = true }} class='diceToggle tab'>Házet kostky</button>
+    {/if}
     <!--
     {#if isGameOwner}
       <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
@@ -164,7 +161,7 @@
 {/if}
 
 {#if filterActive}
-  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material-symbols cancel' on:click={() => { $gameStore.activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
+  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $gameStore.activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
 {/if}
 <!--({$gameStore.activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
@@ -179,6 +176,10 @@
     height: fit-content;
   }
   */
+  .toggleWrapper {
+    display: flex;
+    justify-content: space-between;
+  }
   .headlineWrapper, .selectWrapper {
     display: flex;
     gap: 40px;

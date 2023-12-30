@@ -3,7 +3,6 @@
   import { onMount } from 'svelte'
   import { showError } from '@lib/toasts'
   import { getGameStore } from '@lib/stores'
-  import { clone } from '@lib/utils'
 
   export let threadId
   export let gameId
@@ -16,7 +15,7 @@
   $gameStore.dice = $gameStore.dice || defaults
 
   onMount(() => {
-    diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/' })
+    diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
     diceBox.initialize()
   })
 
@@ -35,30 +34,49 @@
     }
   }
 
-  function addDice (type) {
-    $gameStore.dice[type]++ // to force update
-  }
-
-  async function clear () {
-    $gameStore.dice = clone(defaults)
-    diceBox.clearDice()
-  }
+  function addDice (type) { $gameStore.dice[type]++ }
+  function clearDice (type) { $gameStore.dice[type] = 0 }
 </script>
 
 <div class='wrapper'>
-  {#if Object.values($gameStore.dice).some(value => value > 0)}
-    <button on:click={clear} class='clear'>Vynulovat</button>
-  {/if}
-  <button on:click={() => { addDice('d4') }}>{$gameStore.dice.d4}d4</button>
-  <button on:click={() => { addDice('d6') }}>{$gameStore.dice.d6}d6</button>
-  <button on:click={() => { addDice('d8') }}>{$gameStore.dice.d8}d8</button>
-  <button on:click={() => { addDice('d10') }}>{$gameStore.dice.d10}d10</button>
-  <button on:click={() => { addDice('d12') }}>{$gameStore.dice.d12}d12</button>
-  <button on:click={() => { addDice('d20') }}>{$gameStore.dice.d20}d20</button>
-  <button on:click={() => { addDice('d100') }}>{$gameStore.dice.d100}d100</button>
   <div id='diceBox'></div>
-  <div class='send'>
-    <button on:click={showRoll} class='roll'>Hodit a zapsat</button>
+  <div class='tools'>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d4}</div>
+      <button on:click={() => { clearDice('d4') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d4') }} class='add d4'>d4</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d6}</div>
+      <button on:click={() => { clearDice('d6') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d6') }} class='add d6'>d6</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d8}</div>
+      <button on:click={() => { clearDice('d8') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d8') }} class='add d8'>d8</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d10}</div>
+      <button on:click={() => { clearDice('d10') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d10') }} class='add d10'>d10</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d12}</div>
+      <button on:click={() => { clearDice('d12') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d12') }} class='add d12'>d12</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d20}</div>
+      <button on:click={() => { clearDice('d20') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d20') }} class='add d20'>d20</button>
+    </div>
+    <div class='die'>
+      <div class='count'>{$gameStore.dice.d100}</div>
+      <button on:click={() => { clearDice('d100') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d100') }} class='add d10'>d100</button>
+    </div>
+    <button on:click={showRoll} class='roll'>Hodit</button>
   </div>
 </div>
 
@@ -66,16 +84,79 @@
   .wrapper {
     position: relative;
   }
+    .tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      gap: 10px;
+    }
+      .die {
+        flex: 1;
+        position: relative;
+        background-color: var(--block);
+        border-radius: 10px;
+        text-align: center;
+        padding-bottom: 10px;
+      }
+        .add {
+          background: none;
+          border: none;
+          padding: 0;
+          margin: 0;
+          box-shadow: none;
+          text-shadow: 1px 1px 6px #0005;
+          width: 80px;
+          height: 80px;
+          background-size: contain;
+          background-repeat: no-repeat;
+          position: relative;
+          font-size: 2rem;
+        }
+          .add:hover, .clear:hover {
+            transform: scale(1.1);
+          }
+        .clear {
+          position: absolute;
+          top: 0px;
+          right: 0px;
+          padding: 5px;
+          border-radius: 0px 10px 0px 10px;
+          font-size: 1.2rem;
+          color: var(--dim);
+        }
+        .count {
+          text-align: center;
+          font-weight: bold;
+          width: 100%;
+          padding-top: 20px;
+          padding-bottom: 15px;
+          font-size: 2.5rem;
+        }
+        button.d4 {
+          background-image: url('/dice/d4.png');
+        }
+        button.d6 {
+          background-image: url('/dice/d6.png');
+        }
+        button.d8 {
+          background-image: url('/dice/d8.png');
+        }
+        button.d10 {
+          background-image: url('/dice/d10.png');
+        }
+        button.d12 {
+          background-image: url('/dice/d12.png');
+        }
+        button.d12 {
+          background-image: url('/dice/d12.png');
+        }
+        button.d20 {
+          background-image: url('/dice/d20.png');
+        }
     #diceBox {
       width: 100%;
       height: 300px;
-    }
-    .clear {
-      position: absolute;
-      top: 0px;
-      right: 0px;
-    }
-    .send {
-      text-align: right;
     }
 </style>
