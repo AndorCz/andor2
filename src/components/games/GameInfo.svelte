@@ -61,7 +61,7 @@ Správce hry: {data.owner.name}
     margin-top: 0px;
   }
     h2 span {
-      font-size: 14pt;
+      font-size: 19px;
       font-style: italic;
       opacity: 0.5;
     }

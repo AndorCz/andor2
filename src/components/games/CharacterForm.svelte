@@ -32,7 +32,7 @@
     <table>
       <tr>
         <td class='labels'><label for='charName'>Jméno</label></td>
-        <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name} /></td>
+        <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name || ''} /></td>
       </tr>
       <tr>
         <td class='labels'><label for='charLooks'>Vzhled</label></td>

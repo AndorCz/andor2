@@ -136,7 +136,7 @@ button, .button {
     padding: 0px;
   }
 
-input[type=text], textarea, input[type=checkbox] {
+input[type=text], textarea, input[type=checkbox], .ProseMirror {
   padding: 20px;
   margin: 0px;
   font-size: 14pt;
@@ -151,12 +151,12 @@ input[type=text], textarea, input[type=checkbox] {
   min-height: 40px;
 }
 
-textarea {
-  font-size: 12pt;
+textarea, .ProseMirror {
+  font-size: 20px;
   line-height: 140%;
 }
 
-  input[type=text]:focus, textarea:focus, select:focus {
+  input[type=text]:focus, textarea:focus, select:focus, .ProseMirror-focused {
     outline: 2px var(--buttonBg) solid;
   }
 
@@ -255,7 +255,7 @@ select {
   /* SECONDARY TABS */
 
   .tabs.secondary {
-    border-bottom: 10px var(--block) solid;
+    height: 52px;
   }
   .tabs.secondary:after {
     content: '';
@@ -313,3 +313,9 @@ select {
   .diceRoll b {
     font-size: 20pt;
   }
+
+/* WYSIWYG - TipTap/ProseMirror */
+
+.ProseMirror p {
+  margin: 10px 0px;
+}

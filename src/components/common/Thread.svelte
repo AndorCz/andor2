@@ -5,7 +5,8 @@
   export let onDelete
   export let onEdit
 
-  const isMyPost = (id) => {
+  const isMyPost = (id, dice) => {
+    if (dice) { return false } // don't allow deleting of dice posts, only to game owners
     return myIdentities.find((identity) => { return identity.id === id })
   }
 </script>
@@ -27,7 +28,7 @@
             {/if}
           </span>
           <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
-          {#if canDeleteAll || isMyPost(post.owner)}
+          {#if canDeleteAll || isMyPost(post.owner, post.dice)}
             <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='upravit příspěvek'>edit</button>
             <button on:click={() => onDelete(post.id)} class='material delete' title='smazat příspěvek'>delete</button>
           {/if}
@@ -83,7 +84,7 @@
           flex: 1;
         }
         .audience {
-          font-size: 11pt;
+          font-size: 15px;
           padding-left: 5px;
         }
         .time {
@@ -92,7 +93,7 @@
         .delete, .edit {
           margin-left: 10px;
           padding: 5px;
-          font-size: 14pt;
+          font-size: 19px;
           cursor: pointer;
           opacity: 0.5;
         }

@@ -35,7 +35,7 @@ export const GET = async ({ url, redirect, locals }) => {
     post += '</div>'
 
     // save as a post to db
-    const { error } = await supabase.from('posts').insert({ thread, owner, owner_type: 'character', content: post })
+    const { error } = await supabase.from('posts').insert({ thread, owner, owner_type: 'character', content: post, dice: true })
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 
     // return to the game

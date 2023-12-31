@@ -1,19 +1,27 @@
 
 import { supabase } from '@lib/database'
-import { isFilledArray } from '@lib/utils'
 // import { savePost, editPost } from '@lib/openai'
 
 // get all posts
+/*
 export const GET = async ({ url, request }) => {
-  const { game, ownersToFilter, audienceToFilter } = Object.fromEntries(url.searchParams)
-  const query = supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, audience, audience_names').eq('thread', game)
-  if (isFilledArray(audienceToFilter)) { query.overlaps('audience', audienceToFilter) } // add private posts
-  if (isFilledArray(ownersToFilter)) { query.in('owner', ownersToFilter) } // add your posts
-  query.is('audience', null) // add public posts
+  const { game, owners, audience } = Object.fromEntries(url.searchParams)
+  const query = supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, audience, audience_names, dice').eq('thread', game)
+  if (isFilledArray(audience)) { query.overlaps('audience', JSON.parse(audience)) } // add private posts
+  if (isFilledArray(owners)) { query.in('owner', JSON.parse(owners)) } // add your posts
+  // query.is('audience', null) // add public posts
   query.order('created_at', { ascending: false })
   const { data: postData, error } = await query
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
   return new Response(JSON.stringify(postData), { status: 200 })
+}
+*/
+
+export const GET = async ({ url, request }) => {
+  const { thread, game } = Object.fromEntries(url.searchParams)
+  const { data: posts, error } = await supabase.rpc('get_game_posts', { thread_id: thread, game_id: game })
+  if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
+  return new Response(JSON.stringify(posts), { status: 200 })
 }
 
 // add new post

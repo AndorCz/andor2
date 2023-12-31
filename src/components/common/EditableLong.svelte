@@ -9,14 +9,6 @@
 
   let isEditing = false
 
-  let textareaHeight
-
-  function setHeight (node) {
-    let textareaRef = node.target || node
-    textareaRef.style.height = 'auto'
-    textareaRef.style.height = `${textareaRef.scrollHeight}px`
-  }
-
   function onSaveWrapper () {
     isEditing = false
     onSave()
@@ -49,7 +41,7 @@
       padding-right: 80px;
       padding: 0px 20px;
       padding-right: 80px;
-      font-size: 15pt;
+      font-size: 20px;
       line-height: 1.5;
       background-color: var(--block);
     }

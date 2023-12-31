@@ -1,9 +1,13 @@
 <script>
+  // import { onMount } from 'svelte'
+  import TipTap from '@components/common/TipTap.svelte'
+
   export let value
   export let onSave
+  export let allowHtml = false
   export let name = 'textarea'
-  export let disabled = false
   export let editing = false
+  export let disabled = false
   export let showButton = false
   export let buttonIcon = 'send'
 
@@ -22,7 +26,11 @@
 </script>
 
 <div class='wrapper'>
-  <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
+  {#if allowHtml}
+    <TipTap />
+  {:else}
+    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
+  {/if}
   {#if showButton}
     <button on:click={onSave} {disabled} class='save'>
       <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>

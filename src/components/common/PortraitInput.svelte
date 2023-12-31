@@ -32,9 +32,7 @@
     const confirm = window.prompt('Opravdu smazat portrét? (ano/ne)')
     if (confirm !== 'ano') { return }
     files = null
-    console.log('identity before', identity)
     identity.portrait = ''
-    console.log('identity after', identity)
   }
 </script>
 

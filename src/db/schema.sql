@@ -40,7 +40,7 @@ create table games (
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default '-'::game_system,
   discussion int2 null,
-  game int2 null,
+  game_thread int2 null,
   openai_thread text null,
   openai_storyteller text null,
   custom_header boolean null,
@@ -75,6 +75,7 @@ create table posts (
   content text,
   audience uuid[] null,
   openai_post text null,
+  dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
 );
@@ -125,12 +126,21 @@ $$ language plpgsql;
 create or replace function get_character_names(audience_ids uuid[])
 returns text[] as $$
 declare
-    names text[];
+  names text[];
 begin
-    select array_agg(name) into names
-    from unnest(audience_ids) as audience_id
-    join characters on characters.id = audience_id;
-    return names;
+  select array_agg(name) into names
+  from unnest(audience_ids) as audience_id
+  join characters on characters.id = audience_id;
+  return names;
+end;
+$$ language plpgsql;
+
+create or replace function get_game_posts(thread_id integer, game_id integer)
+returns setof posts_owner as $$
+begin
+  return query select p.* from posts_owner p where p.thread = thread_id
+  and (p.audience is null or p.audience && (select array_agg(c.id) from characters c where c.game = game_id and c.player = auth.uid()))
+  order by p.created_at desc;
 end;
 $$ language plpgsql;
 

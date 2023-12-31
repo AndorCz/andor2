@@ -65,7 +65,7 @@
     } else {
       filterActive = false
     }
-    const res = await fetch(`/api/post?game=${data.game}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}&audience=${encodeURIComponent(JSON.stringify(myCharacters.map(char => char.id)))}`, { method: 'GET' })
+    const res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     posts = json
@@ -75,9 +75,9 @@
     saving = true
     const audience = $gameStore.activeGameAudienceIds.includes('*') ? null : $gameStore.activeGameAudienceIds // clean '*' from audience
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
+      await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
     } else {
-      await sendPost('POST', { thread: data.game, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
+      await sendPost('POST', { thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
     }
     textareaValue = ''
     await loadPosts()
@@ -135,9 +135,9 @@
   </div>
   <div class='addPostWrapper'>
     {#if showDiceBox}
-      <DiceBox threadId={data.game} gameId={data.id} onRoll={loadPosts} />
+      <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
     {:else}
-      <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+      <TextareaExpandable allowHtml bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
     {/if}
     <div class='headlineWrapper'>
       <h3>Jako</h3>
@@ -199,7 +199,7 @@
   }
   .cancel {
     padding: 5px;
-    font-size: 14pt;
+    font-size: 19px;
     margin-left: 10px;
   }
 </style>

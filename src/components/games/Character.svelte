@@ -70,7 +70,7 @@
     }
       .name .star {
         color: var(--accent);
-        font-size: 13pt;
+        font-size: 17px;
         margin-right: 5px;
       }
 
@@ -80,7 +80,7 @@
       min-width: 100px;
     }
       .name a {
-        font-size: 16pt;
+        font-size: 22px;
       }
       .accept {
         display: flex;

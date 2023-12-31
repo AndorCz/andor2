@@ -17,7 +17,7 @@
     color: var(--dim);
     padding-left: 15px;
     text-align: left;
-    font-size: 12pt;
+    font-size: 16px;
     padding-bottom: 10px;
   }
 </style>
