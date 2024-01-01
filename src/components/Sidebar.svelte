@@ -24,7 +24,7 @@
     {user.name || user.email}<br><br>
     <button on:click={logout}>Odhlásit</button>
   {:else}
-    <form action='/api/auth/login' method='post' data-astro-reload>
+    <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
       <button value='google' name='provider' type='submit' class='google w100'>Přihlásit přes Google</button>
     </form>
   {/if}

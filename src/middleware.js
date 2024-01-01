@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken'
+
 import { supabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
-export async function onRequest ({ cookies, locals, redirect, url }, next) {
+export async function onRequest ({ request, cookies, locals, redirect, url }, next) {
   locals.user = {} // empty default
 
   // get auth cookies
@@ -10,27 +10,19 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
   const refreshToken = cookies.get('sb-refresh-token')?.value
 
   if (accessToken && refreshToken) {
-    let decoded
-    try {
-      // try reading user from jwt payload
-      decoded = jwt.verify(accessToken, import.meta.env.SUPABASE_JWT_SECRET)
-    } catch (e) { console.log('jwt verify error: ', e.message) } // log to not trigger sentry
-    if (decoded) {
-      locals.user = { id: decoded.sub, email: decoded.email }
-    } else {
-      // try refreshing session
-      const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
-      if (error) {
-        console.log('auth error', error.message) // log to not trigger sentry
-        // not possible to use tokens, clean up cookies
-        cookies.delete('sb-access-token')
-        cookies.delete('sb-refresh-token')
-      }
-      if (authData.user) {
-        saveAuthCookies(cookies, authData.session)
-        locals.user = { id: authData.user.id, email: authData.user.email }
-      }
+    const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
+
+    if (error) {
+      console.log('auth error', error.message) // log to not trigger sentry
+      // not possible to use tokens, clean up cookies
+      cookies.delete('sb-access-token')
+      cookies.delete('sb-refresh-token')
     }
+    if (authData.user) {
+      saveAuthCookies(cookies, authData.session)
+      locals.user = { id: authData.user.id, email: authData.user.email }
+    }
+    //  }
     // user exists, load profile data
     if (locals.user?.id) {
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()

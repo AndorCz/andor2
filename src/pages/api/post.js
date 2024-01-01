@@ -1,6 +1,6 @@
 
-import { supabase } from '@lib/database'
 // import { savePost, editPost } from '@lib/openai'
+import { supabase } from '@lib/database'
 
 // get all posts
 /*
@@ -17,7 +17,7 @@ export const GET = async ({ url, request }) => {
 }
 */
 
-export const GET = async ({ url, request }) => {
+export const GET = async ({ url, request, locals }) => {
   const { thread, game } = Object.fromEntries(url.searchParams)
   const { data: posts, error } = await supabase.rpc('get_game_posts', { thread_id: thread, game_id: game })
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
@@ -61,7 +61,7 @@ export const PATCH = async ({ url, request, locals }) => {
 }
 
 // delete post
-export const DELETE = async ({ url, request }) => {
+export const DELETE = async ({ url, request, locals }) => {
   const id = url.searchParams.get('id')
   const thread = url.searchParams.get('thread') // open ai thread
   if (!id) { return new Response(JSON.stringify({ error: 'Chybí id příspěvku' }), { status: 500 }) }

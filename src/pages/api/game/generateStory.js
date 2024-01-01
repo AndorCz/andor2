@@ -1,6 +1,6 @@
 
-import { generateStory } from '@lib/openai'
 import { supabase } from '@lib/database'
+import { generateStory } from '@lib/openai'
 
 export const POST = async ({ request, redirect, locals }) => {
   const data = await request.json()

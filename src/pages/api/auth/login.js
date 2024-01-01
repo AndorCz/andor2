@@ -5,7 +5,7 @@ export const GET = async ({ request, redirect }) => {
   return new Response('Login selhal', { status: 400 })
 }
 
-export const POST = async ({ request, redirect }) => {
+export const POST = async ({ request, redirect, locals }) => {
   const formData = await request.formData()
   const provider = formData.get('provider')?.toString()
 

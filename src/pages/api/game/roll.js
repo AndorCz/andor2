@@ -3,7 +3,7 @@ import { supabase } from '@lib/database'
 
 const rollDice = (sides, count) => Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
 
-export const GET = async ({ url, redirect, locals }) => {
+export const GET = async ({ request, url, redirect, locals }) => {
   const { thread, dice, owner } = Object.fromEntries(url.searchParams)
 
   if (thread && dice && owner) {

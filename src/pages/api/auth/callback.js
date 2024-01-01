@@ -1,8 +1,8 @@
 
-import { supabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
+import { supabase } from '@lib/database'
 
-export const GET = async ({ url, cookies, redirect }) => {
+export const GET = async ({ request, url, cookies, redirect, locals }) => {
   const authCode = url.searchParams.get('code')
   if (!authCode) { return new Response('No code provided', { status: 400 }) }
 
