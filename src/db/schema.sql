@@ -135,11 +135,12 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_game_posts(thread_id integer, game_id integer)
+create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[] default null)
 returns setof posts_owner as $$
 begin
   return query select p.* from posts_owner p where p.thread = thread_id
   and (p.audience is null or p.audience && (select array_agg(c.id) from characters c where c.game = game_id and c.player = auth.uid()))
+  and (owners is null or p.owner = any(owners))
   order by p.created_at desc;
 end;
 $$ language plpgsql;

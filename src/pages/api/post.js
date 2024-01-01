@@ -1,6 +1,7 @@
 
 // import { savePost, editPost } from '@lib/openai'
 import { supabase } from '@lib/database'
+import { isFilledArray } from '@lib/utils'
 
 // get all posts
 /*
@@ -18,10 +19,19 @@ export const GET = async ({ url, request }) => {
 */
 
 export const GET = async ({ url, request, locals }) => {
-  const { thread, game } = Object.fromEntries(url.searchParams)
-  const { data: posts, error } = await supabase.rpc('get_game_posts', { thread_id: thread, game_id: game })
-  if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
-  return new Response(JSON.stringify(posts), { status: 200 })
+  const { thread, game, owners } = Object.fromEntries(url.searchParams)
+  const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
+  let res
+  if (game) { // handle game threads
+    res = await supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners })
+  } else { // handle other threads
+    const query = supabase.from('posts_owner').select('*').eq('thread', game)
+    if (filterOwners) { query.in('owner', filterOwners) } // add your posts
+    query.order('created_at', { ascending: false })
+    res = await query
+  }
+  if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
+  return new Response(JSON.stringify(res.data), { status: 200 })
 }
 
 // add new post

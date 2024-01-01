@@ -1,9 +1,9 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import { handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
   import { createThread, createStoryteller } from '@lib/openai'
 
-  const { supabase, user } = Astro.locals
+  const { user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()

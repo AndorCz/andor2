@@ -1,9 +1,9 @@
 ---
-  import { handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import GameList from '@components/games/GameList.svelte'
 
-  const { user, supabase } = Astro.locals
+  const { user } = Astro.locals
   const { data, error } = await supabase.from('games').select('id, name, system, owner:profiles(name)')
   if (error) { handleError(error) }
 ---
