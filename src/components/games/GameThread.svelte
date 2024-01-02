@@ -13,6 +13,7 @@
   export let isGameOwner
 
   let posts = []
+  let textareaRef
   let textareaValue = ''
   let identitySelect
   let audienceSelect
@@ -94,9 +95,11 @@
     await loadPosts()
   }
 
-  async function startEdit (id, content) {
+  async function triggerEdit (id, content) {
     editing = id
     textareaValue = content
+    textareaRef.triggerEdit(id, content)
+    document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 
@@ -137,7 +140,7 @@
     {#if showDiceBox}
       <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
     {:else}
-      <TextareaExpandable allowHtml bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} showButton />
     {/if}
     <div class='headlineWrapper'>
       <h3>Jako</h3>
@@ -165,7 +168,7 @@
 {/if}
 <!--({$gameStore.activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={startEdit} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} />
 
 <style>
   .addPostWrapper {

@@ -16,7 +16,7 @@
 
   onMount(() => {
     $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
-    if (!isGameOwner && $gameStore.activeTab === 'chars') { $gameStore.activeTab = 'info' } // if you get logged out
+    if (!isGameOwner && $gameStore.activeTab === 'set') { $gameStore.activeTab = 'info' } // if you get logged out
   })
 </script>
 

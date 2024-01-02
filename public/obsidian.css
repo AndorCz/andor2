@@ -316,6 +316,9 @@ select {
 
 /* WYSIWYG - TipTap/ProseMirror */
 
+.ProseMirror {
+  min-height: 140px;
+}
 .ProseMirror p {
   margin: 10px 0px;
 }

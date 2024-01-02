@@ -1,17 +1,18 @@
 <script>
   // import { onMount } from 'svelte'
-  import TipTap from '@components/common/TipTap.svelte'
+  import Editor from '@components/common/Editor.svelte'
 
   export let value
   export let onSave
   export let allowHtml = false
   export let name = 'textarea'
-  export let editing = false
   export let disabled = false
   export let showButton = false
   export let buttonIcon = 'send'
 
   const minHeight = 140
+  let editing = false
+  let editorRef
 
   function setHeight (node) {
     const textareaRef = node.target || node
@@ -20,19 +21,38 @@
   }
 
   function cancelEdit () {
-    editing = false
-    value = ''
+    if (window.confirm('Opravdu zrušit úpravu?')) {
+      editing = false
+      value = ''
+      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+    }
+  }
+
+  export function triggerEdit (id, content) {
+    editing = id
+    if (allowHtml) { editorRef.getEditor().commands.setContent(content) }
+  }
+
+  async function triggerSave (html) {
+    if (allowHtml) {
+      const tiptap = editorRef.getEditor()
+      value = await tiptap.getHTML() // get html from editor
+      await onSave()
+      tiptap.commands.clearContent(true)
+    } else {
+      onSave() // otherwise the binded textarea value is used
+    }
   }
 </script>
 
 <div class='wrapper'>
   {#if allowHtml}
-    <TipTap />
+    <Editor bind:this={editorRef} />
   {:else}
     <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
   {/if}
   {#if showButton}
-    <button on:click={onSave} {disabled} class='save'>
+    <button on:click={triggerSave} {disabled} class='save'>
       <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}
