@@ -10,6 +10,7 @@
   let editor
   let editorEl
   let bubbleEl
+  let selectedStyle = 'paragraph'
 
   onMount(() => {
     editor = new Editor({
@@ -27,6 +28,16 @@
   onDestroy(() => { if (editor) { editor.destroy() } })
 
   export function getEditor () { return editor }
+
+  function applyStyle (style) {
+    switch (style) {
+      case 'heading1': editor.chain().focus().setHeading({ level: 1 }).run(); break
+      case 'heading2': editor.chain().focus().setHeading({ level: 2 }).run(); break
+      case 'heading3': editor.chain().focus().setHeading({ level: 3 }).run(); break
+      default: editor.chain().focus().setParagraph().run()
+    }
+    selectedStyle = style
+  }
 </script>
 
 <!--
@@ -46,6 +57,12 @@
       <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'}>format_italic</button>
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'}>format_underlined</button>
       <!--<button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'active material' : 'material'} >format_strikethrough</button>-->
+      <select bind:value={selectedStyle} on:change={() => applyStyle(selectedStyle)}>
+        <option value='paragraph'>Normální</option>
+        <option value='heading1'>Nadpis 1</option>
+        <option value='heading2'>Nadpis 2</option>
+        <option value='heading3'>Nadpis 3</option>
+      </select>
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
@@ -79,6 +96,11 @@
       border: 1px var(--panel) solid;
       box-shadow: inset 2px 2px 2px #0003;
     }
+  select {
+    width: 150px;
+    padding: 0px 5px 5px 10px;
+    background-color: var(--buttonBg);
+  }
   /*
   .tools {
     margin-bottom: 20px;
