@@ -4,13 +4,30 @@
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
+  import TextAlign from '@tiptap/extension-text-align'
+  import Dropdown from '@components/common/Dropdown.svelte'
 
   export let content = ''
 
   let editor
   let editorEl
   let bubbleEl
-  let selectedStyle = 'paragraph'
+  let currentStyle
+  let currentAlign
+
+  const styleOptions = [
+    { value: 'paragraph', icon: 'format_paragraph' },
+    { value: 'heading1', icon: 'format_h1' },
+    { value: 'heading1', icon: 'format_h2' },
+    { value: 'heading1', icon: 'format_h3' }
+  ]
+
+  const alignOptions = [
+    { value: 'left', icon: 'format_align_left' },
+    { value: 'center', icon: 'format_align_center' },
+    { value: 'right', icon: 'format_align_right' },
+    { value: 'justify', icon: 'format_align_justify' }
+  ]
 
   onMount(() => {
     editor = new Editor({
@@ -19,9 +36,17 @@
       extensions: [
         StarterKit,
         Underline,
-        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { offset: [0, 20] } })
+        TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
+        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { offset: [0, 20], maxWidth: 'none' } })
       ],
-      onTransaction: () => { editor = editor } // force re-render so `editor.isActive` works as expected
+      onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected
+      onSelectionUpdate: ({ editor }) => {
+        // check for headings and paragraph
+        const headingLevel = editor.getAttributes('heading').level
+        currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
+        // check for text alignment based on https://github.com/ueberdosis/tiptap/issues/4240#issuecomment-1673411677
+        currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
+      }
     })
   })
 
@@ -29,14 +54,19 @@
 
   export function getEditor () { return editor }
 
-  function applyStyle (style) {
-    switch (style) {
+  function handleStyleSelect (selectedOption) {
+    switch (selectedOption.detail.value) {
       case 'heading1': editor.chain().focus().setHeading({ level: 1 }).run(); break
       case 'heading2': editor.chain().focus().setHeading({ level: 2 }).run(); break
       case 'heading3': editor.chain().focus().setHeading({ level: 3 }).run(); break
       default: editor.chain().focus().setParagraph().run()
     }
-    selectedStyle = style
+    // selectedStyle = selectedOption.detail.value
+  }
+
+  function handleAlignSelect (selectedOption) {
+    editor.chain().focus().setTextAlign(selectedOption.detail.value).run()
+    // selectedAlign = selectedOption.value
   }
 </script>
 
@@ -57,12 +87,8 @@
       <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'}>format_italic</button>
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'}>format_underlined</button>
       <!--<button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'active material' : 'material'} >format_strikethrough</button>-->
-      <select bind:value={selectedStyle} on:change={() => applyStyle(selectedStyle)}>
-        <option value='paragraph'>Normální</option>
-        <option value='heading1'>Nadpis 1</option>
-        <option value='heading2'>Nadpis 2</option>
-        <option value='heading3'>Nadpis 3</option>
-      </select>
+      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} />
+      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} />
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
@@ -96,11 +122,6 @@
       border: 1px var(--panel) solid;
       box-shadow: inset 2px 2px 2px #0003;
     }
-  select {
-    width: 150px;
-    padding: 0px 5px 5px 10px;
-    background-color: var(--buttonBg);
-  }
   /*
   .tools {
     margin-bottom: 20px;
