@@ -18,8 +18,8 @@
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
     { value: 'heading1', icon: 'format_h1' },
-    { value: 'heading1', icon: 'format_h2' },
-    { value: 'heading1', icon: 'format_h3' }
+    { value: 'heading2', icon: 'format_h2' },
+    { value: 'heading3', icon: 'format_h3' }
   ]
 
   const alignOptions = [
