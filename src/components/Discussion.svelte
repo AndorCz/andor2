@@ -12,14 +12,15 @@
   export let isGameOwner
 
   let posts = []
+  let textareaRef
   let textareaValue = ''
   let identitySelect
   let saving = false
   let editing = false
   let page = 0
   let pages
-  const limit = 50
 
+  const limit = 50
   const gameStore = getGameStore(data.id)
 
   // set identities for discussion
@@ -70,9 +71,11 @@
     await loadPosts()
   }
 
-  async function startEdit (id, content) {
+  async function triggerEdit (id, content) {
     editing = id
     textareaValue = content
+    textareaRef.triggerEdit(id, content)
+    document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 </script>
@@ -84,7 +87,7 @@
   <h3 class='sender'>Identita</h3>
 </div>
 <div class='addPostWrapper'>
-  <TextareaExpandable bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+  <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
   <div class='senderWrapper'>
     <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
       {#each identities as identity}
@@ -94,7 +97,7 @@
   </div>
 </div>
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} iconSize={70} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={triggerEdit} iconSize={70} />
 
 <style>
   h2 {

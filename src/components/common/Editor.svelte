@@ -1,11 +1,14 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { Editor } from '@tiptap/core'
+  import { Color } from '@tiptap/extension-color'
+  import Link from '@tiptap/extension-link'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
+  import TextStyle from '@tiptap/extension-text-style'
 
   export let content = ''
 
@@ -36,8 +39,11 @@
       extensions: [
         StarterKit,
         Underline,
-        TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
-        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { offset: [0, 20], maxWidth: 'none' } })
+        TextStyle,
+        Link.configure({ openOnClick: false }),
+        Color.configure({ types: ['textStyle'] }),
+        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { offset: [0, 20], maxWidth: 'none' } }),
+        TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
       ],
       onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected
       onSelectionUpdate: ({ editor }) => {
@@ -68,6 +74,15 @@
     editor.chain().focus().setTextAlign(selectedOption.detail.value).run()
     // selectedAlign = selectedOption.value
   }
+
+  function setLink () {
+    const previousUrl = editor.getAttributes('link').href
+    const url = window.prompt('URL', previousUrl)
+    if (url) {
+      if (url === '') { return editor.chain().focus().extendMarkRange('link').unsetLink().run() } // empty
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run() // update
+    }
+  }
 </script>
 
 <!--
@@ -86,6 +101,13 @@
       <button on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'}>format_bold</button>
       <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'}>format_italic</button>
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'}>format_underlined</button>
+      <span class='sep'></span>
+      <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} />
+      <button on:click={() => editor.chain().focus().unsetColor().run()} class={editor.isActive('textStyle') ? 'material' : 'material active'}>format_color_reset</button>
+      <span class='sep'></span>
+      <button on:click={setLink} class='material'>link</button>
+      <button on:click={() => editor.chain().focus().unsetLink().run()} class={editor.isActive('link') ? 'material' : 'material active'}>link_off</button>
+      <span class='sep'></span>
       <!--<button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'active material' : 'material'} >format_strikethrough</button>-->
       <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} />
       <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} />
@@ -95,6 +117,15 @@
 </div>
 
 <style>
+  .wrapper, .editor {
+    height: 100%;
+  }
+  .sep {
+    width: 1px;
+    height: 20px;
+    background-color: #0003;
+  }
+
   .bubble {
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;

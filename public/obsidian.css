@@ -164,6 +164,12 @@ textarea, .ProseMirror {
     cursor: pointer;
   }
 
+  input[type=color] {
+    width: 36px;
+    height: 36px;
+    padding: 0px;
+  }
+
   input[type=checkbox]:checked {
     background-color: var(--accent);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='20' viewBox='0 -960 960 960' width='20'><path d='M395-253 194-455l83-83 118 117 288-287 83 84-371 371Z' fill='%23201c1b'/></svg>");
@@ -317,6 +323,7 @@ select {
 /* WYSIWYG - TipTap/ProseMirror */
 
 .ProseMirror {
+  height: 100%;
   min-height: 140px;
 }
 .ProseMirror p {
