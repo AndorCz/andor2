@@ -90,7 +90,7 @@
   </div>
 </div>
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} />
+<Thread {posts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} iconSize={70} />
 
 <style>
   h2 {

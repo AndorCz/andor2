@@ -135,30 +135,32 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[] default null)
-returns setof posts_owner as $$
+create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer)
+returns json as $$
 declare
   is_storyteller boolean;
-  player_character_ids uuid[];
+  player_characters uuid[];
 begin
-  -- check if the current user is a storyteller in this game
+  -- check if the user is a storyteller in this game
   select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
 
-  -- get array of current user's character ids
-  select array_agg(c.id) into player_character_ids from characters c where c.game = game_id and c.player = auth.uid();
+  -- get array of player's character ids
+  select array_agg(id) into player_characters from characters where game = game_id and player = auth.uid();
 
-  return query
-  select p.*
-  from posts_owner p
-  where p.thread = thread_id
-  and (
-    p.audience is null or
-    (auth.uid() is not null and (
-      is_storyteller or (p.audience && player_character_ids or p.owner = any(player_character_ids))
-    ))
-  )
-  and (owners is null or p.owner = any(owners))
-  order by p.created_at desc;
+  return (
+    with filtered_posts as (
+      select p.* from posts_owner p where p.thread = thread_id
+      and (
+        p.audience is null or is_storyteller or
+        (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
+      )
+      and (owners is null or p.owner = any(owners))
+    ), ordered_posts as (select * from filtered_posts order by created_at desc limit _limit offset _offset)
+    select json_build_object(
+      'posts', (select json_agg(op) from ordered_posts op),
+      'count', (select count(*) from filtered_posts)
+    )
+  );
 end;
 $$ language plpgsql;
 

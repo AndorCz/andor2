@@ -22,8 +22,11 @@
   let editing = false
   let filterActive = false
   let showDiceBox = false
+  let page = 0
+  let pages
   // let generatingPost = false
 
+  const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   const otherCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id !== user.id })
   otherCharacters.unshift({ id: '*', name: 'Všem' })
@@ -67,10 +70,12 @@
     } else {
       filterActive = false
     }
-    const res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
+    const res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    posts = json
+    posts = json.posts
+    console.log('count', json.count)
+    pages = Math.ceil(json.count / limit)
   }
 
   async function submitPost () {
@@ -176,7 +181,7 @@
 {/if}
 <!--({$gameStore.activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} />
 
 <style>
   .addPostWrapper {

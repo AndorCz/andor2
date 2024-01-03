@@ -18,19 +18,24 @@ export const GET = async ({ url, request }) => {
 */
 
 export const GET = async ({ url, request, locals }) => {
-  const { thread, game, owners } = Object.fromEntries(url.searchParams)
+  const { thread, game, owners, limit = 0, offset = 100 } = Object.fromEntries(url.searchParams)
   const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
-  let res
+  let res, posts, count
   if (game) { // handle game threads
-    res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners })
+    res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset })
+    if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
+    posts = res.data.posts
+    count = res.data.count
   } else { // handle other threads
-    const query = locals.supabase.from('posts_owner').select('*').eq('thread', game)
+    const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit)
     if (filterOwners) { query.in('owner', filterOwners) } // add your posts
     query.order('created_at', { ascending: false })
     res = await query
+    if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
+    posts = res.data
+    count = res.count
   }
-  if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
-  return new Response(JSON.stringify(res.data), { status: 200 })
+  return new Response(JSON.stringify({ posts, count }), { status: 200 })
 }
 
 // add new post
