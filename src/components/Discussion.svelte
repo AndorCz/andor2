@@ -16,6 +16,9 @@
   let identitySelect
   let saving = false
   let editing = false
+  let page = 0
+  let pages
+  const limit = 50
 
   const gameStore = getGameStore(data.id)
 
@@ -34,9 +37,10 @@
   })
 
   async function loadPosts () {
-    const { data: postData, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content').eq('thread', data.discussion).order('created_at', { ascending: false })
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content', { count: 'exact' }).eq('thread', data.discussion).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     posts = postData
+    pages = Math.ceil(count / limit)
   }
 
   function getIdentity (id) {
@@ -90,7 +94,7 @@
   </div>
 </div>
 
-<Thread {posts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} iconSize={70} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={startEdit} iconSize={70} />
 
 <style>
   h2 {
