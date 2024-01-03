@@ -101,12 +101,13 @@
       <button on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'}>format_bold</button>
       <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'}>format_italic</button>
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'}>format_underlined</button>
+      <button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'}>format_strikethrough</button>
       <span class='sep'></span>
       <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} />
-      <button on:click={() => editor.chain().focus().unsetColor().run()} class={editor.isActive('textStyle') ? 'material' : 'material active'}>format_color_reset</button>
+      <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')}>format_color_reset</button>
       <span class='sep'></span>
       <button on:click={setLink} class='material'>link</button>
-      <button on:click={() => editor.chain().focus().unsetLink().run()} class={editor.isActive('link') ? 'material' : 'material active'}>link_off</button>
+      <button on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')}>link_off</button>
       <span class='sep'></span>
       <!--<button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'active material' : 'material'} >format_strikethrough</button>-->
       <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} />
@@ -132,6 +133,7 @@
     border-radius: 15px;
     padding: 12px;
     display: flex;
+    align-items: center;
     gap: 10px;
   }
     .bubble::after {
