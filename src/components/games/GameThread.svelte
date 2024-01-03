@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { clone } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database'
   import { sendPost } from '@lib/helpers'
   import { getGameStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
@@ -27,7 +28,7 @@
   const otherCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id !== user.id })
   otherCharacters.unshift({ id: '*', name: 'Všem' })
 
-  const getActiveCharacter = () => {
+  const getActiveCharacterId = () => {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
       return $gameStore.activeGameCharacterId // set character from localStorage
     } else if (myCharacters[0]) {
@@ -46,7 +47,7 @@
 
   // prepare gameStore
   const gameStore = getGameStore(data.id)
-  $gameStore.activeGameCharacterId = getActiveCharacter() // set default value
+  $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
   $gameStore.activeGameAudienceIds = getActiveAudience()
 
   onMount(() => { // set select value on mount
@@ -74,7 +75,14 @@
 
   async function submitPost () {
     saving = true
+    const activeCharacter = myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })
     const audience = $gameStore.activeGameAudienceIds.includes('*') ? null : $gameStore.activeGameAudienceIds // clean '*' from audience
+    // reveal hidden character if posting publicly
+    if (activeCharacter && activeCharacter.hidden && audience === null) {
+      const { error } = await supabase.from('characters').update({ hidden: false }).eq('id', activeCharacter.id)
+      if (error) { return handleError(error) }
+      showSuccess('Postava odhalena')
+    }
     if (editing) {
       await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
     } else {

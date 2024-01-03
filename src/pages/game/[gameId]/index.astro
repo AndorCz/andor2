@@ -1,9 +1,9 @@
 ---
-  import { supabase, handleError } from '@lib/database'
+  import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import Game from '@components/games/Game.svelte'
 
-  const { user } = Astro.locals
+  const { supabase, user } = Astro.locals
   const { gameId } = Astro.params
 
   const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, game_thread, system, openai_thread, custom_header').eq('id', gameId).single()

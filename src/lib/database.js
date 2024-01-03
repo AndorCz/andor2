@@ -1,12 +1,23 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// create a supabase client
+// create a supabase client for front-end
 export const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_URL,
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
   { auth: { flowType: 'pkce', persistSession: true, detectSessionInUrl: false, autoRefreshToken: false } }
 )
+
+// create new client with access token for back-end for each request
+export function getSupabase (accessToken = '') {
+  return createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+    { // Set the access token for this specific instance
+      auth: { flowType: 'pkce', persistSession: false, detectSessionInUrl: false, autoRefreshToken: false, accessToken }
+    }
+  )
+}
 
 if (typeof window !== 'undefined') {
   // prevention of https://ishwar-rimal.medium.com/typeerror-failed-to-fetch-a-k-a-pain-in-the-ass-fa04dda1514c

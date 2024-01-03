@@ -1,6 +1,4 @@
 
-import { supabase } from '@lib/database'
-
 export const GET = async ({ request, redirect }) => {
   return new Response('Login selhal', { status: 400 })
 }
@@ -10,7 +8,7 @@ export const POST = async ({ request, redirect, locals }) => {
   const provider = formData.get('provider')?.toString()
 
   if (provider) {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await locals.supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: new URL(request.url).origin + '/api/auth/callback' }
     })

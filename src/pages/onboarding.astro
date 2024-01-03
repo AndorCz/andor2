@@ -1,9 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import { showError } from '@lib/toasts'
-  import { supabase } from '@lib/database'
 
-  const { user } = Astro.locals
+  const { supabase, user } = Astro.locals
   let toast:any = false
 
   if (Astro.request.method === 'POST') {

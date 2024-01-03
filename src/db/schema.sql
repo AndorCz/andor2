@@ -137,9 +137,26 @@ $$ language plpgsql;
 
 create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[] default null)
 returns setof posts_owner as $$
+declare
+  is_storyteller boolean;
+  player_character_ids uuid[];
 begin
-  return query select p.* from posts_owner p where p.thread = thread_id
-  and (p.audience is null or p.audience && (select array_agg(c.id) from characters c where c.game = game_id and c.player = auth.uid()))
+  -- check if the current user is a storyteller in this game
+  select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
+
+  -- get array of current user's character ids
+  select array_agg(c.id) into player_character_ids from characters c where c.game = game_id and c.player = auth.uid();
+
+  return query
+  select p.*
+  from posts_owner p
+  where p.thread = thread_id
+  and (
+    p.audience is null or
+    (auth.uid() is not null and (
+      is_storyteller or (p.audience && player_character_ids or p.owner = any(player_character_ids))
+    ))
+  )
   and (owners is null or p.owner = any(owners))
   order by p.created_at desc;
 end;

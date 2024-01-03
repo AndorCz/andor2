@@ -1,9 +1,9 @@
 ---
-  import { supabase, handleError } from '@lib/database'
+  import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/CharacterForm.svelte'
 
-  const { user } = Astro.locals
+  const { supabase, user } = Astro.locals
   const { gameId } = Astro.params
   const id = Astro.url.searchParams.get('id') || ''
 

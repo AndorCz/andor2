@@ -1,6 +1,5 @@
 
 // import { savePost, editPost } from '@lib/openai'
-import { supabase } from '@lib/database'
 import { isFilledArray } from '@lib/utils'
 
 // get all posts
@@ -23,9 +22,9 @@ export const GET = async ({ url, request, locals }) => {
   const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
   let res
   if (game) { // handle game threads
-    res = await supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners })
+    res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners })
   } else { // handle other threads
-    const query = supabase.from('posts_owner').select('*').eq('thread', game)
+    const query = locals.supabase.from('posts_owner').select('*').eq('thread', game)
     if (filterOwners) { query.in('owner', filterOwners) } // add your posts
     query.order('created_at', { ascending: false })
     res = await query
@@ -45,7 +44,7 @@ export const POST = async ({ request, redirect, locals }) => {
       // postData.openai_post = openAiPost.id
     }
     // save to supabase
-    const { error } = await supabase.from('posts').insert(postData)
+    const { error } = await locals.supabase.from('posts').insert(postData)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
     return new Response('{}', { status: 200 })
   } else {
@@ -62,7 +61,7 @@ export const PATCH = async ({ url, request, locals }) => {
       // 2DO: IMPLEMENT ONCE POST EDITING IS ALLOWED
     }
     // save to supabase
-    const { error } = await supabase.from('posts').update(postData).eq('id', data.id)
+    const { error } = await locals.supabase.from('posts').update(postData).eq('id', data.id)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
     return new Response('{}', { status: 200 })
   } else {
@@ -75,7 +74,7 @@ export const DELETE = async ({ url, request, locals }) => {
   const id = url.searchParams.get('id')
   const thread = url.searchParams.get('thread') // open ai thread
   if (!id) { return new Response(JSON.stringify({ error: 'Chybí id příspěvku' }), { status: 500 }) }
-  const { data, error } = await supabase.from('posts').delete().eq('id', id).select().single()
+  const { data, error } = await locals.supabase.from('posts').delete().eq('id', id).select().single()
   if (data.openai_post && thread) { // delete from open ai thread as well
     // 2DO: STUCK - API doesn't allow to edit content of posts
     // editPost(thread, data.openai_post, 'deleted')

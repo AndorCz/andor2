@@ -1,6 +1,4 @@
 
-import { supabase } from '@lib/database'
-
 const rollDice = (sides, count) => Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
 
 export const GET = async ({ request, url, redirect, locals }) => {
@@ -35,7 +33,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
     post += '</div>'
 
     // save as a post to db
-    const { error } = await supabase.from('posts').insert({ thread, owner, owner_type: 'character', content: post, dice: true })
+    const { error } = await locals.supabase.from('posts').insert({ thread, owner, owner_type: 'character', content: post, dice: true })
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 
     // return to the game

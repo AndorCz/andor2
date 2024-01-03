@@ -54,6 +54,7 @@
       <tr><td class='none'>Žádné postavy</td></tr>
     {/if}
   </table>
+  <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
 
   {#if isGameOwner || characters.waiting.length > 0}
     <h2>Hlásí se</h2>
@@ -88,6 +89,16 @@
   h2 {
     margin-top: 0px;
   }
+  .note {
+    font-style: italic;
+    padding-left: 20px;
+    margin-bottom: 40px;
+    color: var(--dim);
+    display: flex;
+  }
+    .note .material {
+      margin-right: 10px;
+    }
   .characters {
     width: 100%;
     margin-bottom: 50px;

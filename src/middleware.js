@@ -1,5 +1,5 @@
 
-import { supabase } from '@lib/database'
+import { getSupabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
 export async function onRequest ({ request, cookies, locals, redirect, url }, next) {
@@ -10,7 +10,8 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
   const refreshToken = cookies.get('sb-refresh-token')?.value
 
   if (accessToken && refreshToken) {
-    const { data: authData, error } = await supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
+    locals.supabase = getSupabase(accessToken)
+    const { data: authData, error } = await locals.supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
 
     if (error) {
       console.log('auth error', error.message) // log to not trigger sentry
@@ -22,10 +23,9 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
       saveAuthCookies(cookies, authData.session)
       locals.user = { id: authData.user.id, email: authData.user.email }
     }
-    //  }
     // user exists, load profile data
     if (locals.user?.id) {
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
+      const { data: profileData } = await locals.supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
       if (profileData?.name) {
         locals.user = { ...profileData, ...locals.user }
       } else if (url.pathname !== '/onboarding') {
@@ -33,6 +33,10 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
         return redirect('/onboarding')
       }
     }
+  } else {
+    cookies.delete('sb-access-token')
+    cookies.delete('sb-refresh-token')
+    locals.supabase = getSupabase()
   }
   return next()
 }
