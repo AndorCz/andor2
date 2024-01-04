@@ -5,6 +5,7 @@
   export let iconsOnly = false
   export let current = null
   export let defaultLabel
+  export let title
 
   let selected = null
   let isOpen = false
@@ -34,7 +35,7 @@
 </script>
 
 <div class='dropdown' bind:this={dropdownEl}>
-  <button class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()}>
+  <button class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
     {#key selected}
       {#if findSelectedOption()}
         {findSelectedOption().icon}

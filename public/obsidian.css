@@ -72,7 +72,7 @@ html { background-color: var(--background) }
 
 body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
-  font-size: 15pt;
+  font-size: 20px;
   color: var(--text);
   text-decoration: none;
 }
@@ -93,6 +93,29 @@ a {
     color: color-mix(in srgb, var(--accent), #FFF 15%);
   }
 
+hr {
+  border: none;
+  border-top: 1px solid var(--text)
+}
+
+blockquote {
+  border-left: 3px solid var(--accent2);
+  padding-left: 15px;
+  font-style: italic;
+}
+
+code {
+  display: block;
+  font-family: 'Courier New', Monospace;
+  font-size: 17px;
+  border: 2px #555 solid;
+  padding: 10px;
+  border-radius: 10px;
+  color: #AAA;
+  width: 100%;
+  line-height: 150%;
+}
+
 /* TOASTS */
 
 .notyf__toast {
@@ -103,7 +126,7 @@ a {
 
 button, .button {
   font-family: 'Alegreya Sans';
-  font-size: 15pt;
+  font-size: 20px;
   font-variation-settings: 'wght' 600;
   padding: 15px 30px;
   border-radius: 8px;
@@ -139,7 +162,7 @@ button, .button {
 input[type=text], textarea, input[type=checkbox], .ProseMirror {
   padding: 20px;
   margin: 0px;
-  font-size: 14pt;
+  font-size: 18px;
   border: none;
   color: var(--text);
   border-bottom: 3px var(--buttonBg) solid;
@@ -188,7 +211,7 @@ option {
 
 select {
   padding: 15px;
-  font-size: 14pt;
+  font-size: 18px;
   box-shadow: 1px 1px 6px #0006;
   border: none;
   border-top: 3px var(--buttonBg) solid;
@@ -221,7 +244,7 @@ select {
   display: inline-block;
   padding: 13px 25px;
   text-decoration: none;
-  font-size: 16pt;
+  font-size: 22px;
   color: #fff;
   text-shadow: 2px 2px 2px #0003;
   opacity: 0.8;
@@ -317,7 +340,7 @@ select {
     width: 80px;
   }
   .diceRoll b {
-    font-size: 20pt;
+    font-size: 30px;
   }
 
 /* WYSIWYG - TipTap/ProseMirror */
@@ -325,6 +348,7 @@ select {
 .ProseMirror {
   height: 100%;
   min-height: 140px;
+  padding-bottom: 50px;
 }
 .ProseMirror p {
   margin: 10px 0px;

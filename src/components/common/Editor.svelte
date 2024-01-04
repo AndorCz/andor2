@@ -9,6 +9,8 @@
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import TextStyle from '@tiptap/extension-text-style'
+  import Image from '@tiptap/extension-image'
+  import { Details, Summary } from '@lib/details'
 
   export let content = ''
 
@@ -17,6 +19,7 @@
   let bubbleEl
   let currentStyle
   let currentAlign
+  let showToolbelt = false
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -40,9 +43,12 @@
         StarterKit,
         Underline,
         TextStyle,
+        Summary,
+        Details,
+        Image.configure(),
         Link.configure({ openOnClick: false }),
         Color.configure({ types: ['textStyle'] }),
-        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { offset: [0, 20], maxWidth: 'none' } }),
+        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { maxWidth: 'none' } }),
         TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
       ],
       onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected
@@ -52,7 +58,8 @@
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
         // check for text alignment based on https://github.com/ueberdosis/tiptap/issues/4240#issuecomment-1673411677
         currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
-      }
+      },
+      onFocus () { showToolbelt = true }
     })
   })
 
@@ -83,6 +90,11 @@
       editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run() // update
     }
   }
+
+  function addImage () {
+    const url = window.prompt('Veřejná cesta k obrázku:')
+    if (url) { editor.chain().focus().setImage({ src: url }).run() }
+  }
 </script>
 
 <!--
@@ -98,26 +110,36 @@
 <div class='wrapper'>
   <div class='bubble' bind:this={bubbleEl}>
     {#if editor}
-      <button on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'}>format_bold</button>
-      <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'}>format_italic</button>
-      <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'}>format_underlined</button>
-      <button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'}>format_strikethrough</button>
+      <button on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
+      <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
+      <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
+      <button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
       <span class='sep'></span>
-      <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} />
-      <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')}>format_color_reset</button>
+      <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
+      <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')} title='Reset barvy'>format_color_reset</button>
       <span class='sep'></span>
-      <button on:click={setLink} class='material'>link</button>
-      <button on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')}>link_off</button>
+      <button on:click={setLink} class='material' title='Odkaz'>link</button>
+      <button on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
       <span class='sep'></span>
-      <!--<button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'active material' : 'material'} >format_strikethrough</button>-->
-      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} />
-      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} />
+      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' />
+      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' />
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
+  {#if showToolbelt}
+    <div class='toolbelt'>
+      <button on:click={addImage} class='material' title='Obrázek'>image</button>
+      <button on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
+      <button on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
+      <button on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
+    </div>
+  {/if}
 </div>
 
 <style>
+  .wrapper {
+    position: relative;
+  }
   .wrapper, .editor {
     height: 100%;
   }
@@ -136,6 +158,7 @@
     align-items: center;
     gap: 10px;
   }
+    /*
     .bubble::after {
       content: '';
       position: absolute;
@@ -147,7 +170,8 @@
       background-color: color-mix(in srgb, var(--panel), #FFF 5%);
       box-shadow: 2px 2px 2px #0003;
     }
-    .bubble button {
+    */
+    .bubble button, .toolbelt button {
       padding: 5px;
     }
     .bubble button.active {
@@ -155,6 +179,13 @@
       border: 1px var(--panel) solid;
       box-shadow: inset 2px 2px 2px #0003;
     }
+  .toolbelt {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    display: flex;
+    gap: 10px;
+  }
   /*
   .tools {
     margin-bottom: 20px;

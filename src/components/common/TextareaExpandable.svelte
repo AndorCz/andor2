@@ -9,9 +9,9 @@
   export let disabled = false
   export let showButton = false
   export let buttonIcon = 'send'
+  export let editing = false
 
   const minHeight = 140
-  let editing = false
   let editorRef
 
   function setHeight (node) {
@@ -52,7 +52,7 @@
     <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
   {/if}
   {#if showButton}
-    <button on:click={triggerSave} {disabled} class='save'>
+    <button on:click={triggerSave} {disabled} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
       <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}
