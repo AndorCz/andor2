@@ -10,7 +10,7 @@
   import Dropdown from '@components/common/Dropdown.svelte'
   import TextStyle from '@tiptap/extension-text-style'
   import Image from '@tiptap/extension-image'
-  import { Details, Summary } from '@lib/details'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
 
   export let content = ''
 
@@ -43,8 +43,9 @@
         StarterKit,
         Underline,
         TextStyle,
-        Summary,
-        Details,
+        Details.configure({ HTMLAttributes: { class: 'details' } }),
+        DetailsSummary,
+        DetailsContent,
         Image.configure(),
         Link.configure({ openOnClick: false }),
         Color.configure({ types: ['textStyle'] }),
@@ -114,22 +115,21 @@
       <button on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
       <button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
+      <button on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
+      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' />
+      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' />
       <span class='sep'></span>
       <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
       <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')} title='Reset barvy'>format_color_reset</button>
       <span class='sep'></span>
       <button on:click={setLink} class='material' title='Odkaz'>link</button>
       <button on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
-      <span class='sep'></span>
-      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' />
-      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' />
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
   {#if showToolbelt}
     <div class='toolbelt'>
       <button on:click={addImage} class='material' title='Obrázek'>image</button>
-      <button on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
       <button on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
     </div>

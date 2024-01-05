@@ -108,7 +108,7 @@ code {
   display: block;
   font-family: 'Courier New', Monospace;
   font-size: 17px;
-  border: 2px #555 solid;
+  background: black;
   padding: 10px;
   border-radius: 10px;
   color: #AAA;
@@ -353,3 +353,38 @@ select {
 .ProseMirror p {
   margin: 10px 0px;
 }
+.ProseMirror .details {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  border: 1px solid var(--buttonBg);
+  border-radius: 10px;
+  padding: 5px;
+  gap: 10px;
+}
+  .ProseMirror .details>button {
+    display: flex;
+    cursor: pointer;
+    padding: 0px;
+  }
+  .ProseMirror .details>button:before {
+    content: "\25b6";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5em;
+    height: 1.5em;
+  }
+  .ProseMirror .details.is-open>button:before {
+    content: "\25bc";
+  }
+  .ProseMirror .is-empty:before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--dim);
+    pointer-events: none;
+    height: 0;
+  }
+  .ProseMirror .details>div {
+    flex: 1 1 auto;
+  }
