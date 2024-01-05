@@ -3,19 +3,6 @@
 import { isFilledArray } from '@lib/utils'
 
 // get all posts
-/*
-export const GET = async ({ url, request }) => {
-  const { game, owners, audience } = Object.fromEntries(url.searchParams)
-  const query = supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, audience, audience_names, dice').eq('thread', game)
-  if (isFilledArray(audience)) { query.overlaps('audience', JSON.parse(audience)) } // add private posts
-  if (isFilledArray(owners)) { query.in('owner', JSON.parse(owners)) } // add your posts
-  // query.is('audience', null) // add public posts
-  query.order('created_at', { ascending: false })
-  const { data: postData, error } = await query
-  if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
-  return new Response(JSON.stringify(postData), { status: 200 })
-}
-*/
 
 export const GET = async ({ url, request, locals }) => {
   const { thread, game, owners, limit = 0, offset = 100 } = Object.fromEntries(url.searchParams)

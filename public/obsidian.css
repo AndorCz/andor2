@@ -343,6 +343,12 @@ select {
     font-size: 30px;
   }
 
+.info {
+  font-size: 20px;
+  color: var(--dim);
+  padding-left: 10px;
+}
+
 /* WYSIWYG - TipTap/ProseMirror */
 
 .ProseMirror {

@@ -1,5 +1,6 @@
 <script>
   import { isFilledArray } from '@lib/utils'
+  import { Render } from 'svelte-purify'
 
   export let posts
   export let canDeleteAll
@@ -48,7 +49,7 @@
               <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
             {/if}
           </div>
-          <div class='content'>{@html post.content}</div>
+          <div class='content'><Render html={post.content} /></div>
         </div>
       </div>
     {/each}

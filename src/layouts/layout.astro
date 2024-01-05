@@ -3,6 +3,7 @@ import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/Sidebar.svelte'
 import { ViewTransitions } from 'astro:transitions'
+import 'tippy.js/dist/tippy.css'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
