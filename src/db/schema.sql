@@ -22,6 +22,7 @@ create table profiles (
   name text unique not null,
   portrait text,
   created_at timestamp with time zone default current_timestamp,
+  last_activity timestamp with time zone,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 

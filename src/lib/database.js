@@ -36,3 +36,9 @@ export function handleError (error) {
     console.error(error)
   }
 }
+
+export async function getActiveUsers (db) { // pass front-end or back-end supabase instance
+  const { data, error } = await db.from('profiles').select('last_activity').gte(new Date(Date.now() - 5 * 60 * 1000)) // last five minutes
+  if (error) { return handleError(error) }
+  return data
+}

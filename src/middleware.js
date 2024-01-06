@@ -1,5 +1,5 @@
 
-import { getSupabase } from '@lib/database'
+import { getSupabase, handleError } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
 export async function onRequest ({ request, cookies, locals, redirect, url }, next) {
@@ -28,6 +28,8 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
       const { data: profileData } = await locals.supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
       if (profileData?.name) {
         locals.user = { ...profileData, ...locals.user }
+        const { error } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
+        if (error) { return handleError(error) }
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
         return redirect('/onboarding')

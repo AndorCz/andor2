@@ -10,7 +10,8 @@
     return data
   }
 
-  function logout () {
+  async function logout () {
+    await supabase.auth.signOut()
     // delete cookies
     document.cookie = 'sb-access-token=; Max-Age=-99999999;'
     document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
@@ -40,5 +41,8 @@
   }
   .w100 {
     width: 100%;
+  }
+  h3 {
+    text-align: center;
   }
 </style>
