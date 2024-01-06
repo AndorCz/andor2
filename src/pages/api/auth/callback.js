@@ -1,14 +1,18 @@
 
+import { getSupabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
-export const GET = async ({ request, url, cookies, redirect, locals }) => {
-  const authCode = url.searchParams.get('code')
-  if (!authCode) { return new Response('No code provided', { status: 400 }) }
+export const GET = async ({ request, cookies, redirect }) => {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') || '/'
 
-  const { data, error } = await locals.supabase.auth.exchangeCodeForSession(authCode)
-  if (error) { return new Response(error.message, { status: 500 }) }
-  // console.log('callback session data', data)
+  if (code) {
+    const supabase = getSupabase(cookies)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    saveAuthCookies(cookies, data.session)
+    if (!error) { return redirect(next) }
+  }
 
-  saveAuthCookies(cookies, data.session)
-  return redirect('/')
+  return new Response('Přihlášení se nezdařilo. Zkus to prosím znovu.', { status: 500 })
 }

@@ -2,15 +2,17 @@
 import { getSupabase, handleError } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
-export async function onRequest ({ request, cookies, locals, redirect, url }, next) {
+export async function onRequest ({ cookies, locals, redirect, url }, next) {
   locals.user = {} // empty default
 
   // get auth cookies
   const accessToken = cookies.get('sb-access-token')?.value
   const refreshToken = cookies.get('sb-refresh-token')?.value
 
+  const supabase = getSupabase(cookies)
+
   if (accessToken && refreshToken) {
-    locals.supabase = getSupabase(accessToken)
+    locals.supabase = supabase
     const { data: authData, error } = await locals.supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })
 
     if (error) {
@@ -38,7 +40,7 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
   } else {
     cookies.delete('sb-access-token')
     cookies.delete('sb-refresh-token')
-    locals.supabase = getSupabase()
+    locals.supabase = supabase
   }
   return next()
 }

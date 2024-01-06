@@ -1,20 +1,23 @@
 
-import { createClient } from '@supabase/supabase-js'
+import { createServerClient, createBrowserClient } from '@supabase/ssr'
 
-// create a supabase client for front-end
-export const supabase = createClient(
+// front-end
+export const supabase = createBrowserClient(
   import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  { auth: { flowType: 'pkce', persistSession: true, detectSessionInUrl: false, autoRefreshToken: false } }
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 )
 
-// create new client with access token for back-end for each request
-export function getSupabase (accessToken = '') {
-  return createClient(
+// back-end
+export function getSupabase (cookies) {
+  return createServerClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-    { // Set the access token for this specific instance
-      auth: { flowType: 'pkce', persistSession: false, detectSessionInUrl: false, autoRefreshToken: false, accessToken }
+    {
+      cookies: {
+        get (key) { return cookies.get(key)?.value },
+        set (key, value, options) { cookies.set(key, value, options) },
+        remove (key, options) { cookies.delete(key, options) }
+      }
     }
   )
 }
