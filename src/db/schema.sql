@@ -4,6 +4,7 @@ drop table if exists threads cascade;
 drop table if exists games cascade;
 drop table if exists characters cascade;
 drop table if exists posts cascade;
+drop table if exists messages cascade;
 
 drop type if exists character_state;
 drop type if exists game_system;
@@ -79,6 +80,16 @@ create table posts (
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
+);
+
+create table messages (
+  id uuid not null primary key default gen_random_uuid(),
+  sender uuid,
+  recipient uuid,
+  content text,
+  created_at timestamp with time zone default current_timestamp,
+  constraint messages_sender_fkey foreign key (sender) references profiles (id) on delete cascade,
+  constraint messages_recipient_fkey foreign key (recipient) references profiles (id) on delete cascade
 );
 
 -- VIEWS

@@ -1,12 +1,18 @@
 <script>
   export let activeUsers = []
+  export let openChat
 </script>
 
 {#if activeUsers.length}
   <h3>Právě online</h3>
   <ul>
     {#each activeUsers as user}
-      <li><button>{user.name}</button></li>
+      <li>
+        <button on:click={() => openChat(user)}>
+          <img src={user.portrait} class='portrait' alt='portrait'>
+          <span class='name'>{user.name}</span>
+        </button>
+      </li>
     {/each}
   </ul>
 {:else}
@@ -19,9 +25,6 @@
     padding: 0px;
     margin: 0px;
   }
-    li {
-      padding: 0px 15px;
-    }
   h3 {
     font-size: 20px;
     margin: 10px 0px;
@@ -37,7 +40,20 @@
     text-align: left;
     box-shadow: none;
     color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+    button:hover {
+      color: var(--maximum);
+    }
+    .portrait {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 100%;
+    }
   .empty {
     padding: 20px 0px;
     text-align: center;

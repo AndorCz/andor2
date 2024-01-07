@@ -12,6 +12,7 @@
   --green: #a5a740;
   --text: #c4b6ab;
   --dim: #92857a;
+  --maximum: #fff;
   --accent: #a5a740;
   --accent2: #a07150;
   --buttonBg: #634b41;
@@ -297,10 +298,11 @@ select {
     box-shadow: 2px 2px 2px #0001;
   }
     .tabs.secondary button:not(.active) {
-      color: var(--accent);
+      color: var(--accent2);
+      opacity: 1;
     }
       .tabs.secondary button:not(.active):hover {
-        color: var(--accent);
+        color: var(--text);
       }
   .tabs.secondary button.active {
     background-color: var(--block);
