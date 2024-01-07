@@ -4,6 +4,11 @@
 
   export let identity = { portrait: '' }
   export let onPortraitChange = null
+  export let displayWidth = 140
+  export let displayHeight = 200
+
+  const saveWidth = 140
+  const saveHeight = 200
 
   let files
   let uploading = false
@@ -14,10 +19,10 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      if (img.naturalWidth < 140 || img.naturalHeight < 200) {
+      if (img.naturalWidth < saveWidth || img.naturalHeight < saveHeight) {
         return showError('Obrázek je příliš malý')
       } else {
-        const resized = resizePortrait(img, 140, 200) // returns base64 string
+        const resized = resizePortrait(img, saveWidth, saveHeight) // returns base64 string
         img.src = resized
       }
       identity.portrait = img.src || ''
@@ -36,12 +41,12 @@
   }
 </script>
 
-<div class='wrapper'>
+<div class='wrapper' style={`--portrait-width: ${displayWidth}px; --portrait-height: ${displayHeight}px`}>
   <label>
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
     {:else}
-      <div class='portrait blank' title='Fotka bude zmenšená na 200×200 px, oříznutá zespodu'>Nahrát<br>portrét</div>
+      <div class='portrait blank' title={`Fotka bude zmenšená na ${saveWidth}×${saveHeight} px, oříznutá zespodu`}>Nahrát<br>portrét</div>
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
@@ -52,15 +57,16 @@
 <style>
   .wrapper {
     position: relative;
-    width: 140px;
+    width: var(--portrait-width, 140px);
+    height: var(--portrait-height, 200px);
   }
     .portrait {
       cursor: pointer;
       display: flex;
       object-fit: cover;
       object-position: top;
-      width: var(--portrait-size, 140px);
-      height: var(--portrait-size, 200px);
+      width: var(--portrait-width, 140px);
+      height: var(--portrait-height, 200px);
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;

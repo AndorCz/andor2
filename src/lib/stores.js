@@ -9,3 +9,9 @@ export function getGameStore (game, def = {}) { // sync temporary preferences to
   gameStore.subscribe(value => { window.localStorage.setItem(game, JSON.stringify(value)) })
   return gameStore
 }
+
+export function getUserStore (def = {}) { // sync temporary preferences to localStorage
+  const userStore = writable(window.localStorage.user ? JSON.parse(localStorage.user) : def)
+  userStore.subscribe(value => { window.localStorage.setItem('user', JSON.stringify(value)) })
+  return userStore
+}
