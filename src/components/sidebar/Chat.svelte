@@ -7,6 +7,10 @@
   let contact = {}
   let messages = []
 
+  async function waitForAnimation () {
+    return new Promise(resolve => setTimeout(resolve, 200))
+  }
+
   async function loadContact () {
     const { data, error } = await supabase.from('profiles').select('*').eq('id', $userStore.openChat).single()
     if (error) { return handleError(error) }
@@ -28,38 +32,40 @@
   }
 </script>
 
-<div id='chat'>
-  <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
-  {#if $userStore.openChat && user?.id}
-    {#await Promise.all([loadContact(), loadMessages()])}
-      <span class='loading'>Načítám konverzaci...</span>
-    {:then value}
-      <h2>
-        <img src={contact.portrait} class='portrait' alt='portrait'>
-        <div class='label'>
-          <div class='name'>{contact.name}</div>
-          <div class='subtitle'>soukromá konverzace</div>
+{#await waitForAnimation() then}
+  <div id='chat'>
+    <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
+    {#if $userStore.openChat && user?.id}
+      {#await Promise.all([loadContact(), loadMessages()])}
+        <span class='loading'>Načítám konverzaci...</span>
+      {:then value}
+        <h2>
+          <img src={contact.portrait} class='portrait' alt='portrait'>
+          <div class='label'>
+            <div class='name'>{contact.name}</div>
+            <div class='subtitle'>soukromá konverzace</div>
+          </div>
+        </h2>
+        <div class='messages'>
+          {#if messages.length}
+            {#each messages as message}
+              <div class='message'>
+                <span class='text'>{message.content}</span>
+                <span class='time'>{message.created_at}</span>
+              </div>
+            {/each}
+          {:else}
+            <span class='empty'>Žádné zprávy</span>
+          {/if}
         </div>
-      </h2>
-      <div class='messages'>
-        {#if messages.length}
-          {#each messages as message}
-            <div class='message'>
-              <span class='text'>{message.content}</span>
-              <span class='time'>{message.created_at}</span>
-            </div>
-          {/each}
-        {:else}
-          <span class='empty'>Žádné zprávy</span>
-        {/if}
-      </div>
-    {:catch error}
-      <span class='error'>Konverzaci se nepodařilo načíst</span>
-    {/await}
-  {:else}
-    <span class='error'>Konverzace nenalezena</span>
-  {/if}
-</div>
+      {:catch error}
+        <span class='error'>Konverzaci se nepodařilo načíst</span>
+      {/await}
+    {:else}
+      <span class='error'>Konverzace nenalezena</span>
+    {/if}
+  </div>
+{/await}
 
 <style>
   #chat {

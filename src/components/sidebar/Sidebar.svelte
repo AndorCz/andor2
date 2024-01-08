@@ -76,6 +76,7 @@
   aside {
     width: var(--asideWidth);
     margin-left: 20px;
+    transition: width 0.2s ease-in-out;
   }
   #user {
     padding: 20px 0px;
