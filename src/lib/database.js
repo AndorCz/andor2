@@ -46,3 +46,20 @@ export async function getActiveUsers (db) { // pass front-end or back-end supaba
   if (error) { return handleError(error) }
   return data
 }
+
+export async function getUnreadConversations (db, userId) {
+  const { data, error } = await db.from('messages').select('id, sender(*)').match({ recipient: userId, read: false })
+  if (error) { return handleError(error) }
+  // data example: [{ id: "c5523047-61e2-42a0-b87e-a8ad7088fbb5"sender: {name: 'Eskel'} }]
+  // aggregate number of unread messages per sender (2DO: replace with group by, once supported by supabase-js)
+  const unreadConversations = {}
+  data.forEach((message) => {
+    if (unreadConversations[message.sender.id]) {
+      unreadConversations[message.sender.id].unread++
+    } else {
+      message.sender.unread = 1
+      unreadConversations[message.sender.id] = message.sender
+    }
+  })
+  return unreadConversations
+}

@@ -3,6 +3,7 @@
   import { supabase, handleError } from '@lib/database'
   import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import { tooltip } from '@lib/tooltip'
 
   export let user
   export let userStore
@@ -59,7 +60,7 @@
   }
 
   async function markMessagesRead () {
-    const unreadMessages = $messages.filter(message => !message.read && message.sender !== user.id)
+    const unreadMessages = $messages.filter(message => !message.read)
     if (unreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', unreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
@@ -75,6 +76,12 @@
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadMessages()
+  }
+
+  function getTitle (message) {
+    const name = message.sender === user.id ? user.name : contact.name
+    const date = new Date(message.created_at)
+    return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
   }
 </script>
 
@@ -102,7 +109,7 @@
             {#each $messages as message}
               <div class='messageRow'>
                 <!-- add tippy for time -->
-                <div class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={(new Date(message.created_at)).toLocaleString('cs')}>
+                <div use:tooltip class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={getTitle(message)}>
                   <!-- add 'read' column -->
                   {#if !message.read && message.sender !== user.id}
                     <div class='badge'></div>
@@ -196,16 +203,6 @@
           max-width: 90%;
           padding: 10px 20px;
         }
-          .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            box-shadow: 1px 1px 4px #0005;
-            background-color: var(--accent);
-          }
           .theirs {
             border-radius: 20px 20px 20px 0px;
             background-color: var(--background);

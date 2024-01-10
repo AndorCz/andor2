@@ -1,8 +1,9 @@
 <script>
-  import { supabase, handleError, getActiveUsers } from '@lib/database'
+  import { supabase, handleError, getActiveUsers, getUnreadConversations } from '@lib/database'
   import { onMount } from 'svelte'
   import { logout } from '@lib/helpers'
-  import { getUserStore } from '@lib/stores'
+  import { clone } from '@lib/utils'
+  import { getUserStore, unreadConversations } from '@lib/stores'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import Watched from '@components/sidebar/Watched.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -12,6 +13,7 @@
 
   const userStore = getUserStore({ activePanel: 'watched' })
   let activeUsers = []
+  let allRelevantUsers = {}
 
   async function onPortraitChange (portrait) {
     const { data, error } = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
@@ -30,8 +32,21 @@
     $userStore.openChat = user.id
   }
 
-  onMount(async () => {
+  async function loadData () {
     activeUsers = await getActiveUsers(supabase)
+    $unreadConversations = await getUnreadConversations(supabase, user.id)
+    // merge activeUsers and unreadConversations into allRelevantUsers, preserving 'unread' and 'active' flags
+    allRelevantUsers = clone($unreadConversations)
+    activeUsers.forEach(user => {
+      if (allRelevantUsers[user.id]) {
+        allRelevantUsers[user.id].active = true
+      } else {
+        allRelevantUsers[user.id] = user
+      }
+    })
+  }
+
+  onMount(async () => {
     if ($userStore.activePanel) {
       document.getElementById($userStore.activePanel)?.classList.add('active')
     }
@@ -43,25 +58,33 @@
     {#if $userStore.openChat}
       <Chat {user} {userStore} />
     {:else}
-      <div id='user'>
-        <PortraitInput identity={user} {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
-        <div id='details'>
-          <span id='name'>{user.name || user.email}</span>
-          <button on:click={logout} id='logout'>Odhlásit</button>
+      {#await loadData()}
+        <div class='loading'>Načítání...</div>
+      {:then}
+        <div id='user'>
+          <PortraitInput identity={user} {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
+          <div id='details'>
+            <span id='name'>{user.name || user.email}</span>
+            <button on:click={logout} id='logout'>Odhlásit</button>
+          </div>
         </div>
-      </div>
-      <div id='tabs'>
-        <button id='watched' class:active={$userStore.activePanel === 'watched'} on:click={() => { activate('watched') }}><span class='material'>visibility</span><span class='label'>Sledované</span></button>
-        <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}><span class='material'>person</span><span class='label'>Lidé ({activeUsers.length})</span></button>
-        <button id='notes' disabled class:active={$userStore.activePanel === 'notes'}><span class='material'>edit</span><span class='label'>Poznámky</span></button>
-      </div>
-      <div id='panels'>
-        {#if $userStore.activePanel === 'watched'}
-          <Watched />
-        {:else if $userStore.activePanel === 'people'}
-          <People {activeUsers} {openChat} />
-        {/if}
-      </div>
+        <div id='tabs'>
+          <button id='watched' class:active={$userStore.activePanel === 'watched'} on:click={() => { activate('watched') }}><span class='material'>visibility</span><span class='label'>Sledované</span></button>
+          <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
+            {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
+            <span class='material'>person</span>
+            <span class='label'>Lidé ({activeUsers.length})</span>
+          </button>
+          <button id='notes' disabled class:active={$userStore.activePanel === 'notes'}><span class='material'>edit</span><span class='label'>Poznámky</span></button>
+        </div>
+        <div id='panels'>
+          {#if $userStore.activePanel === 'watched'}
+            <Watched />
+          {:else if $userStore.activePanel === 'people'}
+            <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} />
+          {/if}
+        </div>
+      {/await}
     {/if}
   {:else}
     <div id='panels' class='login'>
@@ -102,10 +125,11 @@
     display: flex;
   }
     #tabs button {
+      position: relative;
       flex: 1;
       display: flex;
       gap: 10px;
-      color: var(--accent2);
+      color: var(--link);
       flex-direction: column;
       align-items: center;
       text-align: center;
@@ -122,11 +146,17 @@
     #tabs button.active {
       background: var(--panel);
       color: var(--text);
+      pointer-events: none;
     }
     #tabs button .label {
       font-size: 14px;
       font-weight: 500;
     }
+      .badge {
+        top: 10px;
+        right: 10px;
+      }
+
   #panels {
     padding: 20px;
     border-radius: 10px;

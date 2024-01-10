@@ -1,12 +1,48 @@
 <script>
-  export let activeUsers = []
   export let openChat
+  export let allRelevantUsers = {}
+  export let numberOnline = 0
+
+  const unreadGroup = []
+  const activeGroup = []
+
+  function updateGroups () {
+    // group users by unread, friends, active
+    Object.values(allRelevantUsers).forEach(user => {
+      if (user.unread) {
+        unreadGroup.push(user)
+      } else {
+        activeGroup.push(user)
+      }
+    })
+  }
+
+  $: updateGroups()
 </script>
 
-{#if activeUsers.length}
-  <h3>Právě online</h3>
+{#if unreadGroup.length}
   <ul>
-    {#each activeUsers as user}
+    {#each unreadGroup as user}
+      <li>
+        <button on:click={() => openChat(user)}>
+          {#if user.portrait}
+            <img src={user.portrait} class='portrait' alt='portrait'>
+          {:else}
+            <span class='gap'></span>
+          {/if}
+          <span class='name'>{user.name}</span>
+          <span class='new'>{user.unread}</span>
+          {#if user.active}
+            <span class='status'></span>
+          {/if}
+        </button>
+      </li>
+    {/each}
+  </ul>
+{/if}
+{#if activeGroup.length}
+  <ul>
+    {#each activeGroup as user}
       <li>
         <button on:click={() => openChat(user)}>
           {#if user.portrait}
@@ -19,8 +55,9 @@
       </li>
     {/each}
   </ul>
-{:else}
-  <div class='empty'>Nikdo tu není</div>
+{/if}
+{#if numberOnline === 0}
+  <div class='empty'>Nikdo není online</div>
 {/if}
 
 <style>
@@ -29,12 +66,15 @@
     padding: 0px;
     margin: 0px;
   }
+  /*
   h3 {
     font-size: 20px;
     margin: 10px 0px;
     color: var(--dim);
   }
+  */
   button {
+    position: relative;
     font-weight: bold;
     background: none;
     border: 0px;
@@ -46,10 +86,17 @@
     color: var(--accent);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
   }
     button:hover {
       color: var(--maximum);
+    }
+    button:hover .new {
+      color: var(--maximum);
+    }
+    .name {
+      flex: 1;
     }
     .portrait, .gap {
       display: block;
@@ -63,5 +110,9 @@
     text-align: center;
     color: var(--dim);
     font-style: italic;
+  }
+  .new {
+    color: var(--new);
+    pointer-events: none;
   }
 </style>
