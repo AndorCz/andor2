@@ -9,7 +9,11 @@
     {#each activeUsers as user}
       <li>
         <button on:click={() => openChat(user)}>
-          <img src={user.portrait} class='portrait' alt='portrait'>
+          {#if user.portrait}
+            <img src={user.portrait} class='portrait' alt='portrait'>
+          {:else}
+            <span class='gap'></span>
+          {/if}
           <span class='name'>{user.name}</span>
         </button>
       </li>
@@ -47,7 +51,7 @@
     button:hover {
       color: var(--maximum);
     }
-    .portrait {
+    .portrait, .gap {
       display: block;
       width: 40px;
       height: 40px;

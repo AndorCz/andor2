@@ -10,8 +10,9 @@
   export let showButton = false
   export let buttonIcon = 'send'
   export let editing = false
+  export let minHeight = 140
+  export let enterSend = false
 
-  const minHeight = 140
   let editorRef
 
   function setHeight (node) {
@@ -43,13 +44,20 @@
       onSave() // otherwise the binded textarea value is used
     }
   }
+
+  function onKeyDown (e) {
+    if (enterSend && event.keyCode === 13 && !e.shiftKey) { // send with enter, new line with shift+enter
+      e.preventDefault()
+      onSave()
+    }
+  }
 </script>
 
 <div class='wrapper'>
   {#if allowHtml}
     <Editor bind:this={editorRef} />
   {:else}
-    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} class={showButton && 'withButton'}></textarea>
+    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keydown={onKeyDown} class={showButton && 'withButton'}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} {disabled} class='save' title={editing ? 'Upravit' : 'Odeslat'}>

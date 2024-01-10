@@ -1,13 +1,15 @@
 <script>
+  import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database'
   import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
-  import { writable } from 'svelte/store'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
   export let userStore
 
   let contact = {}
   let loadingMessages = true
+  let textareaValue = ''
   let messagesEl
   let inputEl
   let channel
@@ -25,17 +27,13 @@
         $messages = $messages // update store
       })
       .subscribe()
-    loadMessages().catch(console.error)
   })
 
   afterUpdate(() => { // scroll down
     if (messages.length) { messagesEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
   })
 
-  onDestroy(() => {
-    console.log('destroy fired', channel)
-    if (channel) { supabase.removeChannel(channel) }
-  })
+  onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
 
   async function waitForAnimation () {
     return new Promise(resolve => setTimeout(resolve, 200))
@@ -48,14 +46,24 @@
   }
 
   async function loadMessages () {
-    // load messages for both uid and user.id, in either sender or recipient column
+    loadingMessages = true
+    // load messages where are both contactId and user.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
-      .or(`sender.eq.${contactId},recipient.eq.${contactId}`)
-      .or(`sender.eq.${user.id},recipient.eq.${user.id}`)
+      .or(`and(recipient.eq.${contactId},sender.eq.${user.id}),and(recipient.eq.${user.id},sender.eq.${contactId})`)
       .order('created_at', { ascending: true })
+
     if (error) { return handleError(error) }
     $messages = data
+    markMessagesRead()
     loadingMessages = false
+  }
+
+  function markMessagesRead () {
+    const unreadMessages = $messages.filter(message => !message.read && message.sender !== user.id)
+    if (unreadMessages.length) {
+      console.log('unreadMessages', unreadMessages.map(message => message.id))
+      supabase.from('messages').update({ read: true }).in('id', unreadMessages.map(message => message.id))
+    }
   }
 
   function closeChat () {
@@ -63,16 +71,10 @@
   }
 
   async function sendMessage () {
-    const { error } = await supabase.from('messages').insert({ sender: user.id, recipient: contact.id, content: inputEl.value })
+    const { error } = await supabase.from('messages').insert({ sender: user.id, recipient: contact.id, content: textareaValue })
     if (error) { return handleError(error) }
-    inputEl.value = ''
-  }
-
-  function onKeyDown (e) {
-    if (event.keyCode === 13 && !e.shiftKey) { // send with enter, new line with shift+enter
-      sendMessage()
-      e.preventDefault()
-    }
+    textareaValue = ''
+    await loadMessages()
   }
 </script>
 
@@ -84,7 +86,9 @@
         <span class='loading'>Načítám konverzaci...</span>
       {:then value}
         <h2>
-          <img src={contact.portrait} class='portrait' alt='portrait'>
+          {#if contact.portrait}
+            <img src={contact.portrait} class='portrait' alt='portrait'>
+          {/if}
           <div class='label'>
             <div class='name'>{contact.name}</div>
             <div class='subtitle'>soukromá konverzace</div>
@@ -100,7 +104,7 @@
                 <!-- add tippy for time -->
                 <div class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={(new Date(message.created_at)).toLocaleString('cs')}>
                   <!-- add 'read' column -->
-                  {#if !message.read}
+                  {#if !message.read && message.sender !== user.id}
                     <div class='badge'></div>
                   {/if}
                   {message.content}
@@ -112,9 +116,7 @@
             <center>Žádné zprávy</center>
           {/if}
         </div>
-        <!-- svelte-ignore a11y-autofocus -->
-        <textarea type='text' bind:this={inputEl} on:keydown={onKeyDown} maxlength='4096' autofocus></textarea>
-        <button class='material send' title='Odeslat' on:click={() => sendMessage()}>send</button>
+        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton minHeight={70} enterSend />
       {:catch error}
         <span class='error'>Konverzaci se nepodařilo načíst</span>
       {/await}
@@ -133,7 +135,9 @@
     border-radius: 10px;
     padding: 20px;
     width: 400px;
-    height: 100vh;
+    height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
   }
     #close {
       position: absolute;
@@ -149,6 +153,7 @@
       gap: 20px;
       border-bottom: 1px var(--background) solid;
       padding-bottom: 20px;
+      margin-bottom: 0px;
     }
       .portrait {
         display: block;
@@ -174,9 +179,10 @@
     }
 
     .messages {
+      border-top: 1px var(--block) solid;
       flex: 1;
       overflow-y: scroll;
-      padding: 5px 20px 10px 20px;
+      padding: 20px 20px 10px 20px;
     }
       .clear {
         clear: both;
@@ -208,22 +214,9 @@
           }
           .mine {
             border-radius: 20px 20px 0px 20px;
-            background-color: var(--accent);
+            background-color: var(--block);
             color: var(--gray90);
             text-align: right;
             float: right;
           }
-    textarea {
-      flex: 0 0 48px;
-      display: block;
-      width: 85%;
-      background-color: var(--gray90);
-      overflow: hidden;
-      resize: none;
-    }
-    .send {
-      position: absolute;
-      bottom: 6px;
-      right: 5px;
-    }
 </style>

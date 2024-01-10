@@ -87,6 +87,7 @@ create table messages (
   sender uuid,
   recipient uuid,
   content text,
+  read boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint messages_sender_fkey foreign key (sender) references profiles (id) on delete cascade,
   constraint messages_recipient_fkey foreign key (recipient) references profiles (id) on delete cascade

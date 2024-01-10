@@ -8,7 +8,7 @@
   import People from '@components/sidebar/People.svelte'
   import Chat from '@components/sidebar/Chat.svelte'
 
-  export let user
+  export let user = {}
 
   const userStore = getUserStore({ activePanel: 'watched' })
   let activeUsers = []
@@ -38,7 +38,7 @@
   })
 </script>
 
-<aside style='--asideWidth: {$userStore.openChat ? 400 : 280}px'>
+<aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px'>
   {#if user.name || user.email}
     {#if $userStore.openChat}
       <Chat {user} {userStore} />
@@ -64,7 +64,7 @@
       </div>
     {/if}
   {:else}
-    <div id='panels'>
+    <div id='panels' class='login'>
       <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
         <button value='google' name='provider' type='submit' class='google w100'>Přihlásit přes Google</button>
       </form>
@@ -134,5 +134,8 @@
   }
   .w100 {
     width: 100%;
+  }
+  .login {
+    margin-top: 20px;
   }
 </style>
