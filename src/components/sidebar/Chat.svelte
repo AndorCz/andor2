@@ -54,15 +54,15 @@
 
     if (error) { return handleError(error) }
     $messages = data
-    markMessagesRead()
     loadingMessages = false
+    markMessagesRead()
   }
 
-  function markMessagesRead () {
+  async function markMessagesRead () {
     const unreadMessages = $messages.filter(message => !message.read && message.sender !== user.id)
     if (unreadMessages.length) {
-      console.log('unreadMessages', unreadMessages.map(message => message.id))
-      supabase.from('messages').update({ read: true }).in('id', unreadMessages.map(message => message.id))
+      const { error } = await supabase.from('messages').update({ read: true }).in('id', unreadMessages.map(message => message.id))
+      if (error) { return handleError(error) }
     }
   }
 
