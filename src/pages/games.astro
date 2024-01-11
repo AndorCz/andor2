@@ -11,7 +11,7 @@
 <Layout title='Hry'>
   <div class='headline flex'>
     <h1>Hry</h1>
-    {user.id && (<div><a href='./game-form' class='button'>Vytvořit novou hru</a></div>)}
+    {user.id && (<div><a href='./game/game-form' class='button'>Vytvořit novou hru</a></div>)}
   </div>
   <GameList games={data} />
 </Layout>

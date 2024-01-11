@@ -1,0 +1,23 @@
+---
+  import { handleError } from '@lib/database'
+	import Layout from '@layouts/layout.astro'
+  import BoardList from '@components/boards/BoardList.svelte'
+
+  const { supabase, user } = Astro.locals
+  const { data, error } = await supabase.from('boards').select('id, name, owner:profiles(name)')
+  if (error) { handleError(error) }
+---
+
+<Layout title='Diskuze'>
+  <div class='headline flex'>
+    <h1>Diskuze</h1>
+    {user.id && (<div><a href='./boards/board-form' class='button'>Vytvořit novou diskuzi</a></div>)}
+  </div>
+  <BoardList boards={data} />
+</Layout>
+
+<style>
+  .headline {
+    justify-content: space-between;
+  }
+</style>

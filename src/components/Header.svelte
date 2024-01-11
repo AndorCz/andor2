@@ -24,6 +24,7 @@
   <nav class='tabs'>
     <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
     <a href='/games' class={pathname === '/games' ? 'active' : ''}>Hry</a>
+    <a href='/discussions' class={pathname === '/discussions' ? 'active' : ''}>Diskuze</a>
   </nav>
 </header>
 

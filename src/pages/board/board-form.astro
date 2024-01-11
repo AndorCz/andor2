@@ -1,0 +1,71 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import { handleError } from '@lib/database'
+  import { createThread, createStoryteller } from '@lib/openai'
+
+  const { supabase, user } = Astro.locals
+
+  if (Astro.request.method === 'POST') {
+    const formData = await Astro.request.formData()
+    const boardName = formData.get('boardName')
+
+    const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
+
+    if (error) { handleError(error) }
+    else {
+      return Astro.redirect(`/board/${data.id}?toastType=success&toastText=${encodeURIComponent('Diskuze byla přidána')}`)
+    }
+  }
+---
+
+<Layout title='Vytvořit diskuzi'>
+  <a href='javascript:history.back()'>zpět</a>
+
+  <h1>Vytvořit diskuzi</h1>
+
+  {user.id ? (
+    <form method='POST' autocomplete='off'>
+      <div class='flex'>
+        <div class='labels'>
+          <label for='boardName'>Název diskuze</label>
+        </div>
+        <div class='inputs'>
+          <input type='text' id='boardName' name='boardName' maxlength='80' />
+        </div>
+      </div>
+      <center>
+        <button type='submit'>Vytvořit</button>
+      </center>
+    </form>
+  ) : (
+    <div>
+      <p>Pro vytvoření nové diskuze se musíš přihlásit.</p>
+    </div>
+  )}
+</Layout>
+
+<style>
+  form {
+    width: 100%;
+  }
+    form div {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .labels {
+      width: 15%;
+      padding-right: 10px;
+    }
+    .inputs {
+      flex: 1;
+    }
+      input {
+        width: 100%;
+      }
+      select {
+        width: 400px;
+      }
+  center {
+    margin-top: 20px;
+  }
+</style>

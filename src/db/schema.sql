@@ -5,6 +5,7 @@ drop table if exists games cascade;
 drop table if exists characters cascade;
 drop table if exists posts cascade;
 drop table if exists messages cascade;
+drop table if exists boards cascade;
 
 drop type if exists character_state;
 drop type if exists game_system;
@@ -50,6 +51,18 @@ create table games (
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_fkey foreign key (discussion) references threads(id),
   constraint games_game_fkey foreign key (game) references threads (id)
+);
+
+create table boards (
+  id int2 primary key generated always as identity,
+  name text unique not null,
+  owner uuid not null default auth.uid(),
+  header text null default 'Popis tematického zaměření této diskuze, užitečné odkazy, pravidla etc.'::text,
+  thread int2 null,
+  custom_header boolean null,
+  created_at timestamp with time zone default current_timestamp,
+  constraint boards_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
+  constraint boards_thread_fkey foreign key (thread) references threads(id)
 );
 
 create table characters (

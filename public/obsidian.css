@@ -162,6 +162,14 @@ button, .button {
     padding: 0px;
   }
 
+  button.secondary {
+    border: none;
+    background: none;
+    color: var(--link);
+    box-shadow: none;
+    padding: 5px;
+  }
+
 input[type=text], textarea, input[type=checkbox], .ProseMirror {
   padding: 20px;
   margin: 0px;

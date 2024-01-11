@@ -1,0 +1,15 @@
+---
+  import { handleError } from '@lib/database'
+	import Layout from '@layouts/layout.astro'
+  import Board from '@components/boards/Board.svelte'
+
+  const { supabase, user } = Astro.locals
+  const { boardId } = Astro.params
+
+  const { data: boardData, error } = await supabase.from('boards').select('id, name, header, owner:profiles(id, name), custom_header').eq('id', boardId).single()
+  if (error) { handleError(error) }
+---
+
+<Layout title={boardData?.name} header={boardData?.custom_header ? boardData.name : null}>
+  <Board data={boardData} {user} client:only />
+</Layout>
