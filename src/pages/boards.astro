@@ -11,7 +11,7 @@
 <Layout title='Diskuze'>
   <div class='headline flex'>
     <h1>Diskuze</h1>
-    {user.id && (<div><a href='./boards/board-form' class='button'>Vytvořit novou diskuzi</a></div>)}
+    {user.id && (<div><a href='./board/board-form' class='button'>Vytvořit novou diskuzi</a></div>)}
   </div>
   <BoardList boards={data} />
 </Layout>

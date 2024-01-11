@@ -149,6 +149,20 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function add_board_thread () returns trigger as $$
+begin
+  insert into threads (name) values (new.name) returning id into new.thread;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function delete_board_thread() returns trigger as $$
+begin
+  delete from threads where id = old.thread;
+  return old;
+end;
+$$ language plpgsql;
+
 create or replace function get_character_names(audience_ids uuid[])
 returns text[] as $$
 declare
@@ -195,3 +209,5 @@ $$ language plpgsql;
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads ();
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
+create or replace trigger add_board_thread before insert on boards for each row execute function add_board_thread ();
+create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_board_thread();

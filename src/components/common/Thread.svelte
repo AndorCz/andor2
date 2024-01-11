@@ -4,7 +4,7 @@
 
   export let posts
   export let canDeleteAll
-  export let myIdentities
+  export let myIdentities = []
   export let onDelete
   export let onEdit
   export let onPaging
