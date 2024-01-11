@@ -146,5 +146,6 @@
     margin: auto;
     margin-top: 20px;
     display: block;
+    font-size: 16px;
   }
 </style>

@@ -17,3 +17,9 @@ export function getUserStore (def = {}) { // sync temporary preferences to local
   userStore.subscribe(value => { window.localStorage.setItem('user', JSON.stringify(value)) })
   return userStore
 }
+
+export function getBoardStore (board, def = {}) { // sync temporary preferences to localStorage
+  const boardStore = writable(window.localStorage[board] ? JSON.parse(localStorage[board]) : def)
+  boardStore.subscribe(value => { window.localStorage.setItem(board, JSON.stringify(value)) })
+  return boardStore
+}

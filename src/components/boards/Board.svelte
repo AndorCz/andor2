@@ -5,10 +5,12 @@
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
+  import { getBoardStore } from '@lib/stores'
 
   export let user = {}
   export let data = {}
 
+  const boardStore = getBoardStore(data.id)
   const isBoardOwner = data.owner.id === user.id
 
   let posts = []
@@ -56,12 +58,24 @@
     editing = id
     textareaValue = content
     textareaRef.triggerEdit(id, content)
-    document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
+    document.getElementsByClassName('text')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
+  }
+
+  function toggleHeader () {
+    $boardStore.hideHeader = !$boardStore.hideHeader
   }
 </script>
 
-<h2>{data.name}</h2>
+<div class='headline'>
+  <h2>{data.name}</h2>
+  <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
+</div>
+{#if !$boardStore.hideHeader}
+  <div class='header'>
+    {data.header}
+  </div>
+{/if}
 
 <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
 <div class='addPostWrapper'>
@@ -71,9 +85,29 @@
 <Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isBoardOwner} onDelete={deletePost} onEdit={triggerEdit} iconSize={70} myIdentities={[{ id: user.id }]} />
 
 <style>
-  h2 {
-    margin-top: 0px;
+  .headline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
+    h2 {
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
+  .header {
+    background-color: var(--block);
+    padding: 20px;
+    margin-top: 20px;
+  }
+    .toggleHeader {
+      padding: 10px;
+    }
+    .toggleHeader.active {
+      background-color: var(--panel);
+      border: 1px var(--panel) solid;
+      box-shadow: inset 2px 2px 2px #0003;
+    }
+
   .addPostWrapper {
     display: flex;
     width: 100%;
