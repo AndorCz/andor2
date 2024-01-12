@@ -1,11 +1,12 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
   import { sendPost } from '@lib/helpers'
-  import { showSuccess, showError } from '@lib/toasts'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import Thread from '@components/common/Thread.svelte'
   import { getBoardStore } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
+  import { showSuccess, showError } from '@lib/toasts'
+  import Thread from '@components/common/Thread.svelte'
+  import EditableLong from '@components/common/EditableLong.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
   export let data = {}
@@ -65,16 +66,23 @@
   function toggleHeader () {
     $boardStore.hideHeader = !$boardStore.hideHeader
   }
+
+  async function updateBoardHeader () {
+    const { error } = await supabase.from('boards').update({ header: data.header }).eq('id', data.id)
+    if (error) { return handleError(error) }
+    showSuccess('Uloženo')
+  }
 </script>
 
 <div class='headline'>
   <h2>{data.name}</h2>
   <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
+  {#if isBoardOwner}
+    <button class='material settings' title='Nastavení'>settings</button>
+  {/if}
 </div>
 {#if !$boardStore.hideHeader}
-  <div class='header'>
-    {data.header}
-  </div>
+  <EditableLong bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
 {/if}
 
 <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
@@ -89,18 +97,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 20px;
   }
     h2 {
-      margin-top: 0px;
-      margin-bottom: 0px;
+      margin: 0px;
+      flex: 1;
     }
-  .header {
-    background-color: var(--block);
-    padding: 20px;
-    margin-top: 20px;
-  }
-    .toggleHeader {
+    .headline button {
       padding: 10px;
+      margin-left: 10px;
     }
     .toggleHeader.active {
       background-color: var(--panel);

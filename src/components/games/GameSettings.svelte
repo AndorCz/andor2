@@ -8,7 +8,10 @@
   export let isGameOwner
 
   let files
+  let saving = false
   let uploading = false
+  const originalSystem = data.system
+  const originalName = data.name
 
   async function deleteGame () {
     await supabase.from('games').delete().eq('id', data.id).then(({ error }) => {
@@ -24,7 +27,7 @@
       const image = await getImage(file)
       if (image.width > 1100 && image.height === 226) {
         $headerPreview = URL.createObjectURL(file)
-        const { error: error1 } = await supabase.storage.from('headers').upload(data.name, file, { upsert: true })
+        const { error: error1 } = await supabase.storage.from('headers').upload(data.id, file, { upsert: true })
         const { error: error2 } = await supabase.from('games').update({ custom_header: true }).eq('id', data.id)
         if (error1 || error2) { return handleError(error1 || error2) }
         data.custom_header = true
@@ -42,7 +45,7 @@
   async function clearHeader () {
     // clear in db
     if (data.custom_header) {
-      const { error: error1 } = await supabase.storage.from('headers').remove([data.name])
+      const { error: error1 } = await supabase.storage.from('headers').remove([data.id])
       const { error: error2 } = await supabase.from('games').update({ custom_header: false }).eq('id', data.id)
       if (error1 || error2) { return handleError(error1 || error2) }
     }
@@ -50,6 +53,14 @@
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
+  }
+
+  async function updateGame () {
+    saving = true
+    const { error } = await supabase.from('games').update({ name: data.name, system: data.system }).eq('id', data.id)
+    if (error) { return handleError(error) }
+    showSuccess('Změna hry uložena')
+    saving = false
   }
 </script>
 
@@ -62,6 +73,22 @@
     <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
   </div>
 
+  <h2>Název hry</h2>
+  <div class='flex'>
+    <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' size='80' />
+    <button on:click={updateGame} disabled={saving || originalName === data.name} class='material'>check</button>
+  </div>
+
+  <h2>Herní systém</h2>
+  <div class='flex'>
+    <select id='gameSystem' name='gameSystem' bind:value={data.system}>
+      <option value='drd1'>Dračí doupě e1.6</option>
+      <option value='vampire5e'>Vampire the Masquerade e5</option>
+      <option value='-'>Jiný / Bez systému</option>
+    </select>
+    <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
+  </div>
+
   <h2>Smazání hry</h2>
   Pozor, toto je nevratná akce.<br><br>
   <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
@@ -72,17 +99,20 @@
 {/if}
 
 <style>
-  .delete {
-    display: flex;
-    gap: 10px;
-  }
   h2 {
     margin-top: 50px;
   }
   input[type=file] {
     display: none;
   }
+  select {
+    width: 400px;
+  }
   .flex {
+    gap: 10px;
+  }
+  .delete {
+    display: flex;
     gap: 10px;
   }
 </style>
