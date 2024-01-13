@@ -11,7 +11,7 @@
     </tr>
     {#each games as game}
       <tr class='game'>
-        <td><div class='name'><a href='./game/{game.id}/'>{game.name}</a></div></td>
+        <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
         <td><div class='system'>{game.system}</div></td>
         <td><div class='owner'>{game.owner.name}</div></td>
       </tr>

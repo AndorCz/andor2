@@ -40,7 +40,6 @@
   }
 
   async function loadData () {
-    console.log('loadData triggered')
     activeUsers = await getActiveUsers(supabase)
     if (showOffline) {
       $conversations = await getConversations(supabase, user.id)

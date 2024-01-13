@@ -10,15 +10,9 @@
   let files
   let saving = false
   let uploading = false
+
   const originalSystem = data.system
   const originalName = data.name
-
-  async function deleteGame () {
-    await supabase.from('games').delete().eq('id', data.id).then(({ error }) => {
-      if (error) { return handleError(error) }
-      window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
-    })
-  }
 
   async function uploadHeader () {
     uploading = true
@@ -27,7 +21,7 @@
       const image = await getImage(file)
       if (image.width > 1100 && image.height === 226) {
         $headerPreview = URL.createObjectURL(file)
-        const { error: error1 } = await supabase.storage.from('headers').upload(data.id, file, { upsert: true })
+        const { error: error1 } = await supabase.storage.from('headers').upload('game-' + data.id, file, { upsert: true })
         const { error: error2 } = await supabase.from('games').update({ custom_header: true }).eq('id', data.id)
         if (error1 || error2) { return handleError(error1 || error2) }
         data.custom_header = true
@@ -45,7 +39,7 @@
   async function clearHeader () {
     // clear in db
     if (data.custom_header) {
-      const { error: error1 } = await supabase.storage.from('headers').remove([data.id])
+      const { error: error1 } = await supabase.storage.from('headers').remove(['game-' + data.id])
       const { error: error2 } = await supabase.from('games').update({ custom_header: false }).eq('id', data.id)
       if (error1 || error2) { return handleError(error1 || error2) }
     }
@@ -59,13 +53,27 @@
     saving = true
     const { error } = await supabase.from('games').update({ name: data.name, system: data.system }).eq('id', data.id)
     if (error) { return handleError(error) }
+
+    // update AI storyteller if system changed
+    if (originalSystem !== data.system) {
+      const res = await fetch('/api/game/updateStoryteller', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
+      const json = await res.json()
+      if (res.error || json.error) { return showError(res.error || json.error) }
+    }
     showSuccess('Změna hry uložena')
     saving = false
+  }
+
+  async function deleteGame () {
+    await supabase.from('games').delete().eq('id', data.id).then(({ error }) => {
+      if (error) { return handleError(error) }
+      window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
+    })
   }
 </script>
 
 {#if isGameOwner}
-  <h2 class='first'>Vlastní hlavička hry</h2>
+  <h3 class='first'>Vlastní hlavička hry</h3>
   Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
   <div class='flex'>
     <label class='button' for='header'>Nahrát obrázek</label>
@@ -73,13 +81,13 @@
     <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
   </div>
 
-  <h2>Název hry</h2>
+  <h3>Název hry</h3>
   <div class='flex'>
     <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' size='80' />
     <button on:click={updateGame} disabled={saving || originalName === data.name} class='material'>check</button>
   </div>
 
-  <h2>Herní systém</h2>
+  <h3>Herní systém</h3>
   <div class='flex'>
     <select id='gameSystem' name='gameSystem' bind:value={data.system}>
       <option value='drd1'>Dračí doupě e1.6</option>
@@ -89,7 +97,7 @@
     <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
   </div>
 
-  <h2>Smazání hry</h2>
+  <h3>Smazání hry</h3>
   Pozor, toto je nevratná akce.<br><br>
   <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
     <span class='material'>warning</span><span>Smazat hru</span>
@@ -99,7 +107,7 @@
 {/if}
 
 <style>
-  h2 {
+  h3 {
     margin-top: 50px;
   }
   input[type=file] {

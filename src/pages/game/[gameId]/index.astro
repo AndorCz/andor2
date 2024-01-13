@@ -18,6 +18,6 @@
   }
 ---
 
-<Layout title={gameData?.name} header={gameData?.custom_header ? gameData.id : null}>
+<Layout title={gameData?.name} header={gameData?.custom_header ? 'game-' + gameData.id : null}>
   <Game data={gameData} {user} client:only />
 </Layout>

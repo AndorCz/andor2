@@ -10,7 +10,7 @@
     </tr>
     {#each boards as board}
       <tr class='board'>
-        <td><div class='name'><a href='./board/{board.id}/'>{board.name}</a></div></td>
+        <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
         <td><div class='owner'>{board.owner.name}</div></td>
       </tr>
     {/each}

@@ -72,13 +72,17 @@
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
   }
+
+  function showSettings () {
+    window.location.href = `${window.location.pathname}?settings=true`
+  }
 </script>
 
 <div class='headline'>
   <h2>{data.name}</h2>
   <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
   {#if isBoardOwner}
-    <button class='material settings' title='Nastavení'>settings</button>
+    <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
   {/if}
 </div>
 {#if !$boardStore.hideHeader}
