@@ -94,10 +94,10 @@
   <h3>Smazání diskuze</h3>
   Pozor, toto je nevratná akce.<br><br>
   <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
-    <span class='material'>warning</span><span>Smazat hru</span>
+    <span class='material'>warning</span><span>Smazat diskuzi</span>
   </button>
 {:else}
-  Tato sekce je jen pro vlastníka hry.
+  Tato sekce je jen pro vlastníka diskuze.
 {/if}
 
 <style>

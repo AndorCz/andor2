@@ -6,11 +6,17 @@
 
   const { supabase, user } = Astro.locals
   const { boardId } = Astro.params
+
   const showSettings = Astro.url.searchParams.get('settings')
 
   const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header').eq('id', boardId).single()
   if (error) { handleError(error) }
 ---
+
+<script>
+  import { lookForToast } from '@lib/toasts'
+  lookForToast()
+</script>
 
 <Layout title={boardData?.name} header={boardData?.custom_header ? 'board-' + boardData.id : null}>
   {(showSettings ? (

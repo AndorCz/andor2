@@ -18,6 +18,11 @@
   }
 ---
 
+<script>
+  import { lookForToast } from '@lib/toasts'
+  lookForToast()
+</script>
+
 <Layout title={gameData?.name} header={gameData?.custom_header ? 'game-' + gameData.id : null}>
   <Game data={gameData} {user} client:only />
 </Layout>
