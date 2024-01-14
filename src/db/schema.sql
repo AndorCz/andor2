@@ -6,6 +6,7 @@ drop table if exists characters cascade;
 drop table if exists posts cascade;
 drop table if exists messages cascade;
 drop table if exists boards cascade;
+drop table if exists bookmarks cascade;
 
 drop type if exists character_state;
 drop type if exists game_system;
@@ -104,6 +105,14 @@ create table messages (
   created_at timestamp with time zone default current_timestamp,
   constraint messages_sender_fkey foreign key (sender) references profiles (id) on delete cascade,
   constraint messages_recipient_fkey foreign key (recipient) references profiles (id) on delete cascade
+);
+
+create table bookmarks (
+  id serial primary key,
+  user_id uuid references profiles(id) on delete cascade,
+  game_id int2 null references games(id),
+  board_id int2 null references boards(id),
+  created_at timestamp with time zone default current_timestamp
 );
 
 -- VIEWS

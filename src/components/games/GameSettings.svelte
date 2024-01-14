@@ -4,13 +4,14 @@
   import { headerPreview } from '@lib/stores'
   import { getImage } from '@lib/utils'
 
-  export let data
-  export let isGameOwner
+  export let data = {}
+  export let user = {}
 
   let files
   let saving = false
   let uploading = false
 
+  const isGameOwner = data.owner.id === user.id
   const originalSystem = data.system
   const originalName = data.name
 

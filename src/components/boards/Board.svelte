@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { sendPost } from '@lib/helpers'
-  import { getBoardStore } from '@lib/stores'
+  import { getBoardStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import Thread from '@components/common/Thread.svelte'
@@ -13,6 +13,7 @@
 
   const boardStore = getBoardStore(data.id)
   const isBoardOwner = data.owner.id === user.id
+  let bookmarkId
 
   let posts = []
   let textareaRef
@@ -76,10 +77,27 @@
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
   }
+
+  async function addBookmark () {
+    const { data: newBookmark, error } = await supabase.from('bookmarks').insert({ user_id: user.id, board_id: data.id }).select().single()
+    if (error) { return handleError(error) }
+    $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board: { id: data.id, name: data.name } }]
+    showSuccess('Záložka přidána')
+  }
+
+  async function removeBookmark () {
+    const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
+    if (error) { return handleError(error) }
+    $bookmarks.boards = $bookmarks.boards.filter(b => b.board.id !== data.id)
+    showSuccess('Záložka odebrána')
+  }
+
+  $: bookmarkId = $bookmarks.boards.find(b => b.board.id === data.id)?.id
 </script>
 
 <div class='headline'>
-  <h2>{data.name}</h2>
+  <h1>{data.name}</h1>
+  <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
   <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
   {#if isBoardOwner}
     <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
@@ -103,7 +121,7 @@
     align-items: center;
     margin-bottom: 20px;
   }
-    h2 {
+    h1 {
       margin: 0px;
       flex: 1;
     }
@@ -111,7 +129,7 @@
       padding: 10px;
       margin-left: 10px;
     }
-    .toggleHeader.active {
+    .headline button.active {
       background-color: var(--panel);
       border: 1px var(--panel) solid;
       box-shadow: inset 2px 2px 2px #0003;

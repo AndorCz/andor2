@@ -4,7 +4,7 @@
   import Board from '@components/boards/Board.svelte'
   import BoardSettings from '@components/boards/BoardSettings.svelte'
 
-  const { supabase, user } = Astro.locals
+  const { supabase, user, bookmarks } = Astro.locals
   const { boardId } = Astro.params
 
   const showSettings = Astro.url.searchParams.get('settings')

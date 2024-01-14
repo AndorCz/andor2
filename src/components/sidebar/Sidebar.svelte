@@ -3,15 +3,18 @@
   import { logout } from '@lib/helpers'
   import { clone } from '@lib/utils'
   import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
-  import { getUserStore, conversations, unreadConversations } from '@lib/stores'
+  import { getUserStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
   import PortraitInput from '@components/common/PortraitInput.svelte'
-  import Watched from '@components/sidebar/Watched.svelte'
+  import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
   import Chat from '@components/sidebar/Chat.svelte'
 
   export let user = {}
+  export let bookmarkData = {}
 
-  const userStore = getUserStore({ activePanel: 'watched' })
+  $bookmarks = bookmarkData
+
+  const userStore = getUserStore({ activePanel: 'booked' })
   let activeUsers = []
   let allRelevantUsers = {}
   let showOffline = false
@@ -77,7 +80,7 @@
             </div>
           </div>
           <div id='tabs'>
-            <button id='watched' class:active={$userStore.activePanel === 'watched'} on:click={() => { activate('watched') }}><span class='material'>visibility</span><span class='label'>Sledované</span></button>
+            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}><span class='material'>bookmark</span><span class='label'>Záložky</span></button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
               {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
               <span class='material'>person</span>
@@ -86,8 +89,8 @@
             <button id='notes' disabled class:active={$userStore.activePanel === 'notes'}><span class='material'>edit</span><span class='label'>Poznámky</span></button>
           </div>
           <div id='panels'>
-            {#if $userStore.activePanel === 'watched'}
-              <Watched />
+            {#if $userStore.activePanel === 'booked'}
+              <Bookmarks />
             {:else if $userStore.activePanel === 'people'}
               <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
             {/if}

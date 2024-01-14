@@ -2,9 +2,12 @@
   import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import Game from '@components/games/Game.svelte'
+  import GameSettings from '@components/games/GameSettings.svelte'
 
   const { supabase, user } = Astro.locals
   const { gameId } = Astro.params
+
+  const showSettings = Astro.url.searchParams.get('settings')
 
   const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, game_thread, system, openai_thread, custom_header').eq('id', gameId).single()
   if (error) { handleError(error) }
@@ -24,5 +27,9 @@
 </script>
 
 <Layout title={gameData?.name} header={gameData?.custom_header ? 'game-' + gameData.id : null}>
-  <Game data={gameData} {user} client:only />
+  {(showSettings ? (
+    <GameSettings data={gameData} {user} client:only />
+  ) : (
+    <Game data={gameData} {user} client:only />
+  ))}
 </Layout>

@@ -1,11 +1,12 @@
 <script>
   import { onMount } from 'svelte'
-  import { getGameStore } from '@lib/stores'
+  import { getGameStore, bookmarks } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
+  import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
   import GameThread from '@components/games/GameThread.svelte'
   import GameCharacters from '@components/games/GameCharacters.svelte'
   import GameInfo from '@components/games/GameInfo.svelte'
-  import GameSettings from '@components/games/GameSettings.svelte'
 
   export let user = {}
   export let data = {}
@@ -13,25 +14,48 @@
   // prepare store
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
+  let bookmarkId
 
   onMount(() => {
     $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
-    if (!isGameOwner && $gameStore.activeTab === 'set') { $gameStore.activeTab = 'info' } // if you get logged out
   })
+
+  function showSettings () {
+    window.location.href = `${window.location.pathname}?settings=true`
+  }
+
+  async function addBookmark () {
+    const { data: newBookmark, error } = await supabase.from('bookmarks').insert({ user_id: user.id, game_id: data.id }).select().single()
+    if (error) { return handleError(error) }
+    $bookmarks.games = [...$bookmarks.games, { id: newBookmark.id, game: { id: data.id, name: data.name } }]
+    showSuccess('Záložka přidána')
+  }
+
+  async function removeBookmark () {
+    const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
+    if (error) { return handleError(error) }
+    $bookmarks.games = $bookmarks.games.filter(b => b.game.id !== data.id)
+    showSuccess('Záložka odebrána')
+  }
+
+  $: bookmarkId = $bookmarks.games.find(b => b.game.id === data.id)?.id
 </script>
 
 <main>
 
-  <h1>{data.name}</h1>
+  <div class='headline'>
+    <h1>{data.name}</h1>
+    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+    {#if isGameOwner}
+      <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+    {/if}
+  </div>
 
   <nav class='tabs secondary'>
     <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>Info</button>
     <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''}>Chat</button>
     <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
-    {#if isGameOwner}
-      <button on:click={() => { $gameStore.activeTab = 'set' }} class={$gameStore.activeTab === 'set' ? 'active' : ''}>Nastavení</button>
-    {/if}
   </nav>
 
   <div class='content'>
@@ -43,13 +67,31 @@
       <GameThread {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} />
-    {:else if $gameStore.activeTab === 'set'}
-      <GameSettings {data} {isGameOwner} />
     {/if}
   </div>
 </main>
 
 <style>
+  .headline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+    h1 {
+      margin: 0px;
+      flex: 1;
+    }
+    .headline button {
+      padding: 10px;
+      margin-left: 10px;
+    }
+    .headline button.active {
+      background-color: var(--panel);
+      border: 1px var(--panel) solid;
+      box-shadow: inset 2px 2px 2px #0003;
+    }
+
   main {
     position: relative;
   }

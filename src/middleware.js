@@ -1,6 +1,6 @@
 
 import { getSupabase, handleError } from '@lib/database'
-import { saveAuthCookies } from '@lib/utils'
+import { saveAuthCookies, groupBookmarks } from '@lib/utils'
 
 export async function onRequest ({ cookies, locals, redirect, url }, next) {
   locals.user = {} // empty default
@@ -30,8 +30,12 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
       const { data: profileData } = await locals.supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
       if (profileData?.name) {
         locals.user = { ...profileData, ...locals.user }
-        const { error } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
-        if (error) { return handleError(error) }
+        const { error: profileError } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
+        if (profileError) { return handleError(profileError) }
+        // load bookmarks
+        const { data: bookmarkData, error: bookmarkError } = await locals.supabase.from('bookmarks').select('id, created_at, game:game_id (id, name), board:board_id (id, name)').eq('user_id', locals.user.id)
+        if (bookmarkError) { return handleError(bookmarkError) }
+        locals.bookmarks = groupBookmarks(bookmarkData) // temporary until supabase-js supports group-by
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
         return redirect('/onboarding')

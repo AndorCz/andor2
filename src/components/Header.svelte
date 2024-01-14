@@ -23,8 +23,8 @@
   </a>
   <nav class='tabs'>
     <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
-    <a href='/games' class={pathname === '/games' ? 'active' : ''}>Hry</a>
-    <a href='/boards' class={pathname === '/boards' ? 'active' : ''}>Diskuze</a>
+    <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
+    <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
   </nav>
 </header>
 

@@ -82,7 +82,9 @@
     {/if}
   </table>
 
-  <a href='./character-form' class='button'>Vytvořit novou postavu</a>
+  <center>
+    <a href='./character-form' class='button'>Vytvořit novou postavu</a>
+  </center>
 </main>
 
 <style>
@@ -107,9 +109,7 @@
     padding-left: 20px;
     color: var(--dim);
   }
-  .button {
-    position: absolute;
-    top: 0px;
-    right: 0px;
+  center {
+    margin-top: 20px;
   }
 </style>

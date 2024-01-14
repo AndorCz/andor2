@@ -7,7 +7,7 @@ import 'tippy.js/dist/tippy.css'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
-const { user } = Astro.locals
+const { user, bookmarks } = Astro.locals
 const { title, header } = Astro.props
 ---
 
@@ -33,7 +33,7 @@ const { title, header } = Astro.props
           <slot />
         </div>
       </main>
-      <Sidebar {user} client:only />
+      <Sidebar {user} bookmarkData={bookmarks} client:only />
     </div>
     <footer>v{version}</footer>
 

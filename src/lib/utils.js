@@ -1,4 +1,5 @@
 
+// eslint-disable-next-line camelcase
 export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   const maxAge = 100 * 1000 * 60 * 60 * 24 * 365 // 100 years
   const secure = import.meta.env.NODE_ENV === 'production' // disable 'secure' flag in development, Safari refuses to set a 'secure' cookie
@@ -47,4 +48,17 @@ export function getImage (file) {
     img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
     img.src = URL.createObjectURL(file)
   })
+}
+
+export function groupBookmarks (bookmarks) {
+  const grouped = { games: [], boards: [] }
+  bookmarks.forEach(bookmark => {
+    if (bookmark.game) {
+      grouped.games.push(bookmark)
+    } else if (bookmark.board) {
+      grouped.boards.push(bookmark)
+    }
+  })
+  // add more types later, use switch
+  return grouped
 }

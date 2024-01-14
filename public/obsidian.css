@@ -84,7 +84,7 @@ h1, h2, h3, h4, h5 {
   font-family: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
   font-variation-settings: 'wght' 600;
 }
 
@@ -334,9 +334,7 @@ select {
     color: var(--accent);
   }
 
-
 /* MISC */
-
 
 .diceRoll {
   line-height: 200%;
@@ -381,6 +379,10 @@ select {
   border-radius: 50%;
   box-shadow: 2px 2px 4px #0006;
   background-color: var(--accent);
+}
+
+.content p {
+  margin: 5px 0px;
 }
 
 /* WYSIWYG - TipTap/ProseMirror */
