@@ -50,7 +50,7 @@
       left: 30px;
     }
 
-  @media (max-width: 768px) {
+  @media (max-width: 719px) {
     nav {
       left: 10px;
     }

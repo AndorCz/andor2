@@ -34,7 +34,7 @@
   function getUnselectedOptions () { return options.filter(option => option.value !== selected) }
 </script>
 
-<div class='dropdown' bind:this={dropdownEl}>
+<span class='dropdown' bind:this={dropdownEl}>
   <button class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
     {#key selected}
       {#if findSelectedOption()}
@@ -53,7 +53,7 @@
       {/each}
     </div>
   {/if}
-</div>
+</span>
 
 <style>
   .dropdown {

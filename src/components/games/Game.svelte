@@ -98,4 +98,10 @@
     .content {
       padding: 40px;
     }
+
+  @media (max-width: 719px) {
+    .content {
+      padding: 40px 10px;
+    }
+  }
 </style>

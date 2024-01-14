@@ -68,4 +68,12 @@ Správce hry: {data.owner.name}
   .warning {
     margin-left: 20px;
   }
+
+  @media (max-width: 719px) {
+    .warning {
+      display: block;
+      margin-left: 0px;
+      padding-top: 20px;
+    }
+  }
 </style>

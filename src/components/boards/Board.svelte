@@ -4,6 +4,7 @@
   import { getBoardStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -112,7 +113,7 @@
   <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
 </div>
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isBoardOwner} onDelete={deletePost} onEdit={triggerEdit} iconSize={70} myIdentities={[{ id: user.id }]} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isBoardOwner} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
 
 <style>
   .headline {

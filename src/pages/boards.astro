@@ -11,7 +11,10 @@
 <Layout title='Diskuze'>
   <div class='headline flex'>
     <h1>Diskuze</h1>
-    {user.id && (<div><a href='./board/board-form' class='button'>Vytvořit novou diskuzi</a></div>)}
+    {user.id && (<div>
+      <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
+      <a href='./board/board-form' class='button mobile material'>add</a>
+    </div>)}
   </div>
   <BoardList boards={data} />
 </Layout>
@@ -19,5 +22,15 @@
 <style>
   .headline {
     justify-content: space-between;
+  }
+  .mobile { display: none }
+  .desktop { display: block }
+
+  @media (max-width: 719px) {
+    .desktop { display: none }
+    .mobile { display: block }
+    .button {
+      padding: 10px;
+    }
   }
 </style>

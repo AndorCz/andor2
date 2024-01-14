@@ -71,44 +71,69 @@
       window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
     })
   }
+
+  function showGame () {
+    window.location.href = `/game/${data.id}`
+  }
 </script>
 
-{#if isGameOwner}
-  <h3 class='first'>Vlastní hlavička hry</h3>
-  Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
-  <div class='flex'>
-    <label class='button' for='header'>Nahrát obrázek</label>
-    <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
-    <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+<main>
+  <div class='headline'>
+    <h2>{data.name}: Nastavení</h2>
+    <button on:click={showGame} class='material' title='Zpět do hry'>check</button>
   </div>
 
-  <h3>Název hry</h3>
-  <div class='flex'>
-    <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' size='80' />
-    <button on:click={updateGame} disabled={saving || originalName === data.name} class='material'>check</button>
-  </div>
+  {#if isGameOwner}
+    <h3 class='first'>Vlastní hlavička hry</h3>
+    Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
+    <div class='row'>
+      <label class='button' for='header'>Nahrát obrázek</label>
+      <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
+      <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+    </div>
 
-  <h3>Herní systém</h3>
-  <div class='flex'>
-    <select id='gameSystem' name='gameSystem' bind:value={data.system}>
-      <option value='drd1'>Dračí doupě e1.6</option>
-      <option value='dnd5e'>Dungeons & Dragons e5</option>
-      <option value='vampire5e'>Vampire the Masquerade e5</option>
-      <option value='-'>Jiný / Bez systému</option>
-    </select>
-    <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
-  </div>
+    <h3>Název hry</h3>
+    <div class='row'>
+      <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' />
+      <button on:click={updateGame} disabled={saving || originalName === data.name} class='material'>check</button>
+    </div>
 
-  <h3>Smazání hry</h3>
-  Pozor, toto je nevratná akce.<br><br>
-  <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
-    <span class='material'>warning</span><span>Smazat hru</span>
-  </button>
-{:else}
-  Tato sekce je jen pro vlastníka hry.
-{/if}
+    <h3>Herní systém</h3>
+    <div class='row'>
+      <select id='gameSystem' name='gameSystem' bind:value={data.system}>
+        <option value='drd1'>Dračí doupě e1.6</option>
+        <option value='dnd5e'>Dungeons & Dragons e5</option>
+        <option value='vampire5e'>Vampire the Masquerade e5</option>
+        <option value='-'>Jiný / Bez systému</option>
+      </select>
+      <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
+    </div>
+
+    <h3>Smazání hry</h3>
+    Pozor, toto je nevratná akce.<br><br>
+    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
+      <span class='material'>warning</span><span>Smazat hru</span>
+    </button>
+  {:else}
+    Tato sekce je jen pro vlastníka hry.
+  {/if}
+</main>
 
 <style>
+  .headline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+    h2 {
+      margin: 0px;
+    }
+    .headline button {
+      padding: 10px;
+      margin-left: 10px;
+    }
+
   h3 {
     margin-top: 50px;
   }
@@ -116,13 +141,22 @@
     display: none;
   }
   select {
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
   }
-  .flex {
+  .row {
     gap: 10px;
   }
   .delete {
     display: flex;
     gap: 10px;
+  }
+  #gameName {
+    width: 100%;
+  }
+  @media (max-width: 719px) {
+    main {
+      padding: 10px;
+    }
   }
 </style>

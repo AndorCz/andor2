@@ -98,4 +98,9 @@
         top: 0px;
         border-radius: 0px 10px 0px 10px;
       }
+  @media (max-width: 719px) {
+    button {
+      padding: 10px 15px;
+    }
+  }
 </style>

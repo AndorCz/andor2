@@ -130,4 +130,13 @@
       font-size: 22px;
       padding: 15px 25px;
     }
+
+  @media (max-width: 719px) {
+    .post {
+      gap: 0px;
+    }
+    .time {
+      display: none;
+    }
+  }
 </style>

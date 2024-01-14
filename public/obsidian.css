@@ -44,31 +44,6 @@
   src: url('./fonts/MaterialSymbolsSharpSubset.woff2') format('woff2');
 }
 
-/* UTILS */
-
-.material {
-  font-family: 'Material Symbols Sharp';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased; /* subpixel-antialiased; */
-  font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-}
-
-.flex {
-  display: flex;
-  align-items: center;
-}
-
 /* BASICS */
 
 html { background-color: var(--background) }
@@ -294,9 +269,6 @@ select {
 
   /* SECONDARY TABS */
 
-  .tabs.secondary {
-    height: 52px;
-  }
   .tabs.secondary:after {
     content: '';
     width: 100%;
@@ -448,6 +420,33 @@ select {
   box-shadow: none !important;
 }
 
+
+/* UTILS */
+
+.material {
+  font-family: 'Material Symbols Sharp';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased; /* subpixel-antialiased; */
+  font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+
 /* MOBILE */
 
 @media (max-width: 768px) {
@@ -461,5 +460,9 @@ select {
   .tabs a, .tabs button {
     padding: 10px 15px;
     font-size: 20px;
+  }
+
+  .diceRoll b {
+    font-size: 25px;
   }
 }

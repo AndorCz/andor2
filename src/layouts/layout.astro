@@ -66,6 +66,7 @@ const { title, header } = Astro.props
 
       #content {
         padding: 40px 60px 60px 60px;
+        min-height: 550px;
       }
 
     footer {
@@ -74,7 +75,7 @@ const { title, header } = Astro.props
       text-align: center;
     }
 
-  @media (max-width: 768px) {
+  @media (max-width: 719px) {
     body {
       margin: 0px;
     }
@@ -82,7 +83,8 @@ const { title, header } = Astro.props
       border-radius: 0px;
     }
       #content {
-        padding: 20px 30px 30px 30px;
+        padding: 15px;
+        padding-bottom: 50px;
       }
   }
 </style>

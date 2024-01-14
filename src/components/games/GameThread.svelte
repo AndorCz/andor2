@@ -5,6 +5,7 @@
   import { sendPost } from '@lib/helpers'
   import { getGameStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
@@ -181,7 +182,7 @@
 {/if}
 <!--({$gameStore.activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 
 <style>
   .addPostWrapper {
@@ -217,5 +218,11 @@
     padding: 5px;
     font-size: 19px;
     margin-left: 10px;
+  }
+
+  @media (max-width: 719px) {
+    .headlineWrapper, .selectWrapper {
+      gap: 10px;
+    }
   }
 </style>

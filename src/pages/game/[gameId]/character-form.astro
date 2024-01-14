@@ -38,9 +38,9 @@
   }
 ---
 
-<Layout title='Vytvořit postavu'>
+<Layout title={id ? 'Upravit postavu' : 'Vytvořit postavu'}>
   <a href='javascript:history.back()'>zpět</a>
 
-  <h1>Vytvořit postavu</h1>
+  <h1>{id ? 'Upravit postavu' : 'Vytvořit postavu'}</h1>
   <CharacterForm {character} {isGameOwner} userId={user.id} client:only />
 </Layout>

@@ -71,34 +71,36 @@
   }
 </script>
 
-<div class='headline'>
-  <h2>{data.name}: Nastavení</h2>
-  <button on:click={showBoard} class='material board' title='Zpět do diskuze'>check</button>
-</div>
-
-{#if isBoardOwner}
-  <h3 class='first'>Vlastní hlavička diskuze</h3>
-  Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
-  <div class='flex'>
-    <label class='button' for='header'>Nahrát obrázek</label>
-    <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
-    <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+<main>
+  <div class='headline'>
+    <h2>{data.name}: Nastavení</h2>
+    <button on:click={showBoard} class='material' title='Zpět do diskuze'>check</button>
   </div>
 
-  <h3>Název diskuze</h3>
-  <div class='flex'>
-    <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' size='80' />
-    <button on:click={updateBoard} disabled={saving || originalName === data.name} class='material'>check</button>
-  </div>
+  {#if isBoardOwner}
+    <h3 class='first'>Vlastní hlavička diskuze</h3>
+    Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
+    <div class='row'>
+      <label class='button' for='header'>Nahrát obrázek</label>
+      <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
+      <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+    </div>
 
-  <h3>Smazání diskuze</h3>
-  Pozor, toto je nevratná akce.<br><br>
-  <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
-    <span class='material'>warning</span><span>Smazat diskuzi</span>
-  </button>
-{:else}
-  Tato sekce je jen pro vlastníka diskuze.
-{/if}
+    <h3>Název diskuze</h3>
+    <div class='row'>
+      <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
+      <button on:click={updateBoard} disabled={saving || originalName === data.name} class='material'>check</button>
+    </div>
+
+    <h3>Smazání diskuze</h3>
+    Pozor, toto je nevratná akce.<br><br>
+    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
+      <span class='material'>warning</span><span>Smazat diskuzi</span>
+    </button>
+  {:else}
+    Tato sekce je jen pro vlastníka diskuze.
+  {/if}
+</main>
 
 <style>
   .headline {
@@ -110,22 +112,30 @@
     h2 {
       margin: 0px;
     }
-    h3 {
-      margin-top: 50px;
-      flex: 1;
-    }
     .headline button {
       padding: 10px;
       margin-left: 10px;
     }
+
+  h3 {
+    margin-top: 50px;
+  }
   input[type=file] {
     display: none;
   }
-  .flex {
+  #boardName {
+    width: 100%;
+  }
+  .row {
     gap: 10px;
   }
   .delete {
     display: flex;
     gap: 10px;
+  }
+  @media (max-width: 719px) {
+    main {
+      padding: 10px;
+    }
   }
 </style>

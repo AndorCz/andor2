@@ -203,7 +203,7 @@
     transition: opacity 0.4s ease-in-out;
   }
 
-@media (max-width: 768px) {
+@media (max-width: 719px) {
   #sidebarToggle {
     display: block;
     position: fixed;

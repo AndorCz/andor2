@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from 'svelte'
   import { Editor } from '@tiptap/core'
   import { Color } from '@tiptap/extension-color'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import Link from '@tiptap/extension-link'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
@@ -10,7 +12,6 @@
   import Dropdown from '@components/common/Dropdown.svelte'
   import TextStyle from '@tiptap/extension-text-style'
   import Image from '@tiptap/extension-image'
-  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
 
   export let content = ''
 
@@ -116,8 +117,8 @@
       <button on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
       <button on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
       <button on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
-      <Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' />
-      <Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' />
+      <span><Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
+      <span><Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
       <span class='sep'></span>
       <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
       <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')} title='Reset barvy'>format_color_reset</button>
@@ -143,21 +144,21 @@
   .wrapper, .editor {
     height: 100%;
   }
-  .sep {
-    width: 1px;
-    height: 20px;
-    background-color: #0003;
-  }
 
   .bubble {
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;
     border-radius: 15px;
-    padding: 12px;
+    padding: 7px;
     display: flex;
     align-items: center;
-    gap: 10px;
   }
+    .sep {
+      width: 1px;
+      height: 22px;
+      background-color: #0003;
+      display: inline-block;
+    }
     /*
     .bubble::after {
       content: '';
@@ -171,6 +172,9 @@
       box-shadow: 2px 2px 2px #0003;
     }
     */
+    .bubble button, .bubble span {
+      margin: 3px;
+    }
     .bubble button, .toolbelt button {
       padding: 5px;
     }
@@ -195,4 +199,14 @@
     color: white;
   }
   */
+
+  @media (max-width: 719px) {
+    .bubble {
+      display: block;
+    }
+    .sep {
+      width: 40px;
+      background-color: transparent;
+    }
+  }
 </style>

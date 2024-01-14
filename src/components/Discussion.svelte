@@ -4,6 +4,7 @@
   import { sendPost } from '@lib/helpers'
   import { showSuccess, showError } from '@lib/toasts'
   import { getGameStore } from '@lib/stores'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
@@ -82,22 +83,34 @@
 
 <h2>Veřejná diskuze</h2>
 
-<div class='headlines'>
-  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-  <h3 class='sender'>Identita</h3>
-</div>
-<div class='addPostWrapper'>
-  <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
-  <div class='senderWrapper'>
-    <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-      {#each identities as identity}
-        <option value={identity.id}>{identity.name}</option>
-      {/each}
-    </select>
+{#if $platform === 'desktop'}
+  <div class='headlines'>
+    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+    <h3 class='sender'>Identita</h3>
   </div>
-</div>
+  <div class='addPostWrapper'>
+    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+    <div class='senderWrapper'>
+      <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
+        {#each identities as identity}
+          <option value={identity.id}>{identity.name}</option>
+        {/each}
+      </select>
+    </div>
+  </div>
+{:else}
+  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+  <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={triggerEdit} iconSize={70} />
+  <h3 class='sender'>Identita</h3>
+  <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
+    {#each identities as identity}
+      <option value={identity.id}>{identity.name}</option>
+    {/each}
+  </select>
+{/if}
+
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={identities} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 
 <style>
   h2 {
@@ -123,4 +136,10 @@
     .headlines .sender {
       width: 200px;
     }
+  @media (max-width: 719px) {
+    select {
+      width: 100%;
+    }
+  }
+
 </style>

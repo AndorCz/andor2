@@ -29,37 +29,35 @@
 
 {#if userId}
   <form method='POST' autocomplete='off'>
-    <table>
-      <tr>
-        <td class='labels'><label for='charName'>Jméno</label></td>
-        <td class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name || ''} /></td>
-      </tr>
-      <tr>
-        <td class='labels'><label for='charLooks'>Vzhled</label></td>
-        <td class='inputs'><TextareaExpandable id='charLooks' name='charLooks' value={character.appearance} /></td>
-      </tr>
-      <tr>
-        <td class='labels'><label for='charIcon'>Portrét</label></td>
-        <td class='inputs'>
-          <div class='portrait'>
-            <PortraitInput identity={character} />
-            <span>
-              <button id='generatePortrait' type='button' on:click={generatePortrait} disabled={generatingPortrait || !character.appearance || character.appearance?.length < 20}>Vygenerovat portrét</button>Dle popisu vzhledu
-            </span>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td class='labels'><label for='charBio'>Životopis</label></td>
-        <td class='inputs'><TextareaExpandable id='charBio' name='charBio' value={character.bio} /></td>
-      </tr>
-      {#if isGameOwner}
-        <tr>
-          <td class='labels'><label for='storyteller'>Vypravěč</label></td>
-          <td class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></td>
-        </tr>
-      {/if}
-    </table>
+    <div class='row'>
+      <div class='labels'><label for='charName'>Jméno</label></div>
+      <div class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name || ''} /></div>
+    </div>
+    <div class='row'>
+      <div class='labels'><label for='charLooks'>Vzhled</label></div>
+      <div class='inputs'><TextareaExpandable id='charLooks' name='charLooks' value={character.appearance} /></div>
+    </div>
+    <div class='row'>
+      <div class='labels'><label for='charIcon'>Portrét</label></div>
+      <div class='inputs'>
+        <div class='portrait'>
+          <PortraitInput identity={character} />
+          <span>
+            <button id='generatePortrait' type='button' on:click={generatePortrait} disabled={generatingPortrait || !character.appearance || character.appearance?.length < 20}>Vygenerovat portrét</button>Dle popisu vzhledu
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='labels'><label for='charBio'>Životopis</label></div>
+      <div class='inputs'><TextareaExpandable id='charBio' name='charBio' value={character.bio} /></div>
+    </div>
+    {#if isGameOwner}
+      <div class='row'>
+        <div class='labels'><label for='storyteller'>Vypravěč</label></div>
+        <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></div>
+      </div>
+    {/if}
     <center>
       <button type='submit'>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
@@ -71,17 +69,20 @@
 {/if}
 
 <style>
-  form, form table {
+  form {
     width: 100%;
   }
-    td {
-      padding: 10px 0px;
+    .row {
+      display: flex;
+      margin: 30px 0px;
     }
-
-    .labels {
-      width: 20%;
-      padding-right: 10px;
-    }
+      .labels {
+        width: 10%;
+        padding-top: 10px;
+      }
+      .inputs {
+        flex: 1;
+      }
     .portrait {
       display: flex;
       gap: 20px;
@@ -95,5 +96,22 @@
     }
   center {
     margin-top: 20px;
+  }
+
+  @media (max-width: 719px) {
+    .row {
+      display: block;
+    }
+    .labels {
+      width: 100%;
+      padding-bottom: 20px;
+    }
+    .portrait {
+      display: block;
+    }
+    .portrait span {
+      display: block;
+      margin-top: 20px;
+    }
   }
 </style>

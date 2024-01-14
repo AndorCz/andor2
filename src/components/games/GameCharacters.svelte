@@ -83,7 +83,7 @@
   </table>
 
   <center>
-    <a href='./character-form' class='button'>Vytvořit novou postavu</a>
+    <a href={window.location.href + '/character-form'} class='button'>Vytvořit novou postavu</a>
   </center>
 </main>
 

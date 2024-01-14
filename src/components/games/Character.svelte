@@ -30,7 +30,7 @@
       <span class='material star' title='Vypravěč'>star</span>
     {/if}
     {#if isGameOwner || isPlayer}
-      <a href='./character-form?id={character.id}'>{character.name}</a>
+      <a href={window.location.href + '/character-form?id=' + character.id}>{character.name}</a>
     {:else}
       {character.name}
     {/if}
