@@ -18,6 +18,7 @@
   let activeUsers = []
   let allRelevantUsers = {}
   let showOffline = false
+  let showSidebar = false
 
   onMount(async () => {
     if ($userStore.activePanel) {
@@ -63,7 +64,10 @@
   }
 </script>
 
-<aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px'>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
+<aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px' class:active={showSidebar}>
   {#if user.name || user.email}
     {#if $userStore.openChat}
       <Chat {user} {userStore} />
@@ -107,13 +111,13 @@
   {/if}
 </aside>
 
-<button id='sidebarToggle' class='material'>side_navigation</button>
+<button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
 
 <style>
   aside {
     width: var(--asideWidth);
     margin-left: 20px;
-    transition: left 0.3s ease-in-out, width 0.2s ease-in-out;
+    transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
   #user {
     padding: 20px 0px;
@@ -183,8 +187,20 @@
     margin-top: 20px;
   }
 
+  /* mobile elements */
   #sidebarToggle {
     display: none;
+  }
+  #veil {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    background-color: #0005;
+    transition: opacity 0.4s ease-in-out;
   }
 
 @media (max-width: 768px) {
@@ -195,11 +211,23 @@
     right: 20px;
     padding: 20px;
     border-radius: 100%;
+    box-shadow: 2px 2px 5px #0005;
   }
   aside {
     position: fixed;
-    left: -100%;
+    right: -100%;
+    padding: 0px 20px;
+    background-color: var(--background);
+    box-shadow: 0px 0px 10px #0005;
+    height: 100%;
+    overflow-y: auto;
+  }
+    aside.active {
+      right: 0px;
+    }
+  #veil.active {
+    visibility: visible;
+    opacity: 1;
   }
 }
-
 </style>
