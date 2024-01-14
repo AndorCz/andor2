@@ -46,7 +46,26 @@
       }
     nav {
       position: absolute;
-      bottom: 0px;
+      bottom: -1px;
       left: 30px;
     }
+
+  @media (max-width: 768px) {
+    nav {
+      left: 10px;
+    }
+    header {
+      height: 150px;
+      background-size: cover;
+    }
+      #logo {
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+        #logo img {
+          width: 120px;
+          object-fit: contain;
+        }
+  }
 </style>

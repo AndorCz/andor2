@@ -58,19 +58,31 @@ const { title, header } = Astro.props
     display: flex;
   }
 
-  #content {
-    padding: 40px 60px 60px 60px;
-  }
+    main {
+      flex: 1;
+      background-color: var(--panel);
+      border-radius: 0px 0px 10px 10px;
+    }
 
-  main {
-    flex: 1;
-    background-color: var(--panel);
-    border-radius: 0px 0px 10px 10px;
-  }
+      #content {
+        padding: 40px 60px 60px 60px;
+      }
 
-  footer {
-    margin-top: 20px;
-    padding: 20px;
-    text-align: center;
+    footer {
+      margin-top: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+
+  @media (max-width: 768px) {
+    body {
+      margin: 0px;
+    }
+    main {
+      border-radius: 0px;
+    }
+      #content {
+        padding: 20px 30px 30px 30px;
+      }
   }
 </style>

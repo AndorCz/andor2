@@ -92,6 +92,7 @@
   <div class='flex'>
     <select id='gameSystem' name='gameSystem' bind:value={data.system}>
       <option value='drd1'>Dračí doupě e1.6</option>
+      <option value='dnd5e'>Dungeons & Dragons e5</option>
       <option value='vampire5e'>Vampire the Masquerade e5</option>
       <option value='-'>Jiný / Bez systému</option>
     </select>

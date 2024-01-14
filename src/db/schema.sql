@@ -16,7 +16,7 @@ drop view if exists posts_owner;
 -- ENUMS
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
-create type game_system as enum ('-', 'vampire5e', 'drd1'); -- 'fate', 'dnd5e'
+create type game_system as enum ('-', 'vampire5e', 'dnd5e', 'drd1'); -- 'fate'
 
 -- TABLES
 

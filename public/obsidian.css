@@ -447,3 +447,19 @@ select {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  body, a {
+    font-size: 18px;
+  }
+  h1 {
+    font-size: 30px;
+  }
+
+  .tabs a, .tabs button {
+    padding: 10px 15px;
+    font-size: 20px;
+  }
+}

@@ -107,11 +107,13 @@
   {/if}
 </aside>
 
+<button id='sidebarToggle' class='material'>side_navigation</button>
+
 <style>
   aside {
     width: var(--asideWidth);
     margin-left: 20px;
-    transition: width 0.2s ease-in-out;
+    transition: left 0.3s ease-in-out, width 0.2s ease-in-out;
   }
   #user {
     padding: 20px 0px;
@@ -180,4 +182,24 @@
   .login {
     margin-top: 20px;
   }
+
+  #sidebarToggle {
+    display: none;
+  }
+
+@media (max-width: 768px) {
+  #sidebarToggle {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 20px;
+    border-radius: 100%;
+  }
+  aside {
+    position: fixed;
+    left: -100%;
+  }
+}
+
 </style>

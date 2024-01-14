@@ -6,7 +6,8 @@ export const openai = new OpenAI({ apiKey: import.meta.env.OPENAI_API_KEY })
 function getRPGInfo (system) {
   switch (system) {
     case 'drd1': return { description: 'Používá se klasický pravidlový systém Dračí Doupě verze 1.6.', world: 'Hraje se ve světě Asterion.', files: ['file-Ae5bz34Q9oFP1zMYTMW4cGNL', 'file-jdgppOijRhvDrnIDkoAfKD9T'], assistant: 'asst_6gqjKKSeSv4sQzQbPlUq1MEB' }
-    case 'vampire5e': return { description: 'Používá se moderní pravidlový systém Vampire: The Masquerade 5th edition.', world: 'Hraje se ve světě World of Darkness.', files: ['file-zhLBtLjBySf747SVgEL6CgDx'], assistant: 'asst_JfGCZhLM4cDVZDXaXZVbV6gH' }
+    case 'dnd5e': return { description: 'Používá se pravidlový systém Dungeons & Dragons 5th edition.', world: 'Hraje se ve světě Forgotten Realms.', files: [], assistant: 'asst_OdgjQzmDduFBxlpqlV9YtjiO' }
+    case 'vampire5e': return { description: 'Používá se pravidlový systém Vampire: The Masquerade 5th edition.', world: 'Hraje se ve světě World of Darkness.', files: ['file-zhLBtLjBySf747SVgEL6CgDx'], assistant: 'asst_JfGCZhLM4cDVZDXaXZVbV6gH' }
     default: return { description: '', world: '', assistant: 'asst_Kooknse2JxfLBmroyDEWXz6j' }
   }
 }

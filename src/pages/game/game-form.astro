@@ -11,7 +11,7 @@
     const gameSystem = formData.get('gameSystem')
 
     const openAiThread = await createThread()
-    const openAiStoryteller = await createStoryteller('Vypravěč pro ' + gameName, gameSystem)
+    const openAiStoryteller = await createStoryteller('Vypravěč pro ' + gameName + ' (auto)', gameSystem)
 
     const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
 
@@ -44,6 +44,7 @@
         <div class='inputs'>
           <select id='gameSystem' name='gameSystem'>
             <option value='drd1'>Dračí doupě e1.6</option>
+            <option value='dnd5e'>Dungeons & Dragons e5</option>
             <option value='vampire5e'>Vampire the Masquerade e5</option>
             <option value='-'>Jiný / Bez systému</option>
           </select>
