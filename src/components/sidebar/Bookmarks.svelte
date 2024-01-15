@@ -46,6 +46,9 @@
     list-style: none;
     padding: 0px 10px;
   }
+    li {
+      padding: 8px 0px;
+    }
     li a {
       display: block;
     }

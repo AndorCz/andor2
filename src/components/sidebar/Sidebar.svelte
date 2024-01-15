@@ -179,6 +179,9 @@
     padding: 20px;
     border-radius: 10px;
     background-color: var(--panel);
+    max-height: 600px;
+    overflow-y: auto;
+    padding-bottom: 10px;
   }
   .w100 {
     width: 100%;
@@ -221,6 +224,7 @@
     box-shadow: 0px 0px 10px #0005;
     height: 100%;
     overflow-y: auto;
+    padding-bottom: 20px;
   }
     aside.active {
       right: 0px;
@@ -229,5 +233,10 @@
     visibility: visible;
     opacity: 1;
   }
+  #panels {
+    max-height: initial;
+    overflow-y: none;
+  }
+
 }
 </style>

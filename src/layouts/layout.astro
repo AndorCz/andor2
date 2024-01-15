@@ -32,10 +32,10 @@ const { title, header } = Astro.props
         <div id='content'>
           <slot />
         </div>
+        <footer>v{version}</footer>
       </main>
       <Sidebar {user} bookmarkData={bookmarks} client:only />
     </div>
-    <footer>v{version}</footer>
 
     <script>
       import { lookForToast, showSuccess, showError } from '@lib/toasts'
@@ -60,13 +60,12 @@ const { title, header } = Astro.props
 
     main {
       flex: 1;
-      background-color: var(--panel);
-      border-radius: 0px 0px 10px 10px;
     }
 
       #content {
         padding: 40px 60px 60px 60px;
-        min-height: 550px;
+        background-color: var(--panel);
+        border-radius: 0px 0px 10px 10px;
       }
 
     footer {
@@ -85,6 +84,7 @@ const { title, header } = Astro.props
       #content {
         padding: 15px;
         padding-bottom: 50px;
+        min-height: 550px;
       }
   }
 </style>
