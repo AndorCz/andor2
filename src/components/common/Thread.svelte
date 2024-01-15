@@ -1,6 +1,7 @@
 <script>
   import { isFilledArray } from '@lib/utils'
   import { Render } from 'svelte-purify'
+  import { tooltip } from '@lib/tooltip'
 
   export let posts
   export let canDeleteAll
@@ -60,7 +61,7 @@
                 <span class='audience'>jen pro: <b>{post.audience_names.join(', ')}</b></span>
               {/if}
             </span>
-            <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
+            <span class='material time' use:tooltip title={new Date(post.created_at).toLocaleString('cs-CZ')}>schedule</span>
             <span class='toolbar'>
               {#if canDeleteAll || isMyPost(post.owner, post.dice)}
                 <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
@@ -171,9 +172,6 @@
   @media (max-width: 719px) {
     .post {
       gap: 0px;
-    }
-    .time {
-      display: none;
     }
   }
 </style>
