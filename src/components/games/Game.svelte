@@ -38,7 +38,7 @@
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.games.find(b => b.game.id === data.id)?.id
+  $: bookmarkId = $bookmarks.games?.find(b => b.game.id === data.id)?.id
 </script>
 
 <main>

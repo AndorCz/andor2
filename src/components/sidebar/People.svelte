@@ -131,6 +131,7 @@
         height: 40px;
         object-fit: cover;
         border-radius: 100%;
+        background-color: var(--background);
       }
   .empty {
     padding: 20px 0px;

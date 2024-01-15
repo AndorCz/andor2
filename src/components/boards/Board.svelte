@@ -29,7 +29,7 @@
   onMount(() => { loadPosts() })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     posts = postData
     pages = Math.ceil(count / limit)
@@ -54,6 +54,15 @@
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek smazán')
+    await loadPosts()
+  }
+
+  async function moderatePost (id) {
+    if (!window.confirm('Opravdu skrýt příspěvek všem? (moderovat)')) { return }
+    const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, moderate: true }), headers: { 'Content-Type': 'application/json' } })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+    showSuccess('Příspěvek skryt všem')
     await loadPosts()
   }
 
@@ -93,7 +102,7 @@
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.boards.find(b => b.board.id === data.id)?.id
+  $: bookmarkId = $bookmarks.boards?.find(b => b.board.id === data.id)?.id
 </script>
 
 <div class='headline'>
@@ -113,7 +122,7 @@
   <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
 </div>
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isBoardOwner} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
 
 <style>
   .headline {

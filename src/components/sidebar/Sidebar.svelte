@@ -181,7 +181,6 @@
     background-color: var(--panel);
     max-height: 600px;
     overflow-y: auto;
-    padding-bottom: 10px;
   }
   .w100 {
     width: 100%;

@@ -53,6 +53,6 @@
       display: block;
     }
     li.active a {
-      color: var(--maximum);
+      color: var(--text);
     }
 </style>
