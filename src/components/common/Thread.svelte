@@ -92,12 +92,15 @@
     .post {
       display: flex;
       width: 100%;
-      margin-bottom: 20px;
+      padding-top: 10px;
+      padding-bottom: 10px;
       text-align: left;
       gap: 10px;
     }
       .moderated {
         opacity: 0.5;
+        padding-top: 0px;
+        padding-bottom: 0px;
       }
         .moderated .header {
           cursor: pointer;
