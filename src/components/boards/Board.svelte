@@ -66,6 +66,14 @@
     await loadPosts()
   }
 
+  async function toggleReaction (id, reaction) {
+    // figure out if the post already has a rection from this user
+
+    const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, reaction }), headers: { 'Content-Type': 'application/json' } })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+  }
+
   async function triggerEdit (id, content) {
     editing = id
     textareaValue = content

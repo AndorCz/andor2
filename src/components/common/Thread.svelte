@@ -75,17 +75,17 @@
             {#if allowReactions}
               {#if $user.id}
                 <span class='reactions'>
-                  <button class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.hearts}</span>{/if}</button>
-                  <button class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.frowns}</span>{/if}</button>
-                  <button class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.laughs}</span>{/if}</button>
-                  <button class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.thumbs}</span>{/if}</button>
+                  <button class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
+                  <button class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.hearts.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
+                  <button class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.hearts.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
+                  <button class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.hearts.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
                 </span>
               {:else}
                 <span class='reactions'>
-                  {#if post.hearts}<span class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Palec nahoru'><span class='count'>{post.hearts}</span></span>{/if}
-                  {#if post.hearts}<span class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Palec nahoru'><span class='count'>{post.frowns}</span></span>{/if}
-                  {#if post.hearts}<span class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Palec nahoru'><span class='count'>{post.laughs}</span></span>{/if}
-                  {#if post.hearts}<span class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs}</span></span>{/if}
+                  {#if post.hearts.length}<span class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
+                  {#if post.frowns.length}<span class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{post.frowns.length}</span></span>{/if}
+                  {#if post.laughs.length}<span class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{post.laughs.length}</span></span>{/if}
+                  {#if post.thumbs.length}<span class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs.length}</span></span>{/if}
                 </span>
               {/if}
             {/if}
@@ -100,7 +100,7 @@
       {/each}
     </div>
   {:else}
-    Žádné další příspěvky
+    Žádné příspěvky
   {/if}
 </center>
 
