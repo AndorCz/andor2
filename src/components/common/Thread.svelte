@@ -37,16 +37,40 @@
     }
   }
 
-  $: posts.forEach(post => {
-    if (post.moderated) {
-      if (!(post.id in moderatedVisibility)) { moderatedVisibility[post.id] = false }
-    }
-  })
+  function getMyReaction (post, reaction) {
+    return post[reaction].findIndex((id) => { return id === $user.id })
+  }
+
+  function hasReacted (post, reaction) {
+    return getMyReaction(post, reaction) > -1
+  }
+
+  async function toggleReaction (post, reaction) {
+    // figure out if the post already has a rection from this user
+    posts.update(currentPosts => {
+      const postIndex = currentPosts.findIndex(p => p.id === post.id)
+      if (postIndex > -1) {
+        const reactionIndex = getMyReaction(currentPosts[postIndex], reaction)
+        if (reactionIndex > -1) { // remove the reaction
+          currentPosts[postIndex][reaction] = currentPosts[postIndex][reaction].filter((_, idx) => idx !== reactionIndex)
+        } else { // add the reaction
+          currentPosts[postIndex][reaction] = [...currentPosts[postIndex][reaction], $user.id]
+        }
+      }
+      return currentPosts
+    })
+  }
+
+  // $: posts.forEach(post => {
+  //   if (post.moderated) {
+  //     if (!(post.id in moderatedVisibility)) { moderatedVisibility[post.id] = false }
+  //   }
+  // })
 </script>
 
 <center bind:this={threadEl}>
-  {#if isFilledArray(posts)}
-    {#each posts as post}
+  {#if isFilledArray($posts)}
+    {#each $posts as post}
       <div class='post' class:moderated={post.moderated} class:hidden={post.moderated && !moderatedVisibility[post.id]}>
         {#if post.owner_portrait}
           <div class='icon' style='--iconSize: {iconSize}px'>
@@ -75,17 +99,17 @@
             {#if allowReactions}
               {#if $user.id}
                 <span class='reactions'>
-                  <button class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
-                  <button class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.hearts.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
-                  <button class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.hearts.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
-                  <button class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.hearts.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
+                  <button on:click={() => { toggleReaction(post, 'hearts') }} class:active={hasReacted(post, 'hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
+                  <button on:click={() => { toggleReaction(post, 'frowns') }} class:active={hasReacted(post, 'frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
+                  <button on:click={() => { toggleReaction(post, 'laughs') }} class:active={hasReacted(post, 'laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
+                  <button on:click={() => { toggleReaction(post, 'thumbs') }} class:active={hasReacted(post, 'thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.thumbs.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
                 </span>
               {:else}
                 <span class='reactions'>
-                  {#if post.hearts.length}<span class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
-                  {#if post.frowns.length}<span class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{post.frowns.length}</span></span>{/if}
-                  {#if post.laughs.length}<span class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{post.laughs.length}</span></span>{/if}
-                  {#if post.thumbs.length}<span class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs.length}</span></span>{/if}
+                  {#if post.hearts.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
+                  {#if post.frowns.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{post.frowns.length}</span></span>{/if}
+                  {#if post.laughs.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{post.laughs.length}</span></span>{/if}
+                  {#if post.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs.length}</span></span>{/if}
                 </span>
               {/if}
             {/if}
@@ -202,6 +226,12 @@
             justify-content: center;
             align-items: center;
           }
+            button.reaction.active {
+              background-color: var(--panel);
+              border: 1px var(--panel) solid;
+              box-shadow: inset 2px 2px 2px #0003;
+              opacity: 1;
+            }
             button.reaction:hover {
               opacity: 1;
             }

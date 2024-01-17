@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { clone } from '@lib/utils'
   import { sendPost } from '@lib/helpers'
-  import { getGameStore } from '@lib/stores'
+  import { posts, getGameStore } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -14,7 +14,6 @@
   export let data = {}
   export let isGameOwner
 
-  let posts = []
   let textareaRef
   let textareaValue = ''
   let identitySelect
@@ -74,7 +73,7 @@
     const res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    posts = json.posts
+    $posts = json.posts
     console.log('count', json.count)
     pages = Math.ceil(json.count / limit)
   }

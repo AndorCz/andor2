@@ -3,7 +3,7 @@
   import { supabase, handleError } from '@lib/database'
   import { sendPost } from '@lib/helpers'
   import { showSuccess, showError } from '@lib/toasts'
-  import { getGameStore } from '@lib/stores'
+  import { posts, getGameStore } from '@lib/stores'
   import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -12,7 +12,6 @@
   export let data = {}
   export let isGameOwner
 
-  let posts = []
   let textareaRef
   let textareaValue = ''
   let identitySelect
@@ -43,7 +42,7 @@
   async function loadPosts () {
     const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.discussion).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
-    posts = postData
+    $posts = postData
     pages = Math.ceil(count / limit)
   }
 

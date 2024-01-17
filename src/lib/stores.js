@@ -6,6 +6,7 @@ export const headerPreview = writable(null)
 export const conversations = writable({})
 export const unreadConversations = writable({})
 export const bookmarks = writable({ games: [], boards: [] })
+export const posts = writable([])
 
 // LOCAL STORAGE SYNCED STORES
 // has to be a function to allow for multiple instances of the store with different names

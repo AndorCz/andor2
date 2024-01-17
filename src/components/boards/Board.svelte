@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { sendPost } from '@lib/helpers'
-  import { getBoardStore, bookmarks } from '@lib/stores'
+  import { posts, getBoardStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -16,7 +16,6 @@
   const isBoardOwner = data.owner.id === user.id
   let bookmarkId
 
-  let posts = []
   let textareaRef
   let textareaValue = ''
   let saving = false
@@ -31,7 +30,7 @@
   async function loadPosts () {
     const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
-    posts = postData
+    $posts = postData
     pages = Math.ceil(count / limit)
   }
 
@@ -64,14 +63,6 @@
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek skryt všem')
     await loadPosts()
-  }
-
-  async function toggleReaction (id, reaction) {
-    // figure out if the post already has a rection from this user
-
-    const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, reaction }), headers: { 'Content-Type': 'application/json' } })
-    const json = await res.json()
-    if (res.error || json.error) { return showError(res.error || json.error) }
   }
 
   async function triggerEdit (id, content) {
