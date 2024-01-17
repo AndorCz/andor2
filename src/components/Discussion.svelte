@@ -39,7 +39,7 @@
   })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated', { count: 'exact' }).eq('thread', data.discussion).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.discussion).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     posts = postData
     pages = Math.ceil(count / limit)
