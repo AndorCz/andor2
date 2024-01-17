@@ -45,9 +45,11 @@
 
   <div class='headline'>
     <h1>{data.name}</h1>
-    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
-    {#if isGameOwner}
-      <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+    {#if user.id}
+      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+      {#if isGameOwner}
+        <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+      {/if}
     {/if}
   </div>
 

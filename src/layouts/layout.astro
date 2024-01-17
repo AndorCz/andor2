@@ -1,14 +1,16 @@
 ---
+import { ViewTransitions } from 'astro:transitions'
 import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/sidebar/Sidebar.svelte'
-import { ViewTransitions } from 'astro:transitions'
+import Store from '@components/common/Store.svelte'
 import 'tippy.js/dist/tippy.css'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user, bookmarks } = Astro.locals
 const { title, header } = Astro.props
+const test = 'abc'
 ---
 
 <html lang='cs'>
@@ -26,6 +28,7 @@ const { title, header } = Astro.props
     <title>Andor2.cz ― {title}</title>
   </head>
 	<body>
+    <Store {user} client:only />
     <div id='wrapper'>
       <main>
         <Header {pathname} customImage={header} client:only />

@@ -81,10 +81,11 @@
       <tr><td class='none'>Žádné postavy</td></tr>
     {/if}
   </table>
-
-  <center>
-    <a href={window.location.href + '/character-form'} class='button'>Vytvořit novou postavu</a>
-  </center>
+  {#if user.id}
+    <center>
+      <a href={window.location.href + '/character-form'} class='button'>Vytvořit novou postavu</a>
+    </center>
+  {/if}
 </main>
 
 <style>

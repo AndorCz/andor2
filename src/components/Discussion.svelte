@@ -33,8 +33,10 @@
   const identities = [{ name: user.name, id: user.id, type: 'user' }, ...getMyCharacters()]
 
   onMount(() => {
-    $gameStore.activeChatIdentity = $gameStore.activeChatIdentity || identities[0].id
-    identitySelect.value = $gameStore.activeChatIdentity
+    if (user.id) {
+      $gameStore.activeChatIdentity = $gameStore.activeChatIdentity || identities[0].id
+      identitySelect.value = $gameStore.activeChatIdentity
+    }
     loadPosts()
   })
 
@@ -92,34 +94,36 @@
 
 <h2>Veřejná diskuze</h2>
 
-{#if $platform === 'desktop'}
-  <div class='headlines'>
-    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-    <h3 class='sender'>Identita</h3>
-  </div>
-  <div class='addPostWrapper'>
-    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
-    <div class='senderWrapper'>
-      <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-        {#each identities as identity}
-          <option value={identity.id}>{identity.name}</option>
-        {/each}
-      </select>
+{#if user.id}
+  {#if $platform === 'desktop'}
+    <div class='headlines'>
+      <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+      <h3 class='sender'>Identita</h3>
     </div>
-  </div>
-{:else}
-  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-  <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+    <div class='addPostWrapper'>
+      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+      <div class='senderWrapper'>
+        <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
+          {#each identities as identity}
+            <option value={identity.id}>{identity.name}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+  {:else}
+    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
 
-  <h3 class='sender'>Identita</h3>
-  <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-    {#each identities as identity}
-      <option value={identity.id}>{identity.name}</option>
-    {/each}
-  </select>
+    <h3 class='sender'>Identita</h3>
+    <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
+      {#each identities as identity}
+        <option value={identity.id}>{identity.name}</option>
+      {/each}
+    </select>
+  {/if}
 {/if}
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+<Thread {posts} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 
 <style>
   h2 {

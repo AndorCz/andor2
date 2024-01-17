@@ -1,4 +1,6 @@
+
 import { supabase } from '@lib/database'
+import { user } from '@lib/stores'
 
 // BROWSER HELPERS
 
@@ -11,9 +13,11 @@ export async function sendPost (method = 'POST', data) {
 }
 
 export async function logout () {
-  await supabase.auth.signOut()
   // delete cookies
   document.cookie = 'sb-access-token=; Max-Age=-99999999;'
   document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
+
+  user.set({})
+  await supabase.auth.signOut()
   window.location.href = '/api/auth/logout'
 }

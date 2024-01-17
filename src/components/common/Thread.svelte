@@ -2,11 +2,13 @@
   import { isFilledArray } from '@lib/utils'
   import { Render } from 'svelte-purify'
   import { tooltip } from '@lib/tooltip'
+  import { user } from '@lib/stores'
 
   export let posts
   export let canDeleteAll
   export let canModerate
   export let myIdentities = []
+  export let allowReactions
   export let onDelete
   export let onEdit
   export let onModerate
@@ -70,12 +72,23 @@
                 <button on:click={() => onModerate(post.id)} class='material moderate' title='Skrýt všem'>visibility_off</button>
               {/if}
             </span>
-            <span class='reactions'>
-              <button class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.hearts}</span>{/if}</button>
-              <button class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.frowns}</span>{/if}</button>
-              <button class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.laughs}</span>{/if}</button>
-              <button class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.thumbs}</span>{/if}</button>
-            </span>
+            {#if allowReactions}
+              {#if $user.id}
+                <span class='reactions'>
+                  <button class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.hearts}</span>{/if}</button>
+                  <button class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.frowns}</span>{/if}</button>
+                  <button class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.laughs}</span>{/if}</button>
+                  <button class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.hearts}<span class='count'>{post.thumbs}</span>{/if}</button>
+                </span>
+              {:else}
+                <span class='reactions'>
+                  {#if post.hearts}<span class='reaction heart' title='Srdce'><img src='/svg/heart.svg' alt='Palec nahoru'><span class='count'>{post.hearts}</span></span>{/if}
+                  {#if post.hearts}<span class='reaction frown' title='Smutek'><img src='/svg/frown.svg' alt='Palec nahoru'><span class='count'>{post.frowns}</span></span>{/if}
+                  {#if post.hearts}<span class='reaction laugh' title='Smích'><img src='/svg/laugh.svg' alt='Palec nahoru'><span class='count'>{post.laughs}</span></span>{/if}
+                  {#if post.hearts}<span class='reaction thumb' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs}</span></span>{/if}
+                </span>
+              {/if}
+            {/if}
           </div>
           <div class='content'><Render html={post.content} /></div>
         </div>
@@ -139,6 +152,7 @@
         }
       .header {
         width: 100%;
+        min-height: 50px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -188,7 +202,7 @@
             justify-content: center;
             align-items: center;
           }
-            .reaction:hover {
+            button.reaction:hover {
               opacity: 1;
             }
           .reaction img {

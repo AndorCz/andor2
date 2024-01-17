@@ -1,14 +1,14 @@
 <script>
   import { onMount } from 'svelte'
   import { clone } from '@lib/utils'
-  import { supabase, handleError } from '@lib/database'
   import { sendPost } from '@lib/helpers'
   import { getGameStore } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
   export let data = {}

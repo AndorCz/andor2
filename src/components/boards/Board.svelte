@@ -107,22 +107,27 @@
 
 <div class='headline'>
   <h1>{data.name}</h1>
-  <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
   <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
-  {#if isBoardOwner}
-    <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+  {#if user.id}
+    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+    {#if isBoardOwner}
+      <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+    {/if}
   {/if}
 </div>
+
 {#if !$boardStore.hideHeader}
   <EditableLong bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
 {/if}
 
-<h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-<div class='addPostWrapper'>
-  <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
-</div>
+{#if user.id}
+  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+  <div class='addPostWrapper'>
+    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+  </div>
+{/if}
 
-<Thread {posts} bind:page={page} {pages} onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+<Thread {posts} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
 
 <style>
   .headline {
