@@ -16,24 +16,24 @@
 
   async function uploadHeader () {
     uploading = true
-    const file = files[0]
-    if (file.size < 400000) {
-      const image = await getImage(file)
-      if (image.width > 1100 && image.height === 226) {
-        $headerPreview = URL.createObjectURL(file)
-        console.log('header', 'board-' + data.id)
-        console.log('image', file)
-        const { error: error1 } = await supabase.storage.from('headers').upload('board-' + data.id, file, { upsert: true })
-        const { error: error2 } = await supabase.from('boards').update({ custom_header: true }).eq('id', data.id)
-        if (error1 || error2) { return handleError(error1 || error2) }
-        data.custom_header = true
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        showSuccess('Hlavička byla uložena')
+    if (files && files[0]) {
+      const file = files[0]
+      if (file.size < 400000) {
+        const image = await getImage(file)
+        if (image.width >= 1100 && image.height === 226) {
+          $headerPreview = URL.createObjectURL(file)
+          const { error: error1 } = await supabase.storage.from('headers').upload('board-' + data.id, file, { upsert: true })
+          const { error: error2 } = await supabase.from('boards').update({ custom_header: true }).eq('id', data.id)
+          if (error1 || error2) { return handleError(error1 || error2) }
+          data.custom_header = true
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+          showSuccess('Hlavička byla uložena')
+        } else {
+          showError(`Nesprávné rozměry obrázku (226 px na výšku, 1100+ px na šířku), obrázek má ${image.width} x ${image.height}`)
+        }
       } else {
-        showError('Nesprávné rozměry obrázku (226 px na výšku, 1100+ px na šířku)')
+        showError('Obrázek je datově příliš velký (max. 400kB)')
       }
-    } else {
-      showError('Obrázek je datově příliš velký (max. 400kB)')
     }
     uploading = false
   }
@@ -127,6 +127,7 @@
     width: 100%;
   }
   .row {
+    display: flex;
     gap: 10px;
   }
   .delete {
