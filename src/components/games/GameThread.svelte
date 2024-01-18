@@ -74,7 +74,6 @@
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     $posts = json.posts
-    console.log('count', json.count)
     pages = Math.ceil(json.count / limit)
   }
 

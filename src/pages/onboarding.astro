@@ -48,8 +48,7 @@
   )}
 
   <script type='module' define:vars={{ toast }}>
-    import { showError } from '../src/lib/toasts.js'
-    if (toast) { showError(toast) }
+    if (toast) { window.showError(toast) }
   </script>
 </Layout>
 

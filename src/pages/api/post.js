@@ -50,15 +50,12 @@ export const PATCH = async ({ url, request, locals }) => {
   if (data.id) {
     if (locals.user.id) { // check if user is signed in
       const postData = data.moderate ? { moderated: true } : { thread: data.thread, owner: data.owner, owner_type: data.ownerType, content: data.content, audience: data.audience, moderated: data.moderated }
-      console.log('postData', postData)
       if (data.openAiThread) { // update in open ai thread
         // 2DO: IMPLEMENT ONCE POST EDITING IS ALLOWED
       }
       // save to supabase
       const { error } = await locals.supabase.from('posts').update(postData).eq('id', data.id)
-      console.log('request made')
       if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
-      console.log('no error')
       return new Response('{}', { status: 200 })
     } else {
       return new Response(JSON.stringify({ error: 'Nejsi přihlášený. Záloha příspěvku: ' + data.post }), { status: 500 })

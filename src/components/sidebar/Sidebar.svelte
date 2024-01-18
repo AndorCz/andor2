@@ -10,9 +10,11 @@
   import Chat from '@components/sidebar/Chat.svelte'
 
   export let user = {}
-  export let bookmarkData = {}
+  export let bookmarkData
 
-  $bookmarks = bookmarkData
+  if (bookmarkData) {
+    $bookmarks = bookmarkData
+  }
 
   const userStore = getUserStore({ activePanel: 'booked' })
   let activeUsers = []
@@ -79,7 +81,9 @@
           <div id='user'>
             <PortraitInput identity={user} {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
             <div id='details'>
-              <span id='name'>{user.name || user.email}</span>
+              <div id='nameRow'>
+                <span id='name'>{user.name || user.email}</span>
+              </div>
               <button on:click={logout} id='logout'>Odhlásit</button>
             </div>
           </div>
@@ -130,11 +134,17 @@
       flex-direction: column;
       justify-content: center;
     }
-    #name {
+    #nameRow {
       flex: 1;
       display: flex;
       align-items: center;
     }
+      #name {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     #logout {
       padding: 10px 20px;
     }

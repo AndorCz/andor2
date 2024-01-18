@@ -80,7 +80,7 @@ create table characters (
   hidden boolean not null default true,
   state public.character_state not null default 'alive'::character_state,
   constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
-  constraint characters_player_fkey foreign key (player) references profiles (id)
+  constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
 );
 
 create table posts (

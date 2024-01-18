@@ -53,7 +53,6 @@
     if (error) { return handleError(error) }
 
     // update local post from the returned database data
-    console.log('data', data)
     const postIndex = $posts.findIndex(p => p.id === post.id)
     if (postIndex > -1) {
       $posts[postIndex].frowns = data.frowns
