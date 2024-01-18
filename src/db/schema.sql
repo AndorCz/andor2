@@ -218,6 +218,33 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function update_reaction(post_id uuid, reaction_type text, action text)
+returns setof posts as $$
+begin
+  if action = 'add' then
+    return query
+    update posts
+    set
+      thumbs = case when reaction_type = 'thumbs' and not (auth.uid() = any(thumbs)) then array_append(thumbs, auth.uid()) else thumbs end,
+      frowns = case when reaction_type = 'frowns' and not (auth.uid() = any(frowns)) then array_append(frowns, auth.uid()) else frowns end,
+      hearts = case when reaction_type = 'hearts' and not (auth.uid() = any(hearts)) then array_append(hearts, auth.uid()) else hearts end,
+      laughs = case when reaction_type = 'laughs' and not (auth.uid() = any(laughs)) then array_append(laughs, auth.uid()) else laughs end
+    where id = post_id
+    returning *;
+  elsif action = 'remove' then
+    return query
+    update posts
+    set
+      thumbs = case when reaction_type = 'thumbs' then array_remove(thumbs, auth.uid()) else thumbs end,
+      frowns = case when reaction_type = 'frowns' then array_remove(frowns, auth.uid()) else frowns end,
+      hearts = case when reaction_type = 'hearts' then array_remove(hearts, auth.uid()) else hearts end,
+      laughs = case when reaction_type = 'laughs' then array_remove(laughs, auth.uid()) else laughs end
+    where id = post_id
+    returning *;
+  end if;
+end;
+$$ language plpgsql;
+
 -- TRIGGERS
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();

@@ -1,5 +1,7 @@
 <script>
+  import { supabase, handleError } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
+  import { showError } from '@lib/toasts'
   import { Render } from 'svelte-purify'
   import { tooltip } from '@lib/tooltip'
   import { user } from '@lib/stores'
@@ -46,19 +48,21 @@
   }
 
   async function toggleReaction (post, reaction) {
-    // figure out if the post already has a rection from this user
-    posts.update(currentPosts => {
-      const postIndex = currentPosts.findIndex(p => p.id === post.id)
-      if (postIndex > -1) {
-        const reactionIndex = getMyReaction(currentPosts[postIndex], reaction)
-        if (reactionIndex > -1) { // remove the reaction
-          currentPosts[postIndex][reaction] = currentPosts[postIndex][reaction].filter((_, idx) => idx !== reactionIndex)
-        } else { // add the reaction
-          currentPosts[postIndex][reaction] = [...currentPosts[postIndex][reaction], $user.id]
-        }
-      }
-      return currentPosts
-    })
+    // update database
+    const { data, error } = await supabase.rpc('update_reaction', { post_id: post.id, reaction_type: reaction, action: hasReacted(post, reaction) ? 'remove' : 'add' }).single()
+    if (error) { return handleError(error) }
+
+    // update local post from the returned database data
+    console.log('data', data)
+    const postIndex = $posts.findIndex(p => p.id === post.id)
+    if (postIndex > -1) {
+      $posts[postIndex].frowns = data.frowns
+      $posts[postIndex].thumbs = data.thumbs
+      $posts[postIndex].hearts = data.hearts
+      $posts[postIndex].laughs = data.laughs
+    } else {
+      showError('Příspěvek nenalezen')
+    }
   }
 
   // $: posts.forEach(post => {
@@ -99,16 +103,16 @@
             {#if allowReactions}
               {#if $user.id}
                 <span class='reactions'>
-                  <button on:click={() => { toggleReaction(post, 'hearts') }} class:active={hasReacted(post, 'hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
                   <button on:click={() => { toggleReaction(post, 'frowns') }} class:active={hasReacted(post, 'frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
                   <button on:click={() => { toggleReaction(post, 'laughs') }} class:active={hasReacted(post, 'laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
+                  <button on:click={() => { toggleReaction(post, 'hearts') }} class:active={hasReacted(post, 'hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
                   <button on:click={() => { toggleReaction(post, 'thumbs') }} class:active={hasReacted(post, 'thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.thumbs.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
                 </span>
               {:else}
                 <span class='reactions'>
-                  {#if post.hearts.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
                   {#if post.frowns.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{post.frowns.length}</span></span>{/if}
                   {#if post.laughs.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{post.laughs.length}</span></span>{/if}
+                  {#if post.hearts.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
                   {#if post.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs.length}</span></span>{/if}
                 </span>
               {/if}
