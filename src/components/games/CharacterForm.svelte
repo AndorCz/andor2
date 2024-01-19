@@ -8,6 +8,8 @@
   export let userId
   export let character = {}
 
+  let formEl
+  let saving = false
   let generatingPortrait = false
 
   const generatePortrait = async () => {
@@ -28,7 +30,7 @@
 </script>
 
 {#if userId}
-  <form method='POST' autocomplete='off'>
+  <form method='POST' autocomplete='off' bind:this={formEl}>
     <div class='row'>
       <div class='labels'><label for='charName'>Jméno</label></div>
       <div class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name || ''} /></div>
@@ -59,7 +61,7 @@
       </div>
     {/if}
     <center>
-      <button type='submit'>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button type='submit' on:click={() => { saving = true; formEl.submit() }} disabled={saving}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 {:else}

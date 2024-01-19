@@ -9,7 +9,7 @@
 
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion, game_thread, system, openai_thread, custom_header').eq('id', gameId).single()
+  const { data: gameData, error } = await supabase.from('games').select('id, name, intro, info, secrets, owner:profiles(id, name), discussion_thread, game_thread, system, openai_thread, custom_header').eq('id', gameId).single()
   if (error) { handleError(error) }
 
   const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId)

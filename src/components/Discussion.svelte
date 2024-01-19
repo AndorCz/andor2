@@ -40,7 +40,7 @@
   })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.discussion).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.discussion_thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     $posts = postData
     pages = Math.ceil(count / limit)
@@ -54,9 +54,9 @@
     saving = true
     const identity = getIdentity($gameStore.activeChatIdentity)
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('PATCH', { id: editing, thread: data.discussion_thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
     } else {
-      await sendPost('POST', { thread: data.discussion, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('POST', { thread: data.discussion_thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
     }
     textareaValue = ''
     await loadPosts()

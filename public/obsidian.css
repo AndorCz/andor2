@@ -360,6 +360,9 @@ select {
 .content p {
   margin: 5px 0px;
 }
+.content img {
+  max-width: 100%;
+}
 
 /* WYSIWYG - TipTap/ProseMirror */
 
@@ -367,6 +370,9 @@ select {
   height: 100%;
   min-height: 140px;
   padding-bottom: 50px;
+}
+.ProseMirror img {
+  max-width: 100%;
 }
 .ProseMirror p {
   margin: 10px 0px;

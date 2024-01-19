@@ -43,14 +43,14 @@ create table games (
   info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default '-'::game_system,
-  discussion int2 null,
+  discussion_thread int2 null,
   game_thread int2 null,
   openai_thread text null,
   openai_storyteller text null,
   custom_header boolean null,
   created_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
-  constraint games_discussion_fkey foreign key (discussion) references threads(id),
+  constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
   constraint games_game_fkey foreign key (game) references threads (id)
 );
 
@@ -149,16 +149,16 @@ $$ language plpgsql;
 
 create or replace function add_game_threads () returns trigger as $$
 begin
-  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion;
-  insert into threads (name) values (new.name || ' - game') returning id into new.game;
+  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
+  insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
   return new;
 end;
 $$ language plpgsql;
 
 create or replace function delete_game_threads() returns trigger as $$
 begin
-  delete from threads where id = old.discussion;
-  delete from threads where id = old.game;
+  delete from threads where id = old.discussion_thread;
+  delete from threads where id = old.game_thread;
   return old;
 end;
 $$ language plpgsql;
