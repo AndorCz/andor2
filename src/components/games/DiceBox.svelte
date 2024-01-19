@@ -174,7 +174,7 @@
       height: 300px;
     }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .tools {
       flex-wrap: wrap;
     }

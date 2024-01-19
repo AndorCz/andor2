@@ -157,7 +157,7 @@
   #gameName {
     width: 100%;
   }
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     main {
       padding: 10px;
     }

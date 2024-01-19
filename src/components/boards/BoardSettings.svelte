@@ -134,7 +134,7 @@
     display: flex;
     gap: 10px;
   }
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     main {
       padding: 10px;
     }

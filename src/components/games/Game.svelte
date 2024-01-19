@@ -101,7 +101,7 @@
       padding: 40px;
     }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .content {
       padding: 40px 10px;
     }

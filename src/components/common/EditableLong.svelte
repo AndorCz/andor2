@@ -91,7 +91,7 @@
       100% {background-position: calc(100%/4)  -14px,calc(3*100%/4) 14px}
     }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     button {
       padding: 10px 15px;
     }

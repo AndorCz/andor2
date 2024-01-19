@@ -148,7 +148,7 @@
     .headlines .sender {
       width: 200px;
     }
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     select {
       width: 100%;
     }

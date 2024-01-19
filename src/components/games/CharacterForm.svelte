@@ -100,7 +100,7 @@
     margin-top: 20px;
   }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .row {
       display: block;
     }

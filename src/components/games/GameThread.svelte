@@ -218,7 +218,7 @@
     margin-left: 10px;
   }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .headlineWrapper, .selectWrapper {
       gap: 10px;
     }

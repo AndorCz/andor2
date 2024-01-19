@@ -250,7 +250,7 @@
       padding: 15px 25px;
     }
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .post {
       gap: 0px;
     }

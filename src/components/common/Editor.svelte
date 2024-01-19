@@ -200,7 +200,7 @@
   }
   */
 
-  @media (max-width: 719px) {
+  @media (max-width: 860px) {
     .bubble {
       display: block;
     }
