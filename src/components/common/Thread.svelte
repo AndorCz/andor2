@@ -63,12 +63,6 @@
       showError('Příspěvek nenalezen')
     }
   }
-
-  // $: posts.forEach(post => {
-  //   if (post.moderated) {
-  //     if (!(post.id in moderatedVisibility)) { moderatedVisibility[post.id] = false }
-  //   }
-  // })
 </script>
 
 <center bind:this={threadEl}>

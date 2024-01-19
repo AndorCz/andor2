@@ -1,9 +1,26 @@
 ---
+	import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
+	import New from '@components/homepage/new.svelte'
 ---
 
 <Layout title='Hlavní strana'>
-  <h1>Novinky</h1>
-
-	Tady bude zeď s novinkami.
+	<main>
+		<aside>
+			<New client:only />
+		</aside>
+		<content>
+			Tady bude editorial a zeď s novinkami.
+		</content>
+	</main>
 </Layout>
+
+<style>
+	main {
+		display: flex;
+		gap: 40px;
+	}
+		aside, content {
+			flex: 0 0 40%;
+		}
+</style>
