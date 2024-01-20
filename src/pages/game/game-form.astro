@@ -1,7 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { handleError } from '@lib/database'
-  import { createThread, createStoryteller } from '@lib/openai'
+  import { createThread, getStoryteller } from '@lib/openai'
 
   const { supabase, user } = Astro.locals
 
@@ -11,8 +11,7 @@
     const gameSystem = formData.get('gameSystem')
 
     const openAiThread = await createThread()
-    const openAiStoryteller = await createStoryteller('Vypravěč pro ' + gameName + ' (auto)', gameSystem)
-
+    const openAiStoryteller = await getStoryteller(gameSystem)
     const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
 
     if (error) { handleError(error) }
@@ -44,9 +43,9 @@
         <div class='inputs'>
           <select id='gameSystem' name='gameSystem'>
             <option value='drd1'>Dračí doupě e1.6</option>
-            <option value='dnd5e'>Dungeons & Dragons e5</option>
-            <option value='vampire5e'>Vampire the Masquerade e5</option>
-            <option value='-'>Jiný / Bez systému</option>
+            <option value='dnd5'>Dungeons & Dragons e5</option>
+            <option value='vampire5'>Vampire the Masquerade e5</option>
+            <option value='base'>Jiný / Bez systému</option>
           </select>
         </div>
       </div>

@@ -16,7 +16,7 @@ drop view if exists posts_owner;
 -- ENUMS
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
-create type game_system as enum ('-', 'vampire5e', 'dnd5e', 'drd1'); -- 'fate'
+create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1'); -- 'fate'
 
 -- TABLES
 
@@ -113,11 +113,15 @@ create table messages (
 );
 
 create table bookmarks (
-  id serial primary key,
-  user_id uuid references profiles(id) on delete cascade,
-  game_id int2 null references games(id),
-  board_id int2 null references boards(id),
-  created_at timestamp with time zone default current_timestamp
+  id serial,
+  user_id uuid null,
+  game_id smallint null,
+  board_id smallint null,
+  created_at timestamp with time zone null default current_timestamp,
+  constraint bookmarks_pkey primary key (id),
+  constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
+  constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
+  constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
 );
 
 -- VIEWS

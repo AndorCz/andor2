@@ -8,13 +8,14 @@
 
   let generatingStory = false
 
-  async function updateStoryteller () {
-    // update storyteller
-    const res = await fetch('/api/game/updateStoryteller', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
+  /*
+  async function updateAI () {
+    const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     return json
   }
+  */
 
   async function generateStory () {
     generatingStory = true
@@ -23,7 +24,7 @@
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     data.secrets = res.story
-    await updateStoryteller()
+    // await updateAI()
     generatingStory = false
     showSuccess('Vygenerováno')
   }
@@ -31,7 +32,7 @@
   async function updateGameInfo () {
     const { error } = await supabase.from('games').update({ intro: data.intro, info: data.info, secrets: data.secrets }).eq('id', data.id)
     if (error) { return handleError(error) }
-    await updateStoryteller()
+    // await updateAI()
     showSuccess('Uloženo')
   }
 </script>

@@ -58,11 +58,13 @@
     if (error) { return handleError(error) }
 
     // update AI storyteller if system changed
+    /*
     if (originalSystem !== data.system) {
-      const res = await fetch('/api/game/updateStoryteller', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
     }
+    */
     showSuccess('Změna hry uložena')
     saving = false
   }
@@ -104,9 +106,9 @@
     <div class='row'>
       <select id='gameSystem' name='gameSystem' bind:value={data.system}>
         <option value='drd1'>Dračí doupě e1.6</option>
-        <option value='dnd5e'>Dungeons & Dragons e5</option>
-        <option value='vampire5e'>Vampire the Masquerade e5</option>
-        <option value='-'>Jiný / Bez systému</option>
+        <option value='dnd5'>Dungeons & Dragons e5</option>
+        <option value='vampire5'>Vampire the Masquerade e5</option>
+        <option value='base'>Jiný / Bez systému</option>
       </select>
       <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
     </div>
