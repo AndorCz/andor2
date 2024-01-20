@@ -39,7 +39,7 @@ create table games (
   id int2 primary key generated always as identity,
   name text unique not null,
   owner uuid not null default auth.uid(),
-  intro text null default 'Popis světa, úvod do příběhu apod. Z tohoto textu vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.'::text,
+  intro text null default 'Popis světa, úvod do příběhu apod. (Z tohoto textu také vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.)'::text,
   info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default '-'::game_system,

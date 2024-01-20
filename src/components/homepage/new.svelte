@@ -17,7 +17,6 @@
 
   function getUrl (id) {
     const { data } = supabase.storage.from('headers').getPublicUrl(`${categories[activeCategory].slug}-${id}`)
-    console.log('data', data)
     return data.publicUrl
   }
 </script>

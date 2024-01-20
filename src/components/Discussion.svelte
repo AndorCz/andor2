@@ -75,7 +75,7 @@
 
   async function moderatePost (id) {
     if (!window.confirm('Opravdu skrýt příspěvek všem? (moderovat)')) { return }
-    const res = await fetch(`/api/post?id=${id}&moderate=true`, { method: 'PATCH' })
+    const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, moderate: true }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek skryt všem')
