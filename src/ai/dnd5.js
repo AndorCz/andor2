@@ -1,4 +1,4 @@
-import { baseStoryteller, baseAssistant } from '@ai/base'
+import { baseStoryteller, baseAssistant } from './base'
 
 const system = `
   Používá se pravidlový systém Dungeons & Dragons 5th edition.

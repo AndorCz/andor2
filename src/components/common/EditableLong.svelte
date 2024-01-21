@@ -2,7 +2,7 @@
   import { marked } from 'marked'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let value
+  export let value = ''
   export let onSave
   export let loading = false
   export let canEdit = false
@@ -40,7 +40,7 @@
   {#if isEditing}
     <TextareaExpandable bind:value={value} onSave={onSaveWrapper} buttonIcon='done' showButton />
   {:else}
-    <content class='editableLong'>{@html marked(value)}</content>
+    <content class='editableLong'>{@html marked(value || '')}</content>
     {#if canEdit}
       <button on:click={() => { isEditing = true }}><span class='material'>edit</span></button>
     {/if}

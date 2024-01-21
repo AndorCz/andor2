@@ -23,7 +23,7 @@
     const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    data.secrets = res.story
+    data.secrets = json.story
     // await updateAI()
     generatingStory = false
     showSuccess('Vygenerováno')

@@ -1,4 +1,4 @@
-import { baseStoryteller, baseAssistant } from '@ai/base'
+import { baseStoryteller, baseAssistant } from './base'
 
 const system = `
   Používá se klasický pravidlový systém Dračí Doupě verze 1.6.
