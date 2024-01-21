@@ -3,7 +3,6 @@
   import { Editor } from '@tiptap/core'
   import { Color } from '@tiptap/extension-color'
   import { Details, DetailsSummary, DetailsContent } from '@lib/details'
-  import { platform } from '@components/common/MediaQuery.svelte'
   import Link from '@tiptap/extension-link'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'

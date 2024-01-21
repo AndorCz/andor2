@@ -3,7 +3,7 @@
   import { logout } from '@lib/helpers'
   import { clone } from '@lib/utils'
   import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
-  import { getUserStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
+  import { userStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -12,20 +12,19 @@
   export let user = {}
   export let bookmarkData
 
+  $userStore.activePanel = $userStore.activePanel || 'booked'
+
   if (bookmarkData) {
     $bookmarks = bookmarkData
   }
 
-  const userStore = getUserStore({ activePanel: 'booked' })
   let activeUsers = []
   let allRelevantUsers = {}
   let showOffline = false
   let showSidebar = false
 
   onMount(async () => {
-    if ($userStore.activePanel) {
-      document.getElementById($userStore.activePanel)?.classList.add('active')
-    }
+    document.getElementById($userStore.activePanel)?.classList.add('active')
   })
 
   async function onPortraitChange (portrait) {

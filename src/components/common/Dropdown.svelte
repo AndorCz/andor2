@@ -28,9 +28,7 @@
   }
 
   function toggleDropdown () { isOpen = !isOpen }
-
   function findSelectedOption () { return options.find(option => option.value === selected) }
-
   function getUnselectedOptions () { return options.filter(option => option.value !== selected) }
 </script>
 
@@ -38,7 +36,11 @@
   <button class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
     {#key selected}
       {#if findSelectedOption()}
-        {findSelectedOption().icon}
+        {#if iconsOnly}
+          {findSelectedOption().icon}
+        {:else}
+          {findSelectedOption().label}
+        {/if}
       {:else}
         {defaultLabel}
       {/if}
@@ -48,7 +50,11 @@
     <div class='options'>
       {#each getUnselectedOptions() as option}
         <button on:click={() => selectOption(option)} class={iconsOnly && 'material'} class:selected={option.value === selected}>
-          {option.icon}
+          {#if iconsOnly}
+            {option.icon}
+          {:else}
+            {option.label}
+          {/if}
         </button>
       {/each}
     </div>

@@ -1,13 +1,13 @@
 ---
 	import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
-	import New from '@components/homepage/new.svelte'
+	import News from '@components/homepage/news.svelte'
 ---
 
 <Layout title='Hlavní strana'>
 	<main>
 		<aside>
-			<New client:only />
+			<News client:only />
 		</aside>
 		<content>
 			Tady bude editorial a zeď s novinkami.

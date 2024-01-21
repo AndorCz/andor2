@@ -434,6 +434,23 @@ select {
   box-shadow: none !important;
 }
 
+/* Component overrides */
+
+#newsCategorySelect button {
+  background: none;
+  padding: 10px 30px 10px 0px;
+  position: relative;
+  border: none;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: inherit;
+  white-space: nowrap;
+}
+  #newsCategorySelect button.dropdown-toggle::after {
+    content: '⧨';
+    position: absolute;
+    right: 0px;
+  }
 
 /* UTILS */
 

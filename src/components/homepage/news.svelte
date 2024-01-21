@@ -1,8 +1,9 @@
 <script>
   import { supabase, handleError } from '@lib/database'
+  import { userStore } from '@lib/stores'
+  import Dropdown from '@components/common/Dropdown.svelte'
 
-  // 2DO: use userStore and implement custom select
-  let activeCategory = 'games'
+  $userStore.newsCategory = $userStore.newsCategory || 'games'
 
   const categories = {
     games: { label: 'Nové hry', slug: 'game' },
@@ -10,23 +11,30 @@
   }
 
   async function loadRecords () {
+    const activeCategory = $userStore.newsCategory
     const { data, error } = await supabase.from(activeCategory).select('*')
     if (error) { handleError(error) }
     return data
   }
 
   function getUrl (id) {
-    const { data } = supabase.storage.from('headers').getPublicUrl(`${categories[activeCategory].slug}-${id}`)
+    const slug = categories[$userStore.newsCategory].slug
+    const { data } = supabase.storage.from('headers').getPublicUrl(`${slug}-${id}`)
     return data.publicUrl
   }
 </script>
 
-<h3><button class='categoryOpen'>{categories[activeCategory].label} <span>⧨</span></button></h3>
+<h3 id='newsCategorySelect'>
+  <Dropdown current={$userStore.newsCategory}
+    options={Object.keys(categories).map(key => ({ value: key, label: categories[key].label }))}
+    on:select={e => { $userStore.newsCategory = e.detail.value }}
+  />
+</h3>
 
-{#key activeCategory}
+{#key $userStore.newsCategory}
   {#await loadRecords() then records}
     {#each records as record}
-      <a href={`/${categories[activeCategory].slug}/${record.id}`} class='record'>
+      <a href={`/${categories[$userStore.newsCategory].slug}/${record.id}`} class='record'>
         <h2>{record.name}</h2>
         {#if record.custom_header}
           <img src={getUrl(record.id)} alt={record.name} />
