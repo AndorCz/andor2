@@ -122,7 +122,7 @@
   {/if}
 {/if}
 
-<Thread {posts} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+<Thread {posts} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 
 <style>
   h2 {

@@ -1,11 +1,14 @@
 <script>
+  import { onMount } from 'svelte'
+  import { Render } from 'svelte-purify'
   import { supabase, handleError } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
   import { showError } from '@lib/toasts'
-  import { Render } from 'svelte-purify'
   import { tooltip } from '@lib/tooltip'
+  import { setRead } from '@lib/helpers'
   import { user } from '@lib/stores'
 
+  export let id
   export let posts
   export let canDeleteAll
   export let canModerate
@@ -21,6 +24,8 @@
 
   let threadEl
   const moderatedVisibility = {}
+
+  onMount(() => { setRead($user.id, 'thread-' + id) })
 
   const isMyPost = (id, dice) => {
     if (dice) { return false } // don't allow deleting of dice posts, only to game owners

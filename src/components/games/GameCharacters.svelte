@@ -1,10 +1,14 @@
 <script>
+  import { onMount } from 'svelte'
+  import { setRead } from '@lib/helpers'
   import Character from '@components/games/Character.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 
   export let user = {}
   export let data = {}
   export let isGameOwner
+
+  onMount(() => { setRead($user.id, 'game-characters-' + data.id) })
 
   // sort character categories
   // const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }

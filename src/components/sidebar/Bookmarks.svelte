@@ -9,8 +9,8 @@
   <h4>Hry</h4>
   <ul class='games'>
     {#each $bookmarks.games as bookmark}
-      <li class='bookmark' class:active={'/game/' + bookmark.game.id === window.location.pathname}>
-        <a href={'/game/' + bookmark.game.id}>{bookmark.game.name}</a>
+      <li class='bookmark' class:active={'/game/' + bookmark.game_id === window.location.pathname}>
+        <a href={'/game/' + bookmark.game_id}>{bookmark.name}</a>
       </li>
     {/each}
   </ul>
@@ -20,8 +20,8 @@
   <h4>Diskuze</h4>
   <ul class='boards'>
     {#each $bookmarks.boards as bookmark}
-      <li class='bookmark' class:active={'/board/' + bookmark.board.id === window.location.pathname}>
-        <a href={'/board/' + bookmark.board.id}>{bookmark.board.name}</a>
+      <li class='bookmark' class:active={'/board/' + bookmark.board_id === window.location.pathname}>
+        <a href={'/board/' + bookmark.board_id}>{bookmark.name}</a>
       </li>
     {/each}
   </ul>

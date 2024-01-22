@@ -49,16 +49,3 @@ export function getImage (file) {
     img.src = URL.createObjectURL(file)
   })
 }
-
-export function groupBookmarks (bookmarks) {
-  const grouped = { games: [], boards: [] }
-  bookmarks.forEach(bookmark => {
-    if (bookmark.game) {
-      grouped.games.push(bookmark)
-    } else if (bookmark.board) {
-      grouped.boards.push(bookmark)
-    }
-  })
-  // add more types later, use switch
-  return grouped
-}

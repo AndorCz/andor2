@@ -1,7 +1,10 @@
 <script>
-  import EditableLong from '@components/common/EditableLong.svelte'
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
+  import { setRead } from '@lib/helpers'
+  import { user } from '@lib/stores'
+  import EditableLong from '@components/common/EditableLong.svelte'
 
   export let data
   export let isGameOwner
@@ -16,6 +19,8 @@
     return json
   }
   */
+
+  onMount(() => { setRead($user.id, 'game-info-' + data.id) })
 
   async function generateStory () {
     generatingStory = true

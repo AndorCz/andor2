@@ -12,7 +12,7 @@
 
   async function loadRecords () {
     const activeCategory = $userStore.newsCategory
-    const { data, error } = await supabase.from(activeCategory).select('*')
+    const { data, error } = await supabase.from(activeCategory).select('*').order('created_at').limit(5)
     if (error) { handleError(error) }
     return data
   }
@@ -46,19 +46,6 @@
 {/key}
 
 <style>
-  button.categoryOpen {
-    background: none;
-    border: none;
-    box-shadow: none;
-    font-size: inherit;
-    font-family: inherit;
-    padding: 0px;
-  }
-    button.categoryOpen span {
-      font-size: 20px;
-      padding: 5px;
-    }
-
   .record {
     display: block;
   }

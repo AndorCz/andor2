@@ -90,18 +90,18 @@
   async function addBookmark () {
     const { data: newBookmark, error } = await supabase.from('bookmarks').insert({ user_id: user.id, board_id: data.id }).select().single()
     if (error) { return handleError(error) }
-    $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board: { id: data.id, name: data.name } }]
+    $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board_id: data.id, name: data.name }]
     showSuccess('Záložka přidána')
   }
 
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.boards = $bookmarks.boards.filter(b => b.board.id !== data.id)
+    $bookmarks.boards = $bookmarks.boards.filter(b => b.board_id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.boards?.find(b => b.board.id === data.id)?.id
+  $: bookmarkId = $bookmarks.boards.find(b => b.board_id === data.id)?.id
 </script>
 
 <div class='headline'>
@@ -126,7 +126,7 @@
   </div>
 {/if}
 
-<Thread {posts} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+<Thread {posts} id={data.thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
 
 <style>
   .headline {

@@ -124,6 +124,14 @@ create table bookmarks (
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
 );
 
+create table user_reads (
+  user_id uuid not null,
+  slug text not null,
+  read_at timestamp with time zone default current_timestamp,
+  foreign key (user_id) references profiles (id) on delete cascade,
+  primary key (user_id, slug)
+);
+
 -- VIEWS
 
 create view posts_owner as
@@ -248,6 +256,31 @@ begin
   end if;
 end;
 $$ language plpgsql;
+
+create or replace function get_bookmarks()
+returns jsonb as $$
+declare
+  games_json jsonb;
+  boards_json jsonb;
+begin
+  games_json := (
+    select jsonb_agg(jsonb_build_object('id', b.id, 'game_id', g.id, 'name', g.name, 'created_at', b.created_at))
+    from bookmarks b
+    left join games g on g.id = b.game_id
+    where b.user_id = auth.uid() and b.game_id is not null
+  );
+
+  boards_json := (
+    select jsonb_agg(jsonb_build_object('id', b.id, 'board_id', brd.id, 'name', brd.name, 'created_at', b.created_at))
+    from bookmarks b
+    left join boards brd on brd.id = b.board_id
+    where b.user_id = auth.uid() and b.board_id is not null
+  );
+
+  return jsonb_build_object('games', games_json, 'boards', boards_json);
+end;
+$$ language plpgsql;
+
 
 -- TRIGGERS
 

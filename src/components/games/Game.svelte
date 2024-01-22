@@ -27,18 +27,18 @@
   async function addBookmark () {
     const { data: newBookmark, error } = await supabase.from('bookmarks').insert({ user_id: user.id, game_id: data.id }).select().single()
     if (error) { return handleError(error) }
-    $bookmarks.games = [...$bookmarks.games, { id: newBookmark.id, game: { id: data.id, name: data.name } }]
+    $bookmarks.games = [...$bookmarks.games, { id: newBookmark.id, game_id: data.id, name: data.name }]
     showSuccess('Záložka přidána')
   }
 
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.games = $bookmarks.games.filter(b => b.game.id !== data.id)
+    $bookmarks.games = $bookmarks.games.filter(b => b.game_id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.games?.find(b => b.game.id === data.id)?.id
+  $: bookmarkId = $bookmarks.games.find(b => b.game_id === data.id)?.id
 </script>
 
 <main>

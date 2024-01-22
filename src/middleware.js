@@ -1,8 +1,13 @@
 
-import { getSupabase, handleError } from '@lib/database'
-import { saveAuthCookies, groupBookmarks } from '@lib/utils'
+import { getSupabase } from '@lib/database'
+import { saveAuthCookies } from '@lib/utils'
 
 export async function onRequest ({ cookies, locals, redirect, url }, next) {
+  const handleError = (error) => {
+    console.error(error)
+    return next()
+  }
+
   locals.user = {} // empty default
 
   // get auth cookies
@@ -33,9 +38,11 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         const { error: profileError } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
         if (profileError) { return handleError(profileError) }
         // load bookmarks
-        const { data: bookmarkData, error: bookmarkError } = await locals.supabase.from('bookmarks').select('id, created_at, game:game_id (id, name), board:board_id (id, name)').eq('user_id', locals.user.id)
+        const { data: bookmarkData, error: bookmarkError } = await locals.supabase.rpc('get_bookmarks').maybeSingle()
         if (bookmarkError) { return handleError(bookmarkError) }
-        locals.bookmarks = groupBookmarks(bookmarkData) // temporary until supabase-js supports group-by
+        bookmarkData.games = bookmarkData.games || []
+        bookmarkData.boards = bookmarkData.boards || []
+        locals.bookmarks = bookmarkData
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
         return redirect('/onboarding')

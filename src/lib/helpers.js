@@ -1,5 +1,5 @@
 
-import { supabase } from '@lib/database'
+import { supabase, handleError } from '@lib/database'
 import { user } from '@lib/stores'
 
 // BROWSER HELPERS
@@ -20,4 +20,9 @@ export async function logout () {
   user.set({})
   await supabase.auth.signOut()
   window.location.href = '/api/auth/logout'
+}
+
+export async function setRead (userId, slug) {
+  const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug, read_at: new Date() })
+  if (error) { return handleError(error) }
 }
