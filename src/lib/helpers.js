@@ -1,6 +1,5 @@
 
 import { supabase, handleError } from '@lib/database'
-import { user } from '@lib/stores'
 
 // BROWSER HELPERS
 
@@ -17,7 +16,6 @@ export async function logout () {
   document.cookie = 'sb-access-token=; Max-Age=-99999999;'
   document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
 
-  user.set({})
   await supabase.auth.signOut()
   window.location.href = '/api/auth/logout'
 }

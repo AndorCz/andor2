@@ -6,9 +6,9 @@
   import { showError } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { setRead } from '@lib/helpers'
-  import { user } from '@lib/stores'
 
   export let id
+  export let user
   export let posts
   export let canDeleteAll
   export let canModerate
@@ -25,7 +25,7 @@
   let threadEl
   const moderatedVisibility = {}
 
-  onMount(() => { setRead($user.id, 'thread-' + id) })
+  onMount(() => { setRead(user.id, 'thread-' + id) })
 
   const isMyPost = (id, dice) => {
     if (dice) { return false } // don't allow deleting of dice posts, only to game owners
@@ -45,7 +45,7 @@
   }
 
   function getMyReaction (post, reaction) {
-    return post[reaction].findIndex((id) => { return id === $user.id })
+    return post[reaction].findIndex((id) => { return id === user.id })
   }
 
   function hasReacted (post, reaction) {
@@ -99,7 +99,7 @@
               {/if}
             </span>
             {#if allowReactions}
-              {#if $user.id}
+              {#if user.id}
                 <span class='reactions'>
                   <button on:click={() => { toggleReaction(post, 'frowns') }} class:active={hasReacted(post, 'frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
                   <button on:click={() => { toggleReaction(post, 'laughs') }} class:active={hasReacted(post, 'laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs.length}<span class='count'>{post.laughs.length}</span>{/if}</button>

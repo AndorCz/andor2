@@ -10,7 +10,12 @@
   <ul class='games'>
     {#each $bookmarks.games as bookmark}
       <li class='bookmark' class:active={'/game/' + bookmark.game_id === window.location.pathname}>
-        <a href={'/game/' + bookmark.game_id}>{bookmark.name}</a>
+        <a href={'/game/' + bookmark.game_id}>
+          {bookmark.name}
+          {#if bookmark.unread}
+            <span class='unread'>{bookmark.unread}</span>
+          {/if}
+        </a>
       </li>
     {/each}
   </ul>
@@ -21,7 +26,12 @@
   <ul class='boards'>
     {#each $bookmarks.boards as bookmark}
       <li class='bookmark' class:active={'/board/' + bookmark.board_id === window.location.pathname}>
-        <a href={'/board/' + bookmark.board_id}>{bookmark.name}</a>
+        <a href={'/board/' + bookmark.board_id}>
+          {bookmark.name}
+          {#if bookmark.unread}
+            <span class='unread'>{bookmark.unread}</span>
+          {/if}
+        </a>
       </li>
     {/each}
   </ul>
@@ -50,8 +60,13 @@
       padding: 8px 0px;
     }
     li a {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
+      .unread {
+        color: var(--new);
+      }
     li.active a {
       color: var(--text);
     }

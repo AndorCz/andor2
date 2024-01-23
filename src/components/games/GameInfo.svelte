@@ -3,9 +3,9 @@
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
   import { setRead } from '@lib/helpers'
-  import { user } from '@lib/stores'
   import EditableLong from '@components/common/EditableLong.svelte'
 
+  export let user
   export let data
   export let isGameOwner
 
@@ -20,7 +20,7 @@
   }
   */
 
-  onMount(() => { setRead($user.id, 'game-info-' + data.id) })
+  onMount(() => { setRead(user.id, 'game-info-' + data.id) })
 
   async function generateStory () {
     generatingStory = true
@@ -34,8 +34,10 @@
     showSuccess('Vygenerováno')
   }
 
-  async function updateGameInfo () {
-    const { error } = await supabase.from('games').update({ intro: data.intro, info: data.info, secrets: data.secrets }).eq('id', data.id)
+  async function updateGameInfo (publicChange = true) {
+    const newData = { intro: data.intro, info: data.info, secrets: data.secrets }
+    if (publicChange) { newData.info_changed_at = new Date() }
+    const { error } = await supabase.from('games').update(newData).eq('id', data.id)
     if (error) { return handleError(error) }
     // await updateAI()
     showSuccess('Uloženo')
@@ -50,7 +52,7 @@
 
 {#if isGameOwner}
   <h2>Podklady vypravěče <span>(hráčům skryté)</span></h2>
-  <EditableLong bind:value={data.secrets} onSave={updateGameInfo} canEdit={isGameOwner} loading={generatingStory} />
+  <EditableLong bind:value={data.secrets} onSave={() => updateGameInfo(false)} canEdit={isGameOwner} loading={generatingStory} />
   <br>
   <button on:click={generateStory} disabled={generatingStory}>Vygenerovat podklady AI</button>
   <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>

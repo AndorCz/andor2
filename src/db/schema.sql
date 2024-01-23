@@ -49,6 +49,8 @@ create table games (
   openai_storyteller text null,
   custom_header boolean null,
   created_at timestamp with time zone default current_timestamp,
+  info_changed_at timestamp with time zone default current_timestamp,
+  characters_changed_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
   constraint games_game_fkey foreign key (game) references threads (id)
@@ -262,24 +264,88 @@ returns jsonb as $$
 declare
   games_json jsonb;
   boards_json jsonb;
+  user_uuid uuid := auth.uid();  -- Retrieve the user's UUID
 begin
   games_json := (
-    select jsonb_agg(jsonb_build_object('id', b.id, 'game_id', g.id, 'name', g.name, 'created_at', b.created_at))
+    select jsonb_agg(jsonb_build_object(
+      'id', b.id,
+      'game_id', g.id,
+      'name', g.name,
+      'created_at', b.created_at,
+      'unread', 
+        calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text) +
+        calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text) +
+        calculate_unread_count(user_uuid, 'game-info-' || g.id::text) +
+        calculate_unread_count(user_uuid, 'game-characters-' || g.id::text)
+    ))
     from bookmarks b
     left join games g on g.id = b.game_id
-    where b.user_id = auth.uid() and b.game_id is not null
+    where b.user_id = user_uuid and b.game_id is not null
   );
 
   boards_json := (
-    select jsonb_agg(jsonb_build_object('id', b.id, 'board_id', brd.id, 'name', brd.name, 'created_at', b.created_at))
+    select jsonb_agg(jsonb_build_object(
+      'id', b.id,
+      'board_id', brd.id,
+      'name', brd.name,
+      'created_at', b.created_at,
+      'unread', calculate_unread_count(user_uuid, 'thread-' || brd.thread::text)
+    ))
     from bookmarks b
     left join boards brd on brd.id = b.board_id
-    where b.user_id = auth.uid() and b.board_id is not null
+    where b.user_id = user_uuid and b.board_id is not null
   );
 
   return jsonb_build_object('games', games_json, 'boards', boards_json);
 end;
 $$ language plpgsql;
+
+
+create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
+returns int as $$
+declare
+  unread_count int;
+  numeric_id int;
+begin
+  numeric_id := substring(slug_alias from '\d+$')::int; -- Extract numeric part
+
+  if slug_alias like 'thread-%' then
+    -- Calculate unread posts for threads
+    unread_count := (
+      select count(*) 
+      from posts p
+      where p.thread = numeric_id
+      and p.created_at > (
+        select coalesce(max(read_at), '1970-01-01')
+        from user_reads
+        where user_id = user_uuid and slug = slug_alias
+      )
+    );
+  elsif slug_alias like 'game-info-%' or slug_alias like 'game-characters-%' then
+    -- Calculate unread for game info or characters
+    unread_count := (
+      select case 
+        when coalesce(max(read_at), '1970-01-01') < (
+          select case 
+            when slug_alias like 'game-info-%' then g.info_changed_at 
+            else g.characters_changed_at 
+          end
+          from games g
+          where g.id = numeric_id
+        ) then 1
+        else 0
+      end
+      from user_reads
+      where user_id = user_uuid and slug = slug_alias
+    );
+  else
+    unread_count := 0; -- Default case for unsupported slugs
+  end if;
+
+  return unread_count;
+end;
+$$ language plpgsql;
+
 
 
 -- TRIGGERS

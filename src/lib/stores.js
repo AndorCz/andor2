@@ -1,7 +1,6 @@
 
 import { writable } from 'svelte/store'
 
-export const user = writable({})
 export const headerPreview = writable(null)
 export const conversations = writable({})
 export const unreadConversations = writable({})

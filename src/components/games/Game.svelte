@@ -62,7 +62,7 @@
 
   <div class='content'>
     {#if $gameStore.activeTab === 'info'}
-      <GameInfo {data} {isGameOwner} />
+      <GameInfo {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
       <Discussion {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'game'}

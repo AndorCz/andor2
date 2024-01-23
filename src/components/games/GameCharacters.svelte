@@ -8,7 +8,7 @@
   export let data = {}
   export let isGameOwner
 
-  onMount(() => { setRead($user.id, 'game-characters-' + data.id) })
+  onMount(() => { setRead(user.id, 'game-characters-' + data.id) })
 
   // sort character categories
   // const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
@@ -40,7 +40,7 @@
     {#if characters.storytellers.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.storytellers as character}
-        <Character {user} {character} {isGameOwner} />
+        <Character {user} {character} {isGameOwner} gameId={data.id} />
       {/each}
     {:else}
       <td class='none'>Žádní vypravěči</td>
@@ -52,7 +52,7 @@
     {#if characters.playing.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.playing as character}
-        <Character {user} {character} {isGameOwner} />
+        <Character {user} {character} {isGameOwner} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>
@@ -66,7 +66,7 @@
       {#if characters.waiting.length > 0}
         <CharacterHeader {isGameOwner} />
         {#each characters.waiting as character}
-          <Character {user} {character} {isGameOwner} />
+          <Character {user} {character} {isGameOwner} gameId={data.id} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>
@@ -79,7 +79,7 @@
     {#if characters.open.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.open as character}
-        <Character {user} {character} {isGameOwner} />
+        <Character {user} {character} {isGameOwner} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>

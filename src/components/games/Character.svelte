@@ -1,8 +1,9 @@
 <script>
   import { supabase, handleError } from '@lib/database'
 
-  export let character
   export let user
+  export let gameId
+  export let character
   export let isGameOwner
 
   const isPlayer = character.player.id === user.id
@@ -10,6 +11,10 @@
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
     if (error) { return handleError(error) }
+
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
+    if (timestampError) { return handleError(timestampError) }
+
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
   async function rejectCharacter (id) {

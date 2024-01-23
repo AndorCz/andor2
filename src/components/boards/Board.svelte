@@ -126,7 +126,7 @@
   </div>
 {/if}
 
-<Thread {posts} id={data.thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+<Thread {posts} {user} id={data.thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
 
 <style>
   .headline {
