@@ -42,11 +42,11 @@
       {#if post.dice}
         <span class='dicePost' use:tooltipContent>
           <div class='hiddenContent'>
-            <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner_id, post.dice)} {canModerate} />
+            <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner, post.dice)} {canModerate} />
           </div>
         </span>
       {:else}
-        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner_id, post.dice)} {canModerate} />
+        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner, post.dice)} {canModerate} />
       {/if}
     {/each}
     <div class='pagination'>
