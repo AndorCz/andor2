@@ -21,6 +21,8 @@ export async function logout () {
 }
 
 export async function setRead (userId, slug) {
-  const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug, read_at: new Date() })
-  if (error) { return handleError(error) }
+  if (userId) {
+    const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug, read_at: new Date() })
+    if (error) { return handleError(error) }
+  }
 }

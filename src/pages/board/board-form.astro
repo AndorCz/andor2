@@ -11,6 +11,10 @@
 
     const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
 
+    // add bookmark
+    const { error: bookmarkError } = await supabase.from('bookmarks').insert({ user_id: user.id, board_id: data.id })
+    if (bookmarkError) { return handleError(bookmarkError) }
+
     if (error) { handleError(error) }
     else {
       return Astro.redirect(`/board/${data.id}?toastType=success&toastText=${encodeURIComponent('Diskuze byla přidána')}`)

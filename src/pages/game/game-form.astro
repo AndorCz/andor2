@@ -14,6 +14,10 @@
     const openAiStoryteller = await getStoryteller(gameSystem)
     const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, system: gameSystem, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
 
+    // add bookmark
+    const { error: bookmarkError } = await supabase.from('bookmarks').insert({ user_id: user.id, game_id: data.id })
+    if (bookmarkError) { return handleError(bookmarkError) }
+
     if (error) { handleError(error) }
     else {
       return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)

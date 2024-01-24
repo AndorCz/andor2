@@ -20,7 +20,7 @@
   }
   */
 
-  onMount(() => { setRead(user.id, 'game-info-' + data.id) })
+  onMount(() => { if (user.id) { setRead(user.id, 'game-info-' + data.id) } })
 
   async function generateStory () {
     generatingStory = true

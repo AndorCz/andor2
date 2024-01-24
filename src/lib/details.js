@@ -1,4 +1,6 @@
 
+// Expandable details element for the tiptap editor
+
 import { Node } from '@tiptap/core'
 
 function findNode (doc, from, to, condition) {

@@ -12,8 +12,13 @@
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
     if (error) { return handleError(error) }
 
+    // update timestamp
     const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
     if (timestampError) { return handleError(timestampError) }
+
+    // add bookmark to the user of the accepted character
+    const { error: bookmarkError } = await supabase.from('bookmarks').insert({ user_id: character.player.id, game_id: gameId })
+    if (bookmarkError) { return handleError(bookmarkError) }
 
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
