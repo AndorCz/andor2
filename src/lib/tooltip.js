@@ -21,10 +21,9 @@ export function tooltip (node, params = {}) {
 // Wrapper around Tippy that shows content of the node as a tooltip instead
 
 export function tooltipContent (node, params = {}) {
-  const content = node.innerHTML
-  const tip = tippy(node, { content, allowHTML: true, interactive: true, ...params })
+  const tip = tippy(node, { content: node.firstChild, allowHTML: true, interactive: true, ...params })
   return {
-    update: (newParams) => tip.setProps({ content, allowHTML: true, interactive: true, ...newParams }),
+    update: (newParams) => tip.setProps({ content: node.firstChild, allowHTML: true, interactive: true, ...newParams }),
     destroy: () => tip.destroy()
   }
 }

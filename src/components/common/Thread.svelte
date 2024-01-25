@@ -40,10 +40,8 @@
   {#if isFilledArray($posts)}
     {#each $posts as post}
       {#if post.dice}
-        <span class='dicePost' use:tooltipContent>
-          <div class='hiddenContent'>
-            <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner, post.dice)} {canModerate} />
-          </div>
+        <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
+          <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner, post.dice)} />
         </span>
       {:else}
         <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner, post.dice)} {canModerate} />
@@ -80,9 +78,6 @@
   }
     .dicePost:hover {
       opacity: 1;
-    }
-    .dicePost .hiddenContent {
-      display: none;
     }
 
   .pagination {

@@ -13,6 +13,7 @@
   export let onDelete
   export let onEdit
   export let onModerate
+  export let showDate
 
   let expanded = false
 
@@ -58,10 +59,18 @@
         {/if}
       </span>
       <span class='toolbar'>
-        <span class='material time' use:tooltip title={new Date(post.created_at).toLocaleString('cs-CZ')}>schedule</span>
+        {#if showDate}
+          <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
+        {:else}
+          <span class='material time' use:tooltip title={new Date(post.created_at).toLocaleString('cs-CZ')}>schedule</span>
+        {/if}
         {#if canDeleteAll || isMyPost}
-          <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
-          <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+          {#if onEdit}
+            <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
+          {/if}
+          {#if onDelete}
+            <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+          {/if}
         {:else if canModerate}
           <button on:click={() => onModerate(post.id)} class='material moderate' title='Skrýt všem'>visibility_off</button>
         {/if}
