@@ -1,16 +1,17 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
   import { Editor } from '@tiptap/core'
   import { Color } from '@tiptap/extension-color'
-  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
   import Link from '@tiptap/extension-link'
+  import Image from '@tiptap/extension-image'
+  import TextStyle from '@tiptap/extension-text-style'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
-  import TextStyle from '@tiptap/extension-text-style'
-  import Image from '@tiptap/extension-image'
+  import Colors from '@components/common/Colors.svelte'
 
   export let content = ''
 
@@ -109,6 +110,7 @@
 -->
 
 <div class='wrapper'>
+  <Colors />
   <div class='bubble' bind:this={bubbleEl}>
     {#if editor}
       <button on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
@@ -119,7 +121,7 @@
       <span><Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
       <span><Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
       <span class='sep'></span>
-      <input class='button' type='color' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
+      <input class='button' type='color' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
       <button on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')} title='Reset barvy'>format_color_reset</button>
       <span class='sep'></span>
       <button on:click={setLink} class='material' title='Odkaz'>link</button>

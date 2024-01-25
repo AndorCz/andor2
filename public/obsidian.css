@@ -185,6 +185,10 @@ textarea, .ProseMirror {
     width: 36px;
     height: 36px;
     padding: 0px;
+    appearance: none;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 3px;
   }
 
   input[type=checkbox]:checked {
