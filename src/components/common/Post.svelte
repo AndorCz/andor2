@@ -1,7 +1,8 @@
 <script>
+  import { supabase, handleError } from '@lib/database'
+  import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
   import { tooltip } from '@lib/tooltip'
-  import { supabase, handleError } from '@lib/database'
 
   export let user
   export let post
@@ -13,87 +14,93 @@
   export let onDelete
   export let onEdit
   export let onModerate
-  export let showDate
+  export let showDate = false
 
+  const postStore = writable(post)
   let expanded = false
 
-  const onHeaderClick = (post) => {
-    if (post.moderated) { expanded = !expanded }
+  const onHeaderClick = () => {
+    if ($postStore.moderated) { expanded = !expanded }
   }
 
-  function getMyReaction (post, reaction) {
-    return post[reaction].findIndex((id) => { return id === user.id })
+  function getMyReaction (reaction) {
+    return $postStore[reaction].findIndex((id) => { return id === user.id })
   }
 
-  function hasReacted (post, reaction) {
-    return getMyReaction(post, reaction) > -1
+  function hasReacted (reaction) {
+    return getMyReaction(reaction) > -1
   }
 
-  async function toggleReaction (post, reaction) {
+  function triggerModerate () {
+    $postStore.moderated = true
+    if (onModerate) { onModerate($postStore.id) }
+  }
+
+  async function toggleReaction (reaction) {
     // update database
-    const { data, error } = await supabase.rpc('update_reaction', { post_id: post.id, reaction_type: reaction, action: hasReacted(post, reaction) ? 'remove' : 'add' }).single()
+    const { data, error } = await supabase.rpc('update_reaction', { post_id: $postStore.id, reaction_type: reaction, action: hasReacted(reaction) ? 'remove' : 'add' }).single()
     if (error) { return handleError(error) }
-
-    // update post from the returned database data
-    post.frowns = data.frowns
-    post.thumbs = data.thumbs
-    post.hearts = data.hearts
-    post.laughs = data.laughs
+    $postStore.frowns = data.frowns
+    $postStore.thumbs = data.thumbs
+    $postStore.hearts = data.hearts
+    $postStore.laughs = data.laughs
   }
 </script>
 
-<div class='post' class:moderated={post.moderated} class:hidden={post.moderated && !expanded}>
-  {#if post.owner_portrait}
+<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded}>
+  {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
-      <img src={post.owner_portrait} alt={post.owner_name} />
+      <img src={$postStore.owner_portrait} alt={$postStore.owner_name} />
     </div>
   {/if}
   <div class='body'>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class='header' on:click={() => { onHeaderClick(post) }}>
-      <span class='title'>
-        <b>{post.owner_name}</b>
-        {#if post.audience_names}
-          <span class='audience'>jen pro: <b>{post.audience_names.join(', ')}</b></span>
+    <div class='header'>
+      <span class='title' on:click={onHeaderClick}>
+        <b>{$postStore.owner_name}</b>
+        {#if $postStore.audience_names}
+          <span class='audience'>jen pro: <b>{$postStore.audience_names.join(', ')}</b></span>
         {/if}
       </span>
       <span class='toolbar'>
         {#if showDate}
-          <span class='time'>{new Date(post.created_at).toLocaleString('cs-CZ')}</span>
+          <span class='time'>{new Date($postStore.created_at).toLocaleString('cs-CZ')}</span>
         {:else}
-          <span class='material time' use:tooltip title={new Date(post.created_at).toLocaleString('cs-CZ')}>schedule</span>
+          <span class='material time' use:tooltip title={new Date($postStore.created_at).toLocaleString('cs-CZ')}>schedule</span>
         {/if}
         {#if canDeleteAll || isMyPost}
           {#if onEdit}
-            <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
+            <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
           {/if}
           {#if onDelete}
-            <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+            <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat'>delete</button>
           {/if}
-        {:else if canModerate}
-          <button on:click={() => onModerate(post.id)} class='material moderate' title='Skrýt všem'>visibility_off</button>
+        {:else if canModerate && !$postStore.moderated}
+          <button on:click={triggerModerate} class='material moderate' title='Skrýt všem'>visibility_off</button>
         {/if}
       </span>
       {#if allowReactions}
         {#if user.id}
-          <span class='reactions'>
-            <button on:click={() => { toggleReaction(post, 'frowns') }} class:active={hasReacted(post, 'frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
-            <button on:click={() => { toggleReaction(post, 'laughs') }} class:active={hasReacted(post, 'laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
-            <button on:click={() => { toggleReaction(post, 'hearts') }} class:active={hasReacted(post, 'hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
-            <button on:click={() => { toggleReaction(post, 'thumbs') }} class:active={hasReacted(post, 'thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.thumbs.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
-          </span>
+          {#key $postStore}
+            <span class='reactions'>
+              <button on:click={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if $postStore.frowns.length}<span class='count'>{$postStore.frowns.length}</span>{/if}</button>
+              <button on:click={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if $postStore.laughs.length}<span class='count'>{$postStore.laughs.length}</span>{/if}</button>
+              <button on:click={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if $postStore.hearts.length}<span class='count'>{$postStore.hearts.length}</span>{/if}</button>
+              <button on:click={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if $postStore.thumbs.length}<span class='count'>{$postStore.thumbs.length}</span>{/if}</button>
+            </span>
+          {/key}
         {:else}
           <span class='reactions'>
-            {#if post.frowns.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{post.frowns.length}</span></span>{/if}
-            {#if post.laughs.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{post.laughs.length}</span></span>{/if}
-            {#if post.hearts.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{post.hearts.length}</span></span>{/if}
-            {#if post.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{post.thumbs.length}</span></span>{/if}
+            {#if $postStore.frowns.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{$postStore.frowns.length}</span></span>{/if}
+            {#if $postStore.laughs.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{$postStore.laughs.length}</span></span>{/if}
+            {#if $postStore.hearts.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{$postStore.hearts.length}</span></span>{/if}
+            {#if $postStore.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{$postStore.thumbs.length}</span></span>{/if}
           </span>
         {/if}
       {/if}
     </div>
-    <div class='content'><Render html={post.content} /></div>
+    <div class='content'><Render html={$postStore.content} /></div>
   </div>
 </div>
 

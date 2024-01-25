@@ -8,8 +8,8 @@
   export let id
   export let user
   export let posts
-  export let canDeleteAll
-  export let canModerate
+  export let canDeleteAll = false
+  export let canModerate = false
   export let myIdentities = []
   export let allowReactions
   export let onDelete
@@ -24,12 +24,11 @@
 
   onMount(() => { if (user.id) { setRead(user.id, 'thread-' + id) } })
 
-  const isMyPost = (id, dice) => {
-    if (dice) { return false } // don't allow deleting of dice posts, only to game owners
+  function isMyPost (id) {
     return myIdentities.find((identity) => { return identity.id === id })
   }
 
-  const triggerPaging = (newPage) => {
+  function triggerPaging (newPage) {
     page = newPage
     onPaging(page)
     threadEl.scrollIntoView({ behavior: 'smooth' })
@@ -41,10 +40,10 @@
     {#each $posts as post}
       {#if post.dice}
         <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
-          <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner, post.dice)} />
+          <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
         </span>
       {:else}
-        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner, post.dice)} {canModerate} />
+        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
       {/if}
     {/each}
     <div class='pagination'>
@@ -55,7 +54,7 @@
   {:else}
     Žádné příspěvky
   {/if}
-  </main>
+</main>
 
 <style>
 
