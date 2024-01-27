@@ -1,6 +1,5 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { Details, DetailsSummary, DetailsContent } from '@lib/details'
   import { Editor } from '@tiptap/core'
   import { Color } from '@tiptap/extension-color'
   import Link from '@tiptap/extension-link'
@@ -12,6 +11,8 @@
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import Colors from '@components/common/Colors.svelte'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
+  import { Reply } from '@lib/editor/reply'
 
   export let content = ''
 
@@ -44,6 +45,7 @@
         StarterKit,
         Underline,
         TextStyle,
+        Reply,
         Details.configure({ HTMLAttributes: { class: 'details' } }),
         DetailsSummary,
         DetailsContent,
@@ -98,8 +100,8 @@
     if (url) { editor.chain().focus().setImage({ src: url }).run() }
   }
 
-  export function addReply (username, postId) {
-    editor.chain().focus().insertContent(`@${username}|${postId}:`).run()
+  export function addReply (postId, name, content) {
+    editor.chain().focus().addReply({ postId, name, content }).run()
   }
 </script>
 

@@ -100,7 +100,7 @@
           </span>
         {/if}
         {#if onReply}
-          <button on:click={() => { onReply($postStore.owner_name, $postStore.id) }} class='material reaction reply' title='Reagovat'>reply</button>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, $postStore.content) }} class='material reaction reply' title='Reagovat'>reply</button>
         {/if}
       {/if}
     </div>
@@ -218,7 +218,7 @@
             font-size: 22px;
             font-weight: bold;
           }
-      .reply {
+      button.reply {
         margin-left: 20px;
       }
   @media (max-width: 860px) {

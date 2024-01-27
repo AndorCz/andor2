@@ -52,8 +52,8 @@
     }
   }
 
-  export function addReply (username, postId) {
-    return editorRef.addReply(username, postId)
+  export function addReply (postId, userName, content) {
+    return editorRef.addReply(postId, userName, content)
   }
 </script>
 

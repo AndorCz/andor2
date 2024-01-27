@@ -176,11 +176,9 @@ textarea, .ProseMirror {
   input[type=text]:focus, textarea:focus, select:focus, .ProseMirror-focused {
     outline: 2px var(--buttonBg) solid;
   }
-
   input[type=checkbox] {
     cursor: pointer;
   }
-
   input[type=color] {
     width: 36px;
     height: 36px;
@@ -229,7 +227,7 @@ select {
   padding: 10px 0px;
   margin: 0px;
 }
-  
+
 /* TABS */
 
 .tabs {
@@ -365,11 +363,19 @@ select {
   background-color: var(--accent);
 }
 
+/* Post content */
+
 .content p {
   margin: 5px 0px;
 }
 .content img {
   max-width: 100%;
+}
+.content .button {
+  margin-right: 10px;
+  padding: 5px;
+  opacity: 0.5;
+  font-variation-settings: 'wght' 400;
 }
 
 /* WYSIWYG - TipTap/ProseMirror */
@@ -419,6 +425,12 @@ select {
   }
   .ProseMirror .details>div {
     flex: 1 1 auto;
+  }
+  .ProseMirror cite { /* reply */
+    padding: 5px;
+    border-radius: 5px;
+    background-color: var(--buttonBg);
+    margin-right: 5px;
   }
 
 /* Tippy tooltip */
