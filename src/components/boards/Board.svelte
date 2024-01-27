@@ -31,6 +31,7 @@
     const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     $posts = postData
+    console.log('posts loaded', postData)
     pages = Math.ceil(count / limit)
   }
 
@@ -71,6 +72,10 @@
     textareaRef.triggerEdit(id, content)
     document.getElementsByClassName('text')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
+  }
+
+  async function triggerReply (username, postId) {
+    textareaRef.addReply(username, postId)
   }
 
   function toggleHeader () {
@@ -126,7 +131,9 @@
   </div>
 {/if}
 
-<Thread {posts} {user} id={data.thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+{#key $posts}
+  <Thread {posts} {user} id={data.thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isBoardOwner} onModerate={moderatePost} onReply={triggerReply} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} myIdentities={[{ id: user.id }]} />
+{/key}
 
 <style>
   .headline {

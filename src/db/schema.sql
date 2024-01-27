@@ -7,6 +7,7 @@ drop table if exists posts cascade;
 drop table if exists messages cascade;
 drop table if exists boards cascade;
 drop table if exists bookmarks cascade;
+drop table if exists user_reads cascade;
 
 drop type if exists character_state;
 drop type if exists game_system;
@@ -30,21 +31,21 @@ create table profiles (
 );
 
 create table threads (
-  id int2 primary key generated always as identity,
+  id int4 not null primary key generated always as identity,
   name text null,
   created_at timestamp with time zone default current_timestamp
 );
 
 create table games (
-  id int2 primary key generated always as identity,
+  id int4 not null primary key generated always as identity,
   name text unique not null,
   owner uuid not null default auth.uid(),
   intro text null default 'Popis světa, úvod do příběhu apod. (Z tohoto textu také vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.)'::text,
   info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
-  system public.game_system not null default '-'::game_system,
-  discussion_thread int2 null,
-  game_thread int2 null,
+  system public.game_system not null default 'base'::game_system,
+  discussion_thread int4 null,
+  game_thread int4 null,
   openai_thread text null,
   openai_storyteller text null,
   custom_header boolean null,
@@ -53,15 +54,15 @@ create table games (
   characters_changed_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
-  constraint games_game_fkey foreign key (game) references threads (id)
+  constraint games_game_thread_fkey foreign key (game_thread) references threads (id)
 );
 
 create table boards (
-  id int2 primary key generated always as identity,
+  id int4 not null primary key generated always as identity,
   name text unique not null,
   owner uuid not null default auth.uid(),
   header text null default 'Popis tematického zaměření této diskuze, užitečné odkazy, pravidla etc.'::text,
-  thread int2 null,
+  thread int4 null,
   custom_header boolean null,
   created_at timestamp with time zone default current_timestamp,
   constraint boards_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
@@ -70,7 +71,7 @@ create table boards (
 
 create table characters (
   id uuid not null primary key default gen_random_uuid(),
-  game int2,
+  game int4,
   player uuid,
   portrait text,
   name text,
@@ -86,24 +87,25 @@ create table characters (
 );
 
 create table posts (
-  id uuid not null primary key default gen_random_uuid(),
-  thread int2,
+  id int4 not null primary key generated always as identity,
+  thread int4,
   owner uuid,
   owner_type text not null,
   content text,
-  thumbs uuid[] null,
-  frowns uuid[] null,
-  hearts uuid[] null,
-  laughs uuid[] null,
+  thumbs uuid[] null default '{}'::uuid[],
+  frowns uuid[] null default '{}'::uuid[],
+  hearts uuid[] null default '{}'::uuid[],
+  laughs uuid[] null default '{}'::uuid[],
   audience uuid[] null,
   openai_post text null,
+  moderated boolean default false,
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
 );
 
 create table messages (
-  id uuid not null primary key default gen_random_uuid(),
+  id int4 not null primary key generated always as identity,
   sender uuid,
   recipient uuid,
   content text,
@@ -115,12 +117,11 @@ create table messages (
 );
 
 create table bookmarks (
-  id serial,
+  id int4 not null primary key generated always as identity,
   user_id uuid null,
-  game_id smallint null,
-  board_id smallint null,
+  game_id int4 null,
+  board_id int4 null,
   created_at timestamp with time zone null default current_timestamp,
-  constraint bookmarks_pkey primary key (id),
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
@@ -232,7 +233,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function update_reaction(post_id uuid, reaction_type text, action text)
+create or replace function update_reaction(post_id int4, reaction_type text, action text)
 returns setof posts as $$
 begin
   if action = 'add' then

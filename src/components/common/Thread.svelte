@@ -15,6 +15,7 @@
   export let onDelete
   export let onEdit
   export let onModerate
+  export let onReply
   export let onPaging
   export let page = 0
   export let pages
@@ -43,7 +44,7 @@
           <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
         </span>
       {:else}
-        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
       {/if}
     {/each}
     <div class='pagination'>

@@ -14,6 +14,7 @@
   export let onDelete
   export let onEdit
   export let onModerate
+  export let onReply
   export let showDate = false
 
   const postStore = writable(post)
@@ -98,6 +99,9 @@
             {#if $postStore.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{$postStore.thumbs.length}</span></span>{/if}
           </span>
         {/if}
+        {#if onReply}
+          <button on:click={() => { onReply($postStore.owner_name, $postStore.id) }} class='material reaction reply' title='Reagovat'>reply</button>
+        {/if}
       {/if}
     </div>
     <div class='content'><Render html={$postStore.content} /></div>
@@ -143,7 +147,7 @@
       padding: 20px;
       box-shadow: 2px 2px 3px #0002;
     }
-      .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .reactions, .hidden .time {
+      .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .reactions, .hidden .time, .hidden .reply {
         display: none;
       }
     .header {
@@ -187,14 +191,13 @@
         display: flex;
         gap: 5px;
         margin-left: 20px;
-        margin-right: -5px;
       }
         .reaction {
           position: relative;
           opacity: 0.5;
           display: flex;
           height: 40px;
-          padding: 0px 10px;
+          padding: 0px 7px;
           justify-content: center;
           align-items: center;
         }
@@ -215,6 +218,9 @@
             font-size: 22px;
             font-weight: bold;
           }
+      .reply {
+        margin-left: 20px;
+      }
   @media (max-width: 860px) {
     .post {
       gap: 0px;

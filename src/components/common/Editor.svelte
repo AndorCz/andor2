@@ -97,6 +97,10 @@
     const url = window.prompt('Veřejná cesta k obrázku:')
     if (url) { editor.chain().focus().setImage({ src: url }).run() }
   }
+
+  export function addReply (username, postId) {
+    editor.chain().focus().insertContent(`@${username}|${postId}:`).run()
+  }
 </script>
 
 <!--

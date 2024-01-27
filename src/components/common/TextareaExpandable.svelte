@@ -51,6 +51,10 @@
       onSave()
     }
   }
+
+  export function addReply (username, postId) {
+    return editorRef.addReply(username, postId)
+  }
 </script>
 
 <div class='wrapper'>
