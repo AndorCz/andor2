@@ -37,6 +37,11 @@
     if (onModerate) { onModerate($postStore.id) }
   }
 
+  function processContent (content) {
+    const strippedContent = content.replace(/<[^>]*>?/gm, '') // Strip HTML tags
+    return strippedContent.length > 20 ? strippedContent.substring(0, 20) + '...' : strippedContent // crop content to 20 chars
+  }
+
   async function toggleReaction (reaction) {
     // update database
     const { data, error } = await supabase.rpc('update_reaction', { post_id: $postStore.id, reaction_type: reaction, action: hasReacted(reaction) ? 'remove' : 'add' }).single()
@@ -100,7 +105,7 @@
           </span>
         {/if}
         {#if onReply}
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, $postStore.content) }} class='material reaction reply' title='Reagovat'>reply</button>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, processContent($postStore.content)) }} class='material reaction reply' title='Reagovat'>reply</button>
         {/if}
       {/if}
     </div>
@@ -180,7 +185,7 @@
           padding: 5px;
           font-size: 19px;
           cursor: pointer;
-          opacity: 0.5;
+          opacity: 0.7;
         }
           .delete:hover, .edit:hover, .moderate:hover {
             opacity: 1;
@@ -194,7 +199,7 @@
       }
         .reaction {
           position: relative;
-          opacity: 0.5;
+          opacity: 0.7;
           display: flex;
           height: 40px;
           padding: 0px 7px;

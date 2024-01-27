@@ -33,11 +33,7 @@ export const Reply = Node.create({
 
   // Define how the node will be rendered to HTML
   renderHTML ({ node }) {
-    function processContent (content) {
-      const strippedContent = content.replace(/<[^>]*>?/gm, '') // Strip HTML tags
-      return strippedContent.length > 20 ? strippedContent.substring(0, 20) + '...' : strippedContent // crop content to 20 chars
-    }
-    return ['cite', mergeAttributes({ class: 'button', 'data-id': node.attrs.postId }), `${node.attrs.name}: ${processContent(node.attrs.content)}`]
+    return ['cite', mergeAttributes({ class: 'button', 'data-id': node.attrs.postId, 'data-name': node.attrs.name, 'data-content': node.attrs.content }), `${node.attrs.name}: ${node.attrs.content}`]
   },
 
   // Define how the node will be parsed from HTML (if you need to parse existing content)
@@ -48,7 +44,7 @@ export const Reply = Node.create({
         getAttrs: node => ({
           postId: node.getAttribute('data-id'),
           name: node.getAttribute('data-name'),
-          content: node.textContent
+          content: node.getAttribute('data-content')
         })
       }
     ]

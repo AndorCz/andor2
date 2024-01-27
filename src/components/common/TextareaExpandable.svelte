@@ -61,7 +61,7 @@
   {#if allowHtml}
     <Editor bind:this={editorRef} />
   {:else}
-    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keydown={onKeyDown} class={showButton && 'withButton'}></textarea>
+    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keydown={onKeyDown} class:withButton={showButton}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} {disabled} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
@@ -85,9 +85,6 @@
       min-height: 100%;
       display: block;
     }
-      .withButton {
-        padding-right: 80px;
-      }
 
     button {
       position: absolute;
