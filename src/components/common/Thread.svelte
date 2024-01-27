@@ -53,7 +53,7 @@
       {/each}
     </div>
   {:else}
-    Žádné příspěvky
+    <center>Žádné příspěvky</center>
   {/if}
 </main>
 
@@ -62,6 +62,9 @@
   main {
     margin-top: 50px;
   }
+    center {
+      padding-top: 50px;
+    }
 
   .dicePost {
     display: inline-block;

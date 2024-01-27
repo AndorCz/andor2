@@ -28,10 +28,15 @@
 
   const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
-  const otherCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id !== user.id })
-  otherCharacters.unshift({ id: '*', name: 'Všem' })
+  let otherCharacters = []
+  $: {
+    otherCharacters = [
+      { id: '*', name: 'Všem' },
+      ...data.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeGameCharacterId)
+    ]
+  }
 
-  const getActiveCharacterId = () => {
+  function getActiveCharacterId () {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
       return $gameStore.activeGameCharacterId // set character from localStorage
     } else if (myCharacters[0]) {
@@ -39,7 +44,7 @@
     } else { return null } // no character
   }
 
-  const getActiveAudience = () => {
+  function getActiveAudience () {
     if ($gameStore.activeGameAudienceIds?.length) {
       if ($gameStore.activeGameAudienceIds.includes('*')) { return ['*'] } // set all
       return $gameStore.activeGameAudienceIds // set audience characters from localStorage

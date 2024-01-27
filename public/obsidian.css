@@ -374,9 +374,10 @@ select {
 .post .button { /* reply */
   margin: 10px;
   margin-left: 0px;
-  padding: 5px;
+  padding: 7px;
   opacity: 0.7;
   font-variation-settings: 'wght' 400;
+  color: color-mix(in srgb, var(--text), #FFF 40%);
 }
 
 /* WYSIWYG - TipTap/ProseMirror */
