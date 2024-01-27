@@ -17,7 +17,7 @@
     if (timestampError) { return handleError(timestampError) }
 
     // add bookmark to the user of the accepted character
-    const { error: bookmarkError } = await supabase.from('bookmarks').insert({ user_id: character.player.id, game_id: gameId })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
 
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')

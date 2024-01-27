@@ -122,6 +122,8 @@ create table bookmarks (
   game_id int4 null,
   board_id int4 null,
   created_at timestamp with time zone null default current_timestamp,
+  constraint unique_user_game unique (user_id, game_id),
+  constraint unique_user_board unique (user_id, board_id),
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade

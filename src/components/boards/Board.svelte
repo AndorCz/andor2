@@ -92,10 +92,12 @@
   }
 
   async function addBookmark () {
-    const { data: newBookmark, error } = await supabase.from('bookmarks').insert({ user_id: user.id, board_id: data.id }).select().single()
+    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
-    $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board_id: data.id, name: data.name }]
-    showSuccess('Záložka přidána')
+    if (!newBookmark) {
+      $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board_id: data.id, name: data.name }]
+      showSuccess('Záložka přidána')
+    }
   }
 
   async function removeBookmark () {

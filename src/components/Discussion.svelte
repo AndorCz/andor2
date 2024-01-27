@@ -89,6 +89,10 @@
     document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
+
+  async function triggerReply (postId, userName, content) {
+    textareaRef.addReply(postId, userName, content)
+  }
 </script>
 
 <h2>Veřejná diskuze</h2>
@@ -122,7 +126,9 @@
   {/if}
 {/if}
 
-<Thread {posts} {user} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+{#key $posts}
+  <Thread {posts} {user} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+{/key}
 
 <style>
   h2 {

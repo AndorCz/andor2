@@ -12,7 +12,7 @@
     const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').insert({ user_id: user.id, board_id: data.id })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
 
     if (error) { handleError(error) }
