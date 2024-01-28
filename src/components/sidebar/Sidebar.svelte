@@ -20,7 +20,7 @@
   let allRelevantUsers = {}
   let showOffline = false
   let showSidebar = false
-  let unreadTotal = getUnreadTotal()
+  const unreadTotal = getUnreadTotal()
 
   onMount(async () => {
     document.getElementById($userStore.activePanel)?.classList.add('active')

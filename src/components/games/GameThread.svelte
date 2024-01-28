@@ -65,6 +65,7 @@
     if (identitySelect) { // might not exist if no character
       $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
     }
+    if (audienceSelect) { audienceSelect.selectedIndex = 0 }
     loadPosts()
   })
 
@@ -174,7 +175,7 @@
       </select>
       <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
         {#each otherCharacters as character}
-          <option value={character.id}>{character.name}</option>
+          <option value={character.id}>{character.name}{#if character.hidden}&nbsp;(skrytá){/if}</option>
         {/each}
       </select>
     </div>

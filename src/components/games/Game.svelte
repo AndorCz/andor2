@@ -56,10 +56,18 @@
   </div>
 
   <nav class='tabs secondary'>
-    <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>Info</button>
-    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''}>Chat</button>
-    <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''}>Hra</button>
-    <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>Postavy</button>
+    <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>
+      Info{#if data.unread.gameInfo}<span class='unread badge'></span>{/if}
+    </button>
+    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={data.unread.gameChat}>
+      Chat{#if data.unread.gameChat}<span class='unread count'>{data.unread.gameChat}</span>{/if}
+    </button>
+    <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={data.unread.gameThread}>
+      Hra{#if data.unread.gameThread}<span class='unread count'>{data.unread.gameThread}</span>{/if}
+    </button>
+    <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
+      Postavy{#if data.unread.gameCharacters}<span class='unread badge'></span>{/if}
+    </button>
   </nav>
 
   <div class='content'>
@@ -101,6 +109,23 @@
   }
     .content {
       padding: 40px;
+    }
+
+  .tabs button {
+    position: relative;
+  }
+    .tabs button.hasUnread {
+      margin-right: 10px;
+    }
+    .tabs .unread {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      color: var(--new);
+    }
+    .tabs .count {
+      top: -5px;
+      right: 5px;
     }
 
   @media (max-width: 860px) {

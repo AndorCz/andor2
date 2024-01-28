@@ -303,6 +303,17 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
+returns jsonb as $$
+begin
+  return jsonb_build_object(
+    'gameInfo', calculate_unread_count(auth.uid(), 'game-info-' || game::text),
+    'gameChat', calculate_unread_count(auth.uid(), 'thread-' || discussion_thread::text),
+    'gameThread', calculate_unread_count(auth.uid(), 'thread-' || game_thread::text),
+    'gameCharacters', calculate_unread_count(auth.uid(), 'game-characters-' || game::text)
+  );
+end;
+$$ language plpgsql;
 
 create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
 returns int as $$

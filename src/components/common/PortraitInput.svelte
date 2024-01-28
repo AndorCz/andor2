@@ -34,10 +34,10 @@
   // clear preview or identity portrait
   async function clearPortrait (e) {
     e.preventDefault()
-    const confirm = window.prompt('Opravdu smazat portrét? (ano/ne)')
-    if (confirm !== 'ano') { return }
-    files = null
-    identity.portrait = ''
+    if (window.confirm('Opravdu smazat portrét?')) {
+      files = null
+      identity.portrait = ''
+    }
   }
 </script>
 

@@ -15,6 +15,10 @@
   const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('game', gameId)
   if (error2) { handleError(error2) }
 
+  const { data: unreadData, error: error3 } = await supabase.rpc('get_game_unread', { game: gameId, game_thread: gameData.game_thread, discussion_thread: gameData.discussion_thread })
+  if (error3) { handleError(error3) }
+  if (unreadData) { gameData.unread = unreadData }
+
   if (gameData && characterData) {
     // filter out hidden characters for regular players
     gameData.characters = gameData.owner.id === user.id ? characterData : characterData.filter((char) => !char.hidden || char.player.id === user.id) // @ts-nocheck
