@@ -14,14 +14,13 @@
 
   $userStore.activePanel = $userStore.activePanel || 'booked'
 
-  if (bookmarkData) {
-    $bookmarks = bookmarkData
-  }
+  if (bookmarkData) { $bookmarks = bookmarkData }
 
   let activeUsers = []
   let allRelevantUsers = {}
   let showOffline = false
   let showSidebar = false
+  let unreadTotal = getUnreadTotal()
 
   onMount(async () => {
     document.getElementById($userStore.activePanel)?.classList.add('active')
@@ -63,6 +62,13 @@
       }
     })
   }
+
+  function getUnreadTotal () {
+    let total = 0
+    Object.keys($bookmarks.games).forEach(gameId => { total += $bookmarks.games[gameId].unread })
+    Object.keys($bookmarks.boards).forEach(boardId => { total += $bookmarks.boards[boardId].unread })
+    return total
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -87,7 +93,9 @@
             </div>
           </div>
           <div id='tabs'>
-            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}><span class='material'>bookmark</span><span class='label'>Záložky</span></button>
+            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
+              <span class='material'>bookmark</span><span class='label'>Záložky{#if unreadTotal}<span class='unread'>&nbsp;({unreadTotal})</span>{/if}</span>
+            </button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
               {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
               <span class='material'>person</span>
@@ -183,6 +191,9 @@
         top: 10px;
         right: 10px;
       }
+      .unread {
+        color: var(--new);
+      }
 
   #panels {
     padding: 20px;
@@ -245,6 +256,5 @@
     max-height: initial;
     overflow-y: none;
   }
-
 }
 </style>
