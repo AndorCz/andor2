@@ -90,8 +90,8 @@
     // saving is done in submitPost
   }
 
-  async function triggerReply (postId, userName, content) {
-    textareaRef.addReply(postId, userName, content)
+  async function triggerReply (postId, userName) {
+    textareaRef.addReply(postId, userName)
   }
 </script>
 

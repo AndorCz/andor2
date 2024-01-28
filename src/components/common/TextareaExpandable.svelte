@@ -1,5 +1,5 @@
 <script>
-  // import { onMount } from 'svelte'
+  import { onMount } from 'svelte'
   import Editor from '@components/common/Editor.svelte'
 
   export let value
@@ -14,6 +14,12 @@
   export let enterSend = false
 
   let editorRef
+  let tiptap
+  let originalValue = value
+
+  onMount(() => {
+    if (allowHtml) { tiptap = editorRef.getEditor() }
+  })
 
   function setHeight (node) {
     const textareaRef = node.target || node
@@ -21,22 +27,26 @@
     textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
   }
 
-  function cancelEdit () {
-    if (window.confirm('Opravdu zrušit úpravu?')) {
-      editing = false
-      value = ''
-      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+  async function cancelEdit () {
+    const currentValue = await tiptap.getHTML()
+    if (currentValue !== originalValue) {
+      if (!window.confirm('Opravdu zrušit úpravu?')) { return }
     }
+    editing = false
+    value = ''
+    if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
   }
 
-  export function triggerEdit (id, content) {
+  export async function triggerEdit (id, content) {
     editing = id
-    if (allowHtml) { editorRef.getEditor().commands.setContent(content) }
+    if (allowHtml) {
+      editorRef.getEditor().commands.setContent(content)
+      originalValue = await tiptap.getHTML()
+    }
   }
 
   async function triggerSave (html) {
     if (allowHtml) {
-      const tiptap = editorRef.getEditor()
       value = await tiptap.getHTML() // get html from editor
       await onSave()
       tiptap.commands.clearContent(true)
@@ -52,10 +62,16 @@
     }
   }
 
-  export function addReply (postId, userName, content) {
-    return editorRef.addReply(postId, userName, content)
+  export function addReply (postId, userName) {
+    return editorRef.addReply(postId, userName)
+  }
+
+  async function handleKeyDown (event) {
+    if (event.key === 'Escape' && editing) { cancelEdit() }
   }
 </script>
+
+<svelte:window on:keydown={handleKeyDown} />
 
 <div class='wrapper'>
   {#if allowHtml}

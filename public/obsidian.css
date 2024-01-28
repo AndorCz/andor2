@@ -318,6 +318,14 @@ select {
 
 /* MISC */
 
+.sep {
+  width: 1px;
+  height: 22px;
+  border-left: 1px solid #0003;
+  border-right: 1px solid #fff1;
+  display: inline-block;
+}
+
 .diceRoll {
   line-height: 200%;
 }
@@ -372,9 +380,8 @@ select {
   max-width: 100%;
 }
 .post .button { /* reply */
-  margin: 10px;
-  margin-left: 0px;
-  padding: 7px;
+  margin-right: 10px;
+  padding: 5px;
   opacity: 0.7;
   font-variation-settings: 'wght' 400;
   color: color-mix(in srgb, var(--text), #FFF 40%);

@@ -100,8 +100,8 @@
     if (url) { editor.chain().focus().setImage({ src: url }).run() }
   }
 
-  export function addReply (postId, name, content) {
-    editor.chain().focus().addReply({ postId, name, content }).run()
+  export function addReply (postId, name) {
+    editor.chain().focus().addReply({ postId, name }).run()
   }
 </script>
 
@@ -160,12 +160,6 @@
     display: flex;
     align-items: center;
   }
-    .sep {
-      width: 1px;
-      height: 22px;
-      background-color: #0003;
-      display: inline-block;
-    }
     /*
     .bubble::after {
       content: '';

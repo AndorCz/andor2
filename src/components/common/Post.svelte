@@ -1,8 +1,11 @@
 <script>
+  import tippy from 'tippy.js'
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
   import { tooltip } from '@lib/tooltip'
+  import Post from '@components/common/Post.svelte'
 
   export let user
   export let post
@@ -20,6 +23,30 @@
   const postStore = writable(post)
   let expanded = false
 
+  onMount(() => {
+    // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
+    const cites = document.querySelectorAll('cite[data-id]')
+    cites.forEach((cite) => {
+      const id = cite.getAttribute('data-id')
+      const tooltip = tippy(cite, {
+        content: 'Načítám...',
+        allowHTML: true,
+        interactive: true,
+        maxWidth: 'none',
+        onShow: async () => {
+          const { data, error } = await supabase.from('posts_owner').select('*').eq('id', id).single()
+          if (error) { return handleError(error) }
+          // create Post component dynamically and set it as the tooltip content
+          const post = new Post({
+            target: document.createElement('div'),
+            props: { post: data, user, iconSize }
+          })
+          tooltip.setContent(post.$$.fragment)
+        }
+      })
+    })
+  })
+
   const onHeaderClick = () => {
     if ($postStore.moderated) { expanded = !expanded }
   }
@@ -35,11 +62,6 @@
   function triggerModerate () {
     $postStore.moderated = true
     if (onModerate) { onModerate($postStore.id) }
-  }
-
-  function processContent (content) {
-    const strippedContent = content.replace(/<[^>]*>?/gm, '') // Strip HTML tags
-    return strippedContent.length > 20 ? strippedContent.substring(0, 20) + '...' : strippedContent // crop content to 20 chars
   }
 
   async function toggleReaction (reaction) {
@@ -87,6 +109,7 @@
         {/if}
       </span>
       {#if allowReactions}
+        <span class='sep'></span>
         {#if user.id}
           {#key $postStore}
             <span class='reactions'>
@@ -105,7 +128,8 @@
           </span>
         {/if}
         {#if onReply}
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, processContent($postStore.content)) }} class='material reaction reply' title='Reagovat'>reply</button>
+          <span class='sep'></span>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply' title='Reagovat'>reply</button>
         {/if}
       {/if}
     </div>
@@ -166,6 +190,12 @@
       box-shadow: 2px 2px 3px #0002;
       color: var(--dim);
     }
+      .header button {
+        background: none;
+        border: none;
+        box-shadow: none;
+        color: var(--dim);
+      }
       .title {
         flex: 1;
       }
@@ -179,7 +209,9 @@
         gap: 10px;
       }
         .time {
+          font-size: 20px;
           opacity: 0.5;
+          margin-right: 5px;
         }
         .delete, .edit, .moderate {
           padding: 5px;
@@ -187,15 +219,13 @@
           cursor: pointer;
           opacity: 0.7;
         }
-          .delete:hover, .edit:hover, .moderate:hover {
+          .time:hover, .delete:hover, .edit:hover, .moderate:hover {
             opacity: 1;
           }
 
       /* Reactions */
       .reactions {
         display: flex;
-        gap: 5px;
-        margin-left: 20px;
       }
         .reaction {
           position: relative;
@@ -217,14 +247,16 @@
           }
         .reaction img {
           width: 24px;
+          fill: var(--dim);
         }
           .reaction .count {
             padding-left: 5px;
             font-size: 22px;
             font-weight: bold;
           }
-      button.reply {
-        margin-left: 20px;
+      .sep {
+        margin-left: 10px;
+        margin-right: 10px;
       }
   @media (max-width: 860px) {
     .post {

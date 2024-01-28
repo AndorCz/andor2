@@ -28,7 +28,7 @@
   onMount(() => { loadPosts() })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     $posts = postData
     pages = Math.ceil(count / limit)
@@ -73,8 +73,8 @@
     // saving is done in submitPost
   }
 
-  async function triggerReply (postId, userName, content) {
-    textareaRef.addReply(postId, userName, content)
+  async function triggerReply (postId, userName) {
+    textareaRef.addReply(postId, userName)
   }
 
   function toggleHeader () {
