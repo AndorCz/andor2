@@ -32,7 +32,7 @@ export const Reply = Node.create({
 
   // Define how the node will be rendered to HTML
   renderHTML ({ node }) {
-    return ['cite', mergeAttributes({ class: 'button', 'data-id': node.attrs.postId, 'data-name': node.attrs.name }), `${node.attrs.name}:`]
+    return ['cite', mergeAttributes({ class: 'reply', 'data-id': node.attrs.postId, 'data-name': node.attrs.name }), `${node.attrs.name}:`]
   },
 
   // Define how the node will be parsed from HTML (if you need to parse existing content)

@@ -9,19 +9,21 @@
 
   export let user
   export let post
-  export let isMyPost
-  export let allowReactions
-  export let canDeleteAll
-  export let canModerate
-  export let iconSize = 140
-  export let onDelete
-  export let onEdit
-  export let onModerate
-  export let onReply
+  export let isMyPost = false
+  export let allowReactions = false
+  export let canDeleteAll = false
+  export let canModerate = false
   export let showDate = false
+  export let onModerate = null
+  export let onDelete = null
+  export let onEdit = null
+  export let onReply = null
+  export let iconSize = 140
 
   const postStore = writable(post)
   let expanded = false
+  let replyPostData
+  let replyPostEl
 
   onMount(() => {
     // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
@@ -36,12 +38,8 @@
         onShow: async () => {
           const { data, error } = await supabase.from('posts_owner').select('*').eq('id', id).single()
           if (error) { return handleError(error) }
-          // create Post component dynamically and set it as the tooltip content
-          const post = new Post({
-            target: document.createElement('div'),
-            props: { post: data, user, iconSize }
-          })
-          tooltip.setContent(post.$$.fragment)
+          replyPostData = data
+          tooltip.setContent(replyPostEl)
         }
       })
     })
@@ -135,6 +133,12 @@
     </div>
     <div class='content'><Render html={$postStore.content} /></div>
   </div>
+</div>
+
+<div class='replyPreview' bind:this={replyPostEl}>
+  {#if replyPostData}
+    <Post post={replyPostData} {user} {iconSize} />
+  {/if}
 </div>
 
 <style>
@@ -258,6 +262,9 @@
         margin-left: 10px;
         margin-right: 10px;
       }
+  .replyPreview {
+    width: 900px;
+  }
   @media (max-width: 860px) {
     .post {
       gap: 0px;
