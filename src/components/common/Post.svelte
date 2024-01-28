@@ -114,7 +114,6 @@
     <div class='content'>
       <Render html={$postStore.content} />
       {#if allowReactions}
-        <span class='sep'></span>
         {#if user.id}
           {#key $postStore}
             <span class='reactions'>
@@ -232,6 +231,8 @@
       /* Reactions */
       .reactions {
         display: flex;
+        margin-top: 20px;
+        margin-left: -5px;
       }
         .reaction {
           position: relative;
@@ -252,7 +253,7 @@
             opacity: 1;
           }
         .reaction img {
-          width: 24px;
+          width: 20px;
           fill: var(--dim);
         }
           .reaction .count {
@@ -260,10 +261,6 @@
             font-size: 22px;
             font-weight: bold;
           }
-      .sep {
-        margin-left: 10px;
-        margin-right: 10px;
-      }
   .replyPreview {
     width: 70vw;
   }
@@ -284,9 +281,6 @@
       .reaction {
         padding: 0px 5px;
       }
-        .reaction img {
-          width: 20px;
-        }
     .content {
       padding: 15px;
     }
