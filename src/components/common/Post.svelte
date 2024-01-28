@@ -262,7 +262,8 @@
             font-weight: bold;
           }
   .replyPreview {
-    width: 70vw;
+    flex: 1;
+    min-width: 500px;
   }
   @media (max-width: 860px) {
     .post {

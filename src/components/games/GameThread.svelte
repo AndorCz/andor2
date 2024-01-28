@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { writable } from 'svelte/store'
   import { clone } from '@lib/utils'
   import { sendPost } from '@lib/helpers'
   import { posts, getGameStore } from '@lib/stores'
@@ -26,6 +27,8 @@
   let pages
   // let generatingPost = false
 
+  const activeGameAudienceIds = writable()
+
   const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   let otherCharacters = []
@@ -45,9 +48,9 @@
   }
 
   function getActiveAudience () {
-    if ($gameStore.activeGameAudienceIds?.length) {
-      if ($gameStore.activeGameAudienceIds.includes('*')) { return ['*'] } // set all
-      return $gameStore.activeGameAudienceIds // set audience characters from localStorage
+    if ($activeGameAudienceIds?.length) {
+      if ($activeGameAudienceIds.includes('*')) { return ['*'] } // set all
+      return $activeGameAudienceIds // set audience characters from localStorage
     } else if (otherCharacters[0]) {
       return [otherCharacters[0].id] // no audience in localStorage, set all
     } else { return [] } // no character
@@ -56,7 +59,7 @@
   // prepare gameStore
   const gameStore = getGameStore(data.id)
   $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
-  $gameStore.activeGameAudienceIds = getActiveAudience()
+  $activeGameAudienceIds = getActiveAudience()
 
   onMount(() => { // set select value on mount
     if (identitySelect) { // might not exist if no character
@@ -68,8 +71,8 @@
   async function loadPosts () {
     // filter posts based on current audience selection
     let ownersToFilter = []
-    if ($gameStore.activeGameAudienceIds?.length && $gameStore.activeGameAudienceIds.includes('*') === false) {
-      ownersToFilter = clone($gameStore.activeGameAudienceIds)
+    if ($activeGameAudienceIds?.length && $activeGameAudienceIds.includes('*') === false) {
+      ownersToFilter = clone($activeGameAudienceIds)
       if ($gameStore.activeGameCharacterId) { ownersToFilter.push($gameStore.activeGameCharacterId) } // add my active character
       filterActive = true
     } else {
@@ -85,7 +88,7 @@
   async function submitPost () {
     saving = true
     const activeCharacter = myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })
-    const audience = $gameStore.activeGameAudienceIds.includes('*') ? null : $gameStore.activeGameAudienceIds // clean '*' from audience
+    const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience
     // reveal hidden character if posting publicly
     if (activeCharacter && activeCharacter.hidden && audience === null) {
       const { error } = await supabase.from('characters').update({ hidden: false }).eq('id', activeCharacter.id)
@@ -121,7 +124,7 @@
   }
 
   function onAudienceSelect () {
-    if ($gameStore.activeGameAudienceIds.includes('*')) { $gameStore.activeGameAudienceIds = ['*'] } // set all
+    if ($activeGameAudienceIds.includes('*')) { $activeGameAudienceIds = ['*'] } // set all
     loadPosts() // filter posts based on audience selection
   }
 
@@ -169,7 +172,7 @@
           <option value={character.id}>{character.name}</option>
         {/each}
       </select>
-      <select size='4' bind:this={audienceSelect} bind:value={$gameStore.activeGameAudienceIds} on:change={onAudienceSelect} multiple>
+      <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
         {#each otherCharacters as character}
           <option value={character.id}>{character.name}</option>
         {/each}
@@ -181,9 +184,9 @@
 {/if}
 
 {#if filterActive}
-  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $gameStore.activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
+  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
 {/if}
-<!--({$gameStore.activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
+<!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
 {#key $posts}
   <Thread {posts} {user} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
