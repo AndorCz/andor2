@@ -84,6 +84,7 @@
     }
 
   .pagination {
+    text-align: center;
     margin-top: 70px;
   }
     .pagination button {

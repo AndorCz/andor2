@@ -382,6 +382,7 @@ select {
 .post .content .reply { /* reply */
   margin-right: 5px;
   padding: 5px;
+  padding-left: 0px;
   color: var(--accent);
   font-style: normal;
   font-variation-settings: 'wght' 600;
@@ -440,9 +441,10 @@ select {
   }
   .ProseMirror cite { /* reply */
     padding: 5px;
-    border-radius: 5px;
-    background-color: var(--buttonBg);
-    margin-right: 5px;
+    padding-left: 0px;
+    color: var(--accent);
+    font-style: normal;
+    font-variation-settings: 'wght' 600;
   }
 
 /* Tippy tooltip */

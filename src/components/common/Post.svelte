@@ -105,7 +105,14 @@
         {:else if canModerate && !$postStore.moderated}
           <button on:click={triggerModerate} class='material moderate' title='Skrýt všem'>visibility_off</button>
         {/if}
+        {#if onReply}
+          <span class='sep'></span>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply' title='Reagovat'>reply</button>
+        {/if}
       </span>
+    </div>
+    <div class='content'>
+      <Render html={$postStore.content} />
       {#if allowReactions}
         <span class='sep'></span>
         {#if user.id}
@@ -125,13 +132,8 @@
             {#if $postStore.thumbs.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{$postStore.thumbs.length}</span></span>{/if}
           </span>
         {/if}
-        {#if onReply}
-          <span class='sep'></span>
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply' title='Reagovat'>reply</button>
-        {/if}
       {/if}
     </div>
-    <div class='content'><Render html={$postStore.content} /></div>
   </div>
 </div>
 
@@ -194,7 +196,7 @@
       box-shadow: 2px 2px 3px #0002;
       color: var(--dim);
     }
-      .header button {
+      .header button, .content button {
         background: none;
         border: none;
         box-shadow: none;
@@ -263,11 +265,33 @@
         margin-right: 10px;
       }
   .replyPreview {
-    width: 900px;
+    width: 70vw;
   }
   @media (max-width: 860px) {
     .post {
       gap: 0px;
+    }
+    .toolbar {
+      gap: 5px;
+    }
+    .sep {
+      display: none;
+    }
+    .header {
+      padding: 5px 10px;
+      padding-left: 15px;
+    }
+      .reaction {
+        padding: 0px 5px;
+      }
+        .reaction img {
+          width: 20px;
+        }
+    .content {
+      padding: 15px;
+    }
+    .replyPreview {
+      width: 90vw;
     }
   }
 </style>
