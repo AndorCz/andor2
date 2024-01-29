@@ -99,7 +99,7 @@
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
               {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
               <span class='material'>person</span>
-              <span class='label'>Lidé ({activeUsers.length})</span>
+              <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
             </button>
             <button id='notes' disabled class:active={$userStore.activePanel === 'notes'}><span class='material'>edit</span><span class='label'>Poznámky</span></button>
           </div>

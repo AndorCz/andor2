@@ -101,6 +101,9 @@
       min-height: 100%;
       display: block;
     }
+    .withButton {
+      padding-right: 80px;
+    }
 
     button {
       position: absolute;

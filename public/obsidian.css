@@ -353,8 +353,8 @@ select {
   position: absolute;
   top: -5px;
   right: -5px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   box-shadow: 2px 2px 4px #0006;
   background-color: var(--new);

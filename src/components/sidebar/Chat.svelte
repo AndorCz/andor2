@@ -60,9 +60,9 @@
   }
 
   async function markMessagesRead () {
-    const unreadMessages = $messages.filter(message => !message.read)
-    if (unreadMessages.length) {
-      const { error } = await supabase.from('messages').update({ read: true }).in('id', unreadMessages.map(message => message.id))
+    const myUnreadMessages = $messages.filter(message => message.recipient === user.id && !message.read)
+    if (myUnreadMessages.length) {
+      const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
     }
   }
@@ -123,7 +123,7 @@
             <center>Žádné zprávy</center>
           {/if}
         </div>
-        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton minHeight={70} enterSend />
+        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton={true} minHeight={70} enterSend />
       {:catch error}
         <span class='error'>Konverzaci se nepodařilo načíst</span>
       {/await}
