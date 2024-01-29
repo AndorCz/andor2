@@ -380,7 +380,6 @@ select {
   max-width: 100%;
 }
 .post .content .reply { /* reply */
-  margin-right: 5px;
   padding: 5px;
   padding-left: 0px;
   color: var(--accent);

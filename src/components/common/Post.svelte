@@ -4,7 +4,7 @@
   import { supabase, handleError } from '@lib/database'
   import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
-  import { tooltip } from '@lib/tooltip'
+  import { formatDate } from '@lib/utils'
   import Post from '@components/common/Post.svelte'
 
   export let user
@@ -13,7 +13,6 @@
   export let allowReactions = false
   export let canDeleteAll = false
   export let canModerate = false
-  export let showDate = false
   export let onModerate = null
   export let onDelete = null
   export let onEdit = null
@@ -90,11 +89,7 @@
         {/if}
       </span>
       <span class='toolbar'>
-        {#if showDate}
-          <span class='time'>{new Date($postStore.created_at).toLocaleString('cs-CZ')}</span>
-        {:else}
-          <span class='material time' use:tooltip title={new Date($postStore.created_at).toLocaleString('cs-CZ')}>schedule</span>
-        {/if}
+        <span class='time'>{formatDate($postStore.created_at)}</span>
         {#if canDeleteAll || isMyPost}
           {#if onEdit}
             <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
@@ -204,6 +199,12 @@
       .title {
         flex: 1;
       }
+      .time {
+        font-family: arial, sans-serif;
+        font-size: 14px;
+        opacity: 0.7;
+        margin-right: 5px;
+      }
       .audience {
         font-size: 15px;
         padding-left: 5px;
@@ -213,11 +214,6 @@
         align-items: center;
         gap: 10px;
       }
-        .time {
-          font-size: 20px;
-          opacity: 0.5;
-          margin-right: 5px;
-        }
         .delete, .edit, .moderate {
           padding: 5px;
           font-size: 19px;
@@ -263,7 +259,6 @@
           }
   .replyPreview {
     flex: 1;
-    min-width: 500px;
   }
   @media (max-width: 860px) {
     .post {

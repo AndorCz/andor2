@@ -1,4 +1,6 @@
 
+import { DateTime } from 'luxon'
+
 // eslint-disable-next-line camelcase
 export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   const maxAge = 100 * 1000 * 60 * 60 * 24 * 365 // 100 years
@@ -48,4 +50,10 @@ export function getImage (file) {
     img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
     img.src = URL.createObjectURL(file)
   })
+}
+
+export function formatDate (time) {
+  const dt = DateTime.fromISO(time)
+  // return dt.setLocale('cs').toLocaleString(DateTime.DATETIME_MED)
+  return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)
 }

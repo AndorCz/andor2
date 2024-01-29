@@ -26,6 +26,7 @@
     "@tiptap/starter-kit": "^2.1.13",
     "astro": "4.0.8",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.4.4",
     "marked": "^11.1.0",
     "notyf": "^3.10.0",
     "openai": "^4.20.1",
