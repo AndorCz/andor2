@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { isFilledArray } from '@lib/utils'
-  import { setRead } from '@lib/helpers'
+  import { setRead, getReply } from '@lib/helpers'
   import { tooltipContent } from '@lib/tooltip'
   import Post from '@components/common/Post.svelte'
 
@@ -22,8 +22,44 @@
   export let iconSize = 140
 
   let threadEl
+  let replyPostEl
+  let replyPostData
+  const replies = {}
 
-  onMount(() => { if (user.id) { setRead(user.id, 'thread-' + id) } })
+  onMount(async () => {
+    // set read
+    if (user.id) { setRead(user.id, 'thread-' + id) }
+
+    // handle replies
+    if (posts) { // pre-requisite for replies
+      // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
+      const cites = document.querySelectorAll('cite[data-id]')
+      for (const citeEl of cites) {
+        const id = parseInt(citeEl.getAttribute('data-id'))
+        // for each cite, load the post from supabase and save it's data
+        replies[id] = await getReply($posts, id)
+        citeEl.addEventListener('mouseenter', showReply)
+        citeEl.addEventListener('mouseleave', hideReply)
+        citeEl.addEventListener('touchstart', showReply)
+      }
+    }
+    // window.addEventListener('click', handleClickOutside)
+  })
+
+  function showReply (event) {
+    const id = parseInt(event.target.getAttribute('data-id'))
+    replyPostData = replies[id]
+    replyPostEl.style.display = 'block'
+    replyPostEl.style.top = event.target.offsetTop + 20 + 'px'
+  }
+
+  function hideReply () {
+    replyPostEl.style.display = 'none'
+  }
+
+  function handleClickOutside (event) {
+    if (!replyPostEl.contains(event.target)) { hideForm() }
+  }
 
   function isMyPost (id) {
     return myIdentities.find((identity) => { return identity.id === id })
@@ -55,6 +91,12 @@
   {:else}
     <center>Žádné příspěvky</center>
   {/if}
+
+  <div id='replyPreview' bind:this={replyPostEl}>
+    {#if replyPostData}
+      <Post post={replyPostData} {user} {iconSize} />
+    {/if}
+  </div>
 </main>
 
 <style>
@@ -92,4 +134,18 @@
       font-size: 22px;
       padding: 15px 25px;
     }
+  #replyPreview {
+    position: absolute;
+    left: 20px;
+    min-width: 50vw;
+    display: none;
+    transform: scale(0.5);
+    transform-origin: top left;
+    padding: 20px;
+  }
+  @media (max-width: 860px) {
+    #replyPreview {
+      width: 150%;
+    }
+  }
 </style>

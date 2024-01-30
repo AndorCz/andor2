@@ -26,3 +26,13 @@ export async function setRead (userId, slug) {
     if (error) { return handleError(error) }
   }
 }
+
+export async function getReply (posts, postId) {
+  // find post data in posts array
+  const post = posts.find(p => p.id === postId)
+  if (post) { return post }
+  // otherwise get reply data from supabase
+  const { data, error } = await supabase.from('posts_owner').select('*').eq('id', postId).single()
+  if (error) { return handleError(error) }
+  return data
+}

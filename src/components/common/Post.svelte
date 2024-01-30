@@ -1,11 +1,8 @@
 <script>
-  import tippy from 'tippy.js'
-  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
   import { formatDate } from '@lib/utils'
-  import Post from '@components/common/Post.svelte'
 
   export let user
   export let post
@@ -21,28 +18,6 @@
 
   const postStore = writable(post)
   let expanded = false
-  let replyPostData
-  let replyPostEl
-
-  onMount(() => {
-    // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
-    const cites = document.querySelectorAll('cite[data-id]')
-    cites.forEach((cite) => {
-      const id = cite.getAttribute('data-id')
-      const tooltip = tippy(cite, {
-        content: 'Načítám...',
-        allowHTML: true,
-        interactive: true,
-        maxWidth: 'none',
-        onShow: async () => {
-          const { data, error } = await supabase.from('posts_owner').select('*').eq('id', id).single()
-          if (error) { return handleError(error) }
-          replyPostData = data
-          tooltip.setContent(replyPostEl)
-        }
-      })
-    })
-  })
 
   const onHeaderClick = () => {
     if ($postStore.moderated) { expanded = !expanded }
@@ -129,12 +104,6 @@
       {/if}
     </div>
   </div>
-</div>
-
-<div class='replyPreview' bind:this={replyPostEl}>
-  {#if replyPostData}
-    <Post post={replyPostData} {user} {iconSize} />
-  {/if}
 </div>
 
 <style>
@@ -257,9 +226,6 @@
             font-size: 22px;
             font-weight: bold;
           }
-  .replyPreview {
-    flex: 1;
-  }
   @media (max-width: 860px) {
     .post {
       gap: 0px;
@@ -279,9 +245,6 @@
       }
     .content {
       padding: 15px;
-    }
-    .replyPreview {
-      width: 90vw;
     }
   }
 </style>

@@ -389,13 +389,11 @@ select {
 
 /* WYSIWYG - TipTap/ProseMirror */
 
-.withButton .ProseMirror {
-  padding-right: 80px;
-}
 .ProseMirror {
   height: 100%;
   min-height: 140px;
   padding-bottom: 50px;
+  padding-right: 80px;
 }
 .ProseMirror img {
   max-width: 100%;
@@ -452,7 +450,8 @@ select {
   background-color: var(--panel) !important;
   color: var(--text) !important;
   font-size: 18px !important;
-  box-shadow: 2px 2px 6px #0003;
+  padding: 10px;
+  box-shadow: 1px 1px 6px #0002;
 }
 .tippy-arrow {
   color: var(--panel) !important;
