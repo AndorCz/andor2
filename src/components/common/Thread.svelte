@@ -39,7 +39,7 @@
         // for each cite, load the post from supabase and save it's data
         replies[id] = await getReply($posts, id)
         citeEl.addEventListener('mouseenter', showReply)
-        citeEl.addEventListener('mouseleave', debounce(hideReply, 200))
+        citeEl.addEventListener('mouseleave', hideReply)
       }
     }
   })
@@ -49,7 +49,7 @@
     replyPostData = replies[id]
     if (replyPostData) {
       replyPostEl.style.display = 'block'
-      replyPostEl.style.top = event.target.offsetTop + 20 + 'px'
+      replyPostEl.style.top = event.target.offsetTop + 30 + 'px'
     }
   }
 
