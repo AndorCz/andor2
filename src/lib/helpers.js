@@ -32,7 +32,7 @@ export async function getReply (posts, postId) {
   const post = posts.find(p => p.id === postId)
   if (post) { return post }
   // otherwise get reply data from supabase
-  const { data, error } = await supabase.from('posts_owner').select('*').eq('id', postId).single()
+  const { data, error } = await supabase.from('posts_owner').select('*').eq('id', postId).maybeSingle()
   if (error) { return handleError(error) }
   return data
 }

@@ -47,8 +47,10 @@
   function showReply (event) {
     const id = parseInt(event.target.getAttribute('data-id'))
     replyPostData = replies[id]
-    replyPostEl.style.display = 'block'
-    replyPostEl.style.top = event.target.offsetTop + 20 + 'px'
+    if (replyPostData) {
+      replyPostEl.style.display = 'block'
+      replyPostEl.style.top = event.target.offsetTop + 20 + 'px'
+    }
   }
 
   function hideReply () {
