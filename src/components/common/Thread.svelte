@@ -40,10 +40,8 @@
         replies[id] = await getReply($posts, id)
         citeEl.addEventListener('mouseenter', showReply)
         citeEl.addEventListener('mouseleave', hideReply)
-        citeEl.addEventListener('touchstart', showReply)
       }
     }
-    // window.addEventListener('click', handleClickOutside)
   })
 
   function showReply (event) {
@@ -55,10 +53,6 @@
 
   function hideReply () {
     replyPostEl.style.display = 'none'
-  }
-
-  function handleClickOutside (event) {
-    if (!replyPostEl.contains(event.target)) { hideForm() }
   }
 
   function isMyPost (id) {
