@@ -57,3 +57,12 @@ export function formatDate (time) {
   // return dt.setLocale('cs').toLocaleString(DateTime.DATETIME_MED)
   return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)
 }
+
+export function debounce (callback, wait) {
+  let timerId
+  return (...args) => {
+    clearTimeout(timerId)
+    // eslint-disable-next-line n/no-callback-literal
+    timerId = setTimeout(() => { callback(...args) }, wait)
+  }
+}

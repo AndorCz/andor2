@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { isFilledArray } from '@lib/utils'
+  import { isFilledArray, debounce } from '@lib/utils'
   import { setRead, getReply } from '@lib/helpers'
   import { tooltipContent } from '@lib/tooltip'
   import Post from '@components/common/Post.svelte'
@@ -39,7 +39,7 @@
         // for each cite, load the post from supabase and save it's data
         replies[id] = await getReply($posts, id)
         citeEl.addEventListener('mouseenter', showReply)
-        citeEl.addEventListener('mouseleave', hideReply)
+        citeEl.addEventListener('mouseleave', debounce(hideReply, 200))
       }
     }
   })
@@ -90,7 +90,9 @@
 
   <div id='replyPreview' bind:this={replyPostEl}>
     {#if replyPostData}
-      <Post post={replyPostData} {user} {iconSize} />
+      {#key replyPostData}
+        <Post post={replyPostData} {user} {iconSize} />
+      {/key}
     {/if}
   </div>
 </main>
