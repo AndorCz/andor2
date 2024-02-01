@@ -9,9 +9,8 @@
   export let onPortraitChange = null
   export let displayWidth = 140
   export let displayHeight = 200
-  export let minWidth = 140
-  export let minHeight = 200
   export let saveWidth = 140
+  export let saveMinHeight = 200
 
   let files
   let uploading = false
@@ -23,15 +22,18 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      if (img.naturalWidth < minWidth || img.naturalHeight < minHeight) {
-        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${minWidth}x${minHeight}px`)
-      } else if (img.naturalHeight > 600) {
+
+      // calculate new height
+      const imgRatio = img.naturalWidth / img.naturalHeight
+      const saveHeight = saveWidth / imgRatio
+
+      if (img.naturalWidth < saveWidth || saveHeight < saveMinHeight) {
+        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${saveWidth}x${saveMinHeight}px`)
+      } else if (saveHeight > 600) {
         return showError(`Obrázek je příliš vysoký, limit je ${maxHeight}px`)
       } else {
-        const { base64, height } = resizePortrait(img, saveWidth, maxHeight)
-        console.log('height', height)
-        displayHeight = height
-        img.src = base64
+        displayHeight = saveHeight * (displayWidth / saveWidth)
+        img.src = resizePortrait(img, saveWidth, saveHeight)
       }
       identity.portrait = img.src || ''
       if (onPortraitChange) { await onPortraitChange(identity.portrait) }
@@ -70,8 +72,7 @@
   .wrapper {
     position: relative;
     width: var(--portrait-width, 140px);
-    /*height: var(--portrait-height, 200px);*/
-    min-height: 100px;
+    min-height: var(--portrait-height, 200px);
   }
     .portrait {
       cursor: pointer;
@@ -79,8 +80,7 @@
       object-fit: cover;
       object-position: top;
       width: var(--portrait-width, 140px);
-      /*height: var(--portrait-height, 200px);*/
-      min-height: 100px;
+      min-height: var(--portrait-height, 200px);
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;

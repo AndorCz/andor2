@@ -13,24 +13,13 @@ export function clone (source) { return source ? JSON.parse(JSON.stringify(sourc
 
 export function isFilledArray (array) { return Array.isArray(array) && array.length }
 
-export function resizePortrait (img, width, maxHeight) {
-  const { width: imgWidth, height: imgHeight } = img
-  const imgRatio = imgWidth / imgHeight
-  // Calculate new dimensions
-  let newWidth = width
-  let newHeight = newWidth / imgRatio
-  if (newHeight > maxHeight) {
-    // Adjust dimensions to respect maxHeight while maintaining aspect ratio
-    newHeight = maxHeight
-    newWidth = newHeight * imgRatio
-  }
-  // Draw the resized image on a canvas
+export function resizePortrait (img, newWidth, newHeight) {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   canvas.width = newWidth
   canvas.height = newHeight
   ctx.drawImage(img, 0, 0, newWidth, newHeight)
-  return { base64: canvas.toDataURL(), height: newHeight }
+  return canvas.toDataURL()
 }
 
 export function loadBase64Image (base64String) {
