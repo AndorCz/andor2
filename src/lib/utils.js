@@ -13,6 +13,19 @@ export function clone (source) { return source ? JSON.parse(JSON.stringify(sourc
 
 export function isFilledArray (array) { return Array.isArray(array) && array.length }
 
+// crops side of the image by a given ratio, centered horizontally
+export function cropPortrait (img, ratio) {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  const { width, height } = img
+  const newWidth = Math.round(width * ratio)
+  const x = Math.round((width - newWidth) / 2)
+  canvas.width = newWidth
+  canvas.height = height
+  ctx.drawImage(img, x, 0, newWidth, height, 0, 0, newWidth, height)
+  return canvas
+}
+
 export function resizePortrait (img, newWidth, newHeight) {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
@@ -20,6 +33,10 @@ export function resizePortrait (img, newWidth, newHeight) {
   canvas.height = newHeight
   ctx.drawImage(img, 0, 0, newWidth, newHeight)
   return canvas.toDataURL()
+}
+
+export function previewCanvas (canvas) {
+  document.body.appendChild(canvas)
 }
 
 export function loadBase64Image (base64String) {

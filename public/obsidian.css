@@ -347,6 +347,7 @@ select {
 .info {
   font-size: 20px;
   color: var(--dim);
+  font-style: italic;
   padding-left: 10px;
 }
 

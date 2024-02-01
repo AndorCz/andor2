@@ -1,8 +1,9 @@
 <script>
   import PortraitInput from '@components/common/PortraitInput.svelte'
+  import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { resizePortrait, loadBase64Image } from '@lib/utils'
-  import { showError } from '@lib/toasts'
+  import { cropPortrait, resizePortrait, previewCanvas, loadBase64Image } from '@lib/utils'
+  import { handleError } from '@lib/database'
 
   export let isGameOwner
   export let userId
@@ -20,12 +21,16 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appearance: character.appearance, userId })
       })
-      const generatedJson = await response.json()
+      const generatedJson = await response.json() // returns 1024x1024 image in base64
+      if (generatedJson.error) { throw generatedJson.error }
       const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
-      const resizedImage = resizePortrait(generatedImage, 140, 600) // returns base64 string
+      const cropRatio = 0.5
+      const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
+      previewCanvas(croppedImage)
+      const resizedImage = resizePortrait(croppedImage, 140, 140 / cropRatio) // returns base64 string
       character.portrait = resizedImage
       generatingPortrait = false
-    } catch (error) { showError('Chyba v generování portrétu') }
+    } catch (error) { handleError(error) }
   }
 </script>
 
@@ -37,7 +42,7 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled</label></div>
-      <div class='inputs'><TextareaExpandable id='charLooks' name='charLooks' value={character.appearance} /></div>
+      <div class='inputs'><TextareaExpandable id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charIcon'>Portrét</label></div>
@@ -45,7 +50,8 @@
         <div class='portrait'>
           <PortraitInput identity={character} table='characters' />
           <span>
-            <button id='generatePortrait' type='button' on:click={generatePortrait} disabled={generatingPortrait || !character.appearance || character.appearance?.length < 20}>Vygenerovat portrét</button>Dle popisu vzhledu
+            <ButtonLoading type='button' label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
+            <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>
           </span>
         </div>
       </div>
@@ -87,14 +93,11 @@
       }
     .portrait {
       display: flex;
-      gap: 20px;
+      gap: 30px;
     }
 
     #charName {
       width: 400px;
-    }
-    #generatePortrait {
-      margin-right: 20px;
     }
   center {
     margin-top: 20px;

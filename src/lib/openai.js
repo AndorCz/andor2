@@ -135,7 +135,7 @@ export async function generatePost (thread, secrets, system) {
 export async function generatePortrait (appearance, user) {
   return await openai.images.generate({
     model: 'dall-e-3',
-    prompt: `Digital painting, no text, RPG character portrait: ${appearance}`,
+    prompt: `Digital painting, no text, RPG character in full-length and background environment: ${appearance}`,
     size: '1024x1024',
     response_format: 'b64_json',
     user

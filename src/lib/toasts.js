@@ -5,6 +5,7 @@ import 'notyf/notyf.min.css'
 export const notyf = new Notyf({
   duration: 10000,
   position: { x: 'center', y: 'top' },
+  ripple: false,
   types: [
     { type: 'success', background: 'var(--green)', icon: false },
     { type: 'error', background: 'var(--error)', icon: false }
