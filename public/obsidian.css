@@ -18,6 +18,7 @@
   --accent: #a5a740;
   --new: gold;
   --buttonBg: #634b41;
+  --buttonBgHover: #705343;
   --heart: #b66767;
   --frown: #b68e67;
   --thumb: #b6b367;
@@ -124,7 +125,7 @@ button, .button {
 }
 
   button:hover, .button:hover {
-    background-color: color-mix(in srgb, var(--buttonBg), var(--link) 20%);
+    background-color: var(--buttonBgHover);
     border: 1px color-mix(in srgb, var(--buttonBg), var(--link) 30%) solid;
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
     color: #dacfc6;

@@ -22,7 +22,7 @@
       })
       const generatedJson = await response.json()
       const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
-      const resizedImage = resizePortrait(generatedImage, 140, 200) // returns base64 string
+      const resizedImage = resizePortrait(generatedImage, 140, 600) // returns base64 string
       character.portrait = resizedImage
       generatingPortrait = false
     } catch (error) { showError('Chyba v generování portrétu') }
@@ -43,7 +43,7 @@
       <div class='labels'><label for='charIcon'>Portrét</label></div>
       <div class='inputs'>
         <div class='portrait'>
-          <PortraitInput identity={character} />
+          <PortraitInput identity={character} table='characters' />
           <span>
             <button id='generatePortrait' type='button' on:click={generatePortrait} disabled={generatingPortrait || !character.appearance || character.appearance?.length < 20}>Vygenerovat portrét</button>Dle popisu vzhledu
           </span>

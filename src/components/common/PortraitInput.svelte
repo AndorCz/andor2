@@ -1,17 +1,21 @@
 <script>
   import { showError } from '@lib/toasts'
   import { resizePortrait } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database'
 
+  export let table = 'profiles'
   export let identity = { portrait: '' }
+
   export let onPortraitChange = null
   export let displayWidth = 140
   export let displayHeight = 200
-
-  const saveWidth = 140
-  const saveHeight = 200
+  export let minWidth = 140
+  export let minHeight = 200
+  export let saveWidth = 140
 
   let files
   let uploading = false
+  const maxHeight = 600
 
   async function processPortrait () {
     uploading = true
@@ -19,11 +23,15 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      if (img.naturalWidth < saveWidth || img.naturalHeight < saveHeight) {
-        return showError('Obrázek je příliš malý')
+      if (img.naturalWidth < minWidth || img.naturalHeight < minHeight) {
+        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${minWidth}x${minHeight}px`)
+      } else if (img.naturalHeight > 600) {
+        return showError(`Obrázek je příliš vysoký, limit je ${maxHeight}px`)
       } else {
-        const resized = resizePortrait(img, saveWidth, saveHeight) // returns base64 string
-        img.src = resized
+        const { base64, height } = resizePortrait(img, saveWidth, maxHeight)
+        console.log('height', height)
+        displayHeight = height
+        img.src = base64
       }
       identity.portrait = img.src || ''
       if (onPortraitChange) { await onPortraitChange(identity.portrait) }
@@ -37,6 +45,8 @@
     if (window.confirm('Opravdu smazat portrét?')) {
       files = null
       identity.portrait = ''
+      const { error } = await supabase.from(table).update({ portrait: null }).eq('id', identity.id)
+      if (error) { return handleError(error) }
     }
   }
 </script>
@@ -46,11 +56,13 @@
     {#if identity.portrait}
       <img src={identity.portrait} class='portrait' alt='portrét' />
     {:else}
-      <div class='portrait blank' title={`Fotka bude zmenšená na ${saveWidth}×${saveHeight} px, oříznutá zespodu`}>Nahrát<br>portrét</div>
+      <div class='portrait blank' title={`Obrázek bude zmenšený na šířku ${saveWidth} px`}>Nahrát<br>portrét</div>
     {/if}
     <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
   </label>
-  <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
+  {#if identity.portrait}
+    <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
+  {/if}
   <input type='hidden' name='charPortrait' value={identity.portrait || ''} />
 </div>
 
@@ -58,7 +70,8 @@
   .wrapper {
     position: relative;
     width: var(--portrait-width, 140px);
-    height: var(--portrait-height, 200px);
+    /*height: var(--portrait-height, 200px);*/
+    min-height: 100px;
   }
     .portrait {
       cursor: pointer;
@@ -66,7 +79,8 @@
       object-fit: cover;
       object-position: top;
       width: var(--portrait-width, 140px);
-      height: var(--portrait-height, 200px);
+      /*height: var(--portrait-height, 200px);*/
+      min-height: 100px;
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;

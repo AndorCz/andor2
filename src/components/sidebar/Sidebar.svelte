@@ -84,7 +84,7 @@
           <div class='loading'>Načítání...</div>
         {:then}
           <div id='user'>
-            <PortraitInput identity={user} {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
+            <PortraitInput identity={user} table='profiles' {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
             <div id='details'>
               <div id='nameRow'>
                 <span id='name'>{user.name || user.email}</span>
@@ -101,7 +101,6 @@
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
             </button>
-            <button id='notes' disabled class:active={$userStore.activePanel === 'notes'}><span class='material'>edit</span><span class='label'>Poznámky</span></button>
           </div>
           <div id='panels'>
             {#if $userStore.activePanel === 'booked'}

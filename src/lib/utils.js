@@ -13,25 +13,24 @@ export function clone (source) { return source ? JSON.parse(JSON.stringify(sourc
 
 export function isFilledArray (array) { return Array.isArray(array) && array.length }
 
-export function resizePortrait (img, width, height) {
+export function resizePortrait (img, width, maxHeight) {
   const { width: imgWidth, height: imgHeight } = img
   const imgRatio = imgWidth / imgHeight
-  const desiredRatio = width / height
-  const newWidth = imgRatio > desiredRatio ? height * imgRatio : width
-  const newHeight = imgRatio > desiredRatio ? height : width / imgRatio
+  // Calculate new dimensions
+  let newWidth = width
+  let newHeight = newWidth / imgRatio
+  if (newHeight > maxHeight) {
+    // Adjust dimensions to respect maxHeight while maintaining aspect ratio
+    newHeight = maxHeight
+    newWidth = newHeight * imgRatio
+  }
+  // Draw the resized image on a canvas
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   canvas.width = newWidth
   canvas.height = newHeight
   ctx.drawImage(img, 0, 0, newWidth, newHeight)
-  const cropCanvas = document.createElement('canvas')
-  const cropCtx = cropCanvas.getContext('2d')
-  cropCanvas.width = width
-  cropCanvas.height = height
-  const startX = Math.max(0, (newWidth - width) / 2)
-  const startY = 0
-  cropCtx.drawImage(canvas, startX, startY, width, height, 0, 0, width, height)
-  return cropCanvas.toDataURL()
+  return { base64: canvas.toDataURL(), height: newHeight }
 }
 
 export function loadBase64Image (base64String) {
