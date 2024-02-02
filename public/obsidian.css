@@ -56,7 +56,8 @@ html { background-color: var(--background) }
 
 body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
-  font-size: 20px;
+  font-weight: 350;
+  font-size: 19px;
   color: var(--text);
   text-decoration: none;
 }
