@@ -12,7 +12,7 @@
   --prominent: #3f3431;
   --overlay: #464342;
   --text: #c4b6ab;
-  --link: #c68c39;
+  --link: #cd8f63;
   --linkVisited: #a07150;
   --dim: #92857a;
   --maximum: #fff;
@@ -77,7 +77,7 @@ a {
     color: var(--linkVisited);
   }
   a:hover {
-    color: color-mix(in srgb, var(--link), #FFF 50%);
+    color: color-mix(in srgb, var(--linkVisited), #FFF 50%);
   }
 
 hr {
@@ -156,6 +156,9 @@ button, .button {
     color: var(--linkVisited);
     box-shadow: none;
     padding: 5px;
+  }
+  a:visited.button {
+    color: var(--text);
   }
 
 input[type=text], textarea, input[type=checkbox], .ProseMirror {

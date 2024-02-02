@@ -3,6 +3,7 @@
   import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
   import { formatDate } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
 
   export let user
   export let post
@@ -64,7 +65,7 @@
         {/if}
       </span>
       <span class='toolbar'>
-        <span class='time'>{formatDate($postStore.created_at)}</span>
+        <span class='time' title={$postStore.created_at} use:tooltip>{formatDate($postStore.created_at)}</span>
         {#if canDeleteAll || isMyPost}
           {#if onEdit}
             <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>

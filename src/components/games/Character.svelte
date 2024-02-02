@@ -90,6 +90,7 @@
       min-width: 100px;
     }
       .name a {
+        color: var(--linkVisited);
         font-size: 22px;
       }
       .accept {
