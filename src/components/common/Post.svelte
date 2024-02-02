@@ -65,7 +65,7 @@
         {/if}
       </span>
       <span class='toolbar'>
-        <span class='time' title={$postStore.created_at} use:tooltip>{formatDate($postStore.created_at)}</span>
+        <span class='time'>{formatDate($postStore.created_at)}</span>
         {#if canDeleteAll || isMyPost}
           {#if onEdit}
             <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
