@@ -11,6 +11,10 @@
 
   const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header').eq('id', boardId).single()
   if (error) { handleError(error) }
+
+  const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: boardData.thread })
+  if (error2) { handleError(error2) }
+  if (unreadData) { boardData.unread = unreadData }
 ---
 
 <script>

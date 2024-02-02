@@ -388,6 +388,9 @@ select {
 .post .content img {
   max-width: 100%;
 }
+.post .content a {
+  text-decoration: underline;
+}
 .post .content .reply { /* reply */
   padding: 5px;
   padding-left: 0px;

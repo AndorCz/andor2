@@ -11,6 +11,7 @@
   export let user = {}
   export let data = {}
   export let isGameOwner
+  export let unread = 0
 
   let textareaRef
   let textareaValue = ''
@@ -127,7 +128,7 @@
 {/if}
 
 {#key $posts}
-  <Thread {posts} {user} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+  <Thread {posts} {user} {unread} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 {/key}
 
 <style>

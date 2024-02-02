@@ -74,9 +74,9 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion {data} {user} {isGameOwner} />
+      <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} {user} {isGameOwner} />
+      <GameThread {data} {user} {isGameOwner} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} />
     {/if}

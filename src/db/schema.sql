@@ -315,6 +315,13 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function get_thread_unread(thread int4)
+returns integer as $$
+begin
+  return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
+end;
+$$ language plpgsql;
+
 create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
 returns int as $$
 declare

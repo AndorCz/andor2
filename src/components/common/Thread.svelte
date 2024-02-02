@@ -8,6 +8,7 @@
   export let id
   export let user
   export let posts
+  export let unread = 0
   export let canDeleteAll = false
   export let canModerate = false
   export let myIdentities = []
@@ -70,13 +71,13 @@
 
 <main bind:this={threadEl}>
   {#if isFilledArray($posts)}
-    {#each $posts as post}
+    {#each $posts as post, index}
       {#if post.dice}
         <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
           <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
         </span>
       {:else}
-        <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
       {/if}
     {/each}
     <div class='pagination'>

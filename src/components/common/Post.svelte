@@ -3,10 +3,10 @@
   import { writable } from 'svelte/store'
   import { Render } from 'svelte-purify'
   import { formatDate } from '@lib/utils'
-  import { tooltip } from '@lib/tooltip'
 
   export let user
   export let post
+  export let unread = false
   export let isMyPost = false
   export let allowReactions = false
   export let canDeleteAll = false
@@ -48,7 +48,7 @@
   }
 </script>
 
-<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded}>
+<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread}>
   {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
       <img src={$postStore.owner_portrait} alt={$postStore.owner_name} />
@@ -58,6 +58,9 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class='header'>
+      {#if unread}
+        <span class='badge'></span>
+      {/if}
       <span class='title' on:click={onHeaderClick}>
         <b>{$postStore.owner_name}</b>
         {#if $postStore.audience_names}
@@ -150,6 +153,7 @@
         display: none;
       }
     .header {
+      position: relative;
       width: 100%;
       min-height: 50px;
       display: flex;
