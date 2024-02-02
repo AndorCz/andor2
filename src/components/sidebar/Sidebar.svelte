@@ -163,7 +163,7 @@
       flex: 1;
       display: flex;
       gap: 10px;
-      color: var(--link);
+      color: var(--linkVisited);
       flex-direction: column;
       align-items: center;
       text-align: center;

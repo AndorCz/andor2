@@ -12,7 +12,8 @@
   --prominent: #3f3431;
   --overlay: #464342;
   --text: #c4b6ab;
-  --link: #a07150;
+  --link: #c68c39;
+  --linkVisited: #a07150;
   --dim: #92857a;
   --maximum: #fff;
   --accent: #a5a740;
@@ -72,6 +73,9 @@ a {
   color: var(--link);
   font-variation-settings: 'wght' 600;
 }
+  a:visited {
+    color: var(--linkVisited);
+  }
   a:hover {
     color: color-mix(in srgb, var(--link), #FFF 50%);
   }
@@ -82,7 +86,7 @@ hr {
 }
 
 blockquote {
-  border-left: 3px solid var(--link);
+  border-left: 3px solid var(--linkVisited);
   padding-left: 15px;
   font-style: italic;
 }
@@ -126,7 +130,7 @@ button, .button {
 
   button:hover, .button:hover {
     background-color: var(--buttonBgHover);
-    border: 1px color-mix(in srgb, var(--buttonBg), var(--link) 30%) solid;
+    border: 1px color-mix(in srgb, var(--buttonBg), var(--linkVisited) 30%) solid;
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
     color: #dacfc6;
   }
@@ -149,7 +153,7 @@ button, .button {
   button.secondary {
     border: none;
     background: none;
-    color: var(--link);
+    color: var(--linkVisited);
     box-shadow: none;
     padding: 5px;
   }
@@ -291,7 +295,7 @@ select {
     box-shadow: 2px 2px 2px #0001;
   }
     .tabs.secondary button:not(.active) {
-      color: var(--link);
+      color: var(--linkVisited);
       opacity: 1;
     }
       .tabs.secondary button:not(.active):hover {

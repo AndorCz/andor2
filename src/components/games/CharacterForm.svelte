@@ -2,7 +2,7 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { cropPortrait, resizePortrait, previewCanvas, loadBase64Image } from '@lib/utils'
+  import { cropPortrait, resizePortrait, loadBase64Image } from '@lib/utils'
   import { handleError } from '@lib/database'
 
   export let isGameOwner
@@ -26,7 +26,6 @@
       const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
       const cropRatio = 0.5
       const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
-      previewCanvas(croppedImage)
       const resizedImage = resizePortrait(croppedImage, 140, 140 / cropRatio) // returns base64 string
       character.portrait = resizedImage
       generatingPortrait = false
