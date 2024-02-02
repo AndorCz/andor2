@@ -56,8 +56,8 @@ html { background-color: var(--background) }
 
 body, a {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
-  font-weight: 350;
-  font-size: 19px;
+  font-weight: 400;
+  font-size: 20px;
   color: var(--text);
   text-decoration: none;
 }
@@ -384,6 +384,8 @@ select {
 /* Post content */
 
 .post .content p {
+  font-weight: 375;
+  font-size: 18px;
   margin: 5px 0px;
 }
 .post .content img {
