@@ -108,7 +108,7 @@
     <div class='row'>
       <select id='gameCategory' name='gameCategory' bind:value={data.category}>
         {#each categories as category}
-          <option value={category}>{category}</option>
+          <option value={category.value}>{category.label}</option>
         {/each}
       </select>
       <button on:click={updateGame} disabled={saving || originalCategory === data.category} class='material'>check</button>
