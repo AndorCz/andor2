@@ -14,16 +14,23 @@ export let user = {}
         <input type='text' id='gameName' name='gameName' maxlength='80' />
       </div>
     </div>
+
     <div class='row'>
       <div class='labels'>
-        <label for='gameSystem'>Herní systém</label>
+        <label for='gameSystem'>Kategorie</label>
       </div>
       <div class='inputs'>
         <select id='gameCategory' name='gameCategory'>
           {#each categories as category}
-            <option value={category}>{category}</option>
+            <option value={category.value}>{category.label}</option>
           {/each}
         </select>
+      </div>
+    </div>
+
+    <div class='row'>
+      <div class='labels'>
+        <label for='gameSystem'>Herní systém</label>
       </div>
       <div class='inputs'>
         <select id='gameSystem' name='gameSystem'>

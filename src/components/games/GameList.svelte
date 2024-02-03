@@ -1,4 +1,9 @@
 <script>
+  import { categories, systems } from '@lib/constants'
+
+  function getCategory (value) { return categories.find(category => category.value === value).label }
+  function getSystem (value) { return systems.find(system => system.value === value).label }
+
   export let games = []
 </script>
 
@@ -13,8 +18,8 @@
     {#each games as game}
       <tr class='game'>
         <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
-        <td><div class='category'>{game.category}</div></td>
-        <td><div class='system'>{game.system}</div></td>
+        <td><div class='category'>{getCategory(game.category)}</div></td>
+        <td><div class='system'>{getSystem(game.system)}</div></td>
         <td><div class='owner'>{game.owner.name}</div></td>
       </tr>
     {/each}
