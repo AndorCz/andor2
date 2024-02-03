@@ -17,7 +17,8 @@ drop view if exists posts_owner;
 -- ENUMS
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
-create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1'); -- 'fate'
+create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
+create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 
 -- TABLES
 
@@ -44,6 +45,7 @@ create table games (
   info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default 'base'::game_system,
+  category public.game_category not null default 'other'::game_category,
   discussion_thread int4 null,
   game_thread int4 null,
   openai_thread text null,

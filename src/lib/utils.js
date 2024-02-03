@@ -60,7 +60,7 @@ export function getImage (file) {
 export function formatDate (time) {
   const dt = DateTime.fromISO(time)
   // return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)
-  return dt.setLocale('cs').toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS)
+  return dt.setLocale('cs').toLocaleString(DateTime.DATE_FULL) + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)
 }
 
 export function debounce (callback, wait) {

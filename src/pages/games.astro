@@ -4,7 +4,7 @@
   import GameList from '@components/games/GameList.svelte'
 
   const { supabase, user } = Astro.locals
-  const { data, error } = await supabase.from('games').select('id, name, system, owner:profiles(name)')
+  const { data, error } = await supabase.from('games').select('id, name, category, system, owner:profiles(name)')
   if (error) { handleError(error) }
 ---
 

@@ -3,6 +3,7 @@
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
   import { getImage } from '@lib/utils'
+  import { systems, categories } from '@lib/constants'
 
   export let data = {}
   export let user = {}
@@ -14,6 +15,7 @@
   const isGameOwner = data.owner.id === user.id
   const originalSystem = data.system
   const originalName = data.name
+  const originalCategory = data.category
 
   async function uploadHeader () {
     uploading = true
@@ -54,7 +56,7 @@
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, system: data.system }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, category: data.category, system: data.system }).eq('id', data.id)
     if (error) { return handleError(error) }
 
     // update AI storyteller if system changed
@@ -102,13 +104,22 @@
       <button on:click={updateGame} disabled={saving || originalName === data.name} class='material'>check</button>
     </div>
 
+    <h3>Kategorie</h3>
+    <div class='row'>
+      <select id='gameCategory' name='gameCategory' bind:value={data.category}>
+        {#each categories as category}
+          <option value={category}>{category}</option>
+        {/each}
+      </select>
+      <button on:click={updateGame} disabled={saving || originalCategory === data.category} class='material'>check</button>
+    </div>
+
     <h3>Herní systém</h3>
     <div class='row'>
       <select id='gameSystem' name='gameSystem' bind:value={data.system}>
-        <option value='drd1'>Dračí doupě e1.6</option>
-        <option value='dnd5'>Dungeons & Dragons e5</option>
-        <option value='vampire5'>Vampire the Masquerade e5</option>
-        <option value='base'>Jiný / Bez systému</option>
+        {#each systems as system}
+          <option value={system.value}>{system.label}</option>
+        {/each}
       </select>
       <button on:click={updateGame} disabled={saving || originalSystem === data.system} class='material'>check</button>
     </div>
