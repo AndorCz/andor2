@@ -6,12 +6,14 @@
   <table id='boards'>
     <tr>
       <th>název</th>
+      <th>příspěvků</th>
       <th>správce</th>
     </tr>
     {#each boards as board}
       <tr class='board'>
         <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
-        <td><div class='owner'>{board.owner.name}</div></td>
+        <td><div class='count'>{board.post_count}</div></td>
+        <td><div class='owner'>{board.owner_name}</div></td>
       </tr>
     {/each}
   </table>

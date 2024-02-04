@@ -13,6 +13,7 @@
       <th>název</th>
       <th>kategorie</th>
       <th>systém</th>
+      <th>příspěvků</th>
       <th>správce</th>
     </tr>
     {#each games as game}
@@ -20,7 +21,8 @@
         <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
         <td><div class='category'>{getCategory(game.category)}</div></td>
         <td><div class='system'>{getSystem(game.system)}</div></td>
-        <td><div class='owner'>{game.owner.name}</div></td>
+        <td><div class='count'>{game.post_count}</div></td>
+        <td><div class='owner'>{game.owner_name}</div></td>
       </tr>
     {/each}
   </table>

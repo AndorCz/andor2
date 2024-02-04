@@ -4,7 +4,7 @@
   import BoardList from '@components/boards/BoardList.svelte'
 
   const { supabase, user } = Astro.locals
-  const { data, error } = await supabase.from('boards').select('id, name, owner:profiles(name)')
+  const { data, error } = await supabase.from('board_list').select('*')
   if (error) { handleError(error) }
 ---
 

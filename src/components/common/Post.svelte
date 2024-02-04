@@ -242,12 +242,20 @@
       display: none;
     }
     .header {
-      padding: 5px 10px;
+      display: block;
+      padding: 10px 10px 5px 10px;
       padding-left: 15px;
     }
       .reaction {
         padding: 0px 5px;
       }
+      .toolbar {
+        width: 100%;
+        display: flex;
+      }
+        .toolbar .time {
+          flex: 1;
+        }
     .content {
       padding: 15px;
     }
