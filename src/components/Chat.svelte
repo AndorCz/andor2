@@ -70,7 +70,7 @@
               <div class='postRow theirs'>
                 {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
                 <div use:tooltip={{ placement: 'right' }} class='post' title={formatDate(post.created_at)}>
-                  <div class='name'>{post.owner_name}:</div>
+                  <div class='name'>{post.owner_name}</div>
                   <div class='content'>{@html post.content}</div>
                 </div>
               </div>
@@ -113,6 +113,7 @@
       .postRow {
         display: flex;
         gap: 10px;
+        align-items: flex-end;
         margin: 10px 0px;
       }
         .theirs {
@@ -122,13 +123,13 @@
           justify-content: flex-end;
         }
           .post {
-            display: flex;
-            align-items: center;
-            gap: 20px;
             position: relative;
-            max-width: 90%;
+            max-width: 88%;
             padding: 10px 20px;
           }
+            .name {
+              font-weight: bold;
+            }
             .portrait {
               display: block;
               min-width: 50px;
