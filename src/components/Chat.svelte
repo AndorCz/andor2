@@ -67,8 +67,8 @@
                 </div>
               {:else}
                 <div use:tooltip={{ placement: 'right' }} class='post theirs' title={formatDate(post.created_at)}>
-                  <div class='name'>{post.owner_name}:</div>
                   {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+                  <div class='name'>{post.owner_name}:</div>
                   <div class='content'>{@html post.content}</div>
                 </div>
               {/if}
@@ -137,7 +137,7 @@
           }
           .theirs {
             border-radius: 20px 20px 20px 0px;
-            background-color: var(--background);
+            background-color: var(--block);
             text-align: left;
             float: left;
           }
@@ -146,7 +146,7 @@
             }
           .mine {
             border-radius: 20px 20px 0px 20px;
-            background-color: var(--block);
+            background-color: var(--prominent);
             color: var(--gray90);
             text-align: right;
             float: right;

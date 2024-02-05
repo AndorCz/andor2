@@ -204,13 +204,13 @@
         }
           .theirs {
             border-radius: 20px 20px 20px 0px;
-            background-color: var(--background);
+            background-color: var(--block);
             text-align: left;
             float: left;
           }
           .mine {
             border-radius: 20px 20px 0px 20px;
-            background-color: var(--block);
+            background-color: var(--prominent);
             color: var(--gray90);
             text-align: right;
             float: right;
