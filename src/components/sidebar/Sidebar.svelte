@@ -7,7 +7,7 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
-  import Chat from '@components/sidebar/Chat.svelte'
+  import Chat from '@components/sidebar/Conversation.svelte'
 
   export let user = {}
   export let bookmarkData
@@ -100,6 +100,10 @@
               {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
+            </button>
+            <button id='characters' disabled>
+              <span class='material'>domino_mask</span>
+              <span class='label'>Postavy</span>
             </button>
           </div>
           <div id='panels'>

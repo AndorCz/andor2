@@ -1,0 +1,24 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Chat from '@components/Chat.svelte'
+
+  const { user } = Astro.locals
+---
+
+<Layout title='Chat'>
+	<main>
+    {user.id ? (
+      <Chat {user} client:only />
+    ) : (
+      <center>
+        Tato sekce je jen pro přihlášené uživatele.
+      </center>
+    )}
+	</main>
+</Layout>
+
+<style>
+	center {
+		padding-top: 30px;
+	}
+</style>

@@ -25,6 +25,7 @@
     <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
     <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
     <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
+    <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
   </nav>
 </header>
 

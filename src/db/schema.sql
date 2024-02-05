@@ -398,3 +398,8 @@ create or replace trigger add_game_threads before insert on games for each row e
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
 create or replace trigger add_board_thread before insert on boards for each row execute function add_board_thread ();
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_board_thread();
+
+-- SEED
+
+insert into threads (name) values ('Chat'); -- has to be ID 1
+

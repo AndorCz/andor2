@@ -2,8 +2,8 @@
   import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database'
   import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { tooltip } from '@lib/tooltip'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
   export let userStore
@@ -31,7 +31,7 @@
   })
 
   afterUpdate(() => { // scroll down
-    if (messages.length) { messagesEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
+    if ($messages.length) { messagesEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -86,12 +86,12 @@
 </script>
 
 {#await waitForAnimation() then}
-  <div id='chat'>
+  <div id='conversation'>
     <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
     {#if contactId && user?.id}
       {#await Promise.all([loadContact(), loadMessages()])}
         <span class='loading'>Načítám konverzaci...</span>
-      {:then value}
+      {:then}
         <h2>
           {#if contact.portrait}
             <img src={contact.portrait} class='portrait' alt='portrait'>
@@ -103,9 +103,7 @@
         </h2>
 
         <div class='messages' bind:this={messagesEl}>
-          {#if loadingMessages}
-            <center class='loading'>Načítání...</center>
-          {:else if $messages.length > 0}
+          {#if $messages.length > 0}
             {#each $messages as message}
               <div class='messageRow'>
                 <!-- add tippy for time -->
@@ -134,7 +132,7 @@
 {/await}
 
 <style>
-  #chat {
+  #conversation {
     position: fixed;
     right: 20px;
     top: 20px;
