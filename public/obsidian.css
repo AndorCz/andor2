@@ -462,14 +462,14 @@ select {
 /* Tippy tooltip */
 
 .tippy-box {
-  background-color: var(--panel) !important;
+  background-color: var(--background) !important;
   color: var(--text) !important;
   font-size: 18px !important;
   padding: 10px;
   box-shadow: 1px 1px 6px #0002;
 }
 .tippy-arrow {
-  color: var(--panel) !important;
+  color: var(--background) !important;
 }
 
 .addPostWrapper .tippy-box {

@@ -3,21 +3,22 @@
   import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
 
-  export let customImage
   export let pathname
+  export let headerStatic
+  export let headerStorageId
 
-  let header
+  let headerUrl = headerStatic
 
   onMount(async () => {
-    if (customImage) {
-      const { data, error } = await supabase.storage.from('headers').download(customImage)
+    if (headerStorageId) {
+      const { data, error } = await supabase.storage.from('headers').download(headerStorageId)
       if (error) { return handleError(error) }
-      header = URL.createObjectURL(data)
+      headerUrl = URL.createObjectURL(data)
     }
   })
 </script>
 
-<header style="--header-path: url({$headerPreview || header || '/header.jpg'})">
+<header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
   <a href='/' id='logo'>
     <img src='/logo.png' alt='Andor2.cz logo'>
   </a>

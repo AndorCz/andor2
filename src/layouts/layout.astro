@@ -9,7 +9,7 @@ import 'tippy.js/dist/tippy.css'
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user, bookmarks } = Astro.locals
-const { title, header } = Astro.props
+const { title, headerStatic, headerStorageId } = Astro.props
 const test = 'abc'
 ---
 
@@ -31,7 +31,7 @@ const test = 'abc'
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} customImage={header} client:only />
+        <Header {pathname} {headerStatic} {headerStorageId} client:only />
         <div id='content'>
           <slot />
         </div>

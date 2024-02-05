@@ -3,6 +3,7 @@
   import { supabase, handleError } from '@lib/database'
   import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
+  import { formatDate } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
@@ -25,7 +26,9 @@
   })
 
   afterUpdate(() => { // scroll down
-    if (postsEl && $posts.length) { postsEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
+    setTimeout(() => {
+      if (postsEl && $posts.length) { postsEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
+    }, 10)
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -57,12 +60,18 @@
         {#if $posts.length > 0}
           {#each $posts as post}
             <div class='postRow'>
-              <!-- add tippy for time -->
-              <div use:tooltip class='post {post.owner === user.id ? 'mine' : 'theirs'}'>
-                <div class='content'>
-                  {@html post.content}
+              {#if post.owner === user.id}
+                <div use:tooltip={{ placement: 'left' }} class='post mine' title={formatDate(post.created_at)}>
+                  <div class='content'>{@html post.content}</div>
+                  {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
                 </div>
-              </div>
+              {:else}
+                <div use:tooltip={{ placement: 'right' }} class='post theirs' title={formatDate(post.created_at)}>
+                  <div class='name'>{post.owner_name}:</div>
+                  {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+                  <div class='content'>{@html post.content}</div>
+                </div>
+              {/if}
             </div>
             <div class='clear'></div>
           {/each}
@@ -83,14 +92,6 @@
     display: flex;
     flex-direction: column;
   }
-    .portrait {
-      display: block;
-      width: 70px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 10px;
-      box-shadow: 2px 2px 3px #0003;
-    }
     .loading, .error {
       text-align: center;
     }
@@ -104,26 +105,45 @@
     .posts {
       flex: 1;
       overflow-y: scroll;
-      padding: 20px 20px 10px 20px;
+      padding: 5px;
+      margin-bottom: 20px;
+      scrollbar-width: thin;
     }
       .clear {
         clear: both;
         overflow: auto;
       }
       .postRow {
-        margin: 5px 0px;
+        margin: 10px 0px;
       }
         .post {
+          display: flex;
+          align-items: center;
+          gap: 20px;
           position: relative;
           max-width: 90%;
           padding: 10px 20px;
         }
+          .portrait {
+            margin: -15px;
+            display: block;
+            min-width: 50px;
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            object-position: center 20%;
+            border-radius: 10px;
+            box-shadow: 2px 2px 3px #0003;
+          }
           .theirs {
             border-radius: 20px 20px 20px 0px;
             background-color: var(--background);
             text-align: left;
             float: left;
           }
+            .theirs .portrait {
+              margin-right: 0px;
+            }
           .mine {
             border-radius: 20px 20px 0px 20px;
             background-color: var(--block);
@@ -131,4 +151,7 @@
             text-align: right;
             float: right;
           }
+            .mine .portrait {
+              margin-left: 0px;
+            }
 </style>

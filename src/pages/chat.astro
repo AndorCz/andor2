@@ -5,7 +5,7 @@
   const { user } = Astro.locals
 ---
 
-<Layout title='Chat'>
+<Layout title='Chat' headerStatic='/header_chat.jpg'>
 	<main>
     {user.id ? (
       <Chat {user} client:only />
