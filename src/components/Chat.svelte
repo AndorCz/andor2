@@ -59,21 +59,22 @@
       <div class='posts' bind:this={postsEl}>
         {#if $posts.length > 0}
           {#each $posts as post}
-            <div class='postRow'>
-              {#if post.owner === user.id}
-                <div use:tooltip={{ placement: 'left' }} class='post mine' title={formatDate(post.created_at)}>
+            {#if post.owner === user.id}
+              <div class='postRow mine'>
+                <div use:tooltip={{ placement: 'left' }} class='post' title={formatDate(post.created_at)}>
                   <div class='content'>{@html post.content}</div>
-                  {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
                 </div>
-              {:else}
-                <div use:tooltip={{ placement: 'right' }} class='post theirs' title={formatDate(post.created_at)}>
-                  {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+                {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+              </div>
+            {:else}
+              <div class='postRow theirs'>
+                {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+                <div use:tooltip={{ placement: 'right' }} class='post' title={formatDate(post.created_at)}>
                   <div class='name'>{post.owner_name}:</div>
                   <div class='content'>{@html post.content}</div>
                 </div>
-              {/if}
-            </div>
-            <div class='clear'></div>
+              </div>
+            {/if}
           {/each}
         {:else}
           <center>Žádné příspěvky</center>
@@ -109,49 +110,44 @@
       margin-bottom: 20px;
       scrollbar-width: thin;
     }
-      .clear {
-        clear: both;
-        overflow: auto;
-      }
       .postRow {
+        display: flex;
+        gap: 10px;
         margin: 10px 0px;
       }
-        .post {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          position: relative;
-          max-width: 90%;
-          padding: 10px 20px;
+        .theirs {
+          justify-content: flex-start;
         }
-          .portrait {
-            margin: -15px;
-            display: block;
-            min-width: 50px;
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            object-position: center 20%;
-            border-radius: 10px;
-            box-shadow: 2px 2px 3px #0003;
+        .mine {
+          justify-content: flex-end;
+        }
+          .post {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            max-width: 90%;
+            padding: 10px 20px;
           }
-          .theirs {
-            border-radius: 20px 20px 20px 0px;
-            background-color: var(--block);
-            text-align: left;
-            float: left;
-          }
-            .theirs .portrait {
-              margin-right: 0px;
+            .portrait {
+              display: block;
+              min-width: 50px;
+              width: 50px;
+              height: 50px;
+              object-fit: cover;
+              object-position: center 20%;
+              border-radius: 10px;
+              box-shadow: 2px 2px 3px #0003;
             }
-          .mine {
-            border-radius: 20px 20px 0px 20px;
-            background-color: var(--prominent);
-            color: var(--gray90);
-            text-align: right;
-            float: right;
-          }
-            .mine .portrait {
-              margin-left: 0px;
-            }
+              .theirs .post {
+                border-radius: 20px 20px 20px 0px;
+                background-color: var(--block);
+                text-align: left;
+              }
+              .mine .post {
+                border-radius: 20px 20px 0px 20px;
+                background-color: var(--prominent);
+                color: var(--gray90);
+                text-align: right;
+              }
 </style>
