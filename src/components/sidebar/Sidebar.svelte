@@ -235,6 +235,8 @@
     bottom: 20px;
     right: 20px;
     padding: 20px;
+    width: 66px;
+    height: 66px;
     border-radius: 100%;
     box-shadow: 2px 2px 5px #0005;
   }

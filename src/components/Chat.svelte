@@ -1,13 +1,14 @@
 <script>
   import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database'
-  import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
+  import { tick, beforeUpdate, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { formatDate } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
 
+  let previousPostsLength = 0
   let textareaValue = ''
   let postsEl
   let inputEl
@@ -18,17 +19,12 @@
   beforeUpdate(() => {
     channel = supabase
       .channel('chat')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: '((thread=eq.1))' }, (payload) => {
-        $posts.push(payload.new)
-        $posts = $posts // update store
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
+        loadPosts()
+        // $posts.push(payload.new)
+        // $posts = $posts // update store
       })
       .subscribe()
-  })
-
-  afterUpdate(() => { // scroll down
-    setTimeout(() => {
-      if (postsEl && $posts.length) { postsEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
-    }, 10)
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -47,7 +43,24 @@
     const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: 1, owner: user.id, owner_type: 'user' })
     if (error) { return handleError(error) }
     textareaValue = ''
-    await loadPosts()
+  }
+
+  // Reactive statement for scrolling
+  $: if (postsEl && $posts.length) {
+    if (previousPostsLength === 0 && $posts.length > 0) {
+      console.log('initial load')
+      // Instant scroll for the initial load
+      postsEl.scrollTop = postsEl.scrollHeight
+    } else if (previousPostsLength < $posts.length) {
+      console.log('new post')
+      // Smooth scroll for subsequent updates (new messages)
+      tick().then(() => {
+        // Smooth scroll for subsequent updates (new messages)
+        postsEl.lastElementChild.scrollIntoView({ behavior: 'smooth' })
+        previousPostsLength = $posts.length // update count
+      })
+    }
+    previousPostsLength = $posts.length // Update the length after scrolling
   }
 </script>
 
@@ -61,7 +74,7 @@
           {#each $posts as post}
             {#if post.owner === user.id}
               <div class='postRow mine'>
-                <div use:tooltip={{ placement: 'left' }} class='post' title={formatDate(post.created_at)}>
+                <div use:tooltip class='post' title={formatDate(post.created_at)}>
                   <div class='content'>{@html post.content}</div>
                 </div>
                 {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
@@ -69,7 +82,7 @@
             {:else}
               <div class='postRow theirs'>
                 {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
-                <div use:tooltip={{ placement: 'right' }} class='post' title={formatDate(post.created_at)}>
+                <div use:tooltip class='post' title={formatDate(post.created_at)}>
                   <div class='name'>{post.owner_name}</div>
                   <div class='content'>{@html post.content}</div>
                 </div>
@@ -129,6 +142,9 @@
           }
             .name {
               font-weight: bold;
+            }
+            .content {
+              font-size: 19px;
             }
             .portrait {
               display: block;

@@ -24,6 +24,7 @@
     "@tiptap/extension-underline": "^2.1.13",
     "@tiptap/pm": "^2.1.13",
     "@tiptap/starter-kit": "^2.1.13",
+    "@vercel/speed-insights": "^1.0.9",
     "astro": "4.0.8",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.4.4",

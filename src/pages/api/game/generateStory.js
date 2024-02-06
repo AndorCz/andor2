@@ -1,6 +1,8 @@
 
 import { generateStory } from '@lib/openai'
 
+export const maxDuration = 300 // 5 minutes
+
 export const POST = async ({ request, redirect, locals }) => {
   const data = await request.json()
 
