@@ -48,11 +48,9 @@
   // Reactive statement for scrolling
   $: if (postsEl && $posts.length) {
     if (previousPostsLength === 0 && $posts.length > 0) {
-      console.log('initial load')
       // Instant scroll for the initial load
       postsEl.scrollTop = postsEl.scrollHeight
     } else if (previousPostsLength < $posts.length) {
-      console.log('new post')
       // Smooth scroll for subsequent updates (new messages)
       tick().then(() => {
         // Smooth scroll for subsequent updates (new messages)
