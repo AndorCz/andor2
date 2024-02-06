@@ -1,7 +1,7 @@
 <script>
   import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database'
-  import { beforeUpdate, afterUpdate, onDestroy } from 'svelte'
+  import { onMount, afterUpdate, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -9,7 +9,6 @@
   export let userStore
 
   let contact = {}
-  let loadingMessages = true
   let textareaValue = ''
   let messagesEl
   let inputEl
@@ -19,7 +18,7 @@
   const contactId = $userStore.openChat
   const sortedIds = [user.id, contactId].sort()
 
-  beforeUpdate(() => {
+  onMount(() => {
     // init conversation, listen for new messages in the conversation
     channel = supabase
       .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
@@ -47,7 +46,6 @@
   }
 
   async function loadMessages () {
-    loadingMessages = true
     // load messages where are both contactId and user.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
       .or(`and(recipient.eq.${contactId},sender.eq.${user.id}),and(recipient.eq.${user.id},sender.eq.${contactId})`)
@@ -55,7 +53,6 @@
 
     if (error) { return handleError(error) }
     $messages = data
-    loadingMessages = false
     markMessagesRead()
   }
 

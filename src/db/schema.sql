@@ -186,6 +186,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function add_game_threads () returns trigger as $$
 begin
   insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
@@ -193,6 +194,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+
 
 create or replace function delete_game_threads() returns trigger as $$
 begin
@@ -202,6 +204,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function add_board_thread () returns trigger as $$
 begin
   insert into threads (name) values (new.name) returning id into new.thread;
@@ -209,12 +212,14 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function delete_board_thread() returns trigger as $$
 begin
   delete from threads where id = old.thread;
   return old;
 end;
 $$ language plpgsql;
+
 
 create or replace function get_character_names(audience_ids uuid[])
 returns text[] as $$
@@ -227,6 +232,7 @@ begin
   return names;
 end;
 $$ language plpgsql;
+
 
 create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer)
 returns json as $$
@@ -257,6 +263,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function update_reaction(post_id int4, reaction_type text, action text)
 returns setof posts as $$
 begin
@@ -283,6 +290,7 @@ begin
   end if;
 end;
 $$ language plpgsql;
+
 
 create or replace function get_bookmarks()
 returns jsonb as $$
@@ -325,6 +333,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
 returns jsonb as $$
 begin
@@ -337,12 +346,14 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function get_thread_unread(thread int4)
 returns integer as $$
 begin
   return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
 end;
 $$ language plpgsql;
+
 
 create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
 returns int as $$
@@ -390,6 +401,19 @@ end;
 $$ language plpgsql;
 
 
+create or replace function delete_old_chat_posts()
+returns void language plpgsql as $$
+begin
+  delete from posts
+  where id not in (
+    select id from posts
+    where thread = 1 -- chat thread
+    order by created_at desc
+    limit 100
+  );
+end;
+$$;
+
 
 -- TRIGGERS
 
@@ -398,3 +422,13 @@ create or replace trigger add_game_threads before insert on games for each row e
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
 create or replace trigger add_board_thread before insert on boards for each row execute function add_board_thread ();
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_board_thread();
+
+-- SEED
+
+insert into threads (name) values ('Chat'); -- has to be ID 1
+
+
+-- CRON
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);

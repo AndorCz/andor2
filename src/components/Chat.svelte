@@ -21,8 +21,6 @@
       .channel('chat')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
         loadPosts()
-        // $posts.push(payload.new)
-        // $posts = $posts // update store
       })
       .subscribe()
   })
