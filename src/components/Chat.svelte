@@ -1,7 +1,7 @@
 <script>
   import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database'
-  import { tick, beforeUpdate, onDestroy } from 'svelte'
+  import { tick, onMount, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { formatDate } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -16,7 +16,7 @@
 
   const posts = writable([])
 
-  beforeUpdate(() => {
+  onMount(() => {
     channel = supabase
       .channel('chat')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
