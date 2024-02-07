@@ -15,6 +15,7 @@
   import { Reply } from '@lib/editor/reply'
 
   export let content = ''
+  export let onTyping
 
   let editor
   let editorEl
@@ -63,7 +64,8 @@
         // check for text alignment based on https://github.com/ueberdosis/tiptap/issues/4240#issuecomment-1673411677
         currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
       },
-      onFocus () { showToolbelt = true }
+      onFocus () { showToolbelt = true },
+      onUpdate () { if (onTyping) { onTyping() } }
     })
   })
 

@@ -3,7 +3,7 @@
   import { supabase, handleError } from '@lib/database'
   import { tick, onMount, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { formatDate } from '@lib/utils'
+  import { formatDate, throttle } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
@@ -14,15 +14,39 @@
   let inputEl
   let channel
 
+  const people = writable({})
+  const typing = writable({})
   const posts = writable([])
 
   onMount(() => {
-    channel = supabase
-      .channel('chat')
+    channel = supabase.channel('chat', { config: { presence: { key: user.id } } })
+    channel
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
         loadPosts()
       })
-      .subscribe()
+      .on('presence', { event: 'sync' }, () => { // sync is called on every presence change
+        const newState = channel.presenceState()
+        $people = newState
+      })
+      .on('broadcast', { event: 'typing' }, (data) => { // triggered when someone is typing
+        $typing[data.payload.user] = true
+        removeTyping(data.payload.user)
+      })
+      /*
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('somebody joined', key, newPresences)
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('somebody left', key, leftPresences)
+      })
+      */
+
+    const userStatus = { user: user.name, online_at: new Date().toISOString() }
+
+    channel.subscribe(async (status) => {
+      if (status !== 'SUBSCRIBED') { return }
+      await channel.track(userStatus)
+    })
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -42,6 +66,17 @@
     if (error) { return handleError(error) }
     textareaValue = ''
   }
+
+  function removeTyping (name) {
+    setTimeout(() => {
+      delete $typing[name]
+      $typing = $typing
+    }, 3000)
+  }
+
+  const handleTyping = throttle(() => {
+    channel.send({ type: 'broadcast', event: 'typing', payload: { user: user.name } })
+  }, 3000)
 
   // Reactive statement for scrolling
   $: if (postsEl && $posts.length) {
@@ -89,10 +124,25 @@
           <center>Žádné příspěvky</center>
         {/if}
       </div>
-      <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendPost} showButton={true} minHeight={70} enterSend />
+      <!-- names of present people -->
+      {#if Object.keys($typing).length > 0}
+        <div class='typing'>
+          {Object.keys($typing).join('píše..., ')} píše...
+        </div>
+      {/if}
+      <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendPost} onTyping={handleTyping} showButton={true} minHeight={70} enterSend />
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
+    <!-- names of present people -->
+    {#if Object.keys($people).length > 0}
+      <div class='people'>
+        Právě přítomní:
+        {#each Object.values($people) as person}
+          <span class='person'>{person[0].user}</span>
+        {/each}
+      </div>
+    {/if}
   </div>
 {/await}
 
@@ -139,9 +189,6 @@
             .name {
               font-weight: bold;
             }
-            .content {
-              font-size: 19px;
-            }
             .portrait {
               display: block;
               min-width: 50px;
@@ -163,4 +210,18 @@
                 color: var(--gray90);
                 text-align: right;
               }
+    .typing {
+      padding: 20px 0px;
+    }
+    .people {
+      margin-top: 20px;
+      padding-top: 20px;
+    }
+      .person {
+        padding: 10px;
+        margin-left: 5px;
+        border-radius: 10px;
+        color: var(--accent);
+        background-color: var(--block);
+      }
 </style>

@@ -4,6 +4,7 @@
 
   export let value
   export let onSave
+  export let onTyping
   export let allowHtml = false
   export let name = 'textarea'
   export let disabled = false
@@ -56,6 +57,7 @@
   }
 
   function onKeyDown (e) {
+    if (onTyping) { onTyping(e) }
     if (enterSend && event.keyCode === 13 && !e.shiftKey) { // send with enter, new line with shift+enter
       e.preventDefault()
       onSave()
@@ -75,7 +77,7 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} />
+    <Editor bind:this={editorRef} {onTyping} />
   {:else}
     <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keydown={onKeyDown} class:withButton={showButton}></textarea>
   {/if}

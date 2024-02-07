@@ -163,9 +163,10 @@ button, .button {
   }
 
 input[type=text], textarea, input[type=checkbox], .ProseMirror {
+  font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   padding: 15px;
   margin: 0px;
-  font-size: 18px;
+  font-size: 20px;
   border: none;
   color: var(--text);
   border-bottom: 3px var(--buttonBg) solid;
@@ -178,8 +179,8 @@ input[type=text], textarea, input[type=checkbox], .ProseMirror {
 }
 
 textarea, .ProseMirror {
-  font-size: 20px;
   line-height: 140%;
+  font-size: 21px;
 }
 
   input[type=text]:focus, textarea:focus, select:focus, .ProseMirror-focused {
@@ -383,9 +384,11 @@ select {
 
 /* Post content */
 
-.post .content p {
+.post .content {
+  font-size: 21px;
   font-weight: 375;
-  font-size: 19px;
+}
+.post .content p {
   margin: 5px 0px;
 }
 .post .content img {
