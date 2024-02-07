@@ -105,7 +105,7 @@
       <h3 class='sender'>Identita</h3>
     </div>
     <div class='addPostWrapper'>
-      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
       <div class='senderWrapper'>
         <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
           {#each identities as identity}
@@ -116,7 +116,7 @@
     </div>
   {:else}
     <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
 
     <h3 class='sender'>Identita</h3>
     <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>

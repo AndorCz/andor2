@@ -4,7 +4,7 @@
 
   export let value
   export let onSave
-  export let onTyping
+  export let onTyping = null
   export let allowHtml = false
   export let name = 'textarea'
   export let disabled = false
@@ -13,10 +13,12 @@
   export let editing = false
   export let minHeight = 140
   export let enterSend = false
+  export let disableEmpty = false
 
   let editorRef
   let tiptap
   let originalValue = value
+  let isEmpty = true
 
   onMount(() => {
     if (allowHtml) { tiptap = editorRef.getEditor() }
@@ -56,20 +58,24 @@
     }
   }
 
-  function onKeyDown (e) {
-    if (onTyping) { onTyping(e) }
-    if (enterSend && event.keyCode === 13 && !e.shiftKey) { // send with enter, new line with shift+enter
-      e.preventDefault()
-      onSave()
-    }
+  // handle editor typing
+  function onKeyUp (e) { if (onTyping) { onTyping(e) } }
+
+  function onChange () {
+    isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
   }
 
   export function addReply (postId, userName) {
     return editorRef.addReply(postId, userName)
   }
 
+  // handle enter and escape
   async function handleKeyDown (event) {
     if (event.key === 'Escape' && editing) { cancelEdit() }
+    if (enterSend && event.keyCode === 13 && !event.shiftKey) { // send with enter, new line with shift+enter
+      event.preventDefault()
+      onSave()
+    }
   }
 </script>
 
@@ -77,12 +83,12 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onTyping} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} />
   {:else}
-    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keydown={onKeyDown} class:withButton={showButton}></textarea>
+    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:change={onChange} class:withButton={showButton}></textarea>
   {/if}
   {#if showButton}
-    <button on:click={triggerSave} {disabled} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
+    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
       <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}
@@ -113,7 +119,7 @@
       padding: 15px 20px;
     }
       .save {
-        bottom: 0px;
+        bottom: 3px;
         border-radius: 10px 0px 10px 0px;
       }
       .cancel {

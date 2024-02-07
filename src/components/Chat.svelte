@@ -62,9 +62,11 @@
   }
 
   async function sendPost () {
-    const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: 1, owner: user.id, owner_type: 'user' })
-    if (error) { return handleError(error) }
-    textareaValue = ''
+    if (textareaValue !== '') {
+      const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: 1, owner: user.id, owner_type: 'user' })
+      if (error) { return handleError(error) }
+      textareaValue = ''
+    }
   }
 
   function removeTyping (name) {
@@ -86,8 +88,8 @@
     } else if (previousPostsLength < $posts.length) {
       // Smooth scroll for subsequent updates (new messages)
       tick().then(() => {
-        // Smooth scroll for subsequent updates (new messages)
-        postsEl.lastElementChild.scrollIntoView({ behavior: 'smooth' })
+        // Smooth scroll to the bottom
+        postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' })
         previousPostsLength = $posts.length // update count
       })
     }
@@ -105,15 +107,19 @@
           {#each $posts as post}
             {#if post.owner === user.id}
               <div class='postRow mine'>
-                <div use:tooltip class='post' title={formatDate(post.created_at)}>
+                <div class='post'>
                   <div class='content'>{@html post.content}</div>
                 </div>
-                {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
+                {#if post.owner_portrait}
+                  <img class='portrait' src={post.owner_portrait} alt={post.owner_name} use:tooltip title={formatDate(post.created_at)} />
+                {/if}
               </div>
             {:else}
               <div class='postRow theirs'>
-                {#if post.owner_portrait}<img class='portrait' src={post.owner_portrait} alt={post.owner_name} />{/if}
-                <div use:tooltip class='post' title={formatDate(post.created_at)}>
+                {#if post.owner_portrait}
+                  <img class='portrait' src={post.owner_portrait} alt={post.owner_name} use:tooltip title={formatDate(post.created_at)} />
+                {/if}
+                <div class='post'>
                   <div class='name'>{post.owner_name}</div>
                   <div class='content'>{@html post.content}</div>
                 </div>
@@ -124,13 +130,15 @@
           <center>Žádné příspěvky</center>
         {/if}
       </div>
-      <!-- names of present people -->
-      {#if Object.keys($typing).length > 0}
-        <div class='typing'>
-          {Object.keys($typing).join('píše..., ')} píše...
-        </div>
-      {/if}
-      <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendPost} onTyping={handleTyping} showButton={true} minHeight={70} enterSend />
+      <div id='textareaWrapper'>
+        <!-- names of present people -->
+        {#if Object.keys($typing).length > 0}
+          <div class='typing'>
+            {Object.keys($typing).join('píše..., ')} píše...
+          </div>
+        {/if}
+        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendPost} onTyping={handleTyping} showButton={true} minHeight={70} enterSend disableEmpty />
+      </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
@@ -166,7 +174,7 @@
       flex: 1;
       overflow-y: scroll;
       padding: 5px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       scrollbar-width: thin;
     }
       .postRow {
@@ -210,9 +218,14 @@
                 color: var(--gray90);
                 text-align: right;
               }
-    .typing {
-      padding: 20px 0px;
+    #textareaWrapper {
+      position: relative;
     }
+      .typing {
+        position: absolute;
+        top: -35px;
+        left: 5px;
+      }
     .people {
       margin-top: 20px;
       padding-top: 20px;

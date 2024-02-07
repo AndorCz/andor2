@@ -118,7 +118,7 @@
             <center>Žádné zprávy</center>
           {/if}
         </div>
-        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton={true} minHeight={70} enterSend />
+        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton={true} minHeight={70} enterSend disableEmpty />
       {:catch error}
         <span class='error'>Konverzaci se nepodařilo načíst</span>
       {/await}

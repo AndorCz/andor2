@@ -15,7 +15,8 @@
   import { Reply } from '@lib/editor/reply'
 
   export let content = ''
-  export let onTyping
+  export let onKeyUp
+  export let onChange
 
   let editor
   let editorEl
@@ -65,7 +66,11 @@
         currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
       },
       onFocus () { showToolbelt = true },
-      onUpdate () { if (onTyping) { onTyping() } }
+      onUpdate () {
+        if (onKeyUp) { onKeyUp() }
+        if (onChange) { onChange() }
+        content = editor.state.doc.textContent
+      }
     })
   })
 
@@ -99,7 +104,11 @@
 
   function addImage () {
     const url = window.prompt('Veřejná cesta k obrázku:')
-    if (url) { editor.chain().focus().setImage({ src: url }).run() }
+    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+      editor.chain().focus().setImage({ src: url }).run()
+    } else {
+      return window.alert('Obrázek musí být veřejně dostupný')
+    }
   }
 
   export function addReply (postId, name) {

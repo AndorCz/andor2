@@ -162,7 +162,7 @@
     {#if showDiceBox}
       <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
     {:else}
-      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton />
+      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
     {/if}
     <div class='headlineWrapper'>
       <h3>Jako</h3>
