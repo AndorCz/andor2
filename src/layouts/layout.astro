@@ -1,5 +1,5 @@
 ---
-import  SpeedInsights  from '@vercel/speed-insights/astro'
+import SpeedInsights from '@vercel/speed-insights/astro'
 import { ViewTransitions } from 'astro:transitions'
 import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
@@ -40,7 +40,7 @@ const test = 'abc'
       </main>
       <Sidebar {user} bookmarkData={bookmarks} client:only />
     </div>
-
+    <SpeedInsights />
     <script>
       import { lookForToast, showSuccess, showError } from '@lib/toasts'
       lookForToast()
