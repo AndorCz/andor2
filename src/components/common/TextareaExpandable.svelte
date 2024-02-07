@@ -85,7 +85,7 @@
   {#if allowHtml}
     <Editor bind:this={editorRef} {onKeyUp} {onChange} />
   {:else}
-    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:change={onChange} class:withButton={showButton}></textarea>
+    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
@@ -119,8 +119,9 @@
       padding: 15px 20px;
     }
       .save {
-        bottom: 3px;
+        bottom: 0px;
         border-radius: 10px 0px 10px 0px;
+        border-bottom: 3px var(--buttonBg) solid;
       }
       .cancel {
         top: 0px;
