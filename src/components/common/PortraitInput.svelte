@@ -28,7 +28,7 @@
       const saveHeight = saveWidth / imgRatio
 
       if (img.naturalWidth < saveWidth || saveHeight < saveMinHeight) {
-        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${saveWidth}x${saveMinHeight}px`)
+        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${saveWidth}x${saveMinHeight}px a výška nesmí být nižší než šířka`)
       } else if (saveHeight > 600) {
         return showError(`Obrázek je příliš vysoký, limit je ${maxHeight}px`)
       } else {
