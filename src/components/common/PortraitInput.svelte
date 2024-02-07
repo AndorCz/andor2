@@ -8,9 +8,9 @@
 
   export let onPortraitChange = null
   export let displayWidth = 140
-  export let displayHeight = 200
+  export let displayHeight = 140
   export let saveWidth = 140
-  export let saveMinHeight = 200
+  export let saveMinHeight = 140
 
   let files
   let uploading = false
@@ -78,7 +78,7 @@
       cursor: pointer;
       display: flex;
       object-fit: cover;
-      object-position: top;
+      object-position: center 20%;
       width: var(--portrait-width, 140px);
       min-height: var(--portrait-height, 200px);
       border: 2px solid var(--buttonBg);

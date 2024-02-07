@@ -130,6 +130,7 @@
         width: 40px;
         height: 40px;
         object-fit: cover;
+        object-position: center 20%;
         border-radius: 100%;
         background-color: var(--background);
       }

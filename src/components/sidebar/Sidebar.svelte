@@ -89,7 +89,9 @@
               <div id='nameRow'>
                 <span id='name'>{user.name || user.email}</span>
               </div>
-              <button on:click={logout} id='logout'>Odhlásit</button>
+              <div>
+                <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
+              </div>
             </div>
           </div>
           <div id='tabs'>
@@ -141,8 +143,8 @@
     #details {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
+      align-items: center;
     }
     #nameRow {
       flex: 1;
@@ -156,7 +158,8 @@
         white-space: nowrap;
       }
     #logout {
-      padding: 10px 20px;
+      padding: 0px;
+      padding: 5px;
     }
   #tabs {
     height: 76px;
