@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { setRead } from '@lib/helpers'
+  import { setRead } from '@lib/database'
   import Character from '@components/games/Character.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 

@@ -71,3 +71,45 @@ export async function getConversations (db, userId) {
   data.forEach((message) => { conversations[message.sender.id] = message.sender })
   return conversations
 }
+
+// server helpers
+
+const cache = new Map()
+
+export async function fetchWithCache (key, fetcher, ttl = 300) {
+  if (cache.has(key)) { // check if the data is in the cache
+    const { value, expiry } = cache.get(key)
+    if (Date.now() < expiry) { return value } // return cached data if it hasn't expired
+  }
+  const data = await fetcher() // data not in cache or is expired, fetch new data
+  const expiry = Date.now() + ttl * 1000 // TTL in milliseconds
+  cache.set(key, { value: data, expiry }) // update cache with new data and expiry time
+  return data
+}
+
+// browser helpers
+
+export async function sendPost (method = 'POST', data) {
+  if (data.content.trim().length === 0) { return window.showError('Příspěvek nesmí být prázdný') }
+  const res = await fetch('/api/post', { method, body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })
+  const json = await res.json()
+  if (res.error || json.error) { return window.showError(res.error || json.error) }
+  return json
+}
+
+export async function setRead (userId, slug) {
+  if (userId) {
+    const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug, read_at: new Date() })
+    if (error) { return handleError(error) }
+  }
+}
+
+export async function getReply (posts, postId) {
+  // find post data in posts array
+  const post = posts.find(p => p.id === postId)
+  if (post) { return post }
+  // otherwise get reply data from supabase
+  const { data, error } = await supabase.from('posts_owner').select('*').eq('id', postId).maybeSingle()
+  if (error) { return handleError(error) }
+  return data
+}

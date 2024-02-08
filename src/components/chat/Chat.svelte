@@ -1,8 +1,7 @@
 <script>
   import { writable } from 'svelte/store'
   import { tick, onMount, onDestroy } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
-  import { sendPost } from '@lib/helpers'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { throttle } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -82,7 +81,6 @@
   }
 
   async function submitPost () {
-    console.log('sendPost triggered')
     if (saving || textareaValue === '') { return }
     saving = true
     if (editing) {

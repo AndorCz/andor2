@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
-  import { sendPost } from '@lib/helpers'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { posts, getGameStore } from '@lib/stores'
   import { platform } from '@components/common/MediaQuery.svelte'

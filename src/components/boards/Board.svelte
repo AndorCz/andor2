@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { sendPost } from '@lib/helpers'
   import { posts, getBoardStore, bookmarks } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'

@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { logout } from '@lib/helpers'
   import { clone } from '@lib/utils'
   import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
   import { userStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
@@ -41,6 +40,15 @@
 
   function openChat (user) {
     $userStore.openChat = user.id
+  }
+
+  async function logout () {
+    // delete cookies
+    document.cookie = 'sb-access-token=; Max-Age=-99999999;'
+    document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
+
+    await supabase.auth.signOut()
+    window.location.href = '/api/auth/logout'
   }
 
   async function loadData () {

@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, setRead } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
-  import { setRead } from '@lib/helpers'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user

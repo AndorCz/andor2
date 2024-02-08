@@ -1,7 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import { handleError } from '@lib/database'
-  import { createThread } from '@lib/openai'
+  import { updateCache } from '@lib/cache'
 
   const { supabase, user } = Astro.locals
 
@@ -10,6 +10,7 @@
     const boardName = formData.get('boardName')
 
     const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
+    updateCache('boards', data)
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true })

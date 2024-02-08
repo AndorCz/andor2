@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { setRead, getReply } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
-  import { setRead, getReply } from '@lib/helpers'
   import { tooltipContent } from '@lib/tooltip'
   import Post from '@components/common/Post.svelte'
 
