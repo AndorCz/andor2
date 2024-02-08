@@ -31,7 +31,7 @@
   }
 
   async function cancelEdit () {
-    const currentValue = await tiptap.getHTML()
+    const currentValue = allowHtml ? await tiptap.getHTML() : value
     if (currentValue !== originalValue) {
       if (!window.confirm('Opravdu zrušit úpravu?')) { return }
     }
@@ -106,7 +106,8 @@
   }
     textarea {
       width: 100%;
-      min-height: 100%;
+      height: 100%;
+      min-height: 110px;
       display: block;
     }
     .withButton {
@@ -116,7 +117,7 @@
     button {
       position: absolute;
       right: 0px;
-      padding: 15px 20px;
+      padding: 10px 15px;
     }
       .save {
         bottom: 0px;

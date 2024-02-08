@@ -1,18 +1,22 @@
 <script>
   import { writable } from 'svelte/store'
-  import { supabase, handleError } from '@lib/database'
   import { tick, onMount, onDestroy } from 'svelte'
-  import { tooltip } from '@lib/tooltip'
-  import { formatDate, throttle } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database'
+  import { sendPost } from '@lib/helpers'
+  import { throttle } from '@lib/utils'
+  import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import Post from '@components/chat/ChatPost.svelte'
 
   export let user = {}
 
   let previousPostsLength = 0
   let textareaValue = ''
+  let textareaRef
   let postsEl
-  let inputEl
   let channel
+  let editing = false
+  let saving = false
 
   const people = writable({})
   const typing = writable({})
@@ -55,18 +59,41 @@
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
+  function onEdit (id, content) {
+    editing = id
+    textareaValue = content
+    textareaRef.triggerEdit(id, content)
+    document.getElementById('textareaWrapper').scrollIntoView({ behavior: 'smooth' })
+    // saving is done in submitPost
+  }
+
+  async function onDelete (id) {
+    const res = await fetch(`/api/post?id=${id}`, { method: 'DELETE' })
+    const json = await res.json()
+    if (res.error || json.error) { return showError(res.error || json.error) }
+    showSuccess('Příspěvek smazán')
+    await loadPosts()
+  }
+
   async function loadPosts () {
     const { error, data } = await supabase.from('posts_owner').select('*').eq('thread', 1).order('created_at')
     if (error) { return handleError(error) }
     $posts = data
   }
 
-  async function sendPost () {
-    if (textareaValue !== '') {
-      const { error } = await supabase.from('posts').insert({ content: textareaValue, thread: 1, owner: user.id, owner_type: 'user' })
-      if (error) { return handleError(error) }
-      textareaValue = ''
+  async function submitPost () {
+    console.log('sendPost triggered')
+    if (saving || textareaValue === '') { return }
+    saving = true
+    if (editing) {
+      await sendPost('PATCH', { id: editing, thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
+    } else {
+      await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
     }
+    textareaValue = ''
+    await loadPosts()
+    saving = false
+    editing = false
   }
 
   function removeTyping (name) {
@@ -105,26 +132,7 @@
       <div class='posts' bind:this={postsEl}>
         {#if $posts.length > 0}
           {#each $posts as post}
-            {#if post.owner === user.id}
-              <div class='postRow mine'>
-                <div class='post'>
-                  <div class='content'>{@html post.content}</div>
-                </div>
-                {#if post.owner_portrait}
-                  <img class='portrait' src={post.owner_portrait} alt={post.owner_name} use:tooltip title={formatDate(post.created_at)} />
-                {/if}
-              </div>
-            {:else}
-              <div class='postRow theirs'>
-                {#if post.owner_portrait}
-                  <img class='portrait' src={post.owner_portrait} alt={post.owner_name} use:tooltip title={formatDate(post.created_at)} />
-                {/if}
-                <div class='post'>
-                  <div class='name'>{post.owner_name}</div>
-                  <div class='content'>{@html post.content}</div>
-                </div>
-              </div>
-            {/if}
+            <Post {post} mine={post.owner === user.id} {onEdit} {onDelete} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>
@@ -137,7 +145,7 @@
             {Object.keys($typing).join('píše..., ')} píše...
           </div>
         {/if}
-        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendPost} onTyping={handleTyping} showButton={true} minHeight={70} enterSend disableEmpty />
+        <TextareaExpandable bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={70} enterSend disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
@@ -177,47 +185,7 @@
       margin-bottom: 30px;
       scrollbar-width: thin;
     }
-      .postRow {
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-        margin: 10px 0px;
-      }
-        .theirs {
-          justify-content: flex-start;
-        }
-        .mine {
-          justify-content: flex-end;
-        }
-          .post {
-            position: relative;
-            max-width: 88%;
-            padding: 10px 20px;
-          }
-            .name {
-              font-weight: bold;
-            }
-            .portrait {
-              display: block;
-              min-width: 50px;
-              width: 50px;
-              height: 50px;
-              object-fit: cover;
-              object-position: center 20%;
-              border-radius: 10px;
-              box-shadow: 2px 2px 3px #0003;
-            }
-              .theirs .post {
-                border-radius: 20px 20px 20px 0px;
-                background-color: var(--block);
-                text-align: left;
-              }
-              .mine .post {
-                border-radius: 20px 20px 0px 20px;
-                background-color: var(--prominent);
-                color: var(--gray90);
-                text-align: right;
-              }
+
     #textareaWrapper {
       position: relative;
     }

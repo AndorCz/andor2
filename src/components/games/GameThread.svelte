@@ -88,6 +88,7 @@
   }
 
   async function submitPost () {
+    if (saving || textareaValue === '') { return }
     saving = true
     const activeCharacter = myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })
     const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience

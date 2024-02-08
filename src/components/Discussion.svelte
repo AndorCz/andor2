@@ -52,6 +52,7 @@
   }
 
   async function submitPost () {
+    if (saving || textareaValue === '') { return }
     saving = true
     const identity = getIdentity($gameStore.activeChatIdentity)
     if (editing) {

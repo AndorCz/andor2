@@ -35,6 +35,7 @@
   }
 
   async function submitPost () {
+    if (saving || textareaValue === '') { return }
     saving = true
     if (editing) {
       await sendPost('PATCH', { id: editing, thread: data.thread, content: textareaValue, owner: user.id, ownerType: 'user' })
