@@ -6,7 +6,7 @@
   import { throttle } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import Post from '@components/chat/ChatPost.svelte'
+  import ChatPost from '@components/chat/ChatPost.svelte'
 
   export let user = {}
 
@@ -132,7 +132,7 @@
       <div class='posts' bind:this={postsEl}>
         {#if $posts.length > 0}
           {#each $posts as post}
-            <Post {post} mine={post.owner === user.id} {onEdit} {onDelete} />
+            <ChatPost {user} {post} {onEdit} {onDelete} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>

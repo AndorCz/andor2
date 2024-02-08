@@ -1,17 +1,22 @@
 <script>
+  import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltip, tooltipContent } from '@lib/tooltip'
+  import Reactions from '@components/common/Reactions.svelte'
 
-  export let mine = false
+  export let user
   export let post
   export let onEdit
   export let onDelete
 
   let toolbarRef
+  const isMine = post.owner === user.id
+  const postStore = writable(post)
 </script>
 
-<div class='postRow {mine ? 'mine' : 'theirs'}'>
-  {#if mine}
+<div class='postRow {isMine ? 'mine' : 'theirs'}'>
+  {#if isMine}
+    <Reactions {user} {postStore} />
     <div class='toolbar' bind:this={toolbarRef}>
       {formatDate(post.created_at)}
       <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
@@ -31,6 +36,7 @@
       <div class='name'>{post.owner_name}</div>
       <div class='content'>{@html post.content}</div>
     </div>
+    <Reactions {user} {postStore} />
   {/if}
 </div>
 
