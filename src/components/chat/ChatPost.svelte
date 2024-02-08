@@ -65,9 +65,9 @@
         }
         .portrait {
           display: block;
-          min-width: 50px;
-          width: 50px;
-          height: 50px;
+          min-width: 60px;
+          width: 60px;
+          height: 70px;
           object-fit: cover;
           object-position: center 20%;
           border-radius: 10px;
