@@ -4,12 +4,12 @@
   import CharacterForm from '@components/games/CharacterForm.svelte'
 
   const { supabase, user } = Astro.locals
-  const { gameId } = Astro.params
+  const game = Astro.url.searchParams.get('game') || ''
   const id = Astro.url.searchParams.get('id') || ''
 
   let character:any = {}
 
-  const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', gameId).single()
+  const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
   if (gameError) { handleError(gameError) }
   const isGameOwner = gameData.owner === user.id
 
@@ -28,16 +28,16 @@
     character.storyteller = data.get('storyteller') || false
     character.player = user.id
     if (character.storyteller) { character.accepted = true }
-    if (gameId) { character.game = gameId }
+    if (game) { character.game = game }
 
     const { error: error2 } = await supabase.from('characters').upsert(character)
 
-    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game)
     if (timestampError) { return handleError(timestampError) }
 
     if (error2) { handleError(error2) }
     else {
-      return Astro.redirect('/game/' + gameId + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
+      return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
     }
   }
 ---
