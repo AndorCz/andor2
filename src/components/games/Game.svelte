@@ -57,16 +57,16 @@
 
   <nav class='tabs secondary'>
     <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>
-      Info{#if data.unread.gameInfo}<span class='unread badge'></span>{/if}
+      Info{#if data.unread.gameInfo && $gameStore.activeTab !== 'info'}<span class='unread badge'></span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={data.unread.gameChat}>
-      Chat{#if data.unread.gameChat}<span class='unread count'>{data.unread.gameChat}</span>{/if}
+      Chat{#if data.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{data.unread.gameChat}</span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={data.unread.gameThread}>
-      Hra{#if data.unread.gameThread}<span class='unread count'>{data.unread.gameThread}</span>{/if}
+      Hra{#if data.unread.gameThread && $gameStore.activeTab !== 'game'}<span class='unread count'>{data.unread.gameThread}</span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
-      Postavy{#if data.unread.gameCharacters}<span class='unread badge'></span>{/if}
+      Postavy{#if data.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}
     </button>
   </nav>
 
