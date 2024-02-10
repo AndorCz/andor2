@@ -3,6 +3,8 @@
   import { formatDate } from '@lib/utils'
   import { tooltip, tooltipContent } from '@lib/tooltip'
   import Reactions from '@components/common/Reactions.svelte'
+  import ReactionInput from '@components/common/ReactionInput.svelte'
+  import ReactionDisplay from '@components/common/ReactionDisplay.svelte'
 
   export let user
   export let post
@@ -32,11 +34,15 @@
     {#if post.owner_portrait}
       <img class='portrait' src={post.owner_portrait} alt={post.owner_name}/>
     {/if}
-    <div class='post' title={formatDate(post.created_at)} use:tooltip={{ trigger: 'click' }} >
+    <div class='toolbar' bind:this={toolbarRef}>
+      {formatDate(post.created_at)}
+      <ReactionInput {user} {postStore} />
+    </div>
+    <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
       <div class='name'>{post.owner_name}</div>
       <div class='content'>{@html post.content}</div>
     </div>
-    <Reactions {user} {postStore} />
+    <ReactionDisplay {postStore} />
   {/if}
 </div>
 
