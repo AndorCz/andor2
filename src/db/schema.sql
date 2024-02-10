@@ -21,6 +21,7 @@ drop view if exists game_list;
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
+create type article_tag as enum ('story');
 
 -- TABLES
 
@@ -43,7 +44,7 @@ create table games (
   id int4 not null primary key generated always as identity,
   name text unique not null,
   owner uuid not null default auth.uid(),
-  intro text null default 'Popis světa, úvod do příběhu apod. (Z tohoto textu také vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.)'::text,
+  annotation text null default 'Popis světa, úvod do příběhu apod. (Z tohoto textu také vychází AI asistent pro přípravu *podkladů pro vypravěče* níže.)'::text,
   info text null default 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'::text,
   secrets text null default 'Pouze pro vypravěče. Poznámky a tajné informace o příběhu. primárně z tohoto textu vychází AI vypravěč pro tvorbu příběhu.'::text,
   system public.game_system not null default 'base'::game_system,
@@ -88,6 +89,21 @@ create table characters (
   state public.character_state not null default 'alive'::character_state,
   constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
   constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
+);
+
+create table articles (
+  id int4 not null primary key generated always as identity,
+  author uuid not null,
+  name text not null,
+  perex text not null,
+  content text not null,
+  thread int4 not null,
+  tags public.article_tag[] null default '{}'::public.article_tag[],
+  likes uuid[] null default '{}'::uuid[],
+  dislikes uuid[] null default '{}'::uuid[],
+  reports uuid[] null default '{}'::uuid[],
+  editorial boolean null default false,
+  created_at timestamp with time zone default current_timestamp
 );
 
 create table posts (

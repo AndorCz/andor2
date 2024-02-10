@@ -134,7 +134,7 @@
   async function generatePost () {
     if (textareaValue) { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
     generatingPost = true
-    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system, thread: data.openai_thread }) })
+    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: data.id, annotation: data.annotation, owner: data.owner.id, system: data.system, thread: data.openai_thread }) })
     if (res.error) { return showError(res.error) }
     const json = await res.json()
     textareaValue = json.post

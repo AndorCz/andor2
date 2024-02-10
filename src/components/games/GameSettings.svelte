@@ -62,7 +62,7 @@
     // update AI storyteller if system changed
     /*
     if (originalSystem !== data.system) {
-      const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, annotation: data.annotation, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
     }

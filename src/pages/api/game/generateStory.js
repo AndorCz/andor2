@@ -7,7 +7,7 @@ export const POST = async ({ request, redirect, locals }) => {
   const data = await request.json()
 
   if (locals.user.id === data.owner) { // check if user is the owner of the game
-    const story = await generateStory(data.intro, data.system)
+    const story = await generateStory(data.annotation, data.system)
 
     // save to db
     const { error } = await locals.supabase.from('games').update({ secrets: story }).eq('id', data.game)

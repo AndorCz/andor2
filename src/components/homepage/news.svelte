@@ -22,6 +22,10 @@
     const { data } = supabase.storage.from('headers').getPublicUrl(`${slug}-${id}`)
     return data.publicUrl
   }
+
+  function limitLength (text, length) {
+    return text.length > length ? text.slice(0, length) + '...' : text
+  }
 </script>
 
 <h3 id='newsCategorySelect'>
@@ -39,7 +43,7 @@
         {#if record.custom_header}
           <img src={getUrl(record.id)} alt={record.name} />
         {/if}
-        <p>{record.intro}</p>
+        <p>{limitLength(record.annotation, 150)}</p>
       </a>
     {/each}
   {/await}

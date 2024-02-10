@@ -81,11 +81,11 @@
   }
     .row {
       display: flex;
+      align-items: center;
       margin: 30px 0px;
     }
       .labels {
         width: 10%;
-        padding-top: 10px;
       }
       .inputs {
         flex: 1;

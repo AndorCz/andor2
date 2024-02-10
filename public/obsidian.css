@@ -243,48 +243,49 @@ select {
   position: relative;
 }
 
-.tabs a, .tabs button {
-  font-family: 'Alegreya Sans';
-  font-variation-settings: 'wght' 600;
-  display: inline-block;
-  padding: 13px 25px;
-  text-decoration: none;
-  font-size: 22px;
-  color: #fff;
-  text-shadow: 2px 2px 2px #0003;
-  opacity: 0.8;
-  background-color: transparent;
-  border: none;
-  box-shadow: none;
-}
-  .tabs a:hover, .tabs button:hover {
-    opacity: 1;          
+  .tabs a, .tabs button {
+    font-family: 'Alegreya Sans';
+    font-variation-settings: 'wght' 600;
+    display: inline-block;
+    padding: 13px 20px;
+    text-decoration: none;
+    font-size: 22px;
+    color: #fff;
+    text-shadow: 2px 2px 2px #0003;
+    opacity: 0.8;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
   }
+    .tabs a:hover, .tabs button:hover {
+      opacity: 1;          
+    }
 
-.tabs a.active, .tabs button.active {
-  color: var(--text);
-  background-color: var(--panel);
-  border-radius: 8px 8px 0px 0px;
-  opacity: 1;
-  position: relative;
-}
-  .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
-    content: '';
-    position: absolute;
-    height: 8px;
-    width: 16px;
-    bottom: 0px;
-  }
-  .tabs a.active:after, .tabs button.active:after {
-    right: -16px;
-    border-radius: 0 0 0 8px;
-    box-shadow: -8px 0 0 0 var(--panel);
-  }
-  .tabs a.active:before, .tabs button.active:before {
-    left: -16px;
-    border-radius: 0 0 8px 0;
-    box-shadow: 8px 0 0 0 var(--panel);
-  }
+    .tabs a.active, .tabs button.active {
+      color: var(--text);
+      background-color: var(--panel);
+      border-radius: 8px 8px 0px 0px;
+      padding: 13px 25px;
+      opacity: 1;
+      position: relative;
+    }
+      .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
+        content: '';
+        position: absolute;
+        height: 8px;
+        width: 16px;
+        bottom: 0px;
+      }
+      .tabs a.active:after, .tabs button.active:after {
+        right: -16px;
+        border-radius: 0 0 0 8px;
+        box-shadow: -8px 0 0 0 var(--panel);
+      }
+      .tabs a.active:before, .tabs button.active:before {
+        left: -16px;
+        border-radius: 0 0 8px 0;
+        box-shadow: 8px 0 0 0 var(--panel);
+      }
 
   /* SECONDARY TABS */
 
@@ -541,4 +542,13 @@ select {
   .diceRoll b {
     font-size: 25px;
   }
+}
+
+@media (max-width: 500px) {
+  .tabs a, .tabs button {
+    padding: 10px 8px;
+  }
+    .tabs a.active {
+      padding: 10px 15px;
+    }
 }

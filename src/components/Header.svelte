@@ -27,6 +27,7 @@
     <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
     <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
     <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
+    <a href='/articles' class={pathname.includes('/article') ? 'active' : ''}>Články</a>
   </nav>
 </header>
 
@@ -53,9 +54,6 @@
     }
 
   @media (max-width: 860px) {
-    nav {
-      left: 10px;
-    }
     header {
       height: 150px;
       background-size: cover;
@@ -69,5 +67,19 @@
           width: 120px;
           object-fit: contain;
         }
+
+  @media (max-width: 500px) {
+      nav {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+      }
+        nav a {
+          padding: 10px 0px;
+        }
+        nav a.active {
+          padding: 10px 15px;
+        }
+    }
   }
 </style>

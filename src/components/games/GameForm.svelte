@@ -1,7 +1,8 @@
 <script>
   import { systems, categories } from '@lib/constants'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-export let user = {}
+  export let user = {}
 </script>
 
 {#if user.id}
@@ -40,6 +41,12 @@ export let user = {}
         </select>
       </div>
     </div>
+
+    <div class='row'>
+      <div class='labels'><label for='gameAnnotation'>Anotace</label></div>
+      <div class='inputs'><TextareaExpandable id='gameAnnotation' name='gameAnnotation' /></div>
+    </div>
+
     <center>
       <button type='submit' onclick='this.disabled=true; this.form.submit()'>Vytvořit</button>
     </center>
@@ -56,12 +63,12 @@ export let user = {}
   }
     .row {
       display: flex;
+      align-items: center;
       margin-top: 30px;
       margin-bottom: 30px;
     }
       .labels {
         width: 15%;
-        padding-top: 10px;
       }
       .inputs {
         flex: 1;

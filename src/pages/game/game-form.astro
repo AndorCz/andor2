@@ -10,12 +10,13 @@
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const gameName = formData.get('gameName')
-    const gameCategory = formData.get('gameCategory')
     const gameSystem = formData.get('gameSystem')
+    const gameCategory = formData.get('gameCategory')
+    const gameAnnotation = formData.get('gameAnnotation')
 
     const openAiThread = await createThread()
     const openAiStoryteller = await getStoryteller(gameSystem)
-    const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, category: gameCategory, system: gameSystem, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
+    const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, category: gameCategory, system: gameSystem, annotation: gameAnnotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
     updateCache('games', data)
 
     // add bookmark

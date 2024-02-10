@@ -1,0 +1,36 @@
+---
+  import { getData } from '@lib/cache'
+	import Layout from '@layouts/layout.astro'
+  import ArticleList from '@components/articles/ArticleList.svelte'
+
+  const { supabase, user } = Astro.locals
+
+  const articles = await getData('articles', 300, () => supabase.from('articles').select('*'))
+---
+
+<Layout title='Články'>
+  <div class='headline flex'>
+    <h1>Články</h1>
+    {user.id && (<div>
+      <a href='./article/article-form' class='button desktop'>Vytvořit nový článek</a>
+      <a href='./article/article-form' class='button mobile material'>add</a>
+    </div>)}
+  </div>
+  <ArticleList {articles} />
+</Layout>
+
+<style>
+  .headline {
+    justify-content: space-between;
+  }
+  .mobile { display: none }
+  .desktop { display: block }
+
+  @media (max-width: 860px) {
+    .desktop { display: none }
+    .mobile { display: block }
+    .button {
+      padding: 10px;
+    }
+  }
+</style>

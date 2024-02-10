@@ -7,35 +7,43 @@
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
-    const boardName = formData.get('boardName')
+    const articleName = formData.get('articleName')
 
-    const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
-    updateCache('boards', data)
+    const { data, error } = await supabase.from('articles').insert({ name: articleName, author: user.id }).select().single()
+    updateCache('articles', data)
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, article_id: data.id }, { onConflict: 'user_id, article_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
 
     if (error) { handleError(error) }
     else {
-      return Astro.redirect(`/board/${data.id}?toastType=success&toastText=${encodeURIComponent('Diskuze byla přidána')}`)
+      return Astro.redirect(`/article/${data.id}?toastType=success&toastText=${encodeURIComponent('Článek byl přidán')}`)
     }
   }
 ---
 
-<Layout title='Vytvořit diskuzi'>
+<Layout title='Vytvořit článek'>
   <a href='javascript:history.back()'>zpět</a>
 
-  <h1>Vytvořit diskuzi</h1>
+  <h1>Vytvořit článek</h1>
 
   {user.id ? (
     <form method='POST' autocomplete='off'>
       <div class='row'>
         <div class='labels'>
-          <label for='boardName'>Název diskuze</label>
+          <label for='articleName'>Název článku</label>
         </div>
         <div class='inputs'>
-          <input type='text' id='boardName' name='boardName' maxlength='80' />
+          <input type='text' id='articleName' name='articleName' maxlength='80' />
+        </div>
+      </div>
+      <div class='row'>
+        <div class='labels'>
+          <label for='articleName'>Anotace</label>
+        </div>
+        <div class='inputs'>
+          <input type='text' id='articleName' name='articleName' maxlength='80' />
         </div>
       </div>
       <center>
@@ -44,7 +52,7 @@
     </form>
   ) : (
     <div>
-      <p>Pro vytvoření nové diskuze se musíš přihlásit.</p>
+      <p>Pro vytvoření nového článku se musíš přihlásit.</p>
     </div>
   )}
 </Layout>
@@ -55,9 +63,9 @@
   }
     .row {
       display: flex;
-      align-items: center;
       margin-top: 30px;
-      margin-bottom: 30px;
+      margin-bottom: 30px;    /* align-content: center; */
+      align-items: center;
     }
       .labels {
         width: 15%;

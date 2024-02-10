@@ -12,7 +12,7 @@
 
   /*
   async function updateAI () {
-    const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, intro: data.intro, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
+    const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, annotation: data.annotation, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     return json
@@ -24,7 +24,7 @@
   async function generateStory () {
     generatingStory = true
     data.secrets = 'načítám...'
-    const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ game: data.id, intro: data.intro, owner: data.owner.id, system: data.system }), headers: { 'Content-Type': 'application/json' } })
+    const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ game: data.id, annotation: data.annotation, owner: data.owner.id, system: data.system }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     data.secrets = json.story
@@ -34,7 +34,7 @@
   }
 
   async function updateGameInfo (publicChange = true) {
-    const newData = { intro: data.intro, info: data.info, secrets: data.secrets }
+    const newData = { annotation: data.annotation, info: data.info, secrets: data.secrets }
     if (publicChange) { newData.info_changed_at = new Date() }
     const { error } = await supabase.from('games').update(newData).eq('id', data.id)
     if (error) { return handleError(error) }
@@ -43,8 +43,8 @@
   }
 </script>
 
-<h2 class='first'>Úvod</h2>
-<EditableLong bind:value={data.intro} onSave={updateGameInfo} canEdit={isGameOwner} />
+<h2 class='first'>Anotace <span>(krátký popis hry)</span></h2>
+<EditableLong bind:value={data.annotation} onSave={updateGameInfo} canEdit={isGameOwner} />
 
 <h2>Pro hráče</h2>
 <EditableLong bind:value={data.info} onSave={updateGameInfo} canEdit={isGameOwner} />
