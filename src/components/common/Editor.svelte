@@ -55,7 +55,13 @@
         Image.configure(),
         Link.configure({ openOnClick: false }),
         Color.configure({ types: ['textStyle'] }),
-        BubbleMenu.configure({ element: bubbleEl, tippyOptions: { maxWidth: 'none' } }),
+        BubbleMenu.configure({
+          element: bubbleEl,
+          tippyOptions: {
+            maxWidth: 'none',
+            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+          }
+        }),
         TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
       ],
       onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected

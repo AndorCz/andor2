@@ -131,7 +131,8 @@ button, .button {
 }
 
   button.large, .button.large {
-    padding: 15px 40px;
+    padding: 15px 30px;
+    min-width: 240px;
   }
 
   button:hover, .button:hover {
@@ -255,8 +256,10 @@ select {
   --min-width: 40px;
   --min-height: 40px;
   --border-focused: 2px var(--buttonBg) solid;
-  --list-background: var(--panel);
-  --item-hover-bg: var(--prominent);
+  --list-background: var(--block);
+  --list-shadow: 2px 2px 6px #0003;
+  --item-hover-bg: var(--text);
+  --item-hover-color: var(--background);
   --multi-item-bg: var(--buttonBg);
   --multi-item-outline: none;
   --multi-item-clear-icon-color: var(--text);
@@ -509,10 +512,13 @@ select {
   color: var(--background) !important;
 }
 
-.addPostWrapper .tippy-box {
+.tippy-box-bubble {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+  .tippy-box-bubble .tippy-arrow {
+    display: none;
+  }
 
 /* Component overrides */
 

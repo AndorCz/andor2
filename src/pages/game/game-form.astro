@@ -1,5 +1,4 @@
 ---
-  import { handleError } from '@lib/database'
   import { createThread, getStoryteller } from '@lib/openai'
   import { updateCache } from '@lib/cache'
 	import Layout from '@layouts/layout.astro'
@@ -17,16 +16,14 @@
     const openAiThread = await createThread()
     const openAiStoryteller = await getStoryteller(gameSystem)
     const { data, error } = await supabase.from('games').insert({ name: gameName, owner: user.id, category: gameCategory, system: gameSystem, annotation: gameAnnotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
+    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
     updateCache('games', data)
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
-    if (bookmarkError) { return handleError(bookmarkError) }
+    if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
 
-    if (error) { handleError(error) }
-    else {
-      return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
-    }
+    return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
   }
 ---
 

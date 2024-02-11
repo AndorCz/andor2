@@ -104,6 +104,7 @@ create table articles (
   reports uuid[] null default '{}'::uuid[],
   editorial boolean null default false,
   created_at timestamp with time zone default current_timestamp
+  constraint articles_author_fkey foreign key (author) references profiles (id) on delete set null
 );
 
 create table posts (

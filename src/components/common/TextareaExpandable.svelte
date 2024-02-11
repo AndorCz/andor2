@@ -41,6 +41,10 @@
     if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
   }
 
+  export async function getContent () {
+    return allowHtml ? await tiptap.getHTML() : value
+  }
+
   export async function triggerEdit (id, content) {
     editing = id
     if (allowHtml) {

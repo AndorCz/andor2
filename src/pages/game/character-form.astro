@@ -1,5 +1,4 @@
 ---
-  import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/CharacterForm.svelte'
 
@@ -10,12 +9,12 @@
   let character:any = {}
 
   const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
-  if (gameError) { handleError(gameError) }
+  if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
   const isGameOwner = gameData.owner === user.id
 
   if (id) { // edit
-    const { data: charData, error } = await supabase.from('characters').select('*').eq('id', id).single()
-    if (error) { handleError(error) }
+    const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
+    if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
     else { character = charData }
   }
 
@@ -30,15 +29,13 @@
     if (character.storyteller) { character.accepted = true }
     if (game) { character.game = game }
 
-    const { error: error2 } = await supabase.from('characters').upsert(character)
+    const { error: error } = await supabase.from('characters').upsert(character)
+    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game)
-    if (timestampError) { return handleError(timestampError) }
+    if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
 
-    if (error2) { handleError(error2) }
-    else {
-      return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
-    }
+    return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
   }
 ---
 

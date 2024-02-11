@@ -1,5 +1,4 @@
 ---
-  import { handleError } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import Board from '@components/boards/Board.svelte'
   import BoardSettings from '@components/boards/BoardSettings.svelte'
@@ -10,10 +9,10 @@
   const showSettings = Astro.url.searchParams.get('settings')
 
   const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header').eq('id', boardId).single()
-  if (error) { handleError(error) }
+  if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
   const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: boardData.thread })
-  if (error2) { handleError(error2) }
+  if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
   if (unreadData) { boardData.unread = unreadData }
 ---
 

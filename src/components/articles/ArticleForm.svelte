@@ -7,13 +7,22 @@
   let editorRef
   let selectedTags
   let maxTags
+  let contentInputRef
+  let tagsInputRef
+
+  const prepareData = async (event) => {
+    event.preventDefault()
+    contentInputRef.value = await editorRef.getContent()
+    tagsInputRef.value = selectedTags.map(tag => tag.value)
+    event.target.submit()
+  }
 
   $: maxTags = selectedTags?.length === 5
   $: tagItems = maxTags ? [] : [...tags]
 </script>
 
 {#if user.id}
-  <form method='POST' autocomplete='off'>
+  <form method='POST' autocomplete='off' on:submit={prepareData}>
     <div class='row'>
       <div class='labels'>
         <label for='articleName'>Název</label>
@@ -28,12 +37,16 @@
     </div>
     <div class='row'>
       <div class='labels'>Obsah</div>
-      <div class='inputs'><TextareaExpandable bind:this={editorRef} allowHtml minHeight={500} id='articleContent' /></div>
+      <div class='inputs'>
+        <TextareaExpandable bind:this={editorRef} allowHtml minHeight={500} />
+        <input type='hidden' name='articleContent' bind:this={contentInputRef} />
+      </div>
     </div>
     <div class='row'>
       <div class='labels'><label for='articleTags'>Tagy</label></div>
       <div class='inputs'>
-        <Select id='articleTags' items={tagItems} multiple bind:value={selectedTags} placeholder='' />
+        <Select items={tagItems} multiple bind:value={selectedTags} placeholder='' />
+        <input type='hidden' name='articleTags' bind:this={tagsInputRef} />
       </div>
     </div>
     <center>

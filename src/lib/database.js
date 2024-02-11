@@ -28,16 +28,14 @@ if (typeof window !== 'undefined') {
   window.onbeforeunload = () => { window.isWindowClosed = true }
 }
 
-export function handleError (error) {
+export function handleError (error, astro) {
   if (typeof window !== 'undefined') {
     if (!window.isWindowClosed) { // ignore fetch errors (cancelled fetches) when the page is closing/reloading
       console.error(error)
       window.showError('Chyba: ' + error.message)
       return Promise.reject(error)
     }
-  } else {
-    console.error(error)
-  }
+  } else { console.error(error) } // not so helpful, don't use this method on the back-end
 }
 
 export async function getActiveUsers (db) { // pass front-end or back-end supabase instance
