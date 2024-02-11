@@ -2,8 +2,9 @@
   import { onMount } from 'svelte'
   import Editor from '@components/common/Editor.svelte'
 
-  export let value
-  export let onSave
+  export let id
+  export let value = ''
+  export let onSave = null
   export let onTyping = null
   export let allowHtml = false
   export let name = 'textarea'
@@ -24,7 +25,7 @@
     if (allowHtml) { tiptap = editorRef.getEditor() }
   })
 
-  function setHeight (node) {
+  function setHeight (node) { // textarea only
     const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
     textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
@@ -83,9 +84,9 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} />
   {:else}
-    <textarea bind:value={value} {name} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
+    <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Upravit' : 'Odeslat'}>

@@ -9,7 +9,7 @@
   <form method='POST' autocomplete='off'>
     <div class='row'>
       <div class='labels'>
-        <label for='gameName'>Název hry</label>
+        <label for='gameName'>Název</label>
       </div>
       <div class='inputs'>
         <input type='text' id='gameName' name='gameName' maxlength='80' />
@@ -48,7 +48,7 @@
     </div>
 
     <center>
-      <button type='submit' onclick='this.disabled=true; this.form.submit()'>Vytvořit</button>
+      <button type='submit' class='large' onclick='this.disabled=true; this.form.submit()'>Vytvořit</button>
     </center>
   </form>
 {:else}
@@ -63,12 +63,12 @@
   }
     .row {
       display: flex;
-      align-items: center;
       margin-top: 30px;
       margin-bottom: 30px;
     }
       .labels {
         width: 15%;
+        padding-top: 15px;
       }
       .inputs {
         flex: 1;

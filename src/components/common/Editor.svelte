@@ -15,8 +15,9 @@
   import { Reply } from '@lib/editor/reply'
 
   export let content = ''
-  export let onKeyUp
-  export let onChange
+  export let onKeyUp = null
+  export let onChange = null
+  export let minHeight = 140
 
   let editor
   let editorEl
@@ -72,6 +73,7 @@
         content = editor.state.doc.textContent
       }
     })
+    editorEl.querySelector('.ProseMirror').style.minHeight = minHeight + 'px'
   })
 
   onDestroy(() => { if (editor) { editor.destroy() } })

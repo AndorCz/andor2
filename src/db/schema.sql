@@ -95,7 +95,7 @@ create table articles (
   id int4 not null primary key generated always as identity,
   author uuid not null,
   name text not null,
-  perex text not null,
+  annotation text not null,
   content text not null,
   thread int4 not null,
   tags public.article_tag[] null default '{}'::public.article_tag[],

@@ -129,7 +129,7 @@
   {:else}
     <div id='panels' class='login'>
       <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
-        <button value='google' name='provider' type='submit' class='google w100'>Přihlásit přes Google</button>
+        <button value='google' name='provider' type='submit' class='google w100 large'>Přihlásit přes Google</button>
       </form>
     </div>
   {/if}

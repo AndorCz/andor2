@@ -20,6 +20,7 @@
   --new: gold;
   --buttonBg: #634b41;
   --buttonBgHover: #705343;
+  --inputBg: #2a2625;
   --heart: #b66767;
   --frown: #b68e67;
   --thumb: #b6b367;
@@ -129,6 +130,10 @@ button, .button {
   box-shadow: 2px 2px 3px #0003;
 }
 
+  button.large, .button.large {
+    padding: 15px 40px;
+  }
+
   button:hover, .button:hover {
     background-color: var(--buttonBgHover);
     border: 1px color-mix(in srgb, var(--buttonBg), var(--linkVisited) 30%) solid;
@@ -170,7 +175,7 @@ input[type=text], textarea, input[type=checkbox], .ProseMirror {
   border: none;
   color: var(--text);
   border-bottom: 3px var(--buttonBg) solid;
-  background-color: color-mix(in srgb, var(--panel), var(--background) 15%);
+  background-color: var(--inputBg);
   box-shadow: inset 1px 1px 6px #0006;
   border-radius: 10px;
   appearance: none;
@@ -236,6 +241,35 @@ select {
   padding: 10px 0px;
   margin: 0px;
 }
+
+/* SVELTE-SELECT */
+
+.svelte-select {
+  --font-size: 20px;
+  --border: none;
+  --border-radius: 10px;
+  --border-hover: none;
+  --background: var(--inputBg);
+  --color: var(--text);
+  --padding: 15px;
+  --min-width: 40px;
+  --min-height: 40px;
+  --border-focused: 2px var(--buttonBg) solid;
+  --list-background: var(--panel);
+  --item-hover-bg: var(--prominent);
+  --multi-item-bg: var(--buttonBg);
+  --multi-item-outline: none;
+  --multi-item-clear-icon-color: var(--text);
+  --multi-item-height: 30px;
+  cursor: text;
+  box-shadow: inset 1px 1px 6px #0006;
+  font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
+  border-bottom: 3px var(--buttonBg) solid !important;
+}
+  .svelte-select input {
+    cursor: text !important;
+    box-shadow: none;
+  }
 
 /* TABS */
 

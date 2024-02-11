@@ -32,14 +32,14 @@
     <form method='POST' autocomplete='off'>
       <div class='row'>
         <div class='labels'>
-          <label for='boardName'>Název diskuze</label>
+          <label for='boardName'>Název</label>
         </div>
         <div class='inputs'>
           <input type='text' id='boardName' name='boardName' maxlength='80' />
         </div>
       </div>
       <center>
-        <button type='submit'>Vytvořit</button>
+        <button type='submit' class='large'>Vytvořit</button>
       </center>
     </form>
   ) : (
@@ -55,12 +55,12 @@
   }
     .row {
       display: flex;
-      align-items: center;
       margin-top: 30px;
       margin-bottom: 30px;
     }
       .labels {
         width: 15%;
+        padding-top: 15px;
       }
       .inputs {
         flex: 1;

@@ -66,7 +66,7 @@
       </div>
     {/if}
     <center>
-      <button type='submit' on:click={() => { saving = true; formEl.submit() }} disabled={saving}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 {:else}
@@ -81,11 +81,11 @@
   }
     .row {
       display: flex;
-      align-items: center;
       margin: 30px 0px;
     }
       .labels {
         width: 10%;
+        padding-top: 15px;
       }
       .inputs {
         flex: 1;
