@@ -69,7 +69,7 @@
     editing = id
     textareaValue = content
     textareaRef.triggerEdit(id, content)
-    document.getElementsByClassName('text')[0].scrollIntoView({ behavior: 'smooth' })
+    document.getElementsByClassName('editorHeadline')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 
@@ -126,7 +126,7 @@
 {/if}
 
 {#if user.id}
-  <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+  <h3 class='text editorHeadline'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
   <div class='addPostWrapper'>
     <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
   </div>

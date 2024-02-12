@@ -115,7 +115,7 @@
       padding: 20px;
       box-shadow: 2px 2px 3px #0002;
     }
-      .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .reactions, .hidden .time, .hidden .reply {
+      .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .time, .hidden .reply {
         display: none;
       }
     .header {
@@ -160,7 +160,10 @@
           cursor: pointer;
           opacity: 0.7;
         }
-          .time:hover, .delete:hover, .edit:hover, .moderate:hover {
+        .reply {
+          opacity: 0.7;
+        }
+          .time:hover, .delete:hover, .edit:hover, .moderate:hover, .reply:hover {
             opacity: 1;
           }
 

@@ -2,15 +2,18 @@
   import { onMount } from 'svelte'
   import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
-  import { posts, getGameStore } from '@lib/stores'
+  import { posts } from '@lib/stores'
   import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
   export let user = {}
   export let data = {}
-  export let isGameOwner
+  export let isOwner
+  export let thread
   export let unread = 0
+  export let useIdentities = false
+  export let identityStore = null
 
   let textareaRef
   let textareaValue = ''
@@ -21,43 +24,46 @@
   let pages
 
   const limit = 50
-  const gameStore = getGameStore(data.id)
 
   // set identities for discussion
   const getMyCharacters = () => {
+    if (!useIdentities) { return [] }
     const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
     myCharacters.forEach((char) => { char.type = 'character' })
     return myCharacters
   }
-  const identities = [{ name: user.name, id: user.id, type: 'user' }, ...getMyCharacters()]
+  const userIdentity = { name: user.name, id: user.id, type: 'user' }
+  const identities = [userIdentity, ...getMyCharacters()]
 
   onMount(() => {
     if (user.id) {
-      $gameStore.activeChatIdentity = $gameStore.activeChatIdentity || identities[0].id
-      identitySelect.value = $gameStore.activeChatIdentity
+      if (useIdentities) {
+        $identityStore.activeChatIdentity = $identityStore.activeChatIdentity || identities[0].id
+        identitySelect.value = $identityStore.activeChatIdentity
+      }
     }
     loadPosts()
   })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', data.discussion_thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     $posts = postData
     pages = Math.ceil(count / limit)
   }
 
-  function getIdentity (id) {
-    return identities.find((identity) => { return identity.id === id })
+  function getIdentity () {
+    return identities.find((identity) => { return identity.id === $identityStore.activeChatIdentity })
   }
 
   async function submitPost () {
     if (saving || textareaValue === '') { return }
     saving = true
-    const identity = getIdentity($gameStore.activeChatIdentity)
+    const identity = useIdentities ? getIdentity() : userIdentity
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: data.discussion_thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
     } else {
-      await sendPost('POST', { thread: data.discussion_thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
     }
     textareaValue = ''
     await loadPosts()
@@ -87,7 +93,7 @@
     editing = id
     textareaValue = content
     textareaRef.triggerEdit(id, content)
-    document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
+    document.getElementsByClassName('headlines')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 
@@ -102,33 +108,36 @@
   {#if $platform === 'desktop'}
     <div class='headlines'>
       <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-      <h3 class='sender'>Identita</h3>
+      {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
     </div>
     <div class='addPostWrapper'>
       <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-      <div class='senderWrapper'>
-        <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-          {#each identities as identity}
-            <option value={identity.id}>{identity.name}</option>
-          {/each}
-        </select>
-      </div>
+      {#if useIdentities}
+        <div class='senderWrapper'>
+          <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+            {#each identities as identity}
+              <option value={identity.id}>{identity.name}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
     </div>
   {:else}
     <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
     <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-
-    <h3 class='sender'>Identita</h3>
-    <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeChatIdentity}>
-      {#each identities as identity}
-        <option value={identity.id}>{identity.name}</option>
-      {/each}
-    </select>
+    {#if useIdentities}
+      <h3 class='sender'>Identita</h3>
+      <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+        {#each identities as identity}
+          <option value={identity.id}>{identity.name}</option>
+        {/each}
+      </select>
+    {/if}
   {/if}
 {/if}
 
 {#key $posts}
-  <Thread {posts} {user} {unread} id={data.discussion_thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isGameOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+  <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
 {/key}
 
 <style>

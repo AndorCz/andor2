@@ -121,7 +121,7 @@
     editing = id
     textareaValue = content
     textareaRef.triggerEdit(id, content)
-    document.getElementsByClassName('content')[0].scrollIntoView({ behavior: 'smooth' })
+    document.getElementsByClassName('addPostWrapper')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 
