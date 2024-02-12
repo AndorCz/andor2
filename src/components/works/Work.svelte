@@ -8,12 +8,12 @@
 <main>
   <a href='javascript:history.back()'>zpět</a>
   <h1>{data.name}</h1>
-  <div class='article'>{@html data.content}</div>
+  <div class='work'>{@html data.content}</div>
   <Discussion {data} {user} thread={data.thread} isOwner={data.author.id === user.id} unread={data.unread} />
 </main>
 
 <style>
-  .article {
+  .work {
     margin-bottom: 50px;
   }
 </style>

@@ -12,7 +12,8 @@ drop table if exists user_reads cascade;
 drop type if exists character_state;
 drop type if exists game_system;
 drop type if exists game_category;
-drop type if exists article_tag;
+drop type if exists work_type;
+drop type if exists work_tag;
 
 drop view if exists posts_owner;
 drop view if exists board_list;
@@ -23,7 +24,8 @@ drop view if exists game_list;
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
-create type article_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poetry', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
+create type work_type as enum ('text', 'image', 'audio');
+create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poetry', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
 
 -- TABLES
 
@@ -93,21 +95,22 @@ create table characters (
   constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
 );
 
-create table articles (
+create table works (
   id int4 not null primary key generated always as identity,
+  type public.work_type not null default 'text'::work_type,
   author uuid not null,
   name text not null,
   annotation text not null,
   content text not null,
   thread int4 null,
   custom_header boolean null,
-  tags public.article_tag[] null default '{}'::public.article_tag[],
+  tags public.work_tag[] null default '{}'::public.work_tag[],
   likes uuid[] null default '{}'::uuid[],
   dislikes uuid[] null default '{}'::uuid[],
   reports uuid[] null default '{}'::uuid[],
   editorial boolean null default false,
   created_at timestamp with time zone default current_timestamp
-  constraint articles_author_fkey foreign key (author) references profiles (id) on delete set null
+  constraint works_author_fkey foreign key (author) references profiles (id) on delete set null
 );
 
 create table posts (
@@ -145,12 +148,12 @@ create table bookmarks (
   user_id uuid null,
   game_id int4 null,
   board_id int4 null,
-  article_id int4 null,
+  work_id int4 null,
   created_at timestamp with time zone null default current_timestamp,
   constraint unique_user_game unique (user_id, game_id),
   constraint unique_user_board unique (user_id, board_id),
-  constraint unique_user_article unique (user_id, article_id),
-  constraint bookmarks_article_id_fkey foreign key (article_id) references articles (id) on delete cascade,
+  constraint unique_user_work unique (user_id, work_id),
+  constraint bookmarks_work_id_fkey foreign key (work_id) references works (id) on delete cascade,
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
@@ -320,7 +323,7 @@ returns jsonb as $$
 declare
   games_json jsonb;
   boards_json jsonb;
-  articles_json jsonb;
+  works_json jsonb;
   user_uuid uuid := auth.uid();  -- Retrieve the user's UUID
 begin
   games_json := (
@@ -353,20 +356,20 @@ begin
     where b.user_id = user_uuid and b.board_id is not null
   );
 
-  articles_json := (
+  works_json := (
     select jsonb_agg(jsonb_build_object(
       'id', b.id,
-      'article_id', a.id,
+      'work_id', a.id,
       'name', a.name,
       'created_at', b.created_at,
       'unread', calculate_unread_count(user_uuid, 'thread-' || a.thread::text)
     ))
     from bookmarks b
-    left join articles a on a.id = b.article_id
-    where b.user_id = user_uuid and b.article_id is not null
+    left join works a on a.id = b.work_id
+    where b.user_id = user_uuid and b.work_id is not null
   );
 
-  return jsonb_build_object('games', games_json, 'boards', boards_json, 'articles', articles_json);
+  return jsonb_build_object('games', games_json, 'boards', boards_json, 'works', works_json);
 end;
 $$ language plpgsql;
 
@@ -459,8 +462,8 @@ create or replace trigger add_game_threads before insert on games for each row e
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
 create or replace trigger add_board_thread before insert on boards for each row execute function add_thread ();
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_thread();
-create or replace trigger add_article_thread before insert on articles for each row execute function add_thread ();
-create or replace trigger delete_article_thread after delete on articles for each row execute procedure delete_thread();
+create or replace trigger add_work_thread before insert on works for each row execute function add_thread ();
+create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
 
 -- SEED
 

@@ -25,28 +25,28 @@
   <form method='POST' autocomplete='off' on:submit={prepareData}>
     <div class='row'>
       <div class='labels'>
-        <label for='articleName'>Název</label>
+        <label for='workName'>Název</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='articleName' name='articleName' maxlength='80' />
+        <input type='text' id='workName' name='workName' maxlength='80' />
       </div>
     </div>
     <div class='row'>
-      <div class='labels'><label for='articleAnnotation'>Anotace</label></div>
-      <div class='inputs'><TextareaExpandable id='articleAnnotation' name='articleAnnotation' /></div>
+      <div class='labels'><label for='workAnnotation'>Anotace</label></div>
+      <div class='inputs'><TextareaExpandable id='workAnnotation' name='workAnnotation' /></div>
     </div>
     <div class='row'>
       <div class='labels'>Obsah</div>
       <div class='inputs'>
         <TextareaExpandable bind:this={editorRef} allowHtml minHeight={500} />
-        <input type='hidden' name='articleContent' bind:this={contentInputRef} />
+        <input type='hidden' name='workContent' bind:this={contentInputRef} />
       </div>
     </div>
     <div class='row'>
-      <div class='labels'><label for='articleTags'>Tagy</label></div>
+      <div class='labels'><label for='workTags'>Tagy</label></div>
       <div class='inputs'>
         <Select items={tagItems} multiple bind:value={selectedTags} placeholder='' />
-        <input type='hidden' name='articleTags' bind:this={tagsInputRef} />
+        <input type='hidden' name='workTags' bind:this={tagsInputRef} />
       </div>
     </div>
     <center>
@@ -55,7 +55,7 @@
   </form>
 {:else}
   <div>
-    <p>Pro vytvoření nového článku se musíš přihlásit.</p>
+    <p>Pro vytvoření nového díla se musíš přihlásit.</p>
   </div>
 {/if}
 

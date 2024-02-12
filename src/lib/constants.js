@@ -97,5 +97,6 @@ export const tags = [
   { value: 'harrypotter', label: 'Harry Potter' },
   { value: 'starwars', label: 'Star Wars' },
   { value: 'startrek', label: 'Star Trek' },
-  { value: 'andor', label: 'Andor' }
+  { value: 'andor', label: 'Andor' },
+  { value: 'project', label: 'Projektíček' }
 ]
