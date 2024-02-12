@@ -1,0 +1,30 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Article from '@components/articles/Article.svelte'
+  import ArticleSettings from '@components/articles/ArticleSettings.svelte'
+
+  const { supabase, user, bookmarks } = Astro.locals
+  const { articleId } = Astro.params
+
+  const showSettings = Astro.url.searchParams.get('settings')
+
+  const { data: articleData, error } = await supabase.from('articles').select('id, name, content, thread, owner:profiles(id, name), custom_header, likes, dislikes, created_at').eq('id', articleId).single()
+  if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+
+  const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: articleData.thread })
+  if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
+  if (unreadData) { articleData.unread = unreadData }
+---
+
+<script>
+  import { lookForToast } from '@lib/toasts'
+  lookForToast()
+</script>
+
+<Layout title={articleData?.name} headerStorageId={articleData?.custom_header ? 'article-' + articleData.id : null}>
+  {(showSettings ? (
+    <ArticleSettings data={articleData} {user} client:only />
+  ) : (
+    <Article data={articleData} {user} client:only />
+  ))}
+</Layout>

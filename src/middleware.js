@@ -42,6 +42,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         if (bookmarkError) { return handleError(bookmarkError) }
         bookmarkData.games = bookmarkData.games || []
         bookmarkData.boards = bookmarkData.boards || []
+        bookmarkData.articles = bookmarkData.articles || []
         locals.bookmarks = bookmarkData
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first

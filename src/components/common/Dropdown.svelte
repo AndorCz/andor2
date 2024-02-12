@@ -33,7 +33,7 @@
 </script>
 
 <span class='dropdown' bind:this={dropdownEl}>
-  <button class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
+  <button type='button' class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
     {#key selected}
       {#if findSelectedOption()}
         {#if iconsOnly}
@@ -49,7 +49,7 @@
   {#if isOpen}
     <div class='options'>
       {#each getUnselectedOptions() as option}
-        <button on:click={() => selectOption(option)} class={iconsOnly && 'material'} class:selected={option.value === selected}>
+        <button type='button' on:click={() => selectOption(option)} class={iconsOnly && 'material'} class:selected={option.value === selected}>
           {#if iconsOnly}
             {option.icon}
           {:else}

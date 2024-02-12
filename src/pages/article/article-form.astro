@@ -10,11 +10,10 @@
     const name = formData.get('articleName')
     const content = formData.get('articleContent')
     const annotation = formData.get('articleAnnotation')
-    const tags = formData.getAll('articleTags[]')
+    const tags = formData.get('articleTags') ? formData.get('articleTags').split(',') : []
 
     const { data, error } = await supabase.from('articles').insert({ author: user.id, name, content, annotation, tags }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    console.log('data', data)
     updateCache('articles', data)
 
     // add bookmark

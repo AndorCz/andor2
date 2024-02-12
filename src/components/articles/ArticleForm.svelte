@@ -13,7 +13,7 @@
   const prepareData = async (event) => {
     event.preventDefault()
     contentInputRef.value = await editorRef.getContent()
-    tagsInputRef.value = selectedTags.map(tag => tag.value)
+    tagsInputRef.value = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : null
     event.target.submit()
   }
 

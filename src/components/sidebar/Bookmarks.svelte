@@ -2,10 +2,10 @@
   import { bookmarks } from '@lib/stores'
 
   let bookmarkNumber
-  $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length
+  $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.articles.length
 </script>
 
-{#if Object.keys($bookmarks.games).length > 0}
+{#if $bookmarks.games.length > 0}
   <h4>Hry</h4>
   <ul class='games'>
     {#each $bookmarks.games as bookmark}
@@ -21,7 +21,7 @@
   </ul>
 {/if}
 
-{#if Object.keys($bookmarks.boards).length > 0}
+{#if $bookmarks.boards.length > 0}
   <h4>Diskuze</h4>
   <ul class='boards'>
     {#each $bookmarks.boards as bookmark}
@@ -30,6 +30,22 @@
           {bookmark.name}
           {#if bookmark.unread}
             <span class='unread'>{bookmark.unread}</span>
+          {/if}
+        </a>
+      </li>
+    {/each}
+  </ul>
+{/if}
+
+{#if $bookmarks.articles.length > 0}
+  <h4>Články</h4>
+  <ul class='articles'>
+    {#each $bookmarks.articles as article}
+      <li class='bookmark' class:active={'/article/' + article.article_id === window.location.pathname}>
+        <a href={'/article/' + article.article_id}>
+          {article.name}
+          {#if article.unread}
+            <span class='unread'>{article.unread}</span>
           {/if}
         </a>
       </li>

@@ -4,7 +4,7 @@ import { writable } from 'svelte/store'
 export const headerPreview = writable(null)
 export const conversations = writable({})
 export const unreadConversations = writable({})
-export const bookmarks = writable({ games: [], boards: [] })
+export const bookmarks = writable({ games: [], boards: [], articles: [] })
 export const posts = writable([])
 
 // LOCAL STORAGE SYNCED STORES
