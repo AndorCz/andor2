@@ -1,19 +1,19 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import Article from '@components/articles/Article.svelte'
-  import ArticleSettings from '@components/articles/ArticleSettings.svelte'
+  import Work from '@components/works/Work.svelte'
+  import WorkSettings from '@components/works/WorkSettings.svelte'
 
   const { supabase, user, bookmarks } = Astro.locals
-  const { articleId } = Astro.params
+  const { workId } = Astro.params
 
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: articleData, error } = await supabase.from('articles').select('id, name, content, thread, author:profiles(id, name), custom_header, likes, dislikes, created_at').eq('id', articleId).single()
+  const { data: workData, error } = await supabase.from('works').select('id, type, name, content, thread, author:profiles(id, name), custom_header, likes, dislikes, created_at').eq('id', workId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
-  const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: articleData.thread })
+  const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: workData.thread })
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
-  if (unreadData) { articleData.unread = unreadData }
+  if (unreadData) { workData.unread = unreadData }
 ---
 
 <script>
@@ -21,10 +21,10 @@
   lookForToast()
 </script>
 
-<Layout title={articleData?.name} headerStorageId={articleData?.custom_header ? 'article-' + articleData.id : null}>
+<Layout title={workData?.name} headerStorageId={workData?.custom_header ? 'work-' + workData.id : null}>
   {(showSettings ? (
-    <ArticleSettings data={articleData} {user} client:only />
+    <WorkSettings data={workData} {user} client:only />
   ) : (
-    <Article data={articleData} {user} client:only />
+    <Work data={workData} {user} client:only />
   ))}
 </Layout>

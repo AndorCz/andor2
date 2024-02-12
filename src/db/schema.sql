@@ -324,7 +324,7 @@ declare
   games_json jsonb;
   boards_json jsonb;
   works_json jsonb;
-  user_uuid uuid := auth.uid();  -- Retrieve the user's UUID
+  user_uuid uuid := auth.uid();
 begin
   games_json := (
     select jsonb_agg(jsonb_build_object(
@@ -359,13 +359,13 @@ begin
   works_json := (
     select jsonb_agg(jsonb_build_object(
       'id', b.id,
-      'work_id', a.id,
-      'name', a.name,
+      'work_id', w.id,
+      'name', w.name,
       'created_at', b.created_at,
-      'unread', calculate_unread_count(user_uuid, 'thread-' || a.thread::text)
+      'unread', calculate_unread_count(user_uuid, 'thread-' || w.thread::text)
     ))
     from bookmarks b
-    left join works a on a.id = b.work_id
+    left join works w on w.id = b.work_id
     where b.user_id = user_uuid and b.work_id is not null
   );
 

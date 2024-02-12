@@ -1,26 +1,27 @@
 ---
   import { updateCache } from '@lib/cache'
 	import Layout from '@layouts/layout.astro'
-  import ArticleForm from '@components/articles/ArticleForm.svelte'
+  import WorkForm from '@components/works/WorkForm.svelte'
 
   const { supabase, user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
-    const name = formData.get('articleName')
-    const content = formData.get('articleContent')
-    const annotation = formData.get('articleAnnotation')
-    const tags = formData.get('articleTags') ? formData.get('articleTags').split(',') : []
+    const name = formData.get('workName')
+    const content = formData.get('workContent')
+    const annotation = formData.get('workAnnotation')
+    const tags = formData.get('workTags') ? formData.get('workTags').split(',') : []
 
-    const { data, error } = await supabase.from('articles').insert({ author: user.id, name, content, annotation, tags }).select().single()
+    // 2DO: add 'type' for other types of works
+    const { data, error } = await supabase.from('works').insert({ author: user.id, name, content, annotation, tags }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    updateCache('articles', data)
+    updateCache('works', data)
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, article_id: data.id }, { onConflict: 'user_id, article_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
 
-    return Astro.redirect(`/article/${data.id}?toastType=success&toastText=${encodeURIComponent('Článek byl přidán')}`)
+    return Astro.redirect(`/work/${data.id}?toastType=success&toastText=${encodeURIComponent('Článek byl přidán')}`)
   }
 ---
 
@@ -28,5 +29,5 @@
   <a href='javascript:history.back()'>zpět</a>
 
   <h1>Vytvořit článek</h1>
-  <ArticleForm {user} client:only />
+  <WorkForm {user} client:only />
 </Layout>

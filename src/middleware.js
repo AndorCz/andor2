@@ -42,7 +42,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         if (bookmarkError) { return handleError(bookmarkError) }
         bookmarkData.games = bookmarkData.games || []
         bookmarkData.boards = bookmarkData.boards || []
-        bookmarkData.works = bookmarkData.work || []
+        bookmarkData.works = bookmarkData.works || []
         locals.bookmarks = bookmarkData
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
