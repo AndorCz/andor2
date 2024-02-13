@@ -273,6 +273,9 @@ select {
     cursor: text !important;
     box-shadow: none;
   }
+  .svelte-select .multi-item-clear {
+    cursor: pointer;
+  }
 
 /* TABS */
 

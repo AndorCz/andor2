@@ -4,7 +4,8 @@
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
   import { getImage } from '@lib/utils'
-  import { gameSystems, gameCategories } from '@lib/constants'
+  import { workTags, workCategoriesText } from '@lib/constants'
+  import Select from 'svelte-select'
 
   export let data = {}
   export let user = {}
@@ -12,16 +13,17 @@
   let files
   let saving = false
   let uploading = false
-  let originalSystem
   let originalName
   let originalCategory
+  let originalTagsString
+  let selectedTagsString
 
   onMount(setOriginal)
 
   function setOriginal () {
-    originalSystem = data.system
     originalName = data.name
     originalCategory = data.category
+    originalTagsString = data.tags?.map(t => t.value).join(',')
   }
 
   async function uploadHeader () {
@@ -32,8 +34,8 @@
         const image = await getImage(file)
         if (image.width >= 1100 && image.height === 226) {
           $headerPreview = URL.createObjectURL(file)
-          const { error: error1 } = await supabase.storage.from('headers').upload('game-' + data.id, file, { upsert: true })
-          const { error: error2 } = await supabase.from('games').update({ custom_header: true }).eq('id', data.id)
+          const { error: error1 } = await supabase.storage.from('headers').upload('work-' + data.id, file, { upsert: true })
+          const { error: error2 } = await supabase.from('works').update({ custom_header: true }).eq('id', data.id)
           if (error1 || error2) { return handleError(error1 || error2) }
           data.custom_header = true
           window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -51,8 +53,8 @@
   async function clearHeader () {
     // clear in db
     if (data.custom_header) {
-      const { error: error1 } = await supabase.storage.from('headers').remove(['game-' + data.id])
-      const { error: error2 } = await supabase.from('games').update({ custom_header: false }).eq('id', data.id)
+      const { error: error1 } = await supabase.storage.from('headers').remove(['work-' + data.id])
+      const { error: error2 } = await supabase.from('works').update({ custom_header: false }).eq('id', data.id)
       if (error1 || error2) { return handleError(error1 || error2) }
     }
     files = null
@@ -61,43 +63,40 @@
     showSuccess('Hlavička smazána')
   }
 
-  async function updateGame () {
+  async function updateWork () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, category: data.category, system: data.system }).eq('id', data.id)
+    const tags = data.tags ? data.tags.map(t => t.value) : []
+    const { error } = await supabase.from('works').update({ name: data.name, annotation: data.annotation, category: data.category, tags }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
-    // update AI storyteller if system changed
-    /*
-    if (originalSystem !== data.system) {
-      const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: data.owner.id, system: data.system, storyteller: data.openai_storyteller, annotation: data.annotation, secrets: data.secrets }), headers: { 'Content-Type': 'application/json' } })
-      const json = await res.json()
-      if (res.error || json.error) { return showError(res.error || json.error) }
-    }
-    */
     showSuccess('Změna hry uložena')
     saving = false
   }
 
-  async function deleteGame () {
-    await supabase.from('games').delete().eq('id', data.id).then(({ error }) => {
+  async function deleteWork () {
+    await supabase.from('works').delete().eq('id', data.id).then(({ error }) => {
       if (error) { return handleError(error) }
-      window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
+      window.location.href = '/works?toastType=success&toastText=' + encodeURIComponent('Dílo bylo smazáno')
     })
   }
 
-  function showGame () {
-    window.location.href = `/game/${data.id}`
+  function showWork () {
+    window.location.href = `/work/${data.id}`
   }
+
+  $: maxTags = data.tags?.length === 3
+  $: tagItems = maxTags ? [] : [...workTags]
+  $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
 <main>
   <div class='headline'>
     <h2>{data.name}: Nastavení</h2>
-    <button on:click={showGame} class='material' title='Zpět do hry'>check</button>
+    <button on:click={showWork} class='material' title='Zpět do díla'>check</button>
   </div>
 
-  {#if data.owner.id === user.id}
-    <h3 class='first'>Vlastní hlavička hry</h3>
+  {#if data.author.id === user.id}
+    <h3 class='first'>Vlastní hlavička díla</h3>
     Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
     <div class='row'>
       <label class='button' for='header'>Nahrát obrázek</label>
@@ -105,39 +104,37 @@
       <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
     </div>
 
-    <h3>Název hry</h3>
+    <h3>Název díla</h3>
     <div class='row'>
-      <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateGame} disabled={saving || (originalName === data.name)} class='material'>check</button>
+      <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
+      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material'>check</button>
     </div>
 
     <h3>Kategorie</h3>
     <div class='row'>
-      <select id='gameCategory' name='gameCategory' bind:value={data.category}>
-        {#each gameCategories as category}
+      <select id='workCategory' name='workCategory' bind:value={data.category}>
+        {#each workCategoriesText as category}
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>
-      <button on:click={updateGame} disabled={saving || (originalCategory === data.category)} class='material'>check</button>
+      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material'>check</button>
     </div>
 
-    <h3>Herní systém</h3>
+    <h3>Tagy</h3>
     <div class='row'>
-      <select id='gameSystem' name='gameSystem' bind:value={data.system}>
-        {#each gameSystems as system}
-          <option value={system.value}>{system.label}</option>
-        {/each}
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalSystem === data.system)} class='material'>check</button>
+      <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
+        <div slot='empty'>Více tagů nelze přidat</div>
+      </Select>
+      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material'>check</button>
     </div>
 
-    <h3>Smazání hry</h3>
+    <h3>Smazání díla</h3>
     Pozor, toto je nevratná akce.<br><br>
-    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
-      <span class='material'>warning</span><span>Smazat hru</span>
+    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat toto dílo?')) { deleteWork() } }}>
+      <span class='material'>warning</span><span>Smazat dílo</span>
     </button>
   {:else}
-    Tato sekce je jen pro vlastníka hry.
+    Tato sekce je jen pro vlastníka díla.
   {/if}
 </main>
 
@@ -174,7 +171,7 @@
     display: flex;
     gap: 10px;
   }
-  #gameName {
+  #workName {
     width: 100%;
   }
   @media (max-width: 860px) {

@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
@@ -10,9 +11,13 @@
   let files
   let saving = false
   let uploading = false
+  let originalName
 
-  const isBoardOwner = data.owner.id === user.id
-  const originalName = data.name
+  onMount(setOriginal)
+
+  function setOriginal () {
+    originalName = data.name
+  }
 
   async function uploadHeader () {
     uploading = true
@@ -55,6 +60,7 @@
     saving = true
     const { error } = await supabase.from('boards').update({ name: data.name }).eq('id', data.id)
     if (error) { return handleError(error) }
+    setOriginal()
     showSuccess('Změna diskuze uložena')
     saving = false
   }
@@ -77,7 +83,7 @@
     <button on:click={showBoard} class='material' title='Zpět do diskuze'>check</button>
   </div>
 
-  {#if isBoardOwner}
+  {#if data.owner.id === user.id}
     <h3 class='first'>Vlastní hlavička diskuze</h3>
     Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
     <div class='row'>
@@ -89,7 +95,7 @@
     <h3>Název diskuze</h3>
     <div class='row'>
       <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateBoard} disabled={saving || originalName === data.name} class='material'>check</button>
+      <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material'>check</button>
     </div>
 
     <h3>Smazání diskuze</h3>

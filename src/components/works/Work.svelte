@@ -48,16 +48,6 @@
     {/if}
   </div>
 
-  <!--
-  {#if editing}
-    <TextareaExpandable bind:this={editorRef} allowHtml minHeight={500} value={data.content} />
-  {:else}
-    <div class='work'>{@html data.content}</div>
-  {/if}
-  {#if isAuthor}
-    <button on:click={() => { editing = !editing }} class='material edit' title='Upravit'>edit</button>
-  {/if}
-  -->
   <EditableLong value={data.content} onSave={async () => {}} canEdit={isAuthor} allowHtml />
   <br><br>
   <Discussion {data} {user} thread={data.thread} isOwner={data.author.id === user.id} unread={data.unread} />

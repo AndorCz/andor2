@@ -17,7 +17,7 @@
     event.target.submit()
   }
 
-  $: maxTags = selectedTags?.length === 5
+  $: maxTags = selectedTags?.length === 3
   $: tagItems = maxTags ? [] : [...workTags]
 </script>
 
@@ -59,9 +59,11 @@
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='workTags'>Tagy</label></div>
+      <div class='labels'><label for='workTags'>Tagy (max 3)</label></div>
       <div class='inputs'>
-        <Select items={tagItems} multiple bind:value={selectedTags} placeholder='' />
+        <Select items={tagItems} multiple bind:value={selectedTags} placeholder=''>
+          <div slot='empty'>Více tagů nelze přidat</div>
+        </Select>
         <input type='hidden' name='workTags' bind:this={tagsInputRef} />
       </div>
     </div>
