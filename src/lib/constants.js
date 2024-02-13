@@ -18,7 +18,7 @@ export const gameCategories = [
   { value: 'other', label: 'Ostatní' }
 ]
 
-export const systems = [
+export const gameSystems = [
   { value: 'base', label: 'Jiný / Bez systému' },
   { value: 'dnd5', label: 'Dungeons & Dragons e5' },
   { value: 'drd1', label: 'Dračí doupě e1.6' },

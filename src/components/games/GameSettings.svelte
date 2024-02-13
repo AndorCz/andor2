@@ -3,7 +3,7 @@
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
   import { getImage } from '@lib/utils'
-  import { systems, categories } from '@lib/constants'
+  import { gameSystems, gameCategories } from '@lib/constants'
 
   export let data = {}
   export let user = {}
@@ -107,7 +107,7 @@
     <h3>Kategorie</h3>
     <div class='row'>
       <select id='gameCategory' name='gameCategory' bind:value={data.category}>
-        {#each categories as category}
+        {#each gameCategories as category}
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>
@@ -117,7 +117,7 @@
     <h3>Herní systém</h3>
     <div class='row'>
       <select id='gameSystem' name='gameSystem' bind:value={data.system}>
-        {#each systems as system}
+        {#each gameSystems as system}
           <option value={system.value}>{system.label}</option>
         {/each}
       </select>

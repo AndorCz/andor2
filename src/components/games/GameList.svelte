@@ -1,8 +1,8 @@
 <script>
-  import { categories, systems } from '@lib/constants'
+  import { gameCategories, gameSystems } from '@lib/constants'
 
-  function getCategory (value) { return categories.find(category => category.value === value).label }
-  function getSystem (value) { return systems.find(system => system.value === value).label }
+  function getCategory (value) { return gameCategories.find(category => category.value === value).label }
+  function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
   export let games = []
 </script>

@@ -70,6 +70,7 @@
 
   @media (max-width: 500px) {
       nav {
+        left: 0px;
         display: flex;
         justify-content: space-evenly;
         width: 100%;
