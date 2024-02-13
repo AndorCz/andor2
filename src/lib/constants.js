@@ -1,5 +1,5 @@
 
-export const categories = [
+export const gameCategories = [
   { value: 'anime', label: 'Anime' },
   { value: 'cyberpunk', label: 'Cyberpunk' },
   { value: 'detective', label: 'Detektivní' },
@@ -37,7 +37,15 @@ export const systems = [
   { value: 'other', label: 'Ostatní' }
 ]
 
-export const tags = [
+export const workCategoriesText = [
+  { value: 'fiction', label: 'Fikce' },
+  { value: 'reality', label: 'Realita' },
+  { value: 'poetry', label: 'Poezie' },
+  { value: 'game', label: 'Herní' },
+  { value: 'other', label: 'Ostatní' }
+]
+
+export const workTags = [
   { value: 'story', label: 'Povídka' },
   { value: 'fantasy', label: 'Fantasy' },
   { value: 'steampunk', label: 'Steampunk' },
@@ -47,7 +55,7 @@ export const tags = [
   { value: 'thriller', label: 'Thriller' },
   { value: 'romance', label: 'Romantika' },
   { value: 'dystopia', label: 'Dystopie' },
-  { value: 'poetry', label: 'Poezie' },
+  { value: 'poem', label: 'Báseň' },
   { value: 'epos', label: 'Epos' },
   { value: 'drama', label: 'Drama' },
   { value: 'haiku', label: 'Haiku' },

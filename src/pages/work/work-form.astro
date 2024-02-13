@@ -10,10 +10,11 @@
     const name = formData.get('workName')
     const content = formData.get('workContent')
     const annotation = formData.get('workAnnotation')
+    const category = formData.get('workCategory')
     const tags = formData.get('workTags') ? formData.get('workTags').split(',') : []
 
     // 2DO: add 'type' for other types of works
-    const { data, error } = await supabase.from('works').insert({ author: user.id, name, content, annotation, tags }).select().single()
+    const { data, error } = await supabase.from('works').insert({ author: user.id, name, category, content, annotation, tags }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
     updateCache('works', data)
 

@@ -1,5 +1,5 @@
 <script>
-  import { systems, categories } from '@lib/constants'
+  import { systems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
@@ -22,7 +22,7 @@
       </div>
       <div class='inputs'>
         <select id='gameCategory' name='gameCategory'>
-          {#each categories as category}
+          {#each gameCategories as category}
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>

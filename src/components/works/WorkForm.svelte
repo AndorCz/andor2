@@ -1,5 +1,5 @@
 <script>
-  import { tags } from '@lib/constants'
+  import { workTags, workCategoriesText } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -18,7 +18,7 @@
   }
 
   $: maxTags = selectedTags?.length === 5
-  $: tagItems = maxTags ? [] : [...tags]
+  $: tagItems = maxTags ? [] : [...workTags]
 </script>
 
 {#if user.id}
@@ -31,10 +31,12 @@
         <input type='text' id='workName' name='workName' maxlength='80' />
       </div>
     </div>
+
     <div class='row'>
       <div class='labels'><label for='workAnnotation'>Anotace</label></div>
       <div class='inputs'><TextareaExpandable id='workAnnotation' name='workAnnotation' /></div>
     </div>
+
     <div class='row'>
       <div class='labels'>Obsah</div>
       <div class='inputs'>
@@ -42,6 +44,20 @@
         <input type='hidden' name='workContent' bind:this={contentInputRef} />
       </div>
     </div>
+
+    <div class='row'>
+      <div class='labels'>
+        <label for='workCategory'>Kategorie</label>
+      </div>
+      <div class='inputs'>
+        <select id='workCategory' name='workCategory'>
+          {#each workCategoriesText as category}
+            <option value={category.value}>{category.label}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+
     <div class='row'>
       <div class='labels'><label for='workTags'>Tagy</label></div>
       <div class='inputs'>
@@ -77,6 +93,9 @@
       }
         input {
           width: 100%;
+        }
+        select {
+          width: 400px;
         }
   center {
     margin-top: 20px;

@@ -18,6 +18,7 @@ drop type if exists work_tag;
 drop view if exists posts_owner;
 drop view if exists board_list;
 drop view if exists game_list;
+drop view if exists work_list;
 
 -- ENUMS
 
@@ -25,7 +26,8 @@ create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');
-create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poetry', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
+create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poem', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
+create type work_category as enum ('fiction', 'reality', 'poetry', 'game', 'other');
 
 -- TABLES
 
@@ -104,6 +106,7 @@ create table works (
   content text not null,
   thread int4 null,
   custom_header boolean null,
+  category public.work_category not null default 'other'::work_category,
   tags public.work_tag[] null default '{}'::public.work_tag[],
   likes uuid[] null default '{}'::uuid[],
   dislikes uuid[] null default '{}'::uuid[],
@@ -200,6 +203,14 @@ create view game_list as
     left join profiles pr on g.owner = pr.id
     left join posts p on t.id = p.thread
   group by g.id, pr.id, pr.name;
+
+create view work_list as
+  select w.*, pr.id as author_id, pr.name as author_name, count(p.id) as post_count
+  from works w
+    left join threads t on w.thread = t.id
+    left join profiles pr on w.author = pr.id
+    left join posts p on t.id = p.thread
+  group by w.id, pr.id, pr.name;
 
 
 -- FUNCTIONS
