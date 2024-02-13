@@ -3,16 +3,13 @@
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user = {}
   export let data = {}
 
   const isAuthor = user.id === data.author.id
-  let editing = false
   let bookmarkId
-  let editorRef
 
   async function addBookmark () {
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true }).select().maybeSingle()
@@ -73,7 +70,4 @@
       border: 1px var(--panel) solid;
       box-shadow: inset 2px 2px 2px #0003;
     }
-  .work {
-    margin-bottom: 50px;
-  }
 </style>

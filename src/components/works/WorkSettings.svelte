@@ -5,6 +5,7 @@
   import { headerPreview } from '@lib/stores'
   import { getImage } from '@lib/utils'
   import { workTags, workCategoriesText } from '@lib/constants'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Select from 'svelte-select'
 
   export let data = {}
@@ -14,6 +15,7 @@
   let saving = false
   let uploading = false
   let originalName
+  let originalAnnotation
   let originalCategory
   let originalTagsString
   let selectedTagsString
@@ -22,6 +24,7 @@
 
   function setOriginal () {
     originalName = data.name
+    originalAnnotation = data.annotation
     originalCategory = data.category
     originalTagsString = data.tags?.map(t => t.value).join(',')
   }
@@ -57,6 +60,7 @@
       const { error: error2 } = await supabase.from('works').update({ custom_header: false }).eq('id', data.id)
       if (error1 || error2) { return handleError(error1 || error2) }
     }
+    data.custom_header = false
     files = null
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -101,13 +105,19 @@
     <div class='row'>
       <label class='button' for='header'>Nahrát obrázek</label>
       <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
-      <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+      <button class='material clear' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
     </div>
 
     <h3>Název díla</h3>
     <div class='row'>
       <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material'>check</button>
+      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save'>check</button>
+    </div>
+
+    <h3>Anotace</h3>
+    <div class='row'>
+      <TextareaExpandable id='workAnnotation' name='workAnnotation' bind:value={data.annotation} />
+      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 
     <h3>Kategorie</h3>
@@ -117,7 +127,7 @@
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>
-      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material'>check</button>
+      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save'>check</button>
     </div>
 
     <h3>Tagy</h3>
@@ -125,7 +135,7 @@
       <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
         <div slot='empty'>Více tagů nelze přidat</div>
       </Select>
-      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material'>check</button>
+      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save'>check</button>
     </div>
 
     <h3>Smazání díla</h3>
@@ -156,17 +166,21 @@
   h3 {
     margin-top: 50px;
   }
-  input[type=file] {
-    display: none;
-  }
-  select {
-    width: 100%;
-    max-width: 400px;
-  }
   .row {
     display: flex;
+    align-items: flex-end;
     gap: 10px;
   }
+    button.save {
+      height: 60px;
+    }
+    input[type=file] {
+      display: none;
+    }
+    select {
+      width: 100%;
+      max-width: 400px;
+    }
   .delete {
     display: flex;
     gap: 10px;

@@ -55,6 +55,7 @@
       const { error: error2 } = await supabase.from('games').update({ custom_header: false }).eq('id', data.id)
       if (error1 || error2) { return handleError(error1 || error2) }
     }
+    data.custom_header = false
     files = null
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -102,7 +103,7 @@
     <div class='row'>
       <label class='button' for='header'>Nahrát obrázek</label>
       <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
-      <button class='material clear' on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+      <button class='material clear' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
     </div>
 
     <h3>Název hry</h3>
