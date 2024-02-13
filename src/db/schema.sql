@@ -14,6 +14,7 @@ drop type if exists game_system;
 drop type if exists game_category;
 drop type if exists work_type;
 drop type if exists work_tag;
+drop type if exists work_category;
 
 drop view if exists posts_owner;
 drop view if exists board_list;
@@ -27,7 +28,7 @@ create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poem', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
-create type work_category as enum ('fiction', 'reality', 'poetry', 'game', 'other');
+create type work_category as enum ('prose', 'poetry', 'game', 'other');
 
 -- TABLES
 

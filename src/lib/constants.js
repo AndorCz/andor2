@@ -38,8 +38,7 @@ export const gameSystems = [
 ]
 
 export const workCategoriesText = [
-  { value: 'fiction', label: 'Fikce' },
-  { value: 'reality', label: 'Realita' },
+  { value: 'prose', label: 'Próza' },
   { value: 'poetry', label: 'Poezie' },
   { value: 'game', label: 'Herní' },
   { value: 'other', label: 'Ostatní' }
