@@ -8,6 +8,7 @@
   export let onSave
   export let loading = false
   export let canEdit = false
+  export let allowHtml = false
 
   let isEditing = false
   let originalValue = value
@@ -40,7 +41,7 @@
     <Loading />
   {/if}
   {#if isEditing}
-    <TextareaExpandable bind:value={value} onSave={onSaveWrapper} buttonIcon='done' showButton />
+    <TextareaExpandable bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} buttonIcon='done' showButton />
   {:else}
     <content class='editableLong'>{@html marked(value || '')}</content>
     {#if canEdit}
@@ -70,13 +71,7 @@
       bottom: 0px;
       right: 0px;
       border-radius: 0px;
-      padding: 15px 20px;
+      padding: 10px 15px;
       border-radius: 10px 0px 10px 0px;
     }
-
-  @media (max-width: 860px) {
-    button {
-      padding: 10px 15px;
-    }
-  }
 </style>

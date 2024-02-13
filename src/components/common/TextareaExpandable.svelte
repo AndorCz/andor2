@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import Editor from '@components/common/Editor.svelte'
 
-  export let id
+  export let id = null
   export let value = ''
   export let onSave = null
   export let onTyping = null
@@ -22,7 +22,13 @@
   let isEmpty = true
 
   onMount(() => {
-    if (allowHtml) { tiptap = editorRef.getEditor() }
+    if (allowHtml) {
+      tiptap = editorRef.getEditor()
+      if (value) {
+        // set html content
+        tiptap.commands.setContent(value)
+      }
+    }
   })
 
   function setHeight (node) { // textarea only
@@ -37,7 +43,7 @@
       if (!window.confirm('Opravdu zrušit úpravu?')) { return }
     }
     editing = false
-    value = ''
+    value = originalValue
     if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
   }
 
