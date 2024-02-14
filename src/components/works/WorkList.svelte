@@ -56,7 +56,7 @@
     {/each}
   </table>
 {:else}
-  <p>Žádná díla nenalezena</p>
+  <center>Žádná díla nenalezena</center>
 {/if}
 
 <style>
@@ -94,6 +94,10 @@
       .name a:first-letter {
         text-transform: uppercase;
       }
+
+  center {
+    padding: 50px;
+  }
 
   @media (max-width: 860px) {
     .desktop { display: none }
