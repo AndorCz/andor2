@@ -16,15 +16,6 @@
   }
 </script>
 
-<div class='headline flex'>
-  <h1>Tvorba</h1>
-  {#if user.id}
-    <div>
-      <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
-      <a href='./work/work-form' class='button mobile material'>add</a>
-    </div>
-  {/if}
-</div>
 <nav class='tabs secondary'>
   <button on:click={() => { $userStore.activeWorksTab = 'articles' }} class={$userStore.activeWorksTab === 'articles' ? 'active' : ''}>
     Články
@@ -60,12 +51,6 @@
 {/if}
 
 <style>
-  .headline {
-    justify-content: space-between;
-  }
-  .mobile { display: none }
-  .desktop { display: block }
-
   #works {
     margin-top: 50px;
     width: 100%;
@@ -97,13 +82,5 @@
 
   center {
     padding: 50px;
-  }
-
-  @media (max-width: 860px) {
-    .desktop { display: none }
-    .mobile { display: block }
-    .button {
-      padding: 10px;
-    }
   }
 </style>

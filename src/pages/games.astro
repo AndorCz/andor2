@@ -4,6 +4,7 @@
   import GameList from '@components/games/GameList.svelte'
 
   const { supabase, user } = Astro.locals
+
   const games = await getData('games', 300, () => supabase.from('game_list').select('*'))
 ---
 

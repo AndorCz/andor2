@@ -12,10 +12,10 @@
   let bookmarkId
 
   async function addBookmark () {
-    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true }).select().maybeSingle()
+    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
-      $bookmarks.games = [...$bookmarks.games, { id: newBookmark.id, game_id: data.id, name: data.name }]
+      $bookmarks.works = [...$bookmarks.works, { id: newBookmark.id, work_id: data.id, name: data.name }]
       showSuccess('Záložka přidána')
     }
   }
@@ -23,7 +23,7 @@
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.games = $bookmarks.games.filter(b => b.game_id !== data.id)
+    $bookmarks.works = $bookmarks.works.filter(b => b.work_id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
