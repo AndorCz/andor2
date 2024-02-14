@@ -43,7 +43,9 @@
         {#if record.custom_header}
           <img src={getUrl(record.id)} alt={record.name} />
         {/if}
-        <p>{limitLength(record.annotation, 150)}</p>
+        {#if record.annotation}
+          <p>{limitLength(record.annotation, 150)}</p>
+        {/if}
       </a>
     {/each}
   {/await}

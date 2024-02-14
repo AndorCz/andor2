@@ -75,9 +75,6 @@ a {
   color: var(--link);
   font-variation-settings: 'wght' 600;
 }
-  a:visited {
-    color: var(--linkVisited);
-  }
   a:hover {
     color: color-mix(in srgb, var(--linkVisited), #FFF 50%);
   }
@@ -442,6 +439,9 @@ select {
 .post .content a {
   text-decoration: underline;
 }
+  .post .content a:visited {
+    color: var(--linkVisited);
+  }
 .post .content .reply { /* reply */
   padding: 5px;
   padding-left: 0px;
