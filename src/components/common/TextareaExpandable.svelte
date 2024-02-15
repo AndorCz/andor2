@@ -11,6 +11,7 @@
   export let disabled = false
   export let showButton = false
   export let buttonIcon = 'send'
+  export let buttonTitle = 'Odeslat'
   export let editing = false
   export let minHeight = 140
   export let enterSend = false
@@ -99,8 +100,8 @@
     <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}
   {#if showButton}
-    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Upravit' : 'Odeslat'}>
-      <span class='material'>{#if editing}edit{:else}{buttonIcon}{/if}</span>
+    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle}>
+      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}
   {#if editing}

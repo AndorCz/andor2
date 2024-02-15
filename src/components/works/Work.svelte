@@ -30,6 +30,11 @@
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
   }
+  async function updateWorkContent () {
+    const { error } = await supabase.from('works').update({ content: data.content }).eq('id', data.id)
+    if (error) { return handleError(error) }
+    showSuccess('Uloženo')
+  }
 
   $: bookmarkId = $bookmarks.works.find(b => b.work_id === data.id)?.id
 </script>
@@ -45,7 +50,7 @@
     {/if}
   </div>
 
-  <EditableLong value={data.content} onSave={async () => {}} canEdit={isOwner} allowHtml />
+  <EditableLong bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   <br><br>
   <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} />
 </main>
