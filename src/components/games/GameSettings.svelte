@@ -46,6 +46,7 @@
       }
     }
     uploading = false
+    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   async function clearHeader () {
@@ -60,6 +61,7 @@
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
+    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   async function updateGame () {
@@ -85,6 +87,7 @@
       if (error) { return handleError(error) }
       window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
     })
+    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   function showGame () {

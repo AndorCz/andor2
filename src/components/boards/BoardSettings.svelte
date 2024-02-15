@@ -41,6 +41,7 @@
       }
     }
     uploading = false
+    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function clearHeader () {
@@ -55,6 +56,7 @@
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
+    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function updateBoard () {
