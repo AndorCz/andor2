@@ -131,6 +131,7 @@
       }
       .block .basics {
         display: flex;
+        flex-wrap: wrap;
         gap: 20px;
         padding-bottom: 5px;
         justify-content: space-between;
@@ -201,6 +202,15 @@
 
   center {
     padding: 50px;
+  }
+
+  @media (max-width: 1200px) {
+    .block .name {
+      flex-basis: 100%;
+    }
+    .toggle {
+      display: none;
+    }
   }
 
   @media (max-width: 860px) {

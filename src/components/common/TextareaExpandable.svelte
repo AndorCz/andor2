@@ -145,4 +145,12 @@
       padding: 10px 15px;
     }
   }
+  @media (max-width: 500px) {
+    button {
+      padding: 10px 15px;
+    }
+    .withButton {
+      padding-right: 0px;
+    }
+  }
 </style>

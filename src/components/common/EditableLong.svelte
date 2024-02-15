@@ -74,4 +74,9 @@
       padding: 10px 15px;
       border-radius: 10px 0px 10px 0px;
     }
+  @media (max-width: 500px) {
+    content {
+      padding: 20px;
+    }
+  }
 </style>

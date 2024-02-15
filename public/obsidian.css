@@ -166,7 +166,6 @@ button, .button {
     background-color: var(--panel);
     border: 1px var(--panel) solid;
     box-shadow: inset 2px 2px 2px #0003;
-    pointer-events: none;
   }
 
   input[type=text], textarea, input[type=checkbox], .ProseMirror {
@@ -323,6 +322,7 @@ select {
       padding: 13px 25px;
       opacity: 1;
       position: relative;
+      pointer-events: none;
     }
       .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
         content: '';
@@ -617,4 +617,7 @@ select {
     .tabs a.active {
       padding: 10px 15px;
     }
+  .ProseMirror {
+    padding-right: 15px;
+  }
 }

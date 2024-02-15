@@ -78,6 +78,7 @@
   }
 
   function toggleHeader () {
+    console.log('fired')
     $boardStore.hideHeader = !$boardStore.hideHeader
   }
 
