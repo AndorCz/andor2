@@ -135,11 +135,11 @@
         white-space: nowrap;
       }
     .block .image {
-      width: 250px;
-      height: 115px;
+      width: 30%;
       overflow: hidden;
     }
       .block .image img {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -182,10 +182,22 @@
   }
 
   @media (max-width: 860px) {
+    h1 {
+      padding-left: 10px;
+    }
     .desktop { display: none }
     .mobile { display: block }
     .button {
       padding: 10px;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .block {
+      display: block;
+    }
+    .block .image {
+      width: 100%;
     }
   }
 </style>
