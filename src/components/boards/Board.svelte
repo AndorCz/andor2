@@ -151,11 +151,6 @@
       padding: 10px;
       margin-left: 10px;
     }
-    .headline button.active {
-      background-color: var(--panel);
-      border: 1px var(--panel) solid;
-      box-shadow: inset 2px 2px 2px #0003;
-    }
 
   .addPostWrapper {
     display: flex;

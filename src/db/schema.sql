@@ -101,7 +101,7 @@ create table characters (
 create table works (
   id int4 not null primary key generated always as identity,
   type public.work_type not null default 'text'::work_type,
-  author uuid not null,
+  owner uuid not null,
   name text not null,
   annotation text not null,
   content text not null,
@@ -114,7 +114,7 @@ create table works (
   reports uuid[] null default '{}'::uuid[],
   editorial boolean null default false,
   created_at timestamp with time zone default current_timestamp
-  constraint works_author_fkey foreign key (author) references profiles (id) on delete set null
+  constraint works_owner_fkey foreign key (owner) references profiles (id) on delete set null
 );
 
 create table posts (
@@ -206,10 +206,10 @@ create view game_list as
   group by g.id, pr.id, pr.name;
 
 create view work_list as
-  select w.*, pr.id as author_id, pr.name as author_name, count(p.id) as post_count
+  select w.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
   from works w
     left join threads t on w.thread = t.id
-    left join profiles pr on w.author = pr.id
+    left join profiles pr on w.owner = pr.id
     left join posts p on t.id = p.thread
   group by w.id, pr.id, pr.name;
 

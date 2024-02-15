@@ -1,11 +1,14 @@
 <script>
+  import { onMount } from 'svelte'
   import { userStore } from '@lib/stores'
   import { workTags, workCategoriesText } from '@lib/constants'
 
   export let user = {}
   export let works = []
 
-  $userStore.activeWorksTab = $userStore.activeWorksTab || 'articles'
+  onMount(() => {
+    $userStore.activeWorksTab = $userStore.activeWorksTab || 'articles'
+  })
 
   function getTags (value) {
     return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
@@ -15,6 +18,20 @@
     return workCategoriesText.find(c => c.value === value).label
   }
 </script>
+
+<div class='headline flex'>
+  <h1>Tvorba</h1>
+  <div class='buttons'>
+    <div class='toggle'>
+      <button class='material active'>table_rows</button>
+      <button class='material'>table_rows_narrow</button>
+    </div>
+    {#if user.id}
+      <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
+      <a href='./work/work-form' class='button mobile material'>add</a>
+    {/if}
+  </div>
+</div>
 
 <nav class='tabs secondary'>
   <button on:click={() => { $userStore.activeWorksTab = 'articles' }} class={$userStore.activeWorksTab === 'articles' ? 'active' : ''}>
@@ -27,8 +44,9 @@
     Hudba
   </button>
 </nav>
+
 {#if works?.length > 0}
-  <table id='works'>
+  <table class='list'>
     <tr>
       <th>název</th>
       <th>kategorie</th>
@@ -42,7 +60,7 @@
         <td><div class='category'>{getCategory(work.category)}</div></td>
         <td><div class='tags'>{getTags(work.tags)}</div></td>
         <td><div class='count'>{work.post_count}</div></td>
-        <td><div class='owner'>{work.author_name}</div></td>
+        <td><div class='owner'>{work.owner_name}</div></td>
       </tr>
     {/each}
   </table>
@@ -51,7 +69,27 @@
 {/if}
 
 <style>
-  #works {
+  .headline {
+    justify-content: space-between;
+  }
+  .mobile { display: none }
+  .desktop { display: block }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+  }
+
+  /* blocks */
+
+  .gameBlock {
+    padding: 10px;
+    background-color: var(--block);
+  }
+
+  /* list */
+
+  .list {
     margin-top: 50px;
     width: 100%;
     border-collapse: separate;
@@ -82,5 +120,13 @@
 
   center {
     padding: 50px;
+  }
+
+  @media (max-width: 860px) {
+    .desktop { display: none }
+    .mobile { display: block }
+    .button {
+      padding: 10px;
+    }
   }
 </style>

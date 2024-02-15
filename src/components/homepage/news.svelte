@@ -19,7 +19,8 @@
 
   function getUrl (id) {
     const slug = categories[$userStore.newsCategory].slug
-    const { data } = supabase.storage.from('headers').getPublicUrl(`${slug}-${id}`)
+    const { data, error } = supabase.storage.from('headers').getPublicUrl(`${slug}-${id}`)
+    if (error) { handleError(error) }
     return data.publicUrl
   }
 

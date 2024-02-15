@@ -1,37 +1,156 @@
 <script>
+  import { supabase, handleError } from '@lib/database'
   import { gameCategories, gameSystems } from '@lib/constants'
+
+  export let user = {}
+  export let games = []
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
-  export let games = []
+  function getUrl (id) {
+    const { data, error } = supabase.storage.from('headers').getPublicUrl(`game-${id}`)
+    if (error) { handleError(error) }
+    return data.publicUrl
+  }
+
+  let listView = false
 </script>
 
+<div class='headline flex'>
+  <h1>Hry</h1>
+  <div class='buttons'>
+    <div class='toggle'>
+      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+    </div>
+    {#if user.id}
+      <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
+      <a href='./game/game-form' class='button mobile material'>add</a>
+    {/if}
+  </div>
+</div>
+
 {#if games?.length > 0}
-  <table id='games'>
-    <tr>
-      <th>název</th>
-      <th>kategorie</th>
-      <th>systém</th>
-      <th>příspěvků</th>
-      <th>správce</th>
-    </tr>
-    {#each games as game}
-      <tr class='game'>
-        <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
-        <td><div class='category'>{getCategory(game.category)}</div></td>
-        <td><div class='system'>{getSystem(game.system)}</div></td>
-        <td><div class='count'>{game.post_count}</div></td>
-        <td><div class='owner'>{game.owner_name}</div></td>
+  {#if listView}
+    <table class='list'>
+      <tr>
+        <th>název</th>
+        <th>kategorie</th>
+        <th>systém</th>
+        <th>příspěvků</th>
+        <th>správce</th>
       </tr>
+      {#each games as game}
+        <tr class='gameLine'>
+          <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
+          <td><div class='category'>{getCategory(game.category)}</div></td>
+          <td><div class='system'>{getSystem(game.system)}</div></td>
+          <td><div class='count'>{game.post_count}</div></td>
+          <td><div class='owner'>{game.owner_name}</div></td>
+        </tr>
+      {/each}
+    </table>
+  {:else}
+    {#each games as game}
+      <div class='gameBlock'>
+        <div class='col left'>
+          <div class='row basics'>
+            <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
+            <div class='category'>{getCategory(game.category)}</div>
+            <div class='system'>{getSystem(game.system)}</div>
+            <div class='count'>{game.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner'>{game.owner_name}</div>
+          </div>
+          <div class='row annotation'>{game.annotation}</div>
+        </div>
+        {#if game.custom_header}
+          <div class='col image'>
+            <img src={getUrl(game.id)} alt='game header' />
+          </div>
+        {/if}
+      </div>
     {/each}
-  </table>
+  {/if}
 {:else}
   <p>Žádné hry nenalezeny</p>
 {/if}
 
 <style>
-  #games {
+  .headline {
+    justify-content: space-between;
+  }
+  .mobile { display: none }
+  .desktop { display: block }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+  }
+  .name a:first-letter {
+    text-transform: uppercase;
+  }
+
+  /* blocks */
+
+  .gameBlock {
+    background-color: var(--block);
+    display: flex;
+    margin-bottom: 5px;
+  }
+    .gameBlock .left {
+      padding: 10px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+      .gameBlock .row {
+        padding: 10px;
+      }
+      .gameBlock .basics {
+        display: flex;
+        gap: 20px;
+        justify-content: space-between;
+        align-items: center;
+      }
+        .gameBlock .name {
+          flex: 1;
+        }
+          .gameBlock .name a {
+            font-size: 24px;
+          }
+        .gameBlock .count {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+        }
+        .gameBlock .ico {
+          font-size: 16px;
+        }
+        .gameBlock .annotation {
+          font-style: italic;
+          color: var(--dim);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .gameBlock .owner {
+          color: var(--accent);
+        }
+    .gameBlock .image {
+      width: 250px;
+      height: 115px;
+      overflow: hidden;
+    }
+      .gameBlock .image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+  /* list */
+
+  .list {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 2px;
@@ -49,13 +168,18 @@
       background-color: var(--block);
       margin-bottom: 2px;
     }
-      .name a {
+      .list .name a {
         display: inline-block;
         width: 100%;
         height: 100%;
         padding: 20px;
       }
-      .name a:first-letter {
-        text-transform: uppercase;
-      }
+
+  @media (max-width: 860px) {
+    .desktop { display: none }
+    .mobile { display: block }
+    .button {
+      padding: 10px;
+    }
+  }
 </style>

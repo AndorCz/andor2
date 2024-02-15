@@ -64,6 +64,7 @@
     setOriginal()
     showSuccess('Změna diskuze uložena')
     saving = false
+    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function deleteBoard () {

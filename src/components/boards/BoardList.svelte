@@ -1,9 +1,24 @@
 <script>
+  export let user = {}
   export let boards = []
 </script>
 
+<div class='headline flex'>
+  <h1>Diskuze</h1>
+  <div class='buttons'>
+    <div class='toggle'>
+      <button class='material active'>table_rows</button>
+      <button class='material'>table_rows_narrow</button>
+    </div>
+    {#if user.id}
+      <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
+      <a href='./board/board-form' class='button mobile material'>add</a>
+    {/if}
+  </div>
+</div>
+
 {#if boards?.length > 0}
-  <table id='boards'>
+  <table class='list'>
     <tr>
       <th>název</th>
       <th>příspěvků</th>
@@ -22,7 +37,22 @@
 {/if}
 
 <style>
-  #boards {
+  .headline {
+    justify-content: space-between;
+  }
+  .mobile { display: none }
+  .desktop { display: block }
+
+  /* blocks */
+
+  .gameBlock {
+    padding: 10px;
+    background-color: var(--block);
+  }
+
+  /* list */
+
+  .list {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 2px;
@@ -49,4 +79,12 @@
       .name a:first-letter {
         text-transform: uppercase;
       }
+
+  @media (max-width: 860px) {
+    .desktop { display: none }
+    .mobile { display: block }
+    .button {
+      padding: 10px;
+    }
+  }
 </style>

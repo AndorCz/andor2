@@ -59,7 +59,7 @@
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='workTags'>Tagy (max 3)</label></div>
+      <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
       <div class='inputs'>
         <Select items={tagItems} multiple bind:value={selectedTags} placeholder=''>
           <div slot='empty'>Více tagů nelze přidat</div>

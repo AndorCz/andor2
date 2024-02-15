@@ -8,7 +8,7 @@
   export let user = {}
   export let data = {}
 
-  const isAuthor = user.id === data.author.id
+  const isOwner = user.id === data.owner.id
   let bookmarkId
 
   async function addBookmark () {
@@ -39,15 +39,15 @@
     <h1>{data.name}</h1>
     {#if user.id}
       <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
-      {#if isAuthor}
+      {#if isOwner}
         <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
       {/if}
     {/if}
   </div>
 
-  <EditableLong value={data.content} onSave={async () => {}} canEdit={isAuthor} allowHtml />
+  <EditableLong value={data.content} onSave={async () => {}} canEdit={isOwner} allowHtml />
   <br><br>
-  <Discussion {data} {user} thread={data.thread} isOwner={data.author.id === user.id} unread={data.unread} />
+  <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} />
 </main>
 
 <style>
@@ -64,10 +64,5 @@
     .headline button {
       padding: 10px;
       margin-left: 10px;
-    }
-    .headline button.active {
-      background-color: var(--panel);
-      border: 1px var(--panel) solid;
-      box-shadow: inset 2px 2px 2px #0003;
     }
 </style>

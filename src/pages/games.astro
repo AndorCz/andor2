@@ -9,28 +9,5 @@
 ---
 
 <Layout title='Hry'>
-  <div class='headline flex'>
-    <h1>Hry</h1>
-    {user.id && (<div>
-      <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
-      <a href='./game/game-form' class='button mobile material'>add</a>
-    </div>)}
-  </div>
-  <GameList {games} />
+  <GameList {user} {games} client:load />
 </Layout>
-
-<style>
-  .headline {
-    justify-content: space-between;
-  }
-  .mobile { display: none }
-  .desktop { display: block }
-
-  @media (max-width: 860px) {
-    .desktop { display: none }
-    .mobile { display: block }
-    .button {
-      padding: 10px;
-    }
-  }
-</style>

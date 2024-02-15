@@ -77,6 +77,7 @@
     */
     showSuccess('Změna hry uložena')
     saving = false
+    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   async function deleteGame () {

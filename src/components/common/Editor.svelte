@@ -199,11 +199,6 @@
     .bubble button, .toolbelt button {
       padding: 5px;
     }
-    .bubble button.active {
-      background-color: var(--panel);
-      border: 1px var(--panel) solid;
-      box-shadow: inset 2px 2px 2px #0003;
-    }
   .toolbelt {
     position: absolute;
     left: 10px;
@@ -211,15 +206,6 @@
     display: flex;
     gap: 10px;
   }
-  /*
-  .tools {
-    margin-bottom: 20px;
-  }
-  button.active {
-    background: black;
-    color: white;
-  }
-  */
 
   @media (max-width: 860px) {
     .bubble {

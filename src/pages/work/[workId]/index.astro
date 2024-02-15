@@ -8,7 +8,7 @@
 
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: workData, error } = await supabase.from('works').select('id, type, name, annotation, content, thread, author:profiles(id, name), tags, category, custom_header, likes, dislikes, created_at').eq('id', workId).single()
+  const { data: workData, error } = await supabase.from('works').select('id, type, name, annotation, content, thread, owner:profiles(id, name), tags, category, custom_header, likes, dislikes, created_at').eq('id', workId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
   const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: workData.thread })

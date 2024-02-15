@@ -161,11 +161,15 @@ button, .button {
     box-shadow: none;
     padding: 5px;
   }
-  a:visited.button {
-    color: var(--text);
+
+  button.active {
+    background-color: var(--panel);
+    border: 1px var(--panel) solid;
+    box-shadow: inset 2px 2px 2px #0003;
+    pointer-events: none;
   }
 
-input[type=text], textarea, input[type=checkbox], .ProseMirror {
+  input[type=text], textarea, input[type=checkbox], .ProseMirror {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   padding: 15px;
   margin: 0px;
@@ -234,6 +238,20 @@ select {
   background-position: right 16px center;
   background-size: 14px 14px;
 }
+
+.toggle {
+  display: flex;
+  gap: 1px;
+}
+  .toggle button {
+    padding: 10px;
+  }
+    .toggle button:first-child {
+      border-radius: 10px 0px 0px 10px;
+    }
+    .toggle button:last-child {
+      border-radius: 0px 10px 10px 0px;
+    }
 
 .editableLong p {
   padding: 10px 0px;

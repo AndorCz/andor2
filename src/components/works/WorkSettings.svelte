@@ -75,6 +75,7 @@
     setOriginal()
     showSuccess('Změna hry uložena')
     saving = false
+    await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
   }
 
   async function deleteWork () {
@@ -99,7 +100,7 @@
     <button on:click={showWork} class='material' title='Zpět do díla'>check</button>
   </div>
 
-  {#if data.author.id === user.id}
+  {#if data.owner.id === user.id}
     <h3 class='first'>Vlastní hlavička díla</h3>
     Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
     <div class='row'>
