@@ -1,13 +1,17 @@
 <script>
   import { onMount } from 'svelte'
-  import { userStore } from '@lib/stores'
+  import { getHeaderUrl } from '@lib/database'
   import { workTags, workCategoriesText } from '@lib/constants'
 
   export let user = {}
   export let works = []
 
-  onMount(() => {
-    $userStore.activeWorksTab = $userStore.activeWorksTab || 'articles'
+  let listView = false
+  let activeTab = 'articles'
+
+  onMount(async () => {
+    const { userStore } = await import('@lib/stores') // load only in the browser
+    activeTab = userStore.get('activeWorksTab') || 'articles'
   })
 
   function getTags (value) {
@@ -23,8 +27,8 @@
   <h1>Tvorba</h1>
   <div class='buttons'>
     <div class='toggle'>
-      <button class='material active'>table_rows</button>
-      <button class='material'>table_rows_narrow</button>
+      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
     </div>
     {#if user.id}
       <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
@@ -34,36 +38,58 @@
 </div>
 
 <nav class='tabs secondary'>
-  <button on:click={() => { $userStore.activeWorksTab = 'articles' }} class={$userStore.activeWorksTab === 'articles' ? 'active' : ''}>
+  <button on:click={() => { activeTab = 'articles' }} class={activeTab === 'articles' ? 'active' : ''}>
     Články
   </button>
-  <button disabled on:click={() => { $userStore.activeWorksTab = 'images' }} class={$userStore.activeWorksTab === 'images' ? 'active' : ''}>
+  <button disabled on:click={() => { activeTab = 'images' }} class={activeTab === 'images' ? 'active' : ''}>
     Obrázky
   </button>
-  <button disabled on:click={() => { $userStore.activeWorksTab = 'music' }} class={$userStore.activeWorksTab === 'music' ? 'active' : ''}>
+  <button disabled on:click={() => { activeTab = 'music' }} class={activeTab === 'music' ? 'active' : ''}>
     Hudba
   </button>
 </nav>
 
 {#if works?.length > 0}
-  <table class='list'>
-    <tr>
-      <th>název</th>
-      <th>kategorie</th>
-      <th>tagy</th>
-      <th>příspěvků</th>
-      <th>autor</th>
-    </tr>
-    {#each works as work}
-      <tr class='work'>
-        <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
-        <td><div class='category'>{getCategory(work.category)}</div></td>
-        <td><div class='tags'>{getTags(work.tags)}</div></td>
-        <td><div class='count'>{work.post_count}</div></td>
-        <td><div class='owner'>{work.owner_name}</div></td>
+  {#if listView}
+    <table class='list'>
+      <tr>
+        <th>název</th>
+        <th>kategorie</th>
+        <th>tagy</th>
+        <th>příspěvků</th>
+        <th>autor</th>
       </tr>
+      {#each works as work}
+        <tr class='work'>
+          <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
+          <td><div class='category'>{getCategory(work.category)}</div></td>
+          <td><div class='tags'>{getTags(work.tags)}</div></td>
+          <td><div class='count'>{work.post_count}</div></td>
+          <td><div class='owner'>{work.owner_name}</div></td>
+        </tr>
+      {/each}
+    </table>
+  {:else}
+    {#each works as work}
+      <div class='block'>
+        <div class='col left'>
+          <div class='row basics'>
+            <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
+            <div class='category'>{getCategory(work.category)}</div>
+            <div class='tags'>{getTags(work.tags)}</div>
+            <div class='count'>{work.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner'>{work.owner_name}</div>
+          </div>
+          <div class='row annotation'>{work.annotation}</div>
+        </div>
+        {#if work.custom_header}
+          <div class='col image'>
+            <img src={getHeaderUrl('work', work.id)} alt='work header' />
+          </div>
+        {/if}
+      </div>
     {/each}
-  </table>
+  {/if}
 {:else}
   <center>Žádná díla nenalezena</center>
 {/if}
@@ -79,18 +105,76 @@
     display: flex;
     gap: 20px;
   }
+  .name a:first-letter {
+    text-transform: uppercase;
+  }
+
+  .tabs {
+    margin-bottom: 20px;
+  }
 
   /* blocks */
 
-  .gameBlock {
-    padding: 10px;
+  .block {
     background-color: var(--block);
+    display: flex;
+    margin-bottom: 5px;
   }
+    .block .left {
+      padding: 10px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+      .block .row {
+        padding: 10px;
+      }
+      .block .basics {
+        display: flex;
+        gap: 20px;
+        padding-bottom: 5px;
+        justify-content: space-between;
+        align-items: center;
+      }
+        .block .name {
+          flex: 1;
+        }
+          .block .name a {
+            font-size: 24px;
+          }
+        .block .count {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+        }
+        .block .ico {
+          font-size: 16px;
+        }
+        .block .owner {
+          color: var(--accent);
+        }
+      .block .annotation {
+        font-style: italic;
+        padding-top: 5px;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    .block .image {
+      width: 250px;
+      height: 115px;
+      overflow: hidden;
+    }
+      .block .image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
   /* list */
 
   .list {
-    margin-top: 50px;
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 2px;
@@ -108,14 +192,11 @@
       background-color: var(--block);
       margin-bottom: 2px;
     }
-      .name a {
+      .list .name a {
         display: inline-block;
         width: 100%;
         height: 100%;
         padding: 20px;
-      }
-      .name a:first-letter {
-        text-transform: uppercase;
       }
 
   center {

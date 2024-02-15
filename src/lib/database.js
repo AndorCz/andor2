@@ -38,6 +38,12 @@ export function handleError (error, astro) {
   } else { console.error(error) } // not so helpful, don't use this method on the back-end
 }
 
+export function getHeaderUrl (type, id) {
+  const { data, error } = supabase.storage.from('headers').getPublicUrl(`${type}-${id}`)
+  if (error) { handleError(error) }
+  return data.publicUrl
+}
+
 export async function getActiveUsers (db) { // pass front-end or back-end supabase instance
   const fiveMinutesAgoISO = new Date(new Date() - (5 * 60 * 1000)).toISOString()
   const { data, error } = await db.from('profiles').select('*').gte('last_activity', fiveMinutesAgoISO)

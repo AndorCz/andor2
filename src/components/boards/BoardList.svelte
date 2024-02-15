@@ -1,14 +1,18 @@
 <script>
+  import { getHeaderUrl } from '@lib/database'
+
   export let user = {}
   export let boards = []
+
+  let listView = false
 </script>
 
 <div class='headline flex'>
   <h1>Diskuze</h1>
   <div class='buttons'>
     <div class='toggle'>
-      <button class='material active'>table_rows</button>
-      <button class='material'>table_rows_narrow</button>
+      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
     </div>
     {#if user.id}
       <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
@@ -18,20 +22,40 @@
 </div>
 
 {#if boards?.length > 0}
-  <table class='list'>
-    <tr>
-      <th>název</th>
-      <th>příspěvků</th>
-      <th>správce</th>
-    </tr>
-    {#each boards as board}
-      <tr class='board'>
-        <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
-        <td><div class='count'>{board.post_count}</div></td>
-        <td><div class='owner'>{board.owner_name}</div></td>
+  {#if listView}
+    <table class='list'>
+      <tr>
+        <th>název</th>
+        <th>příspěvků</th>
+        <th>správce</th>
       </tr>
+      {#each boards as board}
+        <tr class='board'>
+          <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
+          <td><div class='count'>{board.post_count}</div></td>
+          <td><div class='owner'>{board.owner_name}</div></td>
+        </tr>
+      {/each}
+    </table>
+  {:else}
+    {#each boards as board}
+      <div class='block'>
+        <div class='col left'>
+          <div class='row basics'>
+            <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
+            <div class='count'>{board.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner'>{board.owner_name}</div>
+          </div>
+          <div class='row annotation'>{board.header}</div>
+        </div>
+        {#if board.custom_header}
+          <div class='col image'>
+            <img src={getHeaderUrl('board', board.id)} alt='board header' />
+          </div>
+        {/if}
+      </div>
     {/each}
-  </table>
+  {/if}
 {:else}
   <p>Žádné diskuze nenalezeny</p>
 {/if}
@@ -43,12 +67,72 @@
   .mobile { display: none }
   .desktop { display: block }
 
+  .buttons {
+    display: flex;
+    gap: 20px;
+  }
+  .name a:first-letter {
+    text-transform: uppercase;
+  }
+
   /* blocks */
 
-  .gameBlock {
-    padding: 10px;
+  .block {
     background-color: var(--block);
+    display: flex;
+    margin-bottom: 5px;
   }
+    .block .left {
+      padding: 10px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+      .block .row {
+        padding: 10px;
+      }
+      .block .basics {
+        display: flex;
+        gap: 20px;
+        padding-bottom: 5px;
+        justify-content: space-between;
+        align-items: center;
+      }
+        .block .name {
+          flex: 1;
+        }
+          .block .name a {
+            font-size: 24px;
+          }
+        .block .count {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+        }
+        .block .ico {
+          font-size: 16px;
+        }
+        .block .owner {
+          color: var(--accent);
+        }
+      .block .annotation {
+        font-style: italic;
+        padding-top: 5px;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    .block .image {
+      width: 250px;
+      height: 115px;
+      overflow: hidden;
+    }
+      .block .image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
   /* list */
 
@@ -70,14 +154,11 @@
       background-color: var(--block);
       margin-bottom: 2px;
     }
-      .name a {
+      .list .name a {
         display: inline-block;
         width: 100%;
         height: 100%;
         padding: 20px;
-      }
-      .name a:first-letter {
-        text-transform: uppercase;
       }
 
   @media (max-width: 860px) {

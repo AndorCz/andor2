@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { getHeaderUrl } from '@lib/database'
   import { gameCategories, gameSystems } from '@lib/constants'
 
   export let user = {}
@@ -7,12 +7,6 @@
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
-
-  function getUrl (id) {
-    const { data, error } = supabase.storage.from('headers').getPublicUrl(`game-${id}`)
-    if (error) { handleError(error) }
-    return data.publicUrl
-  }
 
   let listView = false
 </script>
@@ -53,12 +47,12 @@
     </table>
   {:else}
     {#each games as game}
-      <div class='gameBlock'>
+      <div class='block'>
         <div class='col left'>
           <div class='row basics'>
             <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
             <div class='category'>{getCategory(game.category)}</div>
-            <div class='system'>{getSystem(game.system)}</div>
+            {#if game.system !== 'base'}<div class='system'>{getSystem(game.system)}</div>{/if}
             <div class='count'>{game.post_count}<span class='material ico'>chat</span></div>
             <div class='owner'>{game.owner_name}</div>
           </div>
@@ -66,7 +60,7 @@
         </div>
         {#if game.custom_header}
           <div class='col image'>
-            <img src={getUrl(game.id)} alt='game header' />
+            <img src={getHeaderUrl('game', game.id)} alt='game header' />
           </div>
         {/if}
       </div>
@@ -93,56 +87,58 @@
 
   /* blocks */
 
-  .gameBlock {
+  .block {
     background-color: var(--block);
     display: flex;
     margin-bottom: 5px;
   }
-    .gameBlock .left {
+    .block .left {
       padding: 10px;
       flex: 1;
       display: grid;
       grid-template-columns: 1fr;
     }
-      .gameBlock .row {
+      .block .row {
         padding: 10px;
       }
-      .gameBlock .basics {
+      .block .basics {
         display: flex;
         gap: 20px;
+        padding-bottom: 5px;
         justify-content: space-between;
         align-items: center;
       }
-        .gameBlock .name {
+        .block .name {
           flex: 1;
         }
-          .gameBlock .name a {
+          .block .name a {
             font-size: 24px;
           }
-        .gameBlock .count {
+        .block .count {
           display: flex;
           gap: 5px;
           align-items: center;
         }
-        .gameBlock .ico {
+        .block .ico {
           font-size: 16px;
         }
-        .gameBlock .annotation {
-          font-style: italic;
-          color: var(--dim);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .gameBlock .owner {
+        .block .owner {
           color: var(--accent);
         }
-    .gameBlock .image {
+      .block .annotation {
+        padding-top: 5px;
+        font-style: italic;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    .block .image {
       width: 250px;
       height: 115px;
       overflow: hidden;
     }
-      .gameBlock .image img {
+      .block .image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
