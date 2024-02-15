@@ -40,6 +40,7 @@
     if (error) { return handleError(error) }
     // await updateAI()
     showSuccess('Uloženo')
+    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 </script>
 
