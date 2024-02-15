@@ -322,7 +322,6 @@ select {
       padding: 13px 25px;
       opacity: 1;
       position: relative;
-      pointer-events: none;
     }
       .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
         content: '';
