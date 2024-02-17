@@ -166,7 +166,7 @@ create table bookmarks (
 create table user_reads (
   user_id uuid not null,
   slug text not null,
-  read_at timestamp with time zone default current_timestamp,
+  read_at timestamp with time zone not null default current_timestamp,
   foreign key (user_id) references profiles (id) on delete cascade,
   primary key (user_id, slug)
 );

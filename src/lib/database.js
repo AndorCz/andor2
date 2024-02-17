@@ -103,7 +103,7 @@ export async function sendPost (method = 'POST', data) {
 
 export async function setRead (userId, slug) {
   if (userId) {
-    const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug, read_at: new Date() })
+    const { error } = await supabase.from('user_reads').upsert({ user_id: userId, slug })
     if (error) { return handleError(error) }
   }
 }
