@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
 
@@ -9,13 +8,13 @@
 
   let headerUrl = headerStatic
 
-  onMount(async () => {
-    if (headerStorageId) {
-      const { data, error } = await supabase.storage.from('headers').download(headerStorageId)
-      if (error) { return handleError(error) }
-      headerUrl = URL.createObjectURL(data)
-    }
-  })
+  async function getHeaderUrl () {
+    const { data, error } = await supabase.storage.from('headers').download(headerStorageId)
+    if (error) { return handleError(error) }
+    headerUrl = URL.createObjectURL(data)
+  }
+
+  $: if (headerStorageId) { getHeaderUrl() }
 </script>
 
 <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
