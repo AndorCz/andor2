@@ -4,10 +4,11 @@
   import WorkList from '@components/works/WorkList.svelte'
 
   const { supabase, user } = Astro.locals
+  const activeTab = Astro.url.searchParams.get('tab') || 'articles'
 
   const works = await getData('works', 300, () => supabase.from('work_list').select('*'))
 ---
 
 <Layout title='Tvorba'>
-  <WorkList {user} {works} client:load />
+  <WorkList {user} {works} {activeTab} client:load />
 </Layout>

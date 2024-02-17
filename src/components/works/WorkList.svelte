@@ -1,18 +1,12 @@
 <script>
-  import { onMount } from 'svelte'
   import { getHeaderUrl } from '@lib/database'
   import { workTags, workCategoriesText } from '@lib/constants'
 
   export let user = {}
   export let works = []
+  export let activeTab = 'articles'
 
   let listView = false
-  let activeTab = 'articles'
-
-  onMount(async () => {
-    const { userStore } = await import('@lib/stores') // load only in the browser
-    activeTab = userStore.get('activeWorksTab') || 'articles'
-  })
 
   function getTags (value) {
     return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
