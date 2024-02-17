@@ -28,9 +28,6 @@
   const replies = {}
 
   onMount(async () => {
-    // set read
-    if (user.id) { setRead(user.id, 'thread-' + id) }
-
     // handle replies
     if (posts) { // pre-requisite for replies
       // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
@@ -67,6 +64,8 @@
     onPaging(page)
     threadEl.scrollIntoView({ behavior: 'smooth' })
   }
+
+  $: if (posts) { setRead(user.id, 'thread-' + id) } // set read on every change of posts prop (thread re-render)
 </script>
 
 <main bind:this={threadEl}>
