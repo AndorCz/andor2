@@ -19,7 +19,8 @@
 </script>
 
 <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
-  <a href='/' id='logo'>&nbsp;</a>
+  <!-- svelte-ignore a11y-missing-content -->
+  <a href='/' id='logo'></a>
   <nav class='tabs'>
     <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
     <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>

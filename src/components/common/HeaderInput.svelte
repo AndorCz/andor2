@@ -36,7 +36,6 @@
 
   async function uploadHeader (file) {
     uploading = true
-    $headerPreview = URL.createObjectURL(file)
     const { error: error1 } = await supabase.storage.from('headers').upload(unit + '-' + data.id, file, { upsert: true })
     const { error: error2 } = await supabase.from(section).update({ custom_header: true }).eq('id', data.id)
     if (error1 || error2) { return handleError(error1 || error2) }
@@ -45,6 +44,8 @@
     showSuccess('Hlavička byla uložena')
     uploading = false
     await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
+    $headerPreview = null
+    location.reload()
   }
 
   async function clearHeader () { // clear in db
