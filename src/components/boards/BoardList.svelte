@@ -43,8 +43,8 @@
         <div class='col left'>
           <div class='row basics'>
             <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
-            <div class='count'>{board.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner'>{board.owner_name}</div>
+            <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner' title='správce'>{board.owner_name}</div>
           </div>
           <div class='row annotation'>{board.header}</div>
         </div>
@@ -107,6 +107,8 @@
             font-size: 24px;
           }
         .block .count {
+          font-family: arial, sans-serif;
+          font-size: 16px;
           display: flex;
           gap: 5px;
           align-items: center;

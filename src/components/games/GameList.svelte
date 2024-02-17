@@ -51,10 +51,10 @@
         <div class='col left'>
           <div class='row basics'>
             <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
-            <div class='category'>{getCategory(game.category)}</div>
-            {#if game.system !== 'base'}<div class='system'>{getSystem(game.system)}</div>{/if}
-            <div class='count'>{game.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner'>{game.owner_name}</div>
+            <div class='category' title='kategorie'>{getCategory(game.category)}</div>
+            {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
+            <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner' title='správce'>{game.owner_name}</div>
           </div>
           <div class='row annotation'>{game.annotation}</div>
         </div>
@@ -116,6 +116,8 @@
             font-size: 24px;
           }
         .block .count {
+          font-family: arial, sans-serif;
+          font-size: 16px;
           display: flex;
           gap: 5px;
           align-items: center;

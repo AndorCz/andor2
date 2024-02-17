@@ -9,6 +9,7 @@
   export let user = {}
 
   let files
+  let headerInputEl
   let saving = false
   let uploading = false
   let originalName
@@ -20,11 +21,12 @@
   }
 
   async function uploadHeader () {
-    uploading = true
     if (files && files[0]) {
       const file = files[0]
       if (file.size < 400000) {
+        uploading = true
         const image = await getImage(file)
+        headerInputEl.value = ''
         if (image.width >= 1100 && image.height === 226) {
           $headerPreview = URL.createObjectURL(file)
           const { error: error1 } = await supabase.storage.from('headers').upload('board-' + data.id, file, { upsert: true })
@@ -33,6 +35,8 @@
           data.custom_header = true
           window.scrollTo({ top: 0, behavior: 'smooth' })
           showSuccess('Hlavička byla uložena')
+          uploading = false
+          await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
         } else {
           showError(`Nesprávné rozměry obrázku (226 px na výšku, 1100+ px na šířku), obrázek má ${image.width} x ${image.height}`)
         }
@@ -40,8 +44,6 @@
         showError('Obrázek je datově příliš velký (max. 400kB)')
       }
     }
-    uploading = false
-    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function clearHeader () {
@@ -83,20 +85,20 @@
 
 <main>
   <div class='headline'>
-    <h2>{data.name}: Nastavení</h2>
+    <h2>Nastavení diskuze "{data.name}"</h2>
     <button on:click={showBoard} class='material' title='Zpět do diskuze'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
-    <h3 class='first'>Vlastní hlavička diskuze</h3>
+    <h3 class='first'>Vlastní hlavička</h3>
     Obrázek musí být ve formátu JPG, <b>226 px</b> na výšku a alespoň <b>1100 px</b> na šířku.<br><br>
     <div class='row'>
       <label class='button' for='header'>Nahrát obrázek</label>
-      <input id='header' type='file' accept='image/jpg' bind:files on:change={uploadHeader} disabled={uploading} />
+      <input id='header' type='file' accept='image/jpg' bind:this={headerInputEl} bind:files on:change={uploadHeader} disabled={uploading} />
       <button class='material clear' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
     </div>
 
-    <h3>Název diskuze</h3>
+    <h3>Název</h3>
     <div class='row'>
       <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
       <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material'>check</button>

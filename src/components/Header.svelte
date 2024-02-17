@@ -19,14 +19,12 @@
 </script>
 
 <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
-  <a href='/' id='logo'>
-    <img src='/logo.png' alt='Andor2.cz logo'>
-  </a>
+  <a href='/' id='logo'>&nbsp;</a>
   <nav class='tabs'>
     <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
     <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
-    <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
     <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
+    <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
     <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
   </nav>
 </header>
@@ -40,12 +38,18 @@
   }
     #logo {
       position: absolute;
+      display: block;
       top: 40px;
       left: 50px;
+      width: 190px;
+      height: 90px;
+      background-image: url('/andor2.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top;
     }
-      #logo img {
-        width: 190px;
-        height: 90px;
+      #logo:hover {
+        background-position: bottom;
       }
     nav {
       position: absolute;
@@ -59,14 +63,12 @@
       background-size: cover;
     }
       #logo {
-        top: 10px;
+        top: 20px;
         left: 50%;
         transform: translateX(-50%);
+        width: calc(190px * 0.75);
+        height: calc(90px * 0.75);
       }
-        #logo img {
-          width: 120px;
-          object-fit: contain;
-        }
 
   @media (max-width: 500px) {
       nav {

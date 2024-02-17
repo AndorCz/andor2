@@ -105,7 +105,7 @@
     </button>
   {/if}
   {#if editing}
-    <button on:click={cancelEdit} class='cancel'>
+    <button on:click={cancelEdit} class='cancel' title='Zrušit'>
       <span class='material'>close</span>
     </button>
   {/if}

@@ -75,10 +75,10 @@
         <div class='col left'>
           <div class='row basics'>
             <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
-            <div class='category'>{getCategory(work.category)}</div>
-            <div class='tags'>{getTags(work.tags)}</div>
-            <div class='count'>{work.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner'>{work.owner_name}</div>
+            <div class='category' title='kategorie'>{getCategory(work.category)}</div>
+            <div class='tags' title='tagy'>{getTags(work.tags)}</div>
+            <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
+            <div class='owner' title='autor'>{work.owner_name}</div>
           </div>
           <div class='row annotation'>{work.annotation}</div>
         </div>
@@ -144,6 +144,8 @@
             font-size: 24px;
           }
         .block .count {
+          font-family: arial, sans-serif;
+          font-size: 16px;
           display: flex;
           gap: 5px;
           align-items: center;

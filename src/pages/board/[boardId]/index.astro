@@ -16,11 +16,6 @@
   if (unreadData) { boardData.unread = unreadData }
 ---
 
-<script>
-  import { lookForToast } from '@lib/toasts'
-  lookForToast()
-</script>
-
 <Layout title={boardData?.name} headerStorageId={boardData?.custom_header ? 'board-' + boardData.id : null}>
   {(showSettings ? (
     <BoardSettings data={boardData} {user} client:only />

@@ -24,11 +24,6 @@
   }
 ---
 
-<script>
-  import { lookForToast } from '@lib/toasts'
-  lookForToast()
-</script>
-
 <Layout title={gameData?.name} headerStorageId={gameData?.custom_header ? 'game-' + gameData.id : null}>
   {(showSettings ? (
     <GameSettings data={gameData} {user} client:only />

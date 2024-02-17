@@ -48,15 +48,6 @@ export function loadBase64Image (base64String) {
   })
 }
 
-export function getImage (file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => { resolve(img) }
-    img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
-    img.src = URL.createObjectURL(file)
-  })
-}
-
 export function formatDate (time) {
   const dt = DateTime.fromISO(time)
   // return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)
@@ -81,4 +72,34 @@ export function throttle (callback, limit) {
       setTimeout(function () { waiting = false }, limit)
     }
   }
+}
+
+export function getImage (image) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => { resolve(img) }
+    img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
+    let src
+    if (image instanceof File) { // support File
+      src = URL.createObjectURL(image)
+    } else if (image instanceof Blob) { // support Blob
+      src = URL.createObjectURL(image)
+    } else if (typeof image === 'string') { // support URL/Base64
+      src = image
+    } else {
+      reject(new Error('Neznámý typ obrázku'))
+    }
+    img.src = src
+  })
+}
+
+export function cropImageToBlob (imageElement, crop, outputSize, mimeType = 'image/jpeg') {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = outputSize.width
+    canvas.height = outputSize.height
+    ctx.drawImage(imageElement, crop.pixels.x, crop.pixels.y, crop.pixels.width, crop.pixels.height, 0, 0, outputSize.width, outputSize.height)
+    canvas.toBlob(blob => { blob ? resolve(blob) : reject(new Error('Konverze canvasu do blobu selhala')) }, mimeType)
+  })
 }

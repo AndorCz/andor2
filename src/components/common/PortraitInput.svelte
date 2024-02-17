@@ -13,6 +13,7 @@
   export let saveMinHeight = 140
 
   let files
+  let fileInputEl
   let uploading = false
   const maxHeight = 600
 
@@ -22,6 +23,7 @@
       const img = document.createElement('img')
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
+      fileInputEl.value = ''
 
       // calculate new height
       const imgRatio = img.naturalWidth / img.naturalHeight
@@ -37,8 +39,8 @@
       }
       identity.portrait = img.src || ''
       if (onPortraitChange) { await onPortraitChange(identity.portrait) }
+      uploading = false
     }
-    uploading = false
   }
 
   // clear preview or identity portrait
@@ -60,7 +62,7 @@
     {:else}
       <div class='portrait blank' title={`Obrázek bude zmenšený na šířku ${saveWidth} px`}>Nahrát<br>portrét</div>
     {/if}
-    <input type='file' accept='image/*' bind:files on:change={processPortrait} disabled={uploading} />
+    <input type='file' accept='image/*' bind:this={fileInputEl} bind:files on:change={processPortrait} disabled={uploading} />
   </label>
   {#if identity.portrait}
     <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>

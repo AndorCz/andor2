@@ -16,11 +16,6 @@
   if (unreadData) { workData.unread = unreadData }
 ---
 
-<script>
-  import { lookForToast } from '@lib/toasts'
-  lookForToast()
-</script>
-
 <Layout title={workData?.name} headerStorageId={workData?.custom_header ? 'work-' + workData.id : null}>
   {(showSettings ? (
     <WorkSettings data={workData} {user} client:only />
