@@ -1,27 +1,18 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getHeaderUrl } from '@lib/database'
   import { userStore } from '@lib/stores'
-  import Dropdown from '@components/common/Dropdown.svelte'
 
-  $userStore.newsCategory = $userStore.newsCategory || 'games'
+  async function loadData () {
+    const { data: game, error: gameError } = await supabase.from('game_list').select('*').order('created_at').limit(1).maybeSingle()
+    if (gameError) { handleError(gameError) }
 
-  const categories = {
-    games: { label: 'Nové hry', slug: 'game' },
-    boards: { label: 'Nové diskuze', slug: 'board' }
-  }
+    const { data: work, error: workError } = await supabase.from('work_list').select('*').order('created_at').limit(1).maybeSingle()
+    if (workError) { handleError(workError) }
 
-  async function loadRecords () {
-    const activeCategory = $userStore.newsCategory
-    const { data, error } = await supabase.from(activeCategory).select('*').order('created_at').limit(5)
-    if (error) { handleError(error) }
-    return data
-  }
+    const { data: board, error: boardError } = await supabase.from('board_list').select('*').order('created_at').limit(1).maybeSingle()
+    if (boardError) { handleError(boardError) }
 
-  function getUrl (id) {
-    const slug = categories[$userStore.newsCategory].slug
-    const { data, error } = supabase.storage.from('headers').getPublicUrl(`${slug}-${id}`)
-    if (error) { handleError(error) }
-    return data.publicUrl
+    return { game, work, board }
   }
 
   function limitLength (text, length) {
@@ -29,39 +20,77 @@
   }
 </script>
 
-<h3 id='newsCategorySelect'>
-  <Dropdown current={$userStore.newsCategory}
-    options={Object.keys(categories).map(key => ({ value: key, label: categories[key].label }))}
-    on:select={e => { $userStore.newsCategory = e.detail.value }}
-  />
-</h3>
-
-{#key $userStore.newsCategory}
-  {#await loadRecords() then records}
-    {#each records as record}
-      <a href={`/${categories[$userStore.newsCategory].slug}/${record.id}`} class='record'>
-        <h2>{record.name}</h2>
-        {#if record.custom_header}
-          <img src={getUrl(record.id)} alt={record.name} />
+{#await loadData() then last}
+  <div id='news'>
+    <div class='item'>
+      <h4>Nová hra</h4>
+      <a href={`/game/${last.game.id}`}>
+        <h2>{last.game.name}</h2>
+        {#if last.game.custom_header}
+          <img src={getHeaderUrl('game', last.game.id)} alt={last.game.name} />
         {/if}
-        {#if record.annotation}
-          <p>{limitLength(record.annotation, 150)}</p>
+        {#if last.game.annotation}
+          <p>{limitLength(last.game.annotation, 150)}</p>
         {/if}
       </a>
-    {/each}
-  {/await}
-{/key}
+    </div>
+    <div class='item'>
+      <h4>Nové dílo</h4>
+      <a href={`/work/${last.work.id}`}>
+        <h2>{last.work.name}</h2>
+        {#if last.work.custom_header}
+          <img src={getHeaderUrl('work', last.work.id)} alt={last.work.name} />
+        {/if}
+        {#if last.work.annotation}
+          <p>{limitLength(last.work.annotation, 150)}</p>
+        {/if}
+      </a>
+    </div>
+    <div class='item'>
+      <h4>Nová diskuze</h4>
+      <a href={`/board/${last.board.id}`}>
+        <h2>{last.board.name}</h2>
+        {#if last.board.custom_header}
+          <img src={getHeaderUrl('board', last.board.id)} alt={last.board.name} />
+        {/if}
+        {#if last.board.annotation}
+          <p>{limitLength(last.board.annotation, 150)}</p>
+        {/if}
+      </a>
+    </div>
+  </div>
+{/await}
 
 <style>
-  .record {
-    display: block;
+  #news {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
-    .record img {
+    .item {
+      border-bottom: 5px solid var(--prominent);
+    }
+    .item a {
+      display: block;
+    }
+    .item h4 {
+      margin-top: 0px;
+      margin-bottom: 0px;
+      font-size: 18px;
+    }
+    .item h2 {
+      margin-top: 0px;
+      margin-bottom: 10px;
+      font-size: 26px;
+    }
+    .item img {
       max-width: 100%;
     }
-    .record p {
+    .item p {
       font-size: 16px;
       color: var(--dim);
       font-style: italic;
+      font-variation-settings: 'wght' 400;
+      margin-top: 5px;
     }
 </style>

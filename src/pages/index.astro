@@ -25,7 +25,19 @@
 		display: flex;
 		gap: 40px;
 	}
-		aside, content {
-			flex: 0 0 40%;
+		aside {
+			width: 40%;
 		}
+		content {
+			width: 60%;
+		}
+
+	@media (max-width: 500px) {
+    main {
+			display: block;
+		}
+			aside, content {
+				width: 100%;
+			}
+  }
 </style>
