@@ -467,6 +467,16 @@ end;
 $$;
 
 
+create or replace function upsert_user_read(p_user_id uuid, p_slug text)
+  returns void as $$
+begin
+  insert into user_reads (user_id, slug, read_at)
+  values (p_user_id, p_slug, now())
+  on conflict (user_id, slug) do update set read_at = now();
+end;
+$$ language plpgsql;
+
+
 -- TRIGGERS
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
