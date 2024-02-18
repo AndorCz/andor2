@@ -104,7 +104,8 @@
           </div>
           <div id='tabs'>
             <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
-              <span class='material'>bookmark</span><span class='label'>Záložky{#if unreadTotal}<span class='unread'>&nbsp;({unreadTotal})</span>{/if}</span>
+              {#if unreadTotal}<span class='unread badge'></span>{/if}
+              <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
               {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}

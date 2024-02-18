@@ -62,10 +62,13 @@
   $activeGameAudienceIds = getActiveAudience()
 
   onMount(() => { // set select value on mount
-    if (identitySelect) { // might not exist if no character
-      $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
+    if (user.id) {
+      delete data.unread.gameThread
+      if (identitySelect) { // might not exist if no character
+        $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
+      }
+      if (audienceSelect) { audienceSelect.selectedIndex = 0 }
     }
-    if (audienceSelect) { audienceSelect.selectedIndex = 0 }
     loadPosts()
   })
 

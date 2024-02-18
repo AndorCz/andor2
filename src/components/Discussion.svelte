@@ -37,6 +37,7 @@
 
   onMount(() => {
     if (user.id) {
+      delete data.unread.gameChat
       if (useIdentities) {
         $identityStore.activeChatIdentity = $identityStore.activeChatIdentity || identities[0].id
         identitySelect.value = $identityStore.activeChatIdentity

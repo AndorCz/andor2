@@ -8,7 +8,12 @@
   export let data = {}
   export let isGameOwner
 
-  onMount(() => { if (user.id) { setRead(user.id, 'game-characters-' + data.id) } })
+  onMount(() => {
+    if (user.id) {
+      delete data.unread.gameCharacters
+      setRead(user.id, 'game-characters-' + data.id)
+    }
+  })
 
   // sort character categories
   // const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
