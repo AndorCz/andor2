@@ -23,14 +23,14 @@
     setOriginal()
     showSuccess('Změna diskuze uložena')
     saving = false
-    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function deleteBoard () {
-    await supabase.from('boards').delete().eq('id', data.id).then(({ error }) => {
-      if (error) { return handleError(error) }
-      window.location.href = '/boards?toastType=success&toastText=' + encodeURIComponent('Diskuze byla smazána')
-    })
+    const { error } = await supabase.from('boards').delete().eq('id', data.id)
+    if (error) { return handleError(error) }
+    // await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
+    window.location.href = '/boards?toastType=success&toastText=' + encodeURIComponent('Diskuze byla smazána')
   }
 
   function showBoard () {

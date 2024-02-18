@@ -36,15 +36,14 @@
     */
     showSuccess('Změna hry uložena')
     saving = false
-    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   async function deleteGame () {
-    await supabase.from('games').delete().eq('id', data.id).then(({ error }) => {
-      if (error) { return handleError(error) }
-      window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
-    })
-    await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
+    const { error } = await supabase.from('games').delete().eq('id', data.id)
+    if (error) { return handleError(error) }
+    // await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
+    window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 
   function showGame () {

@@ -36,14 +36,14 @@
     setOriginal()
     showSuccess('Změna hry uložena')
     saving = false
-    await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
   }
 
   async function deleteWork () {
-    await supabase.from('works').delete().eq('id', data.id).then(({ error }) => {
-      if (error) { return handleError(error) }
-      window.location.href = '/works?toastType=success&toastText=' + encodeURIComponent('Dílo bylo smazáno')
-    })
+    const { error } = await supabase.from('works').delete().eq('id', data.id)
+    if (error) { return handleError(error) }
+    // await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
+    window.location.href = '/works?toastType=success&toastText=' + encodeURIComponent('Dílo bylo smazáno')
   }
 
   function showWork () {

@@ -1,11 +1,12 @@
 ---
-  import { getData } from '@lib/cache'
+  // import { getData } from '@lib/cache'
 	import Layout from '@layouts/layout.astro'
   import BoardList from '@components/boards/BoardList.svelte'
 
   const { supabase, user } = Astro.locals
 
-  const boards = await getData('boards', 300, () => supabase.from('board_list').select('*'))
+  const { data: boards, error } = await supabase.from('board_list').select('*')
+  if (error) { console.log(error) }
 ---
 
 <Layout title='Diskuze'>

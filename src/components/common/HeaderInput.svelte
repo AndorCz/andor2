@@ -43,7 +43,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička byla uložena')
     uploading = false
-    await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
     $headerPreview = null
     location.reload()
   }
@@ -59,7 +59,7 @@
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
-    await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
   }
 
   // Cropping

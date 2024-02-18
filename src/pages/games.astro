@@ -5,7 +5,8 @@
 
   const { supabase, user } = Astro.locals
 
-  const games = await getData('games', 300, () => supabase.from('game_list').select('*'))
+  const { data: games, error } = await supabase.from('game_list').select('*')
+  if (error) { console.log(error) }
 ---
 
 <Layout title='Hry'>

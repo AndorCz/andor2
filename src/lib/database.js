@@ -78,6 +78,7 @@ export async function getConversations (db, userId) {
 
 // server helpers
 
+/*
 const cache = new Map()
 
 export async function fetchWithCache (key, fetcher, ttl = 300) {
@@ -90,6 +91,7 @@ export async function fetchWithCache (key, fetcher, ttl = 300) {
   cache.set(key, { value: data, expiry }) // update cache with new data and expiry time
   return data
 }
+*/
 
 // browser helpers
 

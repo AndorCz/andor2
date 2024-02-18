@@ -1,6 +1,6 @@
 ---
   import { createThread, getStoryteller } from '@lib/openai'
-  import { updateCache } from '@lib/cache'
+  // import { updateCache } from '@lib/cache'
 	import Layout from '@layouts/layout.astro'
   import GameForm from '@components/games/GameForm.svelte'
 
@@ -17,7 +17,7 @@
     const openAiStoryteller = await getStoryteller(system)
     const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    updateCache('games', data)
+    // updateCache('games', data)
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })

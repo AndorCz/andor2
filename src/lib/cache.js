@@ -1,3 +1,5 @@
+// Not used currently, leads to bugs and stale data
+
 import { handleError } from '@lib/database'
 
 const cache = new Map()

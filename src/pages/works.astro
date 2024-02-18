@@ -6,7 +6,8 @@
   const { supabase, user } = Astro.locals
   const activeTab = Astro.url.searchParams.get('tab') || 'articles'
 
-  const works = await getData('works', 300, () => supabase.from('work_list').select('*'))
+  const { data: works, error } = await supabase.from('work_list').select('*')
+  if (error) { console.log(error) }
 ---
 
 <Layout title='Tvorba'>

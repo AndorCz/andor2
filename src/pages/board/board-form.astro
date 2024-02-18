@@ -1,6 +1,6 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import { updateCache } from '@lib/cache'
+  // import { updateCache } from '@lib/cache'
 
   const { supabase, user } = Astro.locals
 
@@ -10,7 +10,7 @@
 
     const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    updateCache('boards', data)
+    // updateCache('boards', data)
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true })

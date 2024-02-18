@@ -86,7 +86,7 @@
     const { error } = await supabase.from('boards').update({ header: data.header }).eq('id', data.id)
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
-    await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
+    // await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   function showSettings () {
