@@ -12,8 +12,10 @@
     return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
   }
 
-  function getCategory (value) {
-    return workCategoriesText.find(c => c.value === value).label
+  function getCategory (work) {
+    if (work.editorial) { return 'Editorial' }
+    const category = workCategoriesText.find(c => c.value === work.category)
+    return category.value !== 'other' ? category.label : ''
   }
 </script>
 
@@ -54,9 +56,9 @@
         <th>autor</th>
       </tr>
       {#each works as work}
-        <tr class='work'>
+        <tr class='work' class:editorial={work.editorial}>
           <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
-          <td><div class='category'>{getCategory(work.category)}</div></td>
+          <td><div class='category'>{getCategory(work)}</div></td>
           <td><div class='tags'>{getTags(work.tags)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
           <td><div class='owner'>{work.owner_name}</div></td>
@@ -65,11 +67,11 @@
     </table>
   {:else}
     {#each works as work}
-      <div class='block'>
+      <div class='block' class:editorial={work.editorial}>
         <div class='col left'>
           <div class='row basics'>
             <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
-            <div class='category' title='kategorie'>{getCategory(work.category)}</div>
+            <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <div class='owner' title='autor'>{work.owner_name}</div>
@@ -102,9 +104,11 @@
   .name a:first-letter {
     text-transform: uppercase;
   }
-
   .tabs {
     margin-bottom: 20px;
+  }
+  .editorial {
+    background-color: var(--prominent) !important;
   }
 
   /* blocks */

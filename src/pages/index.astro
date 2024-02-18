@@ -1,6 +1,12 @@
 ---
 	import Layout from '@layouts/layout.astro'
 	import News from '@components/homepage/news.svelte'
+	import Feed from '@components/homepage/feed.svelte'
+
+  const { supabase } = Astro.locals
+
+	const { data: lastEditorial, error } = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+	if (error) { console.error('error', error) }
 ---
 
 <Layout title='Hlavní strana'>
@@ -9,7 +15,7 @@
 			<News client:only />
 		</aside>
 		<content>
-			Tady bude editorial a zeď s novinkami.
+			<Feed client:load {lastEditorial} />
 		</content>
 	</main>
 </Layout>
