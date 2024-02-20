@@ -4,8 +4,8 @@
   import { formatDate } from '@lib/utils'
   import Reactions from '@components/common/Reactions.svelte'
 
-  export let user
   export let post
+  export let user = null
   export let unread = false
   export let isMyPost = false
   export let allowReactions = false
@@ -69,7 +69,7 @@
     </div>
     <div class='content'>
       <Render html={$postStore.content} />
-      {#if allowReactions}
+      {#if user && allowReactions}
         <Reactions {user} {postStore} />
       {/if}
     </div>
