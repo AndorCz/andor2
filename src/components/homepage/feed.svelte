@@ -17,12 +17,14 @@
 {/if}
 
 <h3>Co se kde děje</h3>
+<!--
 <div id='lastPosts'>
   {#each lastPosts as post}
     <a href={`/${post.content_type}/${post.content.content_id}`}><h4>{post.content_name}</h4></a>
     <Post {post} {user} iconSize={50} />
   {/each}
 </div>
+-->
 
 <style>
   #editorial {
