@@ -3,13 +3,13 @@
   import { userStore } from '@lib/stores'
 
   async function loadData () {
-    const { data: game, error: gameError } = await supabase.from('game_list').select('*').order('created_at').limit(1).maybeSingle()
+    const { data: game, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
     if (gameError) { handleError(gameError) }
 
-    const { data: work, error: workError } = await supabase.from('work_list').select('*').order('created_at').limit(1).maybeSingle()
+    const { data: work, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', 1).limit(1).maybeSingle()
     if (workError) { handleError(workError) }
 
-    const { data: board, error: boardError } = await supabase.from('board_list').select('*').order('created_at').limit(1).maybeSingle()
+    const { data: board, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
     if (boardError) { handleError(boardError) }
 
     return { game, work, board }
@@ -62,14 +62,11 @@
 {/await}
 
 <style>
-  #news {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  .item {
+    border-bottom: 5px solid var(--prominent);
+    padding-top: 20px;
+    padding-bottom: 20px;
   }
-    .item {
-      border-bottom: 5px solid var(--prominent);
-    }
     .item a {
       display: block;
     }
@@ -92,5 +89,12 @@
       font-style: italic;
       font-variation-settings: 'wght' 400;
       margin-top: 5px;
+    }
+    .item:first-child {
+      padding-top: 0px;
+    }
+    .item:last-child {
+      padding-bottom: 0px;
+      border-bottom: none;
     }
 </style>

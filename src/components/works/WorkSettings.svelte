@@ -34,7 +34,7 @@
     const { error } = await supabase.from('works').update({ name: data.name, annotation: data.annotation, category: data.category, tags }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
-    showSuccess('Změna hry uložena')
+    showSuccess('Změna díla uložena')
     saving = false
     // await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
   }

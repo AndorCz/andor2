@@ -6,8 +6,8 @@
 
 {#if lastEditorial}
   <div id='editorial'>
-    <a href='/works'><h4>Editorial</h4></a>
-    <h2>{lastEditorial.name}</h2>
+    <h4>Editorial</h4>
+    <a href={'/work/' + lastEditorial.id}><h2>{lastEditorial.name}</h2></a>
     <content>{@html lastEditorial.content}</content>
   </div>
 {/if}
@@ -28,6 +28,7 @@
     #editorial h2 {
       margin-top: 0px;
       margin-bottom: 10px;
+      display: inline-block;
     }
     #editorial content {
       font-size: 18px;

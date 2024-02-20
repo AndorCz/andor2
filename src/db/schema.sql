@@ -188,6 +188,7 @@ create view posts_owner as
   from posts p
   left join profiles on p.owner = profiles.id and p.owner_type = 'user'
   left join characters on p.owner = characters.id and p.owner_type = 'character';
+  order by p.created_at desc;
 
 create view board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
@@ -195,7 +196,8 @@ create view board_list as
     left join threads t on b.thread = t.id
     left join profiles pr on b.owner = pr.id
     left join posts p on t.id = p.thread
-  group by b.id, pr.id, pr.name;
+  group by b.id, pr.id, pr.name
+  order by b.created_at desc;
 
 create view game_list as
   select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
@@ -203,7 +205,8 @@ create view game_list as
     left join threads t on g.game_thread = t.id
     left join profiles pr on g.owner = pr.id
     left join posts p on t.id = p.thread
-  group by g.id, pr.id, pr.name;
+  group by g.id, pr.id, pr.name
+  order by g.created_at desc;
 
 create view work_list as
   select w.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
@@ -211,7 +214,8 @@ create view work_list as
     left join threads t on w.thread = t.id
     left join profiles pr on w.owner = pr.id
     left join posts p on t.id = p.thread
-  group by w.id, pr.id, pr.name;
+  group by w.id, pr.id, pr.name
+  order by w.created_at desc;
 
 
 -- FUNCTIONS
