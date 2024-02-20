@@ -1,6 +1,7 @@
 <script>
   // Shows a long text that can be edited in place
   import { marked } from 'marked'
+  import { Render } from '@jill64/svelte-sanitize'
   import Loading from '@components/common/Loading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -43,7 +44,7 @@
   {#if isEditing}
     <TextareaExpandable bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} buttonIcon='done' showButton />
   {:else}
-    <content class='editableLong'>{@html marked(value || '')}</content>
+    <content class='editableLong'><Render html={marked(value || '')} /></content>
     {#if canEdit}
       <button on:click={() => { isEditing = true }} title='Upravit'><span class='material'>edit</span></button>
     {/if}

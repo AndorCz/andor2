@@ -1,6 +1,6 @@
 <script>
   import { writable } from 'svelte/store'
-  import { Render } from 'svelte-purify'
+  import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
   import Reactions from '@components/common/Reactions.svelte'
 

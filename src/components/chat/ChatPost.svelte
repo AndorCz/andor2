@@ -1,7 +1,8 @@
 <script>
   import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
-  import { tooltip, tooltipContent } from '@lib/tooltip'
+  import { tooltipContent } from '@lib/tooltip'
+  import { Render } from '@jill64/svelte-sanitize'
   import Reactions from '@components/common/Reactions.svelte'
   import ReactionInput from '@components/common/ReactionInput.svelte'
   import ReactionDisplay from '@components/common/ReactionDisplay.svelte'
@@ -25,7 +26,7 @@
       <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
     </div>
     <div class='post' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
-      <div class='content'>{@html post.content}</div>
+      <div class='content'><Render html={post.content} /></div>
     </div>
     {#if post.owner_portrait}
       <img class='portrait' src={post.owner_portrait} alt={post.owner_name} />
@@ -40,7 +41,7 @@
     </div>
     <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
       <div class='name'>{post.owner_name}</div>
-      <div class='content'>{@html post.content}</div>
+      <div class='content'><Render html={post.content} /></div>
     </div>
     <ReactionDisplay {postStore} />
   {/if}

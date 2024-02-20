@@ -1,5 +1,6 @@
 <script>
-  // import Post from '@components/common/Post.svelte'
+  import Post from '@components/common/Post.svelte'
+  import { Render } from '@jill64/svelte-sanitize'
 
   export let lastEditorial = null
   export let lastPosts = []
@@ -12,19 +13,17 @@
   <div id='editorial'>
     <h4>Editorial</h4>
     <a href={'/work/' + lastEditorial.id}><h2>{lastEditorial.name}</h2></a>
-    <content>{@html lastEditorial.content}</content>
+    <content><Render html={lastEditorial.content} /></content>
   </div>
 {/if}
 
 <h3>Co se kde děje</h3>
-<!--
 <div id='lastPosts'>
   {#each lastPosts as post}
     <a href={`/${post.content_type}/${post.content.content_id}`}><h4>{post.content_name}</h4></a>
     <Post {post} {user} iconSize={50} />
   {/each}
 </div>
--->
 
 <style>
   #editorial {
