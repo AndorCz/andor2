@@ -33,6 +33,10 @@
           <p>{limitLength(last.game.annotation, 150)}</p>
         {/if}
       </a>
+      <div class='details'>
+        <span class='date'>{new Date(last.game.created_at).toLocaleDateString('cs')}</span>
+        <a href='#' class='user'>{last.game.owner_name}</a>
+      </div>
     </div>
     <div class='item'>
       <h4>Nové dílo</h4>
@@ -45,6 +49,10 @@
           <p>{limitLength(last.work.annotation, 150)}</p>
         {/if}
       </a>
+      <div class='details'>
+        <span class='date'>{new Date(last.work.created_at).toLocaleDateString('cs')}</span>
+        <a href='#' class='user'>{last.work.owner_name}</a>
+      </div>
     </div>
     <div class='item'>
       <h4>Nová diskuze</h4>
@@ -57,6 +65,10 @@
           <p>{limitLength(last.board.annotation, 150)}</p>
         {/if}
       </a>
+      <div class='details'>
+        <span class='date'>{new Date(last.board.created_at).toLocaleDateString('cs')}</span>
+        <a href='#' class='user'>{last.board.owner_name}</a>
+      </div>
     </div>
   </div>
 {/await}
@@ -97,4 +109,12 @@
       padding-bottom: 0px;
       border-bottom: none;
     }
+      .details {
+        display: flex;
+        justify-content: space-between;
+      }
+      .date {
+        font-size: 16px;
+        color: var(--dim);
+      }
 </style>
