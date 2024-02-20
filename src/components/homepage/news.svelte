@@ -91,9 +91,13 @@
       margin-top: 0px;
       margin-bottom: 10px;
       font-size: 26px;
+      line-height: 120%;
     }
     .item img {
       max-width: 100%;
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     .item p {
       font-size: 16px;

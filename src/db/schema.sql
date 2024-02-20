@@ -20,6 +20,7 @@ drop view if exists posts_owner;
 drop view if exists board_list;
 drop view if exists game_list;
 drop view if exists work_list;
+drop view if exists last_posts;
 
 -- ENUMS
 
@@ -216,6 +217,35 @@ create view work_list as
     left join posts p on t.id = p.thread
   group by w.id, pr.id, pr.name
   order by w.created_at desc;
+
+create or replace view last_posts as
+select p.id, p.content, p.created_at,
+  case
+    when g.id is not null then 'game'
+    when b.id is not null then 'board'
+    when w.id is not null then 'work'
+  end as content_type,
+  coalesce(g.id::text, b.id::text, w.thread::text) as content_id,
+  case 
+    when p.owner_type = 'user' then pr.name
+    when p.owner_type = 'character' then ch.name
+  end as owner_name,
+  case 
+    when p.owner_type = 'user' then pr.portrait
+    when p.owner_type = 'character' then ch.portrait
+  end as owner_portrait
+from
+  posts p
+  left join games g on p.thread = g.discussion_thread or p.thread = g.game_thread
+  left join boards b on p.thread = b.thread
+  left join works w on p.thread = w.thread
+  left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
+  left join characters ch on p.owner = ch.id and p.owner_type = 'character'
+where
+  p.audience is null and (g.id is not null or b.id is not null or w.id is not null)
+order by
+  p.created_at desc
+limit 10;
 
 
 -- FUNCTIONS

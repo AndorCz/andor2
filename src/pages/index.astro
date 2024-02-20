@@ -3,10 +3,13 @@
 	import News from '@components/homepage/news.svelte'
 	import Feed from '@components/homepage/feed.svelte'
 
-  const { supabase } = Astro.locals
+  const { supabase, user } = Astro.locals
 
 	const { data: lastEditorial, error } = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
-	if (error) { console.error('error', error) }
+	if (error) { console.error('error loading editorial', error) }
+
+	const { data: lastPosts, error: error2 } = await supabase.from('last_posts').select('*').limit(10)
+	if (error2) { console.error('error loading last posts', error2) }
 ---
 
 <Layout title='Hlavní strana'>
@@ -15,7 +18,7 @@
 			<News client:only />
 		</aside>
 		<content>
-			<Feed client:load {lastEditorial} />
+			<Feed client:load {user} {lastEditorial} {lastPosts} />
 		</content>
 	</main>
 </Layout>
