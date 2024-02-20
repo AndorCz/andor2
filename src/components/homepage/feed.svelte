@@ -1,5 +1,5 @@
 <script>
-  import Post from '@components/common/Post.svelte'
+  // import Post from '@components/common/Post.svelte'
 
   export let lastEditorial = null
   export let lastPosts = []
