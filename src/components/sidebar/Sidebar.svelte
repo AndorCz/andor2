@@ -83,57 +83,59 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
 <aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px' class:active={showSidebar}>
-  {#if user.name || user.email}
-    {#if $userStore.openChat}
-      <Chat {user} {userStore} />
-    {:else}
-      {#key showOffline}
-        {#await loadData()}
-          <div class='loading'>Načítání...</div>
-        {:then}
-          <div id='user'>
-            <PortraitInput identity={user} table='profiles' {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
-            <div id='details'>
-              <div id='nameRow'>
-                <span id='name'>{user.name || user.email}</span>
-              </div>
-              <div>
-                <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
+  <content>
+    {#if user.name || user.email}
+      {#if $userStore.openChat}
+        <Chat {user} {userStore} />
+      {:else}
+        {#key showOffline}
+          {#await loadData()}
+            <div class='loading'>Načítání...</div>
+          {:then}
+            <div id='user'>
+              <PortraitInput identity={user} table='profiles' {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
+              <div id='details'>
+                <div id='nameRow'>
+                  <span id='name'>{user.name || user.email}</span>
+                </div>
+                <div>
+                  <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
+                </div>
               </div>
             </div>
-          </div>
-          <div id='tabs'>
-            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
-              {#if unreadTotal}<span class='unread badge'></span>{/if}
-              <span class='material'>bookmark</span><span class='label'>Záložky</span>
-            </button>
-            <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
-              {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
-              <span class='material'>person</span>
-              <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
-            </button>
-            <button id='characters' disabled>
-              <span class='material'>domino_mask</span>
-              <span class='label'>Postavy</span>
-            </button>
-          </div>
-          <div id='panels'>
-            {#if $userStore.activePanel === 'booked'}
-              <Bookmarks />
-            {:else if $userStore.activePanel === 'people'}
-              <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
-            {/if}
-          </div>
-        {/await}
-      {/key}
+            <div id='tabs'>
+              <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
+                {#if unreadTotal}<span class='unread badge'></span>{/if}
+                <span class='material'>bookmark</span><span class='label'>Záložky</span>
+              </button>
+              <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
+                {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
+                <span class='material'>person</span>
+                <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
+              </button>
+              <button id='characters' disabled>
+                <span class='material'>domino_mask</span>
+                <span class='label'>Postavy</span>
+              </button>
+            </div>
+            <div id='panels'>
+              {#if $userStore.activePanel === 'booked'}
+                <Bookmarks />
+              {:else if $userStore.activePanel === 'people'}
+                <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
+              {/if}
+            </div>
+          {/await}
+        {/key}
+      {/if}
+    {:else}
+      <div id='panels' class='login'>
+        <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
+          <button value='google' name='provider' type='submit' class='google w100 large'>Přihlásit přes Google</button>
+        </form>
+      </div>
     {/if}
-  {:else}
-    <div id='panels' class='login'>
-      <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
-        <button value='google' name='provider' type='submit' class='google w100 large'>Přihlásit přes Google</button>
-      </form>
-    </div>
-  {/if}
+  </content>
 </aside>
 
 <button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
@@ -141,9 +143,19 @@
 <style>
   aside {
     width: var(--asideWidth);
-    margin-left: 20px;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
+    position: relative;
   }
+    content {
+      padding-left: 20px;
+      padding-right: 20px;
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      width: calc(var(--asideWidth) + 20px);
+      max-height: 100svh;
+      overflow-y: auto;
+    }
   #user {
     padding: 20px 0px;
     display: flex;
@@ -214,8 +226,6 @@
     padding: 20px;
     border-radius: 10px;
     background-color: var(--panel);
-    max-height: 600px;
-    overflow-y: auto;
   }
   .w100 {
     width: 100%;
@@ -268,10 +278,6 @@
   #veil.active {
     visibility: visible;
     opacity: 1;
-  }
-  #panels {
-    max-height: initial;
-    overflow-y: none;
   }
 }
 </style>
