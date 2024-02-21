@@ -1,7 +1,8 @@
 ---
 	import Layout from '@layouts/layout.astro'
-	import News from '@components/homepage/news.svelte'
-	import Feed from '@components/homepage/feed.svelte'
+	import News from '@components/homepage/News.svelte'
+	import Feed from '@components/homepage/Feed.svelte'
+	import Editorial from '@components/homepage/Editorial.svelte'
 
   const { supabase, user } = Astro.locals
 
@@ -18,6 +19,7 @@
 			<News client:only />
 		</aside>
 		<content>
+			<Editorial client:only {lastEditorial} />
 			<Feed client:load {user} {lastEditorial} {lastPosts} />
 		</content>
 	</main>

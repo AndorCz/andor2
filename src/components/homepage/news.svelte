@@ -1,6 +1,5 @@
 <script>
   import { supabase, handleError, getHeaderUrl } from '@lib/database'
-  import { userStore } from '@lib/stores'
 
   async function loadData () {
     const { data: game, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
