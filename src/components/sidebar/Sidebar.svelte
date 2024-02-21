@@ -275,6 +275,9 @@
     aside.active {
       right: 0px;
     }
+    content {
+      position: relative;
+    }
   #veil.active {
     visibility: visible;
     opacity: 1;
