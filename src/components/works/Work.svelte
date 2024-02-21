@@ -2,9 +2,10 @@
   import { supabase, handleError } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
+  import { workTags } from '@lib/constants'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
-
+  
   export let user = {}
   export let data = {}
 
@@ -36,6 +37,10 @@
     showSuccess('Uloženo')
   }
 
+  function getTags (value) {
+    return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
+  }
+
   $: bookmarkId = $bookmarks.works.find(b => b.work_id === data.id)?.id
 </script>
 
@@ -51,7 +56,11 @@
   </div>
 
   <EditableLong bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
-  <br><br>
+  <div class='details'>
+    <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
+    <div class='author'>Autor: <a href='#' class='user'>{data.owner.name}</a></div>
+  </div>
+<br><br>
   <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} />
 </main>
 
@@ -70,4 +79,10 @@
       padding: 10px;
       margin-left: 10px;
     }
+  .details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
 </style>
