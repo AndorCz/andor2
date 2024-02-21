@@ -5,6 +5,15 @@
   export let lastEditorial = null
   export let lastPosts = []
   export let user = {}
+
+  function groupPostsByContentId(posts) {
+    return posts.reduce((groups, post) => {
+      (groups[post.content_id] = groups[post.content_id] || []).push(post)
+      return groups
+    }, {})
+  }
+
+  const groupedPosts = groupPostsByContentId(lastPosts)
 </script>
 
 <!--<h3>Zeď</h3>-->
@@ -19,9 +28,13 @@
 
 <h3>Co se kde děje</h3>
 <div id='lastPosts'>
-  {#each lastPosts as post}
-    <a href={`/${post.content_type}/${post.content.content_id}`}><h4>{post.content_name}</h4></a>
-    <Post {post} {user} iconSize={50} />
+  {#each Object.entries(groupedPosts) as [contentId, posts]}
+    {#if posts.length > 0}
+      <a href={`/${posts[0].content_type}/${contentId}`}><h4>{posts[0].content_name}</h4></a>
+      {#each posts as post}
+        <Post {post} {user} iconSize={50} />
+      {/each}
+    {/if}
   {/each}
 </div>
 
