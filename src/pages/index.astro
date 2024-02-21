@@ -16,11 +16,11 @@
 <Layout title='Hlavní strana'>
 	<main>
 		<aside>
-			<News client:only />
+			<News client:load />
 		</aside>
 		<content>
-			<Editorial client:only {lastEditorial} />
-			<Feed client:load {user} {lastPosts} />
+			<Editorial {lastEditorial} client:only />
+			<Feed {user} {lastPosts} client:load />
 		</content>
 	</main>
 </Layout>

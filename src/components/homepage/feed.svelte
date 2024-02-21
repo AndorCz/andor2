@@ -27,11 +27,11 @@
 </div>
 
 <style>
-    h3 {
-      margin-bottom: 10px;
-    }
-    #lastPosts h4 {
-      display: inline-block;
-      margin: 10px 0px;
-    }
+  h3 {
+    margin-bottom: 10px;
+  }
+  #lastPosts h4 {
+    display: inline-block;
+    margin: 10px 0px;
+  }
 </style>
