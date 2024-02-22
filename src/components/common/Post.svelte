@@ -108,7 +108,9 @@
       .icon img {
         width: 100%;
         display: block;
+        /*
         box-shadow: 2px 2px 3px #0002;
+        */
       }
 
   .body {
@@ -117,7 +119,9 @@
     .content {
       background-color: var(--block);
       padding: 20px;
+      /*
       box-shadow: 2px 2px 3px #0002;
+      */
     }
       .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .time, .hidden .reply {
         display: none;
@@ -131,9 +135,9 @@
       align-items: center;
       /*
       background-color: color-mix(in srgb, var(--block), var(--panel) 50%);
-      border-bottom: 1px var(--panel) solid;
-      */
       box-shadow: 2px 2px 3px #0002;
+      */
+      border-bottom: 1px var(--panel) solid;
       background-color: var(--block);
       padding: 5px 15px;
       color: var(--dim);
