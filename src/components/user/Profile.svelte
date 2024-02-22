@@ -7,17 +7,17 @@
   export let data = {}
 </script>
 
-<section>
-  <main>
+<main>
+  <div class='wide'>
     <h1>{data.name}</h1>
     <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
-  </main>
+  </div>
   <aside>
     {#if data.portrait}
     <img src={data.portrait} alt={data.name} id='portrait' />
   {/if}
   </aside>
-</section>
+</main>
 
 <h2>Hry</h2>
 <GameList {user} games={data.games} />
@@ -29,14 +29,14 @@
 <BoardList {user} boards={data.boards} />
 
 <style>
-  section {
+  main {
     display: flex;
     justify-content: space-between;
   }
-  main {
-    flex: 1;
-  }
-  #portrait {
-    border-radius: 10px;
-  }
+    .wide {
+      flex: 1;
+    }
+    #portrait {
+      border-radius: 10px;
+    }
 </style>
