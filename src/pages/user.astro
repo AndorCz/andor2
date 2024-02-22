@@ -5,7 +5,7 @@
   const { supabase, user } = Astro.locals
 
   const userId = Astro.url.searchParams.get('id')
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId)
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
   if (error) { console.error('error loading user profile', error) }
 
   // load user's games
