@@ -58,7 +58,7 @@
   <EditableLong bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
-    <div class='author'>Autor: <a href='#' class='user'>{data.owner.name}</a></div>
+    <div class='author'>Autor: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a></div>
   </div>
 <br><br>
   <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} />

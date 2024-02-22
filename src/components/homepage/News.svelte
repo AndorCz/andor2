@@ -34,7 +34,7 @@
       </a>
       <div class='details'>
         <span class='date'>{new Date(last.game.created_at).toLocaleDateString('cs')}</span>
-        <a href='#' class='user'>{last.game.owner_name}</a>
+        <a href={'/user?id=' + last.game.owner} class='user'>{last.game.owner_name}</a>
       </div>
     </div>
     <div class='item'>
@@ -50,7 +50,7 @@
       </a>
       <div class='details'>
         <span class='date'>{new Date(last.work.created_at).toLocaleDateString('cs')}</span>
-        <a href='#' class='user'>{last.work.owner_name}</a>
+        <a href={'/user?id=' + last.work.owner} class='user'>{last.work.owner_name}</a>
       </div>
     </div>
     <div class='item'>
@@ -66,7 +66,7 @@
       </a>
       <div class='details'>
         <span class='date'>{new Date(last.board.created_at).toLocaleDateString('cs')}</span>
-        <a href='#' class='user'>{last.board.owner_name}</a>
+        <a href={'/user?id=' + last.board.owner} class='user'>{last.board.owner_name}</a>
       </div>
     </div>
   </div>

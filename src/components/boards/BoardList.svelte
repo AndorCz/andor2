@@ -3,23 +3,26 @@
 
   export let user = {}
   export let boards = []
+  export let showHeadline = false
 
   let listView = false
 </script>
 
-<div class='headline flex'>
-  <h1>Diskuze</h1>
-  <div class='buttons'>
-    <div class='toggle'>
-      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+{#if showHeadline}
+  <div class='headline flex'>
+    <h1>Diskuze</h1>
+    <div class='buttons'>
+      <div class='toggle'>
+        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+      </div>
+      {#if user.id}
+        <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
+        <a href='./board/board-form' class='button mobile material'>add</a>
+      {/if}
     </div>
-    {#if user.id}
-      <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
-      <a href='./board/board-form' class='button mobile material'>add</a>
-    {/if}
   </div>
-</div>
+{/if}
 
 {#if boards?.length > 0}
   {#if listView}

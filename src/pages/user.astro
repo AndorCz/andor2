@@ -1,0 +1,29 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Profile from '@components/user/Profile.svelte'
+
+  const { supabase, user } = Astro.locals
+
+  const userId = Astro.url.searchParams.get('id')
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId)
+  if (error) { console.error('error loading user profile', error) }
+
+  // load user's games
+  const { data: games, error: gamesError } = await supabase.from('game_list').select('*').eq('owner', userId)
+  if (gamesError) { console.error('error loading user games', gamesError) }
+  data.games = games
+  
+  // load user's boards
+  const { data: boards, error: boardsError } = await supabase.from('board_list').select('*').eq('owner', userId)
+  if (boardsError) { console.error('error loading user boards', boardsError) }
+  data.boards = boards
+
+  // load user's works
+  const { data: works, error: worksError } = await supabase.from('work_list').select('*').eq('owner', userId)
+  if (worksError) { console.error('error loading user works', worksError) }
+  data.works = works
+---
+
+<Layout title='Chat' headerStatic='/header_chat.jpg'>
+  <Profile {data} {user} />
+</Layout>

@@ -226,6 +226,8 @@ select p.id, p.content, p.created_at,
     when w.id is not null then 'work'
   end as content_type,
   coalesce(g.id::text, b.id::text, w.thread::text) as content_id,
+  p.owner,
+  p.owner_type,
   case 
     when p.owner_type = 'user' then pr.name
     when p.owner_type = 'character' then ch.name
@@ -233,7 +235,12 @@ select p.id, p.content, p.created_at,
   case 
     when p.owner_type = 'user' then pr.portrait
     when p.owner_type = 'character' then ch.portrait
-  end as owner_portrait
+  end as owner_portrait,
+  case
+    when g.id is not null then g.name
+    when b.id is not null then b.name
+    when w.id is not null then w.name
+  end as content_name
 from
   posts p
   left join games g on p.thread = g.discussion_thread or p.thread = g.game_thread

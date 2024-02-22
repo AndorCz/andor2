@@ -142,7 +142,7 @@
 
 <style>
   aside {
-    width: var(--asideWidth);
+    width: calc(var(--asideWidth) + 20px);
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
     position: relative;
   }
@@ -152,7 +152,7 @@
       position: fixed;
       top: 0px;
       right: 0px;
-      width: calc(var(--asideWidth) + 20px);
+      width: calc(var(--asideWidth) + 40px);
       max-height: 100svh;
       overflow-y: auto;
     }

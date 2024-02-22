@@ -4,6 +4,7 @@
 
   export let user = {}
   export let games = []
+  export let showHeadline = false
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -11,19 +12,21 @@
   let listView = false
 </script>
 
-<div class='headline flex'>
-  <h1>Hry</h1>
-  <div class='buttons'>
-    <div class='toggle'>
-      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+{#if showHeadline}
+  <div class='headline flex'>
+    <h1>Hry</h1>
+    <div class='buttons'>
+      <div class='toggle'>
+        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+      </div>
+      {#if user.id}
+        <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
+        <a href='./game/game-form' class='button mobile material'>add</a>
+      {/if}
     </div>
-    {#if user.id}
-      <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
-      <a href='./game/game-form' class='button mobile material'>add</a>
-    {/if}
   </div>
-</div>
+{/if}
 
 {#if games?.length > 0}
   {#if listView}

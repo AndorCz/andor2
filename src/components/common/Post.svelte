@@ -44,7 +44,11 @@
         <span class='badge'></span>
       {/if}
       <span class='title' on:click={onHeaderClick}>
-        <b>{$postStore.owner_name}</b>
+        {#if post.owner_type === 'user'}
+          <a href={'/user?id=' + post.owner} class='user'>{$postStore.owner_name}</a>
+        {:else}
+          <b>{$postStore.owner_name}</b>
+        {/if}
         {#if $postStore.audience_names}
           <span class='audience'>jen pro: <b>{$postStore.audience_names.join(', ')}</b></span>
         {/if}

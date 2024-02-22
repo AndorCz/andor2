@@ -5,6 +5,8 @@
   export let user = {}
   export let works = []
   export let activeTab = 'articles'
+  export let showHeadline = false
+  export let showTabs = false
 
   let listView = false
 
@@ -19,31 +21,35 @@
   }
 </script>
 
-<div class='headline flex'>
-  <h1>Tvorba</h1>
-  <div class='buttons'>
-    <div class='toggle'>
-      <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-      <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+{#if showHeadline}
+  <div class='headline flex'>
+    <h1>Tvorba</h1>
+    <div class='buttons'>
+      <div class='toggle'>
+        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+      </div>
+      {#if user.id}
+        <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
+        <a href='./work/work-form' class='button mobile material'>add</a>
+      {/if}
     </div>
-    {#if user.id}
-      <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
-      <a href='./work/work-form' class='button mobile material'>add</a>
-    {/if}
   </div>
-</div>
+{/if}
 
-<nav class='tabs secondary'>
-  <button on:click={() => { activeTab = 'articles' }} class={activeTab === 'articles' ? 'active' : ''}>
-    Články
-  </button>
-  <button disabled on:click={() => { activeTab = 'images' }} class={activeTab === 'images' ? 'active' : ''}>
-    Obrázky
-  </button>
-  <button disabled on:click={() => { activeTab = 'music' }} class={activeTab === 'music' ? 'active' : ''}>
-    Hudba
-  </button>
-</nav>
+{#if showTabs}
+  <nav class='tabs secondary'>
+    <button on:click={() => { activeTab = 'articles' }} class={activeTab === 'articles' ? 'active' : ''}>
+      Články
+    </button>
+    <button disabled on:click={() => { activeTab = 'images' }} class={activeTab === 'images' ? 'active' : ''}>
+      Obrázky
+    </button>
+    <button disabled on:click={() => { activeTab = 'music' }} class={activeTab === 'music' ? 'active' : ''}>
+      Hudba
+    </button>
+  </nav>
+{/if}
 
 {#if works?.length > 0}
   {#if listView}
