@@ -18,10 +18,10 @@
 		<aside>
 			<News client:load />
 		</aside>
-		<content>
+		<section>
 			<Editorial {lastEditorial} client:only />
 			<Feed {user} {lastPosts} client:load />
-		</content>
+		</section>
 	</main>
 </Layout>
 
@@ -33,7 +33,7 @@
 		aside {
 			width: 40%;
 		}
-		content {
+		section {
 			width: 60%;
 		}
 

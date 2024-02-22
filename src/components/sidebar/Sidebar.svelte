@@ -83,7 +83,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
 <aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px' class:active={showSidebar}>
-  <content>
+  <section>
     {#if user.name || user.email}
       {#if $userStore.openChat}
         <Chat {user} {userStore} />
@@ -135,7 +135,7 @@
         </form>
       </div>
     {/if}
-  </content>
+  </section>
 </aside>
 
 <button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
@@ -146,7 +146,7 @@
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
     position: relative;
   }
-    content {
+    section {
       padding-left: 20px;
       padding-right: 20px;
       position: fixed;

@@ -20,7 +20,7 @@
     {#if posts.length > 0}
       <a href={`/${posts[0].content_type}/${contentId}`}><h4>{posts[0].content_name}</h4></a>
       {#each posts as post}
-        <Post {post} {user} iconSize={50} />
+        <Post {post} {user} iconSize={80} />
       {/each}
     {/if}
   {/each}

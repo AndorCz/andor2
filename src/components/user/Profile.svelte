@@ -7,7 +7,7 @@
   export let data = {}
 </script>
 
-<content>
+<section>
   <main>
     <h1>{user.name}</h1>
     <p>Uživatel od: {new Date(user.created_at).toLocaleDateString('cs')}</p>
@@ -17,7 +17,7 @@
     <img src={user.portrait} alt={user.name} id='portrait' />
   {/if}
   </aside>
-</content>
+</section>
 
 <h2>Hry</h2>
 <GameList {user} games={data.games} />
@@ -29,7 +29,7 @@
 <BoardList {user} boards={data.boards} />
 
 <style>
-  content {
+  section {
     display: flex;
     justify-content: space-between;
   }

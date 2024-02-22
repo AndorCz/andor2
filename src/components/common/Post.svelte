@@ -129,9 +129,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      /*
       background-color: color-mix(in srgb, var(--block), var(--panel) 50%);
-      padding: 5px 15px;
+      border-bottom: 1px var(--panel) solid;
+      */
       box-shadow: 2px 2px 3px #0002;
+      background-color: var(--block);
+      padding: 5px 15px;
       color: var(--dim);
     }
       .header button {

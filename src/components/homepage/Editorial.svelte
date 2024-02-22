@@ -24,7 +24,7 @@
   <div id='editorial' transition:slide={{ duration: 300 }}>
     <h4>Editorial</h4>
     <a href={'/work/' + lastEditorial.id}><h2>{lastEditorial.name}</h2></a>
-    <content><Render html={lastEditorial.content} /></content>
+    <section><Render html={lastEditorial.content} /></section>
     <button on:click={close} class='close' title='Skrýt'>
       <span class='material'>check</span>
     </button>
@@ -51,7 +51,7 @@
       margin-bottom: 10px;
       display: inline-block;
     }
-    #editorial content {
+    #editorial section {
       font-size: 18px;
     }
     #editorial button {
