@@ -9,12 +9,12 @@
 
 <section>
   <main>
-    <h1>{user.name}</h1>
-    <p>Uživatel od: {new Date(user.created_at).toLocaleDateString('cs')}</p>
+    <h1>{data.name}</h1>
+    <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
   </main>
   <aside>
-    {#if user.portrait}
-    <img src={user.portrait} alt={user.name} id='portrait' />
+    {#if data.portrait}
+    <img src={data.portrait} alt={data.name} id='portrait' />
   {/if}
   </aside>
 </section>
