@@ -441,7 +441,7 @@ begin
       g.id as game_id,
       g.name as game_name,
       jsonb_agg(
-        jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait)
+        jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait, 'player', c.player)
         order by (c.player = auth.uid()) desc, c.name
       ) filter (where c.hidden = false or c.player = auth.uid()) as characters
     from user_games ug
