@@ -427,6 +427,43 @@ end;
 $$ language plpgsql;
 
 
+create or replace function get_characters()
+  returns jsonb as $$
+declare result jsonb;
+begin
+  with user_games as (
+    select distinct c.game
+    from characters c
+    where c.player = auth.uid() and c.game is not null
+  ),
+  all_characters as (
+    select
+      g.id as game_id,
+      g.name as game_name,
+      jsonb_agg(
+        jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait)
+        order by (c.player = auth.uid()) desc, c.name
+      ) filter (where c.hidden = false or c.player = auth.uid()) as characters
+    from user_games ug
+      join characters c on c.game = ug.game
+      join games g on g.id = c.game
+    group by g.id, g.name
+  ),
+  stranded_characters as (
+    select jsonb_agg(jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait)) as characters
+    from characters c
+    where c.player = auth.uid() and c.game is null
+  )
+  select
+    jsonb_build_object(
+      'allGrouped', (select jsonb_agg(jsonb_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
+      'myStranded', (select coalesce(characters, '[]'::jsonb) from stranded_characters)
+    ) into result;
+  return result;
+end;
+$$ language plpgsql stable;
+
+
 create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
 returns jsonb as $$
 begin
@@ -495,7 +532,7 @@ $$ language plpgsql;
 
 
 create or replace function delete_old_chat_posts()
-returns void language plpgsql as $$
+  returns void as $$
 begin
   delete from posts
   where id not in (
@@ -505,7 +542,7 @@ begin
     limit 100
   );
 end;
-$$;
+$$ language plpgsql;
 
 
 create or replace function upsert_user_read(p_user_id uuid, p_slug text)

@@ -3,33 +3,33 @@
   import { clone } from '@lib/utils'
   import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
   import { userStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
-  import PortraitInput from '@components/common/PortraitInput.svelte'
+  import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
   import Chat from '@components/sidebar/Conversation.svelte'
+  import User from '@components/sidebar/User.svelte'
 
   export let user = {}
   export let bookmarkData
 
-  $userStore.activePanel = $userStore.activePanel || 'booked'
+  let showSidebar = false
+  let unreadTotal = 0
 
-  if (bookmarkData) { $bookmarks = bookmarkData }
-
+  // users
   let activeUsers = []
   let allRelevantUsers = {}
   let showOffline = false
-  let showSidebar = false
-  const unreadTotal = getUnreadTotal()
+
+  // characters
+  let allGroupedCharacters = {}
+  let myStrandedCharacters = []
 
   onMount(async () => {
+    unreadTotal = getUnreadTotal()
+    if (bookmarkData) { $bookmarks = bookmarkData }
+    $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
   })
-
-  async function onPortraitChange (portrait) {
-    const { data, error } = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
-    if (error) { return handleError(error) }
-    return data
-  }
 
   function activate (panel) {
     $userStore.activePanel = panel
@@ -42,16 +42,8 @@
     $userStore.openChat = user.id
   }
 
-  async function logout () {
-    // delete cookies
-    document.cookie = 'sb-access-token=; Max-Age=-99999999;'
-    document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
-
-    await supabase.auth.signOut()
-    window.location.href = '/api/auth/logout'
-  }
-
   async function loadData () {
+    // users
     activeUsers = await getActiveUsers(supabase)
     if (showOffline) {
       $conversations = await getConversations(supabase, user.id)
@@ -69,6 +61,11 @@
         allRelevantUsers[user.id] = user
       }
     })
+    // characters
+    const { data: characters, error } = await supabase.rpc('get_characters')
+    if (error) { handleError(error) }
+    allGroupedCharacters = characters.allGrouped
+    myStrandedCharacters = characters.myStranded
   }
 
   function getUnreadTotal () {
@@ -92,17 +89,7 @@
           {#await loadData()}
             <div class='loading'>Načítání...</div>
           {:then}
-            <div id='user'>
-              <PortraitInput identity={user} table='profiles' {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
-              <div id='details'>
-                <div id='nameRow'>
-                  <span id='name'>{user.name || user.email}</span>
-                </div>
-                <div>
-                  <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
-                </div>
-              </div>
-            </div>
+            <User {user} />
             <div id='tabs'>
               <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
                 {#if unreadTotal}<span class='unread badge'></span>{/if}
@@ -113,7 +100,7 @@
                 <span class='material'>person</span>
                 <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
               </button>
-              <button id='characters' disabled>
+              <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
                 <span class='material'>domino_mask</span>
                 <span class='label'>Postavy</span>
               </button>
@@ -123,6 +110,8 @@
                 <Bookmarks />
               {:else if $userStore.activePanel === 'people'}
                 <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
+              {:else if $userStore.activePanel === 'characters'}
+                <Characters {user} {allGroupedCharacters} {myStrandedCharacters} {openChat} />
               {/if}
             </div>
           {/await}
@@ -155,32 +144,6 @@
       width: calc(var(--asideWidth) + 40px);
       max-height: 100svh;
       overflow-y: auto;
-    }
-  #user {
-    padding: 20px 0px;
-    display: flex;
-    gap: 10px;
-  }
-    #details {
-      flex: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #nameRow {
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-      #name {
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    #logout {
-      padding: 0px;
-      padding: 5px;
     }
   #tabs {
     height: 76px;
@@ -275,7 +238,7 @@
     aside.active {
       right: 0px;
     }
-    content {
+    section {
       position: relative;
     }
   #veil.active {
