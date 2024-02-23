@@ -153,7 +153,7 @@
       <div class='people'>
         Právě přítomní:
         {#each Object.values($people) as person}
-          <span class='person'>{person[0].user}</span>
+          <span class='person user'>{person[0].user}</span>
         {/each}
       </div>
     {/if}
@@ -200,7 +200,6 @@
         padding: 10px;
         margin-left: 5px;
         border-radius: 10px;
-        color: var(--accent);
         background-color: var(--block);
       }
 </style>

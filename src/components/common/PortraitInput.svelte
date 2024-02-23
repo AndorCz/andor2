@@ -87,7 +87,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      color: var(--accent);
+      color: var(--link);
       font-weight: bold;
       transition: background 0.2s ease-in-out, filter 0.2s ease-in-out;
       border-radius: 10px;

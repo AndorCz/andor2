@@ -47,7 +47,7 @@
         {#if post.owner_type === 'user'}
           <a href={'/user?id=' + post.owner} class='user'>{$postStore.owner_name}</a>
         {:else}
-          <b>{$postStore.owner_name}</b>
+          <b class='character'>{$postStore.owner_name}</b>
         {/if}
         {#if $postStore.audience_names}
           <span class='audience'>jen pro: <b>{$postStore.audience_names.join(', ')}</b></span>

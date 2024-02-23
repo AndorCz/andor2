@@ -174,12 +174,12 @@
     <div class='selectWrapper'>
       <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
         {#each myCharacters as character}
-          <option value={character.id}>{character.name}</option>
+          <option value={character.id} class='character'>{character.name}</option>
         {/each}
       </select>
       <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
         {#each otherCharacters as character}
-          <option value={character.id}>{character.name}{#if character.hidden}&nbsp;(skrytá){/if}</option>
+          <option value={character.id} class='character'>{character.name}{#if character.hidden}&nbsp;(skrytá){/if}</option>
         {/each}
       </select>
     </div>

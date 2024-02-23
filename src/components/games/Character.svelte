@@ -40,13 +40,13 @@
       <span class='material star' title='Vypravěč'>star</span>
     {/if}
     {#if isGameOwner || isPlayer}
-      <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`}>{character.name}</a>
+      <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
     {:else}
       {character.name}
     {/if}
   </td>
   {#if isGameOwner}
-    <td class='player'>{character.player.name}</td>
+    <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
     <td class='options'>
       {#if !character.accepted}
         <div class='accept'>
@@ -79,7 +79,6 @@
       vertical-align: middle;
     }
       .name .star {
-        color: var(--accent);
         font-size: 17px;
         margin-right: 5px;
       }
@@ -90,7 +89,6 @@
       min-width: 100px;
     }
       .name a {
-        color: var(--linkVisited);
         font-size: 22px;
       }
       .accept {

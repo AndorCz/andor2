@@ -17,6 +17,8 @@
   --dim: #92857a;
   --maximum: #fff;
   --accent: #a5a664;
+  --user: #a5a664;
+  --character: #968ebd;
   --new: gold;
   --buttonBg: #634b41;
   --buttonBgHover: #705343;
@@ -217,7 +219,12 @@ option {
   padding: 5px;
 }
   option:checked {
+    color: white;
     background-color: var(--accent);
+  }
+  option.character:checked {
+    color: white;
+    background-color: var(--character);
   }
 
 select {
@@ -239,7 +246,10 @@ select {
 }
 
 .user {
-  color: var(--accent);
+  color: var(--user);
+}
+.character {
+  color: var(--character);
 }
 
 .toggle {
@@ -386,7 +396,7 @@ select {
   /* TERTIARY TABS */
 
   .tabs.tertiary button {
-    color: var(--accent);
+    color: var(--link);
   }
 
 /* MISC */

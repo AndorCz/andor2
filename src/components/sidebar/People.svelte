@@ -34,8 +34,8 @@
           {:else}
             <span class='gap'></span>
           {/if}
-          <span class='name'>{user.name}</span>
-          <span class='new'>{user.unread}</span>
+          <span class='name user'>{user.name}</span>
+          <span class='new'>{user.unread || ''}</span>
           {#if user.active}<span class='status'></span>{/if}
         </button>
       </li>
@@ -52,7 +52,7 @@
           {:else}
             <span class='gap'></span>
           {/if}
-          <span class='name'>{user.name}</span>
+          <span class='name user'>{user.name}</span>
           {#if user.active}<span class='status'></span>{/if}
         </button>
       </li>
@@ -69,7 +69,7 @@
           {:else}
             <span class='gap'></span>
           {/if}
-          <span class='name'>{user.name}</span>
+          <span class='name user'>{user.name}</span>
           {#if user.active}<span class='status'></span>{/if}
         </button>
       </li>
@@ -106,17 +106,17 @@
       background: none;
       border: 0px;
       padding: 5px;
+      padding-left: 0px;
       display: block;
       width: 100%;
       text-align: left;
       box-shadow: none;
-      color: var(--accent);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
-      button:hover {
+      button:hover .name {
         color: var(--maximum);
       }
       button:hover .new {

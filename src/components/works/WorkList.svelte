@@ -67,7 +67,7 @@
           <td><div class='category'>{getCategory(work)}</div></td>
           <td><div class='tags'>{getTags(work.tags)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
-          <td><div class='owner'>{work.owner_name}</div></td>
+          <td><div class='owner user'>{work.owner_name}</div></td>
         </tr>
       {/each}
     </table>
@@ -80,7 +80,7 @@
             <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner' title='autor'>{work.owner_name}</div>
+            <div class='owner user' title='autor'>{work.owner_name}</div>
           </div>
           <div class='row annotation'>{work.annotation}</div>
         </div>
@@ -156,9 +156,6 @@
         }
         .block .ico {
           font-size: 16px;
-        }
-        .block .owner {
-          color: var(--accent);
         }
       .block .annotation {
         font-style: italic;

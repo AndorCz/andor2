@@ -36,7 +36,7 @@
         <tr class='board'>
           <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
           <td><div class='count'>{board.post_count}</div></td>
-          <td><div class='owner'>{board.owner_name}</div></td>
+          <td><div class='owner user'>{board.owner_name}</div></td>
         </tr>
       {/each}
     </table>
@@ -47,7 +47,7 @@
           <div class='row basics'>
             <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner' title='správce'>{board.owner_name}</div>
+            <div class='owner user' title='správce'>{board.owner_name}</div>
           </div>
           <div class='row annotation'>{board.header}</div>
         </div>
@@ -118,9 +118,6 @@
         }
         .block .ico {
           font-size: 16px;
-        }
-        .block .owner {
-          color: var(--accent);
         }
       .block .annotation {
         font-style: italic;

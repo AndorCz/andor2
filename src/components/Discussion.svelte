@@ -47,7 +47,7 @@
   })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const { data: postData, count, error } = await supabase.from('posts_owner').select('id, owner, owner_name, owner_portrait, owner_type, created_at, content, moderated, thumbs, hearts, frowns, laughs', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (error) { return handleError(error) }
     $posts = postData
     pages = Math.ceil(count / limit)
@@ -117,7 +117,7 @@
         <div class='senderWrapper'>
           <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
             {#each identities as identity}
-              <option value={identity.id}>{identity.name}</option>
+              <option value={identity.id} class={identity.type}>{identity.name}</option>
             {/each}
           </select>
         </div>

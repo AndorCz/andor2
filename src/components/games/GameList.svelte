@@ -44,7 +44,7 @@
           <td><div class='category'>{getCategory(game.category)}</div></td>
           <td><div class='system'>{getSystem(game.system)}</div></td>
           <td><div class='count'>{game.post_count}</div></td>
-          <td><div class='owner'>{game.owner_name}</div></td>
+          <td><div class='owner user'>{game.owner_name}</div></td>
         </tr>
       {/each}
     </table>
@@ -57,7 +57,7 @@
             <div class='category' title='kategorie'>{getCategory(game.category)}</div>
             {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner' title='správce'>{game.owner_name}</div>
+            <div class='owner user' title='správce'>{game.owner_name}</div>
           </div>
           <div class='row annotation'>{game.annotation}</div>
         </div>
@@ -127,9 +127,6 @@
         }
         .block .ico {
           font-size: 16px;
-        }
-        .block .owner {
-          color: var(--accent);
         }
       .block .annotation {
         padding-top: 5px;
