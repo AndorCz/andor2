@@ -134,11 +134,11 @@
     width: calc(var(--asideWidth) + 20px);
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
     position: relative;
-    padding-bottom: 50px;
   }
     section {
       padding-left: 20px;
       padding-right: 20px;
+      padding-bottom: 50px;
       position: fixed;
       top: 0px;
       right: 0px;
