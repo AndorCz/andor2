@@ -32,21 +32,25 @@
 
 <h4>Moje bez hry</h4>
 
-<ul class='characters'>
-  {#each myStrandedCharacters as character}
-    <li class='mine'>
-      <button on:click={() => openChat(character)}>
-        {#if character.portrait}
-          <img src={character.portrait} class='portrait' alt='portrait'>
-        {:else}
-          <span class='gap'></span>
-        {/if}
-        <span class='name'>{character.name}</span>
-        {#if character.active}<span class='status'></span>{/if}
-      </button>
-    </li>
-  {/each}
-</ul>
+{#if myStrandedCharacters.length === 0}
+  <p>Žádné</p>
+{:else}
+  <ul class='characters'>
+    {#each myStrandedCharacters as character}
+      <li class='mine'>
+        <button on:click={() => openChat(character)}>
+          {#if character.portrait}
+            <img src={character.portrait} class='portrait' alt='portrait'>
+          {:else}
+            <span class='gap'></span>
+          {/if}
+          <span class='name'>{character.name}</span>
+          {#if character.active}<span class='status'></span>{/if}
+        </button>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
 <style>
   .legend {
