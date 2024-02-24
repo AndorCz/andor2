@@ -66,7 +66,7 @@
   }
   h4 {
     color: var(--dim);
-    margin: 10px 0px;
+    margin: 0px;
   }
   ul {
     list-style: none;

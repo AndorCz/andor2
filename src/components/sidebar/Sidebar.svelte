@@ -6,7 +6,7 @@
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
-  import Chat from '@components/sidebar/Conversation.svelte'
+  import Conversation from '@components/sidebar/Conversation.svelte'
   import User from '@components/sidebar/User.svelte'
 
   export let user = {}
@@ -21,8 +21,8 @@
   let showOffline = false
 
   // characters
-  let allGroupedCharacters = {}
-  let myStrandedCharacters = []
+  let gameCharacters = {}
+  let strandedCharacters = []
 
   onMount(async () => {
     unreadTotal = getUnreadTotal()
@@ -38,8 +38,8 @@
     })
   }
 
-  function openChat (user) {
-    $userStore.openChat = user.id
+  function openChat (id, type) {
+    $userStore.openChat = { contactId: id, contactType: 'user' }
   }
 
   async function loadData () {
@@ -64,8 +64,8 @@
     // characters
     const { data: characters, error } = await supabase.rpc('get_characters')
     if (error) { handleError(error) }
-    allGroupedCharacters = characters.allGrouped
-    myStrandedCharacters = characters.myStranded
+    gameCharacters = characters.allGrouped
+    strandedCharacters = characters.myStranded
   }
 
   function getUnreadTotal () {
@@ -83,7 +83,7 @@
   <section>
     {#if user.name || user.email}
       {#if $userStore.openChat}
-        <Chat {user} {userStore} />
+        <Conversation {user} {userStore} />
       {:else}
         {#key showOffline}
           {#await loadData()}
@@ -111,7 +111,7 @@
               {:else if $userStore.activePanel === 'people'}
                 <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
               {:else if $userStore.activePanel === 'characters'}
-                <Characters {user} {allGroupedCharacters} {myStrandedCharacters} {openChat} />
+                <Characters {user} {gameCharacters} {strandedCharacters} {openChat} />
               {/if}
             </div>
           {/await}
@@ -190,6 +190,7 @@
     padding: 20px;
     border-radius: 10px;
     background-color: var(--panel);
+    position: relative;
   }
   .w100 {
     width: 100%;

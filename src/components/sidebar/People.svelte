@@ -28,7 +28,7 @@
   <ul class='unread'>
     {#each unreadGroup as user}
       <li>
-        <button on:click={() => openChat(user)}>
+        <button on:click={() => openChat(user.id, 'user')}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -46,7 +46,7 @@
   <ul class='active'>
     {#each activeGroup as user}
       <li>
-        <button on:click={() => openChat(user)}>
+        <button on:click={() => openChat(user.id, 'user')}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -63,7 +63,7 @@
   <ul class='offline'>
     {#each offlineGroup as user}
       <li>
-        <button on:click={() => openChat(user)}>
+        <button on:click={() => openChat(user.id, 'user')}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -93,13 +93,6 @@
     ul.offline {
       opacity: 0.5;
     }
-  /*
-  h3 {
-    font-size: 20px;
-    margin: 10px 0px;
-    color: var(--dim);
-  }
-  */
     ul button {
       position: relative;
       font-weight: bold;
@@ -121,6 +114,9 @@
       }
       button:hover .new {
         color: var(--maximum);
+      }
+      button:hover .portrait {
+        transform: scale(1.1);
       }
       .name {
         flex: 1;

@@ -1,8 +1,8 @@
 <script>
   import { writable } from 'svelte/store'
+  import { tooltip } from '@lib/tooltip'
   import { supabase, handleError } from '@lib/database'
   import { onMount, afterUpdate, onDestroy } from 'svelte'
-  import { tooltip } from '@lib/tooltip'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
@@ -15,14 +15,18 @@
   let channel
 
   const messages = writable([])
-  const contactId = $userStore.openChat
-  const sortedIds = [user.id, contactId].sort()
+  const contactId = $userStore.openChat.contactId
+  const sortedIds = [user.id, contactId].sort() // create a unique channel name, the same for both participants
+
+  const senderColumn = $userStore.openChat.contactType === 'character' ? 'sender_character' : 'sender_user'
+  const recipientColumn = $userStore.openChat.contactType === 'character' ? 'recipient_character' : 'recipient_user'
+  const profileTable = $userStore.openChat.contactType === 'character' ? 'characters' : 'profiles'
 
   onMount(() => {
     // init conversation, listen for new messages in the conversation
     channel = supabase
       .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `((recipient=eq.${user.id} and sender=eq.${contactId}) or (sender=eq.${user.id} and recipient=eq.${contactId}))` }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `((${recipientColumn}=eq.${user.id} and ${senderColumn}=eq.${contactId}) or (${senderColumn}=eq.${user.id} and ${recipientColumn}=eq.${contactId}))` }, (payload) => {
         $messages.push(payload.new)
         $messages = $messages // update store
       })
@@ -40,7 +44,7 @@
   }
 
   async function loadContact () {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', contactId).single()
+    const { data, error } = await supabase.from(profileTable).select('*').eq('id', contactId).single()
     if (error) { return handleError(error) }
     contact = data
   }
@@ -69,7 +73,8 @@
   }
 
   async function sendMessage () {
-    const { error } = await supabase.from('messages').insert({ sender: user.id, recipient: contact.id, content: textareaValue })
+    // 2DO: Figure out who the sender is, when the user is a character
+    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: user.id, [recipientColumn]: contact.id })
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadMessages()

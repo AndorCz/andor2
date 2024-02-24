@@ -138,14 +138,18 @@ create table posts (
 
 create table messages (
   id int4 not null primary key generated always as identity,
-  sender uuid,
-  recipient uuid,
+  sender_user uuid,
+  recipient_user uuid,
+  sender_character uuid,
+  recipient_character uuid,
   content text,
   read boolean default false,
   moderated boolean default false,
   created_at timestamp with time zone default current_timestamp,
-  constraint messages_sender_fkey foreign key (sender) references profiles (id) on delete cascade,
-  constraint messages_recipient_fkey foreign key (recipient) references profiles (id) on delete cascade
+  constraint messages_sender_user_fkey foreign key (sender_user) references profiles (id) on delete cascade,
+  constraint messages_recipient_user_fkey foreign key (recipient_user) references profiles (id) on delete cascade
+  constraint messages_sender_character_fkey foreign key (sender_character) references characters (id) on delete cascade,
+  constraint messages_recipient_character_fkey foreign key (recipient_character) references characters (id) on delete cascade
 );
 
 create table bookmarks (
@@ -441,7 +445,7 @@ begin
       g.id as game_id,
       g.name as game_name,
       jsonb_agg(
-        jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait, 'player', c.player, 'storyteller', c.storyteller)
+        jsonb_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait, 'player', c.player, 'storyteller', c.storyteller, 'game', c.game)
         order by (c.player = auth.uid()) desc, c.name
       ) filter (where c.hidden = false or c.player = auth.uid()) as characters
     from user_games ug
@@ -461,7 +465,7 @@ begin
     ) into result;
   return result;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql;
 
 
 create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)

@@ -1,90 +1,107 @@
 <script>
   export let user = {}
   export let openChat
-  export let allGroupedCharacters = {}
-  export let myStrandedCharacters = []
+  export let gameCharacters = []
+  export let strandedCharacters = []
+
+  let selected
+
+  function openEdit (character) { window.location = `/game/character-form?id=${character.id}` }
 </script>
 
-{#each allGroupedCharacters as { id, name, characters }}
-  <a href={'/game/' + id}><h4>{name}</h4></a>
+{#if selected}
+  <h4>
+    <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
+    <div class='name'>{selected.character.name}</div>
+    <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
+  </h4>
   <ul class='characters'>
-    {#each characters as character}
-      {#if character.player === user.id}
+    {#each gameCharacters[selected.index].characters as character}
+      {#if character.id !== selected.character.id && character.player !== user.id}
+        <button on:click={() => { openChat(character.id, 'character') }}>
+          {#if character.portrait}
+            <img src={character.portrait} class='portrait' alt='portrait'>
+          {:else}
+            <span class='portrait gap'></span>
+          {/if}
+          <div class='name'>
+            {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+            {character.name}
+          </div>
+        </button>
+      {/if}
+    {/each}
+  </ul>
+{:else}
+  {#each gameCharacters as { id, name, characters }, index}
+    <a href={'/game/' + id}><h4>{name}</h4></a>
+    <ul class='characters'>
+      {#each characters as character}
+        {#if character.player === user.id}
+          <li class='mine'>
+            <button on:click={() => { selected = { index, character } }}>
+              {#if character.portrait}
+                <img src={character.portrait} class='portrait' alt='portrait'>
+              {:else}
+                <span class='portrait gap'></span>
+              {/if}
+              <span class='name character'>
+                {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                {character.name}
+              </span>
+              <!--<span class='new'>{character.unread}</span>-->
+              {#if character.active}<span class='status'></span>{/if}
+            </button>
+          </li>
+        {/if}
+      {/each}
+    </ul>
+  {/each}
+
+  <h4>Bez hry</h4>
+
+  {#if strandedCharacters.length === 0}
+    <p>Žádné</p>
+  {:else}
+    <ul class='characters'>
+      {#each strandedCharacters as character}
         <li class='mine'>
-          <a href='#' class='button'>
+          <button on:click={openEdit(character)}>
             {#if character.portrait}
               <img src={character.portrait} class='portrait' alt='portrait'>
             {:else}
-              <span class='gap'></span>
-            {/if}
-            <span class='name character'>
-              {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-              {character.name}<span class='note'>(moje)</span>
-            </span>
-            <!--<span class='new'>{character.unread}</span>-->
-            {#if character.active}<span class='status'></span>{/if}
-          </a>
-        </li>
-      {:else}
-        <li class='other'>
-          <button on:click={() => openChat(character)}>
-            {#if character.portrait}
-              <img src={character.portrait} class='portrait' alt='portrait'>
-            {:else}
-              <span class='gap'></span>
+              <span class='portrait gap'></span>
             {/if}
             <span class='name character'>
               {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
               {character.name}
             </span>
-            <span class='new'>{character.unread || ''}</span>
             {#if character.active}<span class='status'></span>{/if}
           </button>
         </li>
-      {/if}
-    {/each}
-  </ul>
-{/each}
-
-<h4>Moje bez hry</h4>
-
-{#if myStrandedCharacters.length === 0}
-  <p>Žádné</p>
-{:else}
-  <ul class='characters'>
-    {#each myStrandedCharacters as character}
-      <li class='mine'>
-        <a href='#' class='button'>
-          {#if character.portrait}
-            <img src={character.portrait} class='portrait' alt='portrait'>
-          {:else}
-            <span class='gap'></span>
-          {/if}
-          <span class='name character'>
-            {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-            {character.name}
-          </span>
-          {#if character.active}<span class='status'></span>{/if}
-        </a>
-      </li>
-    {/each}
-  </ul>
+      {/each}
+    </ul>
+  {/if}
 {/if}
 
 <style>
   h4 {
     color: var(--dim);
-    margin: 10px 0px;
+    margin: 0px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
   }
     a:hover h4 {
-      color: var(--maximum);
+      color: var(--linkHover);
     }
-  ul {
+  ul.characters {
     list-style: none;
     padding: 0px;
     margin: 0px;
+    margin-bottom: 10px;
   }
-    ul button, ul .button {
+    button {
       position: relative;
       font-weight: bold;
       background: none;
@@ -92,6 +109,7 @@
       padding: 5px;
       padding-left: 0px;
       display: block;
+      color: var(--link);
       width: 100%;
       text-align: left;
       box-shadow: none;
@@ -100,28 +118,22 @@
       justify-content: space-between;
       gap: 10px;
     }
-      .button {
-        color: var(--link);
+      button:hover .portrait {
+        transform: scale(1.1);
       }
-        button:hover .name, a.button:hover .name {
-          color: var(--maximum);
+      button:hover .name {
+        color: var(--characterHover);
+      }
+      button:hover .new {
+        color: var(--maximum);
+      }
+      .name {
+        flex: 1;
+      }
+        .name .star {
+          font-size: 17px;
+          margin-right: 5px;
         }
-        button:hover .new, a.button:hover .new {
-          color: var(--maximum);
-        }
-        .name {
-          flex: 1;
-        }
-          .name .star {
-            font-size: 17px;
-            margin-right: 5px;
-          }
-          .name .note {
-            font-size: 14px;
-            color: var(--dim);
-            margin-left: 5px;
-            font-variation-settings: 'wght' 200;
-          }
       .portrait, .gap {
         display: block;
         width: 40px;
@@ -134,5 +146,21 @@
       .new {
         color: var(--new);
         pointer-events: none;
+      }
+      .back {
+        display: inline;
+        width: initial;
+        color: var(--link);
+        padding: 0px;
+        padding-right: 10px;
+        border: none;
+        background: none;
+        box-shadow: none;
+      }
+        .back:hover {
+          color: var(--linkHover);
+        }
+      .edit {
+        font-size: 20px;
       }
 </style>

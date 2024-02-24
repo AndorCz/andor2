@@ -7,10 +7,13 @@
   const id = Astro.url.searchParams.get('id') || ''
 
   let character:any = {}
+  let isGameOwner = false
 
-  const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
-  if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
-  const isGameOwner = gameData.owner === user.id
+  if (game) {
+    const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
+    if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
+    isGameOwner = gameData.owner === user.id
+  }
 
   if (id) { // edit
     const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()

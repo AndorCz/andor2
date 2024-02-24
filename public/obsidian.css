@@ -13,12 +13,15 @@
   --overlay: #464342;
   --text: #c4b6ab;
   --link: #c48d66;
+  --linkHover: #e9ceba;
   --linkVisited: #a07150;
   --dim: #92857a;
   --maximum: #fff;
   --accent: #a5a664;
   --user: #a5a664;
+  --userHover: #edeec7;
   --character: #968ebd;
+  --characterHover: #d7d3ec;
   --new: gold;
   --buttonBg: #634b41;
   --buttonBgHover: #705343;
@@ -78,7 +81,7 @@ a {
   font-variation-settings: 'wght' 600;
 }
   a:hover {
-    color: color-mix(in srgb, var(--linkVisited), #FFF 50%);
+    color: var(--linkHover);
   }
 
 hr {
@@ -170,7 +173,7 @@ button, .button {
     box-shadow: inset 2px 2px 2px #0003;
   }
 
-  input[type=text], textarea, input[type=checkbox], .ProseMirror {
+input[type=text], textarea, input[type=checkbox], .ProseMirror {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   padding: 15px;
   margin: 0px;
@@ -248,9 +251,15 @@ select {
 .user {
   color: var(--user);
 }
+  .user:hover {
+    color: var(--userHover);
+  }
 .character {
   color: var(--character);
 }
+  .character:hover {
+    color: var(--characterHover);
+  }
 
 .toggle {
   display: flex;
