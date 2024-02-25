@@ -17,7 +17,7 @@
   const messages = writable([])
 
   const recipient = $userStore.openChat.recipient
-  const sender = $userStore.openChat.type === 'character' ? $userStore.openChat.sender.id : user.id
+  const sender = $userStore.openChat.type === 'character' ? $userStore.openChat.sender : user
 
   const senderColumn = $userStore.openChat.type === 'character' ? 'sender_character' : 'sender_user'
   const recipientColumn = $userStore.openChat.type === 'character' ? 'recipient_character' : 'recipient_user'
@@ -37,7 +37,7 @@
   })
 
   afterUpdate(() => { // scroll down
-    if ($messages.length) { messagesEl.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
+    if ($messages.length) { messagesEl?.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -57,7 +57,7 @@
   async function loadMessages () {
     // load messages where are both recipientId and user.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
-      .or(`and(recipient.eq.${recipient.id},sender.eq.${sender.id}),and(recipient.eq.${sender.id},sender.eq.${recipient.id})`)
+      .or(`and(${recipientColumn}.eq.${recipient.id},${senderColumn}.eq.${sender.id}),and(${recipientColumn}.eq.${sender.id},${senderColumn}.eq.${recipient.id})`)
       .order('created_at', { ascending: true })
     if (error) { return handleError(error) }
     $messages = data
@@ -65,7 +65,7 @@
   }
 
   async function markMessagesRead () {
-    const myUnreadMessages = $messages.filter(message => message.recipient === sender.id && !message.read) // only where I am recipient
+    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === sender.id && !message.read) // only where I am recipient
     if (myUnreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
@@ -84,7 +84,7 @@
   }
 
   function getTooltip (message) {
-    const name = message.sender === sender.id ? sender.name : recipient.name
+    const name = message[senderColumn] === sender.id ? sender.name : recipient.name
     const date = new Date(message.created_at)
     return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
   }
@@ -112,7 +112,7 @@
             {#each $messages as message}
               <div class='messageRow'>
                 <!-- add tippy for time -->
-                <div use:tooltip class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
+                <div use:tooltip class='message {message[senderColumn] === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
                   <!-- add 'read' column -->
                   {#if !message.read && message.sender !== user.id}
                     <div class='badge'></div>

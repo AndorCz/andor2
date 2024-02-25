@@ -24,7 +24,7 @@
           {:else}
             <span class='portrait gap'></span>
           {/if}
-          <div class='name'>
+          <div class='name character'>
             {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
             {character.name}
           </div>

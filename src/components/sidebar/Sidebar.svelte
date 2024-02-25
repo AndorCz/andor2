@@ -227,7 +227,7 @@
   aside {
     position: fixed;
     right: -100%;
-    padding: 0px 20px;
+    width: calc(var(--asideWidth) + 40px);
     background-color: var(--background);
     box-shadow: 0px 0px 10px #0005;
     height: 100%;
