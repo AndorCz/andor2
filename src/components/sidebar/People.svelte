@@ -28,7 +28,7 @@
   <ul class='unread'>
     {#each unreadGroup as user}
       <li>
-        <button on:click={() => openChat(user.id, 'user')}>
+        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -46,7 +46,7 @@
   <ul class='active'>
     {#each activeGroup as user}
       <li>
-        <button on:click={() => openChat(user.id, 'user')}>
+        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -63,7 +63,7 @@
   <ul class='offline'>
     {#each offlineGroup as user}
       <li>
-        <button on:click={() => openChat(user.id, 'user')}>
+        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}

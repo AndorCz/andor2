@@ -5,7 +5,7 @@
   "scripts": {
     "build": "astro build",
     "db": "supabase start",
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "sync": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },
   "dependencies": {

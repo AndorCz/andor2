@@ -38,8 +38,8 @@
     })
   }
 
-  function openChat (id, type) {
-    $userStore.openChat = { contactId: id, contactType: 'user' }
+  function openChat ({ sender = user, recipient, type = 'user' }) {
+    $userStore.openChat = { sender, recipient, type }
   }
 
   async function loadData () {
@@ -139,9 +139,6 @@
       padding-left: 20px;
       padding-right: 20px;
       padding-bottom: 50px;
-      position: fixed;
-      top: 0px;
-      right: 0px;
       width: calc(var(--asideWidth) + 40px);
       max-height: 100svh;
       overflow-y: auto;

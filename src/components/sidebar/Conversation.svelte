@@ -8,25 +8,28 @@
   export let user
   export let userStore
 
-  let contact = {}
+  let profile = {}
   let textareaValue = ''
   let messagesEl
   let inputEl
   let channel
 
   const messages = writable([])
-  const contactId = $userStore.openChat.contactId
-  const sortedIds = [user.id, contactId].sort() // create a unique channel name, the same for both participants
 
-  const senderColumn = $userStore.openChat.contactType === 'character' ? 'sender_character' : 'sender_user'
-  const recipientColumn = $userStore.openChat.contactType === 'character' ? 'recipient_character' : 'recipient_user'
-  const profileTable = $userStore.openChat.contactType === 'character' ? 'characters' : 'profiles'
+  const recipient = $userStore.openChat.recipient
+  const sender = $userStore.openChat.type === 'character' ? $userStore.openChat.sender.id : user.id
+
+  const senderColumn = $userStore.openChat.type === 'character' ? 'sender_character' : 'sender_user'
+  const recipientColumn = $userStore.openChat.type === 'character' ? 'recipient_character' : 'recipient_user'
+  // const profileTable = $userStore.openChat.type === 'character' ? 'characters' : 'profiles'
+
+  const sortedIds = [sender.id, recipient.id].sort() // create a unique channel name, the same for both participants
 
   onMount(() => {
     // init conversation, listen for new messages in the conversation
     channel = supabase
       .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `((${recipientColumn}=eq.${user.id} and ${senderColumn}=eq.${contactId}) or (${senderColumn}=eq.${user.id} and ${recipientColumn}=eq.${contactId}))` }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `((${recipientColumn}=eq.${recipient.id} and ${senderColumn}=eq.${sender.id}) or (${senderColumn}=eq.${recipient.id} and ${recipientColumn}=eq.${sender.id}))` }, (payload) => {
         $messages.push(payload.new)
         $messages = $messages // update store
       })
@@ -43,25 +46,26 @@
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  async function loadContact () {
-    const { data, error } = await supabase.from(profileTable).select('*').eq('id', contactId).single()
+  /*
+  async function loadProfile () {
+    const { data, error } = await supabase.from(profileTable).select('*').eq('id', recipientId).single()
     if (error) { return handleError(error) }
-    contact = data
+    profile = data
   }
+  */
 
   async function loadMessages () {
-    // load messages where are both contactId and user.id (sender or recipient columns), sorted by created_at
+    // load messages where are both recipientId and user.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
-      .or(`and(recipient.eq.${contactId},sender.eq.${user.id}),and(recipient.eq.${user.id},sender.eq.${contactId})`)
+      .or(`and(recipient.eq.${recipient.id},sender.eq.${sender.id}),and(recipient.eq.${sender.id},sender.eq.${recipient.id})`)
       .order('created_at', { ascending: true })
-
     if (error) { return handleError(error) }
     $messages = data
     markMessagesRead()
   }
 
   async function markMessagesRead () {
-    const myUnreadMessages = $messages.filter(message => message.recipient === user.id && !message.read)
+    const myUnreadMessages = $messages.filter(message => message.recipient === sender.id && !message.read) // only where I am recipient
     if (myUnreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
@@ -73,15 +77,14 @@
   }
 
   async function sendMessage () {
-    // 2DO: Figure out who the sender is, when the user is a character
-    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: user.id, [recipientColumn]: contact.id })
+    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: sender.id, [recipientColumn]: recipient.id })
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadMessages()
   }
 
-  function getTitle (message) {
-    const name = message.sender === user.id ? user.name : contact.name
+  function getTooltip (message) {
+    const name = message.sender === sender.id ? sender.name : recipient.name
     const date = new Date(message.created_at)
     return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
   }
@@ -90,16 +93,16 @@
 {#await waitForAnimation() then}
   <div id='conversation'>
     <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
-    {#if contactId && user?.id}
-      {#await Promise.all([loadContact(), loadMessages()])}
+    {#if recipient.id && sender.id}
+      {#await loadMessages()}
         <span class='loading'>Načítám konverzaci...</span>
       {:then}
         <h2>
-          {#if contact.portrait}
-            <img src={contact.portrait} class='portrait' alt='portrait'>
+          {#if sender.portrait}
+            <img src={sender.portrait} class='portrait' alt='portrait'>
           {/if}
           <div class='label'>
-            <div class='name'>{contact.name}</div>
+            <div class='name'>{sender.name}</div>
             <div class='subtitle'>soukromá konverzace</div>
           </div>
         </h2>
@@ -109,7 +112,7 @@
             {#each $messages as message}
               <div class='messageRow'>
                 <!-- add tippy for time -->
-                <div use:tooltip class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={getTitle(message)}>
+                <div use:tooltip class='message {message.sender === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
                   <!-- add 'read' column -->
                   {#if !message.read && message.sender !== user.id}
                     <div class='badge'></div>

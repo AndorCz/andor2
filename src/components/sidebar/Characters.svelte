@@ -18,7 +18,7 @@
   <ul class='characters'>
     {#each gameCharacters[selected.index].characters as character}
       {#if character.id !== selected.character.id && character.player !== user.id}
-        <button on:click={() => { openChat(character.id, 'character') }}>
+        <button on:click={() => { openChat({ sender: selected.character, recipient: character, type: 'character' }) }}>
           {#if character.portrait}
             <img src={character.portrait} class='portrait' alt='portrait'>
           {:else}
