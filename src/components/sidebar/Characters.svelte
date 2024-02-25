@@ -1,6 +1,6 @@
 <script>
   export let user = {}
-  export let openChat
+  export let openConversation
   export let gameCharacters = []
   export let strandedCharacters = []
 
@@ -18,7 +18,7 @@
   <ul class='characters'>
     {#each gameCharacters[selected.index].characters as character}
       {#if character.id !== selected.character.id && character.player !== user.id}
-        <button on:click={() => { openChat({ sender: selected.character, recipient: character, type: 'character' }) }}>
+        <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
           {#if character.portrait}
             <img src={character.portrait} class='portrait' alt='portrait'>
           {:else}

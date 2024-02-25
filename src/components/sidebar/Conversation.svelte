@@ -1,12 +1,12 @@
 <script>
+  import { onMount, tick, onDestroy } from 'svelte'
   import { writable } from 'svelte/store'
   import { tooltip } from '@lib/tooltip'
+  import { activeConversation } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
-  import { onMount, tick, onDestroy } from 'svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
-  export let userStore
 
   let previousMessagesLength = 0
   let textareaValue = ''
@@ -16,11 +16,10 @@
 
   const messages = writable([])
 
-  const them = $userStore.openChat.recipient
-  const us = $userStore.openChat.type === 'character' ? $userStore.openChat.sender : user
-
-  const senderColumn = $userStore.openChat.type === 'character' ? 'sender_character' : 'sender_user'
-  const recipientColumn = $userStore.openChat.type === 'character' ? 'recipient_character' : 'recipient_user'
+  const them = $activeConversation.them
+  const us = $activeConversation.type === 'character' ? $activeConversation.us : user
+  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
+  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
 
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
@@ -66,10 +65,6 @@
     }
   }
 
-  function closeChat () {
-    $userStore.openChat = null
-  }
-
   async function sendMessage () {
     const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: us.id, [recipientColumn]: them.id })
     if (error) { return handleError(error) }
@@ -101,7 +96,7 @@
 
 {#await waitForAnimation() then}
   <div id='conversation'>
-    <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
+    <button on:click={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
     {#if us.id && them.id}
       {#await loadMessages()}
         <span class='loading'>Načítám konverzaci...</span>

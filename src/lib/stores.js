@@ -3,6 +3,7 @@ import { writable } from 'svelte/store'
 
 export const headerPreview = writable(null)
 export const conversations = writable({})
+export const activeConversation = writable(null)
 export const unreadConversations = writable({})
 export const bookmarks = writable({ games: [], boards: [], works: [] })
 export const posts = writable([])

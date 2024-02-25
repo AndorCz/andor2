@@ -1,5 +1,5 @@
 <script>
-  export let openChat
+  export let openConversation
   export let allRelevantUsers = {}
   export let numberOnline = 0
   export let showOffline = false
@@ -28,7 +28,7 @@
   <ul class='unread'>
     {#each unreadGroup as user}
       <li>
-        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
+        <button on:click={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -46,7 +46,7 @@
   <ul class='active'>
     {#each activeGroup as user}
       <li>
-        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
+        <button on:click={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}
@@ -63,7 +63,7 @@
   <ul class='offline'>
     {#each offlineGroup as user}
       <li>
-        <button on:click={() => openChat({ recipient: user, type: 'user' })}>
+        <button on:click={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
             <img src={user.portrait} class='portrait' alt='portrait'>
           {:else}

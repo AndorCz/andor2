@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { clone } from '@lib/utils'
   import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
-  import { userStore, conversations, unreadConversations, bookmarks } from '@lib/stores'
+  import { userStore, activeConversation, conversations, unreadConversations, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -38,8 +38,8 @@
     })
   }
 
-  function openChat ({ us = user, them, type = 'user' }) {
-    $userStore.openChat = { us, them, type }
+  function openConversation ({ us = user, them, type = 'user' }) {
+    $activeConversation = { us, them, type }
   }
 
   async function loadData () {
@@ -79,10 +79,10 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
-<aside style='--asideWidth: {user.id && $userStore.openChat ? 400 : 280}px' class:active={showSidebar}>
+<aside style='--asideWidth: {user.id && $activeConversation ? 400 : 280}px' class:active={showSidebar}>
   <section>
     {#if user.name || user.email}
-      {#if $userStore.openChat}
+      {#if $activeConversation}
         <Conversation {user} {userStore} />
       {:else}
         {#key showOffline}
@@ -109,9 +109,9 @@
               {#if $userStore.activePanel === 'booked'}
                 <Bookmarks />
               {:else if $userStore.activePanel === 'people'}
-                <People {allRelevantUsers} {openChat} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
+                <People {allRelevantUsers} {openConversation} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
               {:else if $userStore.activePanel === 'characters'}
-                <Characters {user} {gameCharacters} {strandedCharacters} {openChat} />
+                <Characters {user} {gameCharacters} {strandedCharacters} {openConversation} />
               {/if}
             </div>
           {/await}

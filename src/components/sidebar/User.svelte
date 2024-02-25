@@ -1,7 +1,7 @@
 <script>
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import { supabase, handleError } from '@lib/database'
-  import { userStore } from '@lib/stores'
+  import { activeConversation } from '@lib/stores'
 
   export let user = {}
 
@@ -12,7 +12,7 @@
   }
 
   async function logout () {
-    if ($userStore.openChat) { $userStore.openChat = null }
+    $activeConversation = null
     document.cookie = 'sb-access-token=; Max-Age=-99999999;'
     document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
     await supabase.auth.signOut()
