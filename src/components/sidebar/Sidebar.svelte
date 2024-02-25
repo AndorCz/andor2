@@ -38,8 +38,8 @@
     })
   }
 
-  function openChat ({ sender = user, recipient, type = 'user' }) {
-    $userStore.openChat = { sender, recipient, type }
+  function openChat ({ us = user, them, type = 'user' }) {
+    $userStore.openChat = { us, them, type }
   }
 
   async function loadData () {

@@ -2,13 +2,13 @@
   import { writable } from 'svelte/store'
   import { tooltip } from '@lib/tooltip'
   import { supabase, handleError } from '@lib/database'
-  import { onMount, afterUpdate, onDestroy } from 'svelte'
+  import { onMount, tick, onDestroy } from 'svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
   export let userStore
 
-  let profile = {}
+  let previousMessagesLength = 0
   let textareaValue = ''
   let messagesEl
   let inputEl
@@ -16,28 +16,30 @@
 
   const messages = writable([])
 
-  const recipient = $userStore.openChat.recipient
-  const sender = $userStore.openChat.type === 'character' ? $userStore.openChat.sender : user
+  const them = $userStore.openChat.recipient
+  const us = $userStore.openChat.type === 'character' ? $userStore.openChat.sender : user
 
   const senderColumn = $userStore.openChat.type === 'character' ? 'sender_character' : 'sender_user'
   const recipientColumn = $userStore.openChat.type === 'character' ? 'recipient_character' : 'recipient_user'
-  // const profileTable = $userStore.openChat.type === 'character' ? 'characters' : 'profiles'
 
-  const sortedIds = [sender.id, recipient.id].sort() // create a unique channel name, the same for both participants
+  const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
   onMount(() => {
+    const channelId = `private-chat-${sortedIds[0]}-${sortedIds[1]}`
+    // we can listen to only us in the recipient column
+    const filter = `(recipient_user=eq.${us.id} and sender_user=eq.${them.id})`
+    console.log('filter', filter)
+    console.log('user', user.id)
     // init conversation, listen for new messages in the conversation
     channel = supabase
-      .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `((${recipientColumn}=eq.${recipient.id} and ${senderColumn}=eq.${sender.id}) or (${senderColumn}=eq.${recipient.id} and ${recipientColumn}=eq.${sender.id}))` }, (payload) => {
+      .channel(channelId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter }, (payload) => {
+        console.log('postgres_changes fired', payload.new)
         $messages.push(payload.new)
         $messages = $messages // update store
       })
       .subscribe()
-  })
-
-  afterUpdate(() => { // scroll down
-    if ($messages.length) { messagesEl?.lastElementChild.scrollIntoView({ behavior: 'smooth' }) }
+    console.log('channel subscribed: ', channelId)
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
@@ -46,18 +48,10 @@
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  /*
-  async function loadProfile () {
-    const { data, error } = await supabase.from(profileTable).select('*').eq('id', recipientId).single()
-    if (error) { return handleError(error) }
-    profile = data
-  }
-  */
-
   async function loadMessages () {
     // load messages where are both recipientId and user.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
-      .or(`and(${recipientColumn}.eq.${recipient.id},${senderColumn}.eq.${sender.id}),and(${recipientColumn}.eq.${sender.id},${senderColumn}.eq.${recipient.id})`)
+      .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
       .order('created_at', { ascending: true })
     if (error) { return handleError(error) }
     $messages = data
@@ -65,7 +59,7 @@
   }
 
   async function markMessagesRead () {
-    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === sender.id && !message.read) // only where I am recipient
+    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === us.id && !message.read) // only where we are the recipient
     if (myUnreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
@@ -77,32 +71,47 @@
   }
 
   async function sendMessage () {
-    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: sender.id, [recipientColumn]: recipient.id })
+    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: us.id, [recipientColumn]: them.id })
     if (error) { return handleError(error) }
     textareaValue = ''
     await loadMessages()
   }
 
   function getTooltip (message) {
-    const name = message[senderColumn] === sender.id ? sender.name : recipient.name
+    const name = message[senderColumn] === us.id ? us.name : them.name
     const date = new Date(message.created_at)
     return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
+  }
+  // Reactive statement for scrolling
+  $: if (messagesEl && $messages.length) {
+    if (previousMessagesLength === 0 && $messages.length > 0) {
+      // Instant scroll for the initial load
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    } else if (previousMessagesLength < $messages.length) {
+      // Smooth scroll for subsequent updates (new messages)
+      tick().then(() => {
+        // Smooth scroll to the bottom
+        messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' })
+        previousMessagesLength = $messages.length // update count
+      })
+    }
+    previousMessagesLength = $messages.length // Update the length after scrolling
   }
 </script>
 
 {#await waitForAnimation() then}
   <div id='conversation'>
     <button on:click={closeChat} id='close' title='zavřít' class='material'>close</button>
-    {#if recipient.id && sender.id}
+    {#if us.id && them.id}
       {#await loadMessages()}
         <span class='loading'>Načítám konverzaci...</span>
       {:then}
         <h2>
-          {#if sender.portrait}
-            <img src={sender.portrait} class='portrait' alt='portrait'>
+          {#if them.portrait}
+            <img src={them.portrait} class='portrait' alt='portrait'>
           {/if}
           <div class='label'>
-            <div class='name'>{sender.name}</div>
+            <div class='name'>{them.name}</div>
             <div class='subtitle'>soukromá konverzace</div>
           </div>
         </h2>
