@@ -18,8 +18,8 @@
 
   const them = $activeConversation.them
   const us = $activeConversation.type === 'character' ? $activeConversation.us : user
-  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender'
-  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient'
+  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
+  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
 
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 

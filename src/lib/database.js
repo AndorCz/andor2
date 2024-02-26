@@ -52,27 +52,27 @@ export async function getActiveUsers (db) { // pass front-end or back-end supaba
 }
 
 export async function getUnreadConversations (db, userId) {
-  const { data, error } = await db.from('messages').select('id, sender(*)').match({ recipient: userId, read: false })
+  const { data, error } = await db.from('messages').select('id, sender_user(*)').match({ recipient_user: userId, read: false })
   if (error) { return handleError(error) }
   // aggregate number of unread messages per sender (2DO: replace with group by, once supported by supabase-js)
   const unreadConversations = {}
   data.forEach((message) => {
-    if (unreadConversations[message.sender.id]) {
-      unreadConversations[message.sender.id].unread++
+    if (unreadConversations[message.sender_user.id]) {
+      unreadConversations[message.sender_user.id].unread++
     } else {
-      message.sender.unread = 1
-      unreadConversations[message.sender.id] = message.sender
+      message.sender_user.unread = 1
+      unreadConversations[message.sender_user.id] = message.sender_user
     }
   })
   return unreadConversations
 }
 
 export async function getConversations (db, userId) {
-  const { data, error } = await db.from('messages').select('id, sender(*)').or(`recipient.eq.${userId},sender.eq.${userId})`)
+  const { data, error } = await db.from('messages').select('id, sender_user(*)').or(`recipient_user.eq.${userId},sender_user.eq.${userId})`)
   if (error) { return handleError(error) }
   // aggregate number of unread messages per sender (2DO: replace with group by, once supported by supabase-js)
   const conversations = {}
-  data.forEach((message) => { conversations[message.sender.id] = message.sender })
+  data.forEach((message) => { conversations[message.sender_user.id] = message.sender_user })
   return conversations
 }
 
