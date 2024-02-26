@@ -83,7 +83,7 @@
   <section>
     {#if user.name || user.email}
       {#if $activeConversation}
-        <Conversation {user} {userStore} />
+        <Conversation {user} />
       {:else}
         {#key showOffline}
           {#await loadData()}

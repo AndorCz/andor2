@@ -138,8 +138,8 @@ create table posts (
 
 create table messages (
   id int4 not null primary key generated always as identity,
-  sender_user uuid,
-  recipient_user uuid,
+  sender uuid,
+  recipient uuid,
   sender_character uuid,
   recipient_character uuid,
   content text,

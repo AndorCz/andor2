@@ -18,27 +18,23 @@
 
   const them = $activeConversation.them
   const us = $activeConversation.type === 'character' ? $activeConversation.us : user
-  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
-  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
+  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender'
+  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient'
 
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
   onMount(() => {
-    const channelId = `private-chat-${sortedIds[0]}-${sortedIds[1]}`
-    // we can listen to only us in the recipient column
-    const filter = `(recipient_user=eq.${us.id} and sender_user=eq.${them.id})`
-    console.log('filter', filter)
-    console.log('user', user.id)
-    // init conversation, listen for new messages in the conversation
+    // init conversation, listen for new messages in the conversation. we can listen to only "us" in the recipient column
+    const filter = `${recipientColumn}=eq.${us.id}` // not possible to filter for two columns at the moment, so we have to filter the sender on the client-side
     channel = supabase
-      .channel(channelId)
+      .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter }, (payload) => {
-        console.log('postgres_changes fired', payload.new)
-        $messages.push(payload.new)
-        $messages = $messages // update store
+        if (payload.new[senderColumn] === them.id) { // only if the message is from the other participant
+          $messages.push(payload.new)
+          $messages = $messages // update store
+        }
       })
       .subscribe()
-    console.log('channel subscribed: ', channelId)
   })
 
   onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
