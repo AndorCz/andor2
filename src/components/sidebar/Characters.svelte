@@ -1,12 +1,13 @@
 <script>
   export let user = {}
+  export let characters = { allGrouped: [], myStranded: [] }
   export let openConversation
-  export let gameCharacters = []
-  export let strandedCharacters = []
 
-  let selected
+  let selected // { character, gameIndex, characterIndex }
 
   function openEdit (character) { window.location = `/game/character-form?id=${character.id}` }
+
+  console.log('characters', characters)
 </script>
 
 {#if selected}
@@ -16,8 +17,8 @@
     <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
   </h4>
   <ul class='characters'>
-    {#each gameCharacters[selected.index].characters as character}
-      {#if character.id !== selected.character.id && character.player !== user.id}
+    {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
+      {#if character.player !== user.id}
         <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
           {#if character.portrait}
             <img src={character.portrait} class='portrait' alt='portrait'>
@@ -28,18 +29,20 @@
             {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
             {character.name}
           </div>
+          {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+          {#if character.active}<span class='status'></span>{/if}
         </button>
       {/if}
     {/each}
   </ul>
 {:else}
-  {#each gameCharacters as { id, name, characters }, index}
+  {#each characters.allGrouped as { id, name, characters }, gameIndex}
     <a href={'/game/' + id}><h4>{name}</h4></a>
     <ul class='characters'>
-      {#each characters as character}
+      {#each characters as character, characterIndex}
         {#if character.player === user.id}
           <li class='mine'>
-            <button on:click={() => { selected = { index, character } }}>
+            <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
               {#if character.portrait}
                 <img src={character.portrait} class='portrait' alt='portrait'>
               {:else}
@@ -49,8 +52,7 @@
                 {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
                 {character.name}
               </span>
-              <!--<span class='new'>{character.unread}</span>-->
-              {#if character.active}<span class='status'></span>{/if}
+              {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
             </button>
           </li>
         {/if}
@@ -60,11 +62,11 @@
 
   <h4>Bez hry</h4>
 
-  {#if strandedCharacters.length === 0}
-    <p>Žádné</p>
+  {#if characters.myStranded.length === 0}
+    <div class='empty'>Žádné postavy</div>
   {:else}
     <ul class='characters'>
-      {#each strandedCharacters as character}
+      {#each characters.myStranded as character}
         <li class='mine'>
           <button on:click={openEdit(character)}>
             {#if character.portrait}
@@ -85,6 +87,12 @@
 {/if}
 
 <style>
+  .empty {
+    padding: 20px 0px;
+    text-align: center;
+    color: var(--dim);
+    font-style: italic;
+  }
   h4 {
     color: var(--dim);
     margin: 0px;
@@ -143,7 +151,7 @@
         border-radius: 100%;
         background-color: var(--background);
       }
-      .new {
+      .unread {
         color: var(--new);
         pointer-events: none;
       }

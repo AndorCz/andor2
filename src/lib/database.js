@@ -44,38 +44,6 @@ export function getHeaderUrl (type, id) {
   return data.publicUrl
 }
 
-export async function getActiveUsers (db) { // pass front-end or back-end supabase instance
-  const fiveMinutesAgoISO = new Date(new Date() - (5 * 60 * 1000)).toISOString()
-  const { data, error } = await db.from('profiles').select('*').gte('last_activity', fiveMinutesAgoISO)
-  if (error) { return handleError(error) }
-  return data
-}
-
-export async function getUnreadConversations (db, userId) {
-  const { data, error } = await db.from('messages').select('id, sender_user(*)').match({ recipient_user: userId, read: false })
-  if (error) { return handleError(error) }
-  // aggregate number of unread messages per sender (2DO: replace with group by, once supported by supabase-js)
-  const unreadConversations = {}
-  data.forEach((message) => {
-    if (unreadConversations[message.sender_user.id]) {
-      unreadConversations[message.sender_user.id].unread++
-    } else {
-      message.sender_user.unread = 1
-      unreadConversations[message.sender_user.id] = message.sender_user
-    }
-  })
-  return unreadConversations
-}
-
-export async function getConversations (db, userId) {
-  const { data, error } = await db.from('messages').select('id, sender_user(*)').or(`recipient_user.eq.${userId},sender_user.eq.${userId})`)
-  if (error) { return handleError(error) }
-  // aggregate number of unread messages per sender (2DO: replace with group by, once supported by supabase-js)
-  const conversations = {}
-  data.forEach((message) => { conversations[message.sender_user.id] = message.sender_user })
-  return conversations
-}
-
 // server helpers
 
 /*

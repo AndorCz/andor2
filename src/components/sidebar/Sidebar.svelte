@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { clone } from '@lib/utils'
-  import { supabase, handleError, getActiveUsers, getConversations, getUnreadConversations } from '@lib/database'
-  import { userStore, activeConversation, conversations, unreadConversations, bookmarks } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
+  import { userStore, activeConversation, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -13,19 +12,22 @@
   export let bookmarkData
 
   let showSidebar = false
-  let unreadTotal = 0
+
+  // bookmarks
+  let bookmarkUnreadTotal = 0
 
   // users
-  let activeUsers = []
-  let allRelevantUsers = {}
+  let users = []
+  let activeUsers = 0
+  let unreadUsers = false
   let showOffline = false
 
   // characters
-  let gameCharacters = {}
-  let strandedCharacters = []
+  let characters = { allGrouped: [], myStranded: [] }
+  let unreadCharacters = false
 
   onMount(async () => {
-    unreadTotal = getUnreadTotal()
+    bookmarkUnreadTotal = getBookmarkUnreadTotal()
     if (bookmarkData) { $bookmarks = bookmarkData }
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
@@ -43,32 +45,17 @@
   }
 
   async function loadData () {
-    // users
-    activeUsers = await getActiveUsers(supabase)
-    if (showOffline) {
-      $conversations = await getConversations(supabase, user.id)
-      allRelevantUsers = clone($conversations)
-    } else {
-      $unreadConversations = await getUnreadConversations(supabase, user.id)
-      allRelevantUsers = clone($unreadConversations)
-    }
-    // merge activeUsers and unreadConversations into allRelevantUsers, preserving 'unread' and 'active' flags
-    activeUsers.forEach(user => {
-      if (allRelevantUsers[user.id]) {
-        allRelevantUsers[user.id].active = true
-      } else {
-        user.active = true
-        allRelevantUsers[user.id] = user
-      }
-    })
-    // characters
-    const { data: characters, error } = await supabase.rpc('get_characters')
+    const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { handleError(error) }
-    gameCharacters = characters.allGrouped
-    strandedCharacters = characters.myStranded
+    users = data.users
+    characters = data.characters
+    // get tab information
+    activeUsers = users.filter(u => u.active).length
+    unreadUsers = users.some(u => u.unread)
+    unreadCharacters = characters.unread_total > 0
   }
 
-  function getUnreadTotal () {
+  function getBookmarkUnreadTotal () {
     let total = 0
     Object.keys($bookmarks.games).forEach(gameId => { total += $bookmarks.games[gameId].unread })
     Object.keys($bookmarks.boards).forEach(boardId => { total += $bookmarks.boards[boardId].unread })
@@ -85,37 +72,36 @@
       {#if $activeConversation}
         <Conversation {user} />
       {:else}
-        {#key showOffline}
-          {#await loadData()}
-            <div class='loading'>Načítání...</div>
-          {:then}
-            <User {user} />
-            <div id='tabs'>
-              <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
-                {#if unreadTotal}<span class='unread badge'></span>{/if}
-                <span class='material'>bookmark</span><span class='label'>Záložky</span>
-              </button>
-              <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
-                {#if Object.keys($unreadConversations).length}<span class='badge'></span>{/if}
-                <span class='material'>person</span>
-                <span class='label'>Lidé{#if activeUsers.length}&nbsp;({activeUsers.length}){/if}</span>
-              </button>
-              <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
-                <span class='material'>domino_mask</span>
-                <span class='label'>Postavy</span>
-              </button>
-            </div>
-            <div id='panels'>
-              {#if $userStore.activePanel === 'booked'}
-                <Bookmarks />
-              {:else if $userStore.activePanel === 'people'}
-                <People {allRelevantUsers} {openConversation} numberOnline={activeUsers.length} bind:showOffline={showOffline} />
-              {:else if $userStore.activePanel === 'characters'}
-                <Characters {user} {gameCharacters} {strandedCharacters} {openConversation} />
-              {/if}
-            </div>
-          {/await}
-        {/key}
+        {#await loadData()}
+          <div class='loading'>Načítání...</div>
+        {:then}
+          <User {user} />
+          <div id='tabs'>
+            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
+              {#if bookmarkUnreadTotal}<span class='unread badge'></span>{/if}
+              <span class='material'>bookmark</span><span class='label'>Záložky</span>
+            </button>
+            <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
+              {#if unreadUsers}<span class='badge'></span>{/if}
+              <span class='material'>person</span>
+              <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
+            </button>
+            <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
+              {#if unreadCharacters}<span class='badge'></span>{/if}
+              <span class='material'>domino_mask</span>
+              <span class='label'>Postavy</span>
+            </button>
+          </div>
+          <div id='panels'>
+            {#if $userStore.activePanel === 'booked'}
+              <Bookmarks />
+            {:else if $userStore.activePanel === 'people'}
+              <People {users} {openConversation} />
+            {:else if $userStore.activePanel === 'characters'}
+              <Characters {user} {characters} {openConversation} />
+            {/if}
+          </div>
+        {/await}
       {/if}
     {:else}
       <div id='panels' class='login'>
@@ -136,6 +122,7 @@
     position: relative;
   }
     section {
+      position: fixed;
       padding-left: 20px;
       padding-right: 20px;
       padding-bottom: 50px;

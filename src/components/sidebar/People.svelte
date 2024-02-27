@@ -1,8 +1,8 @@
 <script>
+  export let users = []
   export let openConversation
-  export let allRelevantUsers = {}
-  export let numberOnline = 0
-  export let showOffline = false
+
+  let showOffline = false
 
   const unreadGroup = []
   const activeGroup = []
@@ -10,7 +10,7 @@
 
   function updateGroups () {
     // group users by unread, friends, active
-    Object.values(allRelevantUsers).forEach(user => {
+    users.forEach(user => {
       if (user.unread) {
         unreadGroup.push(user)
       } else if (user.active) {
@@ -25,6 +25,7 @@
 </script>
 
 {#if unreadGroup.length}
+  <h4>Nepřečtené</h4>
   <ul class='unread'>
     {#each unreadGroup as user}
       <li>
@@ -42,49 +43,80 @@
     {/each}
   </ul>
 {/if}
-{#if activeGroup.length}
-  <ul class='active'>
-    {#each activeGroup as user}
-      <li>
-        <button on:click={() => openConversation({ them: user, type: 'user' })}>
-          {#if user.portrait}
-            <img src={user.portrait} class='portrait' alt='portrait'>
-          {:else}
-            <span class='gap'></span>
-          {/if}
-          <span class='name user'>{user.name}</span>
-          {#if user.active}<span class='status'></span>{/if}
-        </button>
-      </li>
-    {/each}
-  </ul>
-{/if}
-{#if offlineGroup.length}
-  <ul class='offline'>
-    {#each offlineGroup as user}
-      <li>
-        <button on:click={() => openConversation({ them: user, type: 'user' })}>
-          {#if user.portrait}
-            <img src={user.portrait} class='portrait' alt='portrait'>
-          {:else}
-            <span class='gap'></span>
-          {/if}
-          <span class='name user'>{user.name}</span>
-          {#if user.active}<span class='status'></span>{/if}
-        </button>
-      </li>
-    {/each}
-  </ul>
-{/if}
-{#if !showOffline && numberOnline === 0}
-  <div class='empty'>Nikdo není online</div>
-{/if}
 
-<button on:click={() => { showOffline = !showOffline }} class='toggleOffline secondary'>
-  {#if showOffline}Skrýt neaktivní{:else}Zobrazit neaktivní{/if}
-</button>
+<h4 class='toggle'>
+  <button on:click={() => { showOffline = false }} class='secondary' class:active={!showOffline}>Online</button>
+  <button on:click={() => { showOffline = true }} class='secondary' class:active={showOffline}>Offline</button>
+</h4>
+
+{#if !showOffline}
+  {#if activeGroup.length}
+    <ul class='active'>
+      {#each activeGroup as user}
+        <li>
+          <button on:click={() => openConversation({ them: user, type: 'user' })}>
+            {#if user.portrait}
+              <img src={user.portrait} class='portrait' alt='portrait'>
+            {:else}
+              <span class='gap'></span>
+            {/if}
+            <span class='name user'>{user.name}</span>
+            {#if user.active}<span class='status'></span>{/if}
+          </button>
+        </li>
+      {/each}
+    </ul>
+  {:else}
+    <div class='empty'>Nikdo není online</div>
+  {/if}
+{:else}
+  {#if offlineGroup.length}
+    <ul class='offline'>
+      {#each offlineGroup as user}
+        <li>
+          <button on:click={() => openConversation({ them: user, type: 'user' })}>
+            {#if user.portrait}
+              <img src={user.portrait} class='portrait' alt='portrait'>
+            {:else}
+              <span class='gap'></span>
+            {/if}
+            <span class='name user'>{user.name}</span>
+            {#if user.active}<span class='status'></span>{/if}
+          </button>
+        </li>
+      {/each}
+    </ul>
+  {:else}
+    <div class='empty'>Žádné konverzace</div>
+  {/if}
+{/if}
 
 <style>
+  .empty {
+    padding: 20px 0px;
+    text-align: center;
+    color: var(--dim);
+    font-style: italic;
+  }
+  h4 {
+    color: var(--dim);
+    margin: 0px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  .toggle {
+    display: flex;
+    justify-content: space-between;
+  }
+    .toggle button {
+      font-family: var(--headlineFont);
+      padding: 0px;
+    }
+    .toggle button.active {
+      box-shadow: none;
+      color: var(--text);
+    }
   ul {
     list-style: none;
     padding: 0px;
@@ -92,6 +124,9 @@
   }
     ul.offline {
       opacity: 0.5;
+    }
+    ul.unread {
+      margin-bottom: 20px;
     }
     ul button {
       position: relative;
@@ -139,11 +174,5 @@
   .new {
     color: var(--new);
     pointer-events: none;
-  }
-  .toggleOffline {
-    margin: auto;
-    margin-top: 20px;
-    display: block;
-    font-size: 16px;
   }
 </style>

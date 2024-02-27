@@ -30,6 +30,8 @@
   --frown: #b68e67;
   --thumb: #b6b367;
   --laugh: #83b667;
+  --bodyFont: 'Alegreya Sans', Arial, Helvetica, sans-serif;
+  --headlineFont: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
 /* FONTS */
@@ -61,7 +63,7 @@
 html { background-color: var(--background) }
 
 body, a {
-  font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
+  font-family: var(--bodyFont);
   font-weight: 400;
   font-size: 20px;
   color: var(--text);
@@ -69,7 +71,7 @@ body, a {
 }
 
 h1, h2, h3, h4, h5 {
-  font-family: 'Alegreya', 'Times New Roman', Times, serif;
+  font-family: var(--headlineFont);
 }
 
 h1, h2, h3, h4 {
