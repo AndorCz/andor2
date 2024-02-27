@@ -473,6 +473,7 @@ begin
                   'id', other_c.id,
                   'portrait', other_c.portrait,
                   'player', other_c.player,
+                  'storyteller', other_c.storyteller,
                   'unread', (
                     select count(*)
                     from messages m

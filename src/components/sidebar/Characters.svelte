@@ -6,8 +6,6 @@
   let selected // { character, gameIndex, characterIndex }
 
   function openEdit (character) { window.location = `/game/character-form?id=${character.id}` }
-
-  console.log('characters', characters)
 </script>
 
 {#if selected}
