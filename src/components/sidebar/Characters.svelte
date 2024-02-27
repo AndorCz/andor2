@@ -132,7 +132,7 @@
       button:hover .name {
         color: var(--characterHover);
       }
-      button:hover .new {
+      button:hover .unread {
         color: var(--maximum);
       }
       .name {

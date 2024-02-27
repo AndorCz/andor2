@@ -20,7 +20,6 @@
   let users = []
   let activeUsers = 0
   let unreadUsers = false
-  let showOffline = false
 
   // characters
   let characters = { allGrouped: [], myStranded: [] }
