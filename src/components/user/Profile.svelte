@@ -1,16 +1,22 @@
 <script>
+  import { activeConversation } from '@lib/stores'
   import GameList from '@components/games/GameList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
 
   export let user = {}
   export let data = {}
+
+  function openConversation ({ us = user, them, type = 'user' }) {
+    $activeConversation = { us: user, them: data.id, type: 'user' }
+  }
 </script>
 
 <main>
   <div class='wide'>
     <h1>{data.name}</h1>
     <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
+    <button on:click={openConversation}>Napsat zprávu</button>
   </div>
   <aside>
     {#if data.portrait}
@@ -32,6 +38,7 @@
   main {
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
     .wide {
       flex: 1;

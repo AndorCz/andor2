@@ -2,13 +2,15 @@
   import { onMount } from 'svelte'
   import { Render } from '@jill64/svelte-sanitize'
   import { slide } from 'svelte/transition'
-  import { userStore } from '@lib/stores'
+  import { getUserStore } from '@lib/stores'
 
   export let lastEditorial = null
 
   let showEditorial = false
+  let userStore
 
   onMount(() => {
+    userStore = getUserStore()
     if ($userStore.lastClosedEditorialId !== lastEditorial.id) {
       showEditorial = true
     }

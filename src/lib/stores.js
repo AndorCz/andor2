@@ -9,8 +9,11 @@ export const posts = writable([])
 // LOCAL STORAGE SYNCED STORES
 // has to be a function to allow for multiple instances of the store with different names
 
-export const userStore = writable(window.localStorage.user ? JSON.parse(localStorage.user) : {})
-userStore.subscribe(value => { window.localStorage.setItem('user', JSON.stringify(value)) })
+export function getUserStore () {
+  const userStore = writable(window.localStorage.user ? JSON.parse(localStorage.user) : {})
+  userStore.subscribe(value => { window.localStorage.setItem('user', JSON.stringify(value)) })
+  return userStore
+}
 
 export function getGameStore (game, def = {}) {
   const gameStore = writable(window.localStorage[game] ? JSON.parse(localStorage[game]) : def)
