@@ -13,16 +13,16 @@
 </script>
 
 <main>
-  <div class='wide'>
-    <h1>{data.name}</h1>
-    <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
-    <button on:click={openConversation}>Napsat zprávu</button>
-  </div>
   <aside>
     {#if data.portrait}
     <img src={data.portrait} alt={data.name} id='portrait' />
   {/if}
   </aside>
+  <div class='wide'>
+    <h1>{data.name}</h1>
+    <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
+    <button on:click={openConversation}>Napsat zprávu</button>
+  </div>
 </main>
 
 <h2>Hry</h2>
@@ -37,8 +37,8 @@
 <style>
   main {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 40px;
   }
     .wide {
       flex: 1;
