@@ -7,8 +7,8 @@
   export let user = {}
   export let data = {}
 
-  function openConversation ({ us = user, them, type = 'user' }) {
-    $activeConversation = { us: user, them: data.id, type: 'user' }
+  function openConversation () {
+    $activeConversation = { us: user, them: data, type: 'user' }
   }
 </script>
 

@@ -24,6 +24,6 @@
   data.works = works
 ---
 
-<Layout title={user.name}>
-  <Profile {data} {user} />
+<Layout title={data.name}>
+  <Profile {data} {user} client:load />
 </Layout>
