@@ -17,7 +17,7 @@
   let bookmarkId
 
   onMount(() => {
-    $gameStore.activeTab = $gameStore.activeTab || 'info' // set default value
+    $gameStore.activeTab = 'game'
   })
 
   function showSettings () {

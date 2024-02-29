@@ -92,7 +92,7 @@
   </table>
   {#if user.id}
     <center>
-      <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button'>Vytvořit novou postavu</a>
+      <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button large'>Vytvořit novou postavu</a>
     </center>
   {/if}
 </main>

@@ -104,8 +104,13 @@
 
     .icon {
       width: var(--iconSize);
+      overflow: hidden;
+      position: relative;
     }
       .icon img {
+        position: absolute;
+        top: 0px;
+        left: 0px;
         width: 100%;
         display: block;
         /*
