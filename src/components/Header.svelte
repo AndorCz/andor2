@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
 
@@ -13,6 +14,8 @@
     if (error) { return handleError(error) }
     headerUrl = URL.createObjectURL(data)
   }
+
+  onMount(() => { $headerPreview = null }) // clear preview, only used momentarily after upload
 
   $: if (headerStorageId) { getHeaderUrl() }
 </script>

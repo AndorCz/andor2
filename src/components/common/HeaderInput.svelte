@@ -37,22 +37,24 @@
   async function uploadHeader (file) {
     uploading = true
     const { error: error1 } = await supabase.storage.from('headers').upload(unit + '-' + data.id, file, { upsert: true })
+    if (error1) { return handleError(error1) }
     const { error: error2 } = await supabase.from(section).update({ custom_header: true }).eq('id', data.id)
-    if (error1 || error2) { return handleError(error1 || error2) }
+    if (error2) { return handleError(error2) }
     data.custom_header = true
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička byla uložena')
     uploading = false
+    $headerPreview = URL.createObjectURL(file)
     // await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
-    $headerPreview = null
-    location.reload()
   }
 
   async function clearHeader () { // clear in db
     if (data.custom_header) {
+      console.log('unit + - + data.id', unit + '-' + data.id)
       const { error: error1 } = await supabase.storage.from('headers').remove([unit + '-' + data.id])
+      if (error1) { return handleError(error1) }
       const { error: error2 } = await supabase.from(section).update({ custom_header: false }).eq('id', data.id)
-      if (error1 || error2) { return handleError(error1 || error2) }
+      if (error2) { return handleError(error2) }
     }
     data.custom_header = false
     files = null

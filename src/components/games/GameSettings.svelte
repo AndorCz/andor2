@@ -62,7 +62,7 @@
     Obrázek musí mít velikost alespoň 1100×226 px<br><br>
     <div class='row'>
       <label class='button' for='headerImage'>Nahrát obrázek</label>
-      <HeaderInput {data} section='boards' unit='board' />
+      <HeaderInput {data} section='games' unit='game' />
     </div>
 
     <h3>Název</h3>
