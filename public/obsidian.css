@@ -492,6 +492,11 @@ select {
   font-variation-settings: 'wght' 600;
 }
 
+#lastPosts .content {
+  max-height: 300px;
+  overflow: scroll;
+}
+
 /* WYSIWYG - TipTap/ProseMirror */
 
 .ProseMirror {

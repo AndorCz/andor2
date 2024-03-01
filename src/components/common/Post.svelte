@@ -113,9 +113,7 @@
         left: 0px;
         width: 100%;
         display: block;
-        /*
-        box-shadow: 2px 2px 3px #0002;
-        */
+        /* box-shadow: 2px 2px 3px #0002; */
       }
 
   .body {
@@ -125,9 +123,8 @@
     .content {
       background-color: var(--block);
       padding: 20px;
-      /*
-      box-shadow: 2px 2px 3px #0002;
-      */
+      overflow-wrap: break-word;
+      /* box-shadow: 2px 2px 3px #0002; */
     }
       .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .time, .hidden .reply {
         display: none;

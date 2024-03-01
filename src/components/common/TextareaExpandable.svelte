@@ -86,7 +86,7 @@
     if (event.key === 'Escape' && editing) { cancelEdit() }
     if (enterSend && event.keyCode === 13 && !event.shiftKey) { // send with enter, new line with shift+enter
       event.preventDefault()
-      onSave()
+      triggerSave()
     }
   }
 </script>
