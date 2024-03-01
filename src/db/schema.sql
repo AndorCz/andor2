@@ -253,7 +253,7 @@ from
   left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
   left join characters ch on p.owner = ch.id and p.owner_type = 'character'
 where
-  p.audience is null and (g.id is not null or b.id is not null or w.id is not null)
+  p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE
 order by
   p.created_at desc
 limit 10;

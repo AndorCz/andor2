@@ -103,7 +103,7 @@
       }
 
     .icon {
-      width: var(--iconSize);
+      min-width: var(--iconSize);
       overflow: hidden;
       position: relative;
     }
@@ -120,6 +120,7 @@
 
   .body {
     flex: 1;
+    overflow: hidden;
   }
     .content {
       background-color: var(--block);
