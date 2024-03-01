@@ -48,9 +48,10 @@
   async function loadData () {
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { handleError(error) }
-    users = data.users
+    users = data.users || []
     characters = data.characters
     // get tab information
+    console.log('users', users)
     activeUsers = users.filter(u => u.active).length
     unreadUsers = users.some(u => u.unread)
     unreadCharacters = characters.unread_total > 0
@@ -200,7 +201,7 @@
     transition: opacity 0.4s ease-in-out;
   }
 
-@media (max-width: 860px) {
+@media (max-width: 1000px) {
   #sidebarToggle {
     display: block;
     position: fixed;

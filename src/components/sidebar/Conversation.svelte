@@ -2,6 +2,7 @@
   import { onMount, tick, onDestroy } from 'svelte'
   import { writable } from 'svelte/store'
   import { tooltip } from '@lib/tooltip'
+  import { Render } from '@jill64/svelte-sanitize'
   import { activeConversation } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -73,6 +74,7 @@
     const date = new Date(message.created_at)
     return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
   }
+
   // Reactive statement for scrolling
   $: if (messagesEl && $messages.length) {
     if (previousMessagesLength === 0 && $messages.length > 0) {
@@ -110,14 +112,14 @@
         <div class='messages' bind:this={messagesEl}>
           {#if $messages.length > 0}
             {#each $messages as message}
-              <div class='messageRow'>
+              <div class='post'>
                 <!-- add tippy for time -->
-                <div use:tooltip class='message {message[senderColumn] === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
+                <div use:tooltip class='content {message[senderColumn] === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
                   <!-- add 'read' column -->
                   {#if !message.read && message.sender !== user.id}
                     <div class='badge'></div>
                   {/if}
-                  {message.content}
+                  <Render html={message.content} />
                 </div>
               </div>
               <div class='clear'></div>
@@ -126,7 +128,7 @@
             <center>Žádné zprávy</center>
           {/if}
         </div>
-        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} showButton={true} minHeight={70} enterSend disableEmpty />
+        <TextareaExpandable bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} showButton allowHtml disableEmpty />
       {:catch error}
         <span class='error'>Konverzaci se nepodařilo načíst</span>
       {/await}
@@ -199,10 +201,10 @@
         clear: both;
         overflow: auto;
       }
-      .messageRow {
+      .post {
         margin: 5px 0px;
       }
-        .message {
+        .content {
           position: relative;
           max-width: 90%;
           padding: 10px 20px;

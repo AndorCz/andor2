@@ -25,7 +25,7 @@ drop view if exists last_posts;
 -- ENUMS
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
-create type game_system as enum ('base', 'vampire5', 'dnd5', 'drd1');
+create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poem', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
@@ -525,23 +525,43 @@ $$ language plpgsql;
 
 create or replace function get_users()
   returns json as $$
-declare
-  relevant_users json;
 begin
-  -- Fetch users with whom the current user has exchanged messages, including unread count and active status
-  select json_agg(u) into relevant_users
-  from (
-    select p.id, p.name, p.portrait,
-      sum(case when m.recipient_user = auth.uid() and m.read = false then 1 else 0 end) as unread,
-      (p.last_activity > (now() - interval '5 minutes')) as active
-    from profiles p
-    left join messages m on m.sender_user = p.id or m.recipient_user = p.id
-    where (m.sender_user = auth.uid() or m.recipient_user = auth.uid())
-    and p.id != auth.uid()
-    group by p.id, p.name, p.portrait, p.last_activity
-    order by unread desc, active desc, p.name
-  ) u;
-  return relevant_users;
+  return (
+    with unread_users as (
+      select p.id
+      from profiles p
+      join messages m on m.sender_user = p.id
+      where m.recipient_user = auth.uid() and m.read = false
+      group by p.id
+    ), 
+    contacted_users as (
+      select p.id
+      from profiles p
+      join messages m on p.id = m.sender_user or p.id = m.recipient_user
+      where (m.sender_user = auth.uid() or m.recipient_user = auth.uid())
+      and p.id != auth.uid()
+      group by p.id
+    ),
+    active_users as (
+      select p.id
+      from profiles p
+      where p.last_activity > (now() - interval '5 minutes') and p.id != auth.uid()
+    ),
+    combined_users as (
+      select p.id, p.name, p.portrait,
+        (p.id in (select id from unread_users)) as has_unread,
+        (p.id in (select id from contacted_users) or p.id in (select id from active_users)) as contacted_or_active,
+        (p.last_activity > (now() - interval '5 minutes')) as active,
+        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = auth.uid() and m.read = false) as unread
+      from profiles p
+      where p.id in (select id from unread_users)
+         or p.id in (select id from active_users)
+         or p.id in (select id from contacted_users)
+      group by p.id
+      order by unread desc, active desc, p.name
+    )
+    select json_agg(c) from combined_users c
+  );
 end;
 $$ language plpgsql;
 

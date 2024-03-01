@@ -21,8 +21,9 @@ export const gameCategories = [
 export const gameSystems = [
   { value: 'base', label: 'Jiný / Bez systému' },
   { value: 'dnd5', label: 'Dungeons & Dragons e5' },
-  { value: 'drd1', label: 'Dračí doupě e1.6' },
   { value: 'vampire5', label: 'Vampire the Masquerade e5' },
+  { value: 'yearzero', label: 'Year Zero Engine' },
+  { value: 'drd1', label: 'Dračí doupě e1.6' },
   { value: 'cyberpunk', label: 'Cyberpunk 2020' },
   { value: 'starwars', label: 'Star Wars' },
   { value: 'cthulhu', label: 'Call of Cthulhu' },
