@@ -229,7 +229,7 @@ select p.id, p.content, p.created_at,
     when b.id is not null then 'board'
     when w.id is not null then 'work'
   end as content_type,
-  coalesce(g.id::text, b.id::text, w.thread::text) as content_id,
+  coalesce(g.id::text, b.id::text, w.id::text) as content_id,
   p.owner,
   p.owner_type,
   case 

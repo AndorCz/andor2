@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store'
   import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
-  import { activeConversation } from '@lib/stores'
+  import { activeConversation, lightboxImage } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -75,6 +75,10 @@
     return `${name}: ${date.toLocaleDateString('cs')} - ${date.toLocaleTimeString('cs')}`
   }
 
+  function onImageClick (event) {
+    if (event.target.tagName === 'IMG') { $lightboxImage = event.target.src }
+  }
+
   // Reactive statement for scrolling
   $: if (messagesEl && $messages.length) {
     if (previousMessagesLength === 0 && $messages.length > 0) {
@@ -112,7 +116,8 @@
         <div class='messages' bind:this={messagesEl}>
           {#if $messages.length > 0}
             {#each $messages as message}
-              <div class='post'>
+              <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+              <div class='post' on:click={onImageClick}>
                 <!-- add tippy for time -->
                 <div use:tooltip class='content {message[senderColumn] === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
                   <!-- add 'read' column -->

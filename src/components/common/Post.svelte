@@ -2,6 +2,7 @@
   import { writable } from 'svelte/store'
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
+  import { lightboxImage } from '@lib/stores'
   import Reactions from '@components/common/Reactions.svelte'
 
   export let post
@@ -27,6 +28,10 @@
   function triggerModerate () {
     $postStore.moderated = true
     if (onModerate) { onModerate($postStore.id) }
+  }
+
+  function onImageClick (event) {
+    if (event.target.tagName === 'IMG') { $lightboxImage = event.target.src }
   }
 </script>
 
@@ -71,7 +76,8 @@
         {/if}
       </span>
     </div>
-    <div class='content'>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <div class='content' on:click={onImageClick}>
       <Render html={$postStore.content} />
       {#if user && allowReactions}
         <Reactions {user} {postStore} />

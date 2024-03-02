@@ -477,6 +477,7 @@ select {
 }
 .post .content img {
   max-width: 100%;
+  cursor: pointer;
 }
 .post .content a {
   text-decoration: underline;

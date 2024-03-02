@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
+  import Lightbox from '@components/common/Lightbox.svelte'
 
   export let pathname
   export let headerStatic
@@ -31,6 +32,8 @@
     <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
   </nav>
 </header>
+
+<Lightbox />
 
 <style>
   header {
