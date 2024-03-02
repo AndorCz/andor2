@@ -247,7 +247,7 @@ select p.id, p.content, p.created_at,
   end as content_name
 from
   posts p
-  left join games g on p.thread = g.discussion_thread or p.thread = g.game_thread
+  left join games g on p.thread = g.game_thread
   left join boards b on p.thread = b.thread
   left join works w on p.thread = w.thread
   left join profiles pr on p.owner = pr.id and p.owner_type = 'user'

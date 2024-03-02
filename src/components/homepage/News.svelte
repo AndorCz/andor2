@@ -2,16 +2,16 @@
   import { supabase, handleError, getHeaderUrl } from '@lib/database'
 
   async function loadData () {
-    const { data: game, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
+    const { data: games, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(3)
     if (gameError) { handleError(gameError) }
 
-    const { data: work, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', 1).limit(1).maybeSingle()
+    const { data: works, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(3)
     if (workError) { handleError(workError) }
 
-    const { data: board, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
+    const { data: boards, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(3)
     if (boardError) { handleError(boardError) }
 
-    return { game, work, board }
+    return { games, works, boards }
   }
 
   function limitLength (text, length) {
@@ -21,60 +21,66 @@
 
 {#await loadData() then last}
   <div id='news'>
-    <div class='item'>
-      {#if last.game.custom_header}
-        <img src={getHeaderUrl('game', last.game.id)} alt={last.game.name} />
-      {/if}
-      <main>
-        <h4>Nová hra</h4>
-        <a href={`/game/${last.game.id}`}>
-          <h2>{last.game.name}</h2>
-          {#if last.game.annotation}
-            <p>{limitLength(last.game.annotation, 150)}</p>
-          {/if}
-        </a>
-        <div class='details'>
-          <span class='date'>{new Date(last.game.created_at).toLocaleDateString('cs')}</span>
-          <a href={'/user?id=' + last.game.owner} class='user'>{last.game.owner_name}</a>
-        </div>
-      </main>
-    </div>
-    <div class='item'>
-      {#if last.work.custom_header}
-        <img src={getHeaderUrl('work', last.work.id)} alt={last.work.name} />
-      {/if}
-      <main>
-        <h4>Nové dílo</h4>
-        <a href={`/work/${last.work.id}`}>
-          <h2>{last.work.name}</h2>
-          {#if last.work.annotation}
-            <p>{limitLength(last.work.annotation, 150)}</p>
-          {/if}
-        </a>
-        <div class='details'>
-          <span class='date'>{new Date(last.work.created_at).toLocaleDateString('cs')}</span>
-          <a href={'/user?id=' + last.work.owner} class='user'>{last.work.owner_name}</a>
-        </div>
-      </main>
-    </div>
-    <div class='item'>
-      {#if last.board.custom_header}
-        <img src={getHeaderUrl('board', last.board.id)} alt={last.board.name} />
-      {/if}
-      <main>
-        <h4>Nová diskuze</h4>
-        <a href={`/board/${last.board.id}`}>
-          <h2>{last.board.name}</h2>
-          {#if last.board.annotation}
-            <p>{limitLength(last.board.annotation, 150)}</p>
-          {/if}
-        </a>
-        <div class='details'>
-          <span class='date'>{new Date(last.board.created_at).toLocaleDateString('cs')}</span>
-          <a href={'/user?id=' + last.board.owner} class='user'>{last.board.owner_name}</a>
-        </div>
-      </main>
-    </div>
+    {#each last.games as game}
+      <div class='item'>
+        {#if game.custom_header}
+          <img src={getHeaderUrl('game', game.id)} alt={game.name} />
+        {/if}
+        <main>
+          <h4>Nová hra</h4>
+          <a href={`/game/${game.id}`}>
+            <h2>{game.name}</h2>
+            {#if game.annotation}
+              <p>{limitLength(game.annotation, 150)}</p>
+            {/if}
+          </a>
+          <div class='details'>
+            <span class='date'>{new Date(game.created_at).toLocaleDateString('cs')}</span>
+            <a href={'/user?id=' + game.owner} class='user'>{game.owner_name}</a>
+          </div>
+        </main>
+      </div>
+    {/each}
+    {#each last.works as work}
+      <div class='item'>
+        {#if work.custom_header}
+          <img src={getHeaderUrl('work', work.id)} alt={work.name} />
+        {/if}
+        <main>
+          <h4>Nové dílo</h4>
+          <a href={`/work/${work.id}`}>
+            <h2>{work.name}</h2>
+            {#if work.annotation}
+              <p>{limitLength(work.annotation, 150)}</p>
+            {/if}
+          </a>
+          <div class='details'>
+            <span class='date'>{new Date(work.created_at).toLocaleDateString('cs')}</span>
+            <a href={'/user?id=' + work.owner} class='user'>{work.owner_name}</a>
+          </div>
+        </main>
+      </div>
+    {/each}
+    {#each last.boards as board}
+      <div class='item'>
+        {#if board.custom_header}
+          <img src={getHeaderUrl('board', board.id)} alt={board.name} />
+        {/if}
+        <main>
+          <h4>Nová diskuze</h4>
+          <a href={`/board/${board.id}`}>
+            <h2>{board.name}</h2>
+            {#if board.annotation}
+              <p>{limitLength(board.annotation, 150)}</p>
+            {/if}
+          </a>
+          <div class='details'>
+            <span class='date'>{new Date(board.created_at).toLocaleDateString('cs')}</span>
+            <a href={'/user?id=' + board.owner} class='user'>{board.owner_name}</a>
+          </div>
+        </main>
+      </div>
+    {/each}
   </div>
 {/await}
 
