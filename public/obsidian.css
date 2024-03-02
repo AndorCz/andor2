@@ -1,17 +1,14 @@
 
 * { box-sizing: border-box }
 
-*-webkit-scrollbar {
-  width: 9px;
+/* Scrollbars */
+::-webkit-scrollbar { width: 9px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb {
+  background: #8885;
+  border-radius: 100%;
 }
-*-webkit-scrollbar-track {
-  background: transparent;
-}
-*-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
-  border-radius: 20px;
-  border: transparent;
-}
+::-webkit-scrollbar-thumb:hover { background: #888; }
 
 /* VARIABLES */
 
