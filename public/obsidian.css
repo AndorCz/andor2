@@ -2,11 +2,11 @@
 * { box-sizing: border-box }
 
 /* Scrollbars */
-::-webkit-scrollbar { width: 9px }
+::-webkit-scrollbar { width: 8px }
 ::-webkit-scrollbar-track { background: transparent }
 ::-webkit-scrollbar-thumb {
   background: #8885;
-  border-radius: 100%;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover { background: #888; }
 
