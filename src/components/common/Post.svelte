@@ -3,6 +3,7 @@
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
   import { lightboxImage } from '@lib/stores'
+  import { getPortrait } from '@lib/database'
   import Reactions from '@components/common/Reactions.svelte'
 
   export let post
@@ -38,7 +39,7 @@
 <div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread}>
   {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
-      <img src={$postStore.owner_portrait} alt={$postStore.owner_name} />
+      {#await getPortrait($postStore.owner, $postStore.owner_portrait) then url}<img src={url} class='portrait' alt={$postStore.owner_name} />{/await}
     </div>
   {/if}
   <div class='body'>

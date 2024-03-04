@@ -1,14 +1,12 @@
 <script>
   import PortraitInput from '@components/common/PortraitInput.svelte'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, uploadPortrait } from '@lib/database'
   import { activeConversation } from '@lib/stores'
 
   export let user = {}
 
-  async function onPortraitChange (portrait) {
-    const { data, error } = await supabase.from('profiles').update({ portrait }).eq('id', user.id)
-    if (error) { return handleError(error) }
-    return data
+  async function onPortraitChange (file) {
+    uploadPortrait(user.id, 'profiles', file)
   }
 
   async function logout () {
@@ -21,7 +19,7 @@
 </script>
 
 <div id='user'>
-  <PortraitInput identity={user} table='profiles' {onPortraitChange} displayWidth={70} displayHeight={100} /><br>
+  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
   <div id='details'>
     <div id='nameRow'>
       <span id='name'>{user.name || user.email}</span>

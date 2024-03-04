@@ -26,13 +26,17 @@ export function cropPortrait (img, ratio) {
   return canvas
 }
 
-export function resizePortrait (img, newWidth, newHeight) {
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  canvas.width = newWidth
-  canvas.height = newHeight
-  ctx.drawImage(img, 0, 0, newWidth, newHeight)
-  return canvas.toDataURL()
+export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/jpeg') {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = newWidth
+    canvas.height = newHeight
+    ctx.drawImage(img, 0, 0, newWidth, newHeight)
+    canvas.toBlob(blob => {
+      blob ? resolve({ blob, base64: canvas.toDataURL('image/jpeg') }) : reject(new Error('Konverze canvasu do blobu selhala'))
+    }, mimeType)
+  })
 }
 
 export function previewCanvas (canvas) {
@@ -93,13 +97,13 @@ export function getImage (image) {
   })
 }
 
-export function cropImageToBlob (imageElement, crop, outputSize, mimeType = 'image/jpeg') {
+export function cropImageToBlob (imageElement, crop, outputSize) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     canvas.width = outputSize.width
     canvas.height = outputSize.height
     ctx.drawImage(imageElement, crop.pixels.x, crop.pixels.y, crop.pixels.width, crop.pixels.height, 0, 0, outputSize.width, outputSize.height)
-    canvas.toBlob(blob => { blob ? resolve(blob) : reject(new Error('Konverze canvasu do blobu selhala')) }, mimeType)
+    canvas.toBlob(blob => { blob ? resolve(blob) : reject(new Error('Konverze canvasu do blobu selhala')) }, 'image/jpeg')
   })
 }

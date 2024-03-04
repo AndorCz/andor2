@@ -24,7 +24,7 @@
   }
 ---
 
-<Layout title={gameData?.name} headerStorageId={gameData?.custom_header ? 'game-' + gameData.id : null}>
+<Layout title={gameData?.name} headerStorage={gameData?.custom_header ? `game-${gameData.id}.jpg?hash=${gameData.custom_header}` : null}>
   {(showSettings ? (
     <GameSettings data={gameData} {user} client:only />
   ) : (

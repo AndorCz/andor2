@@ -16,7 +16,7 @@
   if (unreadData) { boardData.unread = unreadData }
 ---
 
-<Layout title={boardData?.name} headerStorageId={boardData?.custom_header ? 'board-' + boardData.id : null}>
+<Layout title={boardData?.name} headerStorage={boardData?.custom_header ? `board-${boardData.id}.jpg?hash=${boardData.custom_header}` : null}>
   {(showSettings ? (
     <BoardSettings data={boardData} {user} client:only />
   ) : (

@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getHash } from '@lib/database'
   import { getImage, cropImageToBlob } from '@lib/utils'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
@@ -25,22 +25,20 @@
       newHeaderEl = await getImage(file)
       if (newHeaderEl.width < 1100) { return showError(`Obrázek má malou šířku (${newHeaderEl.width}px), je třeba alespoň 1100px`) }
       if (newHeaderEl.width < 226) { return showError(`Obrázek má malou výšku (${newHeaderEl.height}px), je třeba alespoň 226px`) }
-      if (newHeaderEl.width >= 1100 && newHeaderEl.width < 2000 && newHeaderEl.height === 226) { // Correct size
-        uploadHeader(file)
-      } else { // too large - crop
-        cropping = true
-        newHeaderUrl = URL.createObjectURL(file)
-      }
+      // if (newHeaderEl.width >= 1100 && newHeaderEl.width < 2000 && newHeaderEl.height === 226) { // Correct size
+      // uploadHeader(file) // can't use, need to convert to jpg
+      cropping = true
+      newHeaderUrl = URL.createObjectURL(file)
     }
   }
 
   async function uploadHeader (file) {
     uploading = true
-    const { error: error1 } = await supabase.storage.from('headers').upload(unit + '-' + data.id, file, { upsert: true })
+    const { error: error1 } = await supabase.storage.from('headers').upload(unit + '-' + data.id + '.jpg', file, { upsert: true })
     if (error1) { return handleError(error1) }
-    const { error: error2 } = await supabase.from(section).update({ custom_header: true }).eq('id', data.id)
+    const { error: error2 } = await supabase.from(section).update({ custom_header: getHash() }).eq('id', data.id)
     if (error2) { return handleError(error2) }
-    data.custom_header = true
+    data.custom_header = getHash()
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička byla uložena')
     uploading = false
@@ -50,13 +48,12 @@
 
   async function clearHeader () { // clear in db
     if (data.custom_header) {
-      console.log('unit + - + data.id', unit + '-' + data.id)
-      const { error: error1 } = await supabase.storage.from('headers').remove([unit + '-' + data.id])
+      const { error: error1 } = await supabase.storage.from('headers').remove([unit + '-' + data.id + '.jpg'])
       if (error1) { return handleError(error1) }
-      const { error: error2 } = await supabase.from(section).update({ custom_header: false }).eq('id', data.id)
+      const { error: error2 } = await supabase.from(section).update({ custom_header: null }).eq('id', data.id)
       if (error2) { return handleError(error2) }
     }
-    data.custom_header = false
+    data.custom_header = null
     files = null
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -67,7 +64,7 @@
   // Cropping
 
   async function applyCrop () {
-    const croppedImageBlob = await cropImageToBlob(newHeaderEl, cropCoords, { width: 1100, height: 226 }, files[0].type)
+    const croppedImageBlob = await cropImageToBlob(newHeaderEl, cropCoords, { width: 1100, height: 226 })
     const file = new File([croppedImageBlob], files[0].name, { type: files[0].type }) // blob to file
     uploadHeader(file)
     endCrop()

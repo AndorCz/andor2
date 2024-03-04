@@ -17,7 +17,10 @@
   let bookmarkId
 
   onMount(() => {
-    $gameStore.activeTab = 'game'
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlTab = urlParams.get('tab')
+    $gameStore.activeTab = urlTab || $gameStore.activeTab || 'game'
+    window.history.replaceState({}, document.title, window.location.pathname) // clear params
   })
 
   function showSettings () {

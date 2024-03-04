@@ -38,10 +38,28 @@ export function handleError (error, astro) {
   } else { console.error(error) } // not so helpful, don't use this method on the back-end
 }
 
+export async function uploadPortrait (identityId, table, file) {
+  const { error: error1 } = await supabase.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
+  if (error1) { return handleError(error1) }
+  const { error: error2 } = await supabase.from(table).update({ portrait: getHash() }).eq('id', identityId)
+  if (error2) { return handleError(error2) }
+}
+
 export function getHeaderUrl (type, id) {
-  const { data, error } = supabase.storage.from('headers').getPublicUrl(`${type}-${id}`)
+  const { data, error } = supabase.storage.from('headers').getPublicUrl(`${type}-${id}.jpg`)
   if (error) { handleError(error) }
   return data.publicUrl
+}
+
+export async function getPortrait (identityId, hash) {
+  const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
+  const { data, error } = await supabase.storage.from('portraits').getPublicUrl(path)
+  if (error) { return handleError(error) }
+  return data.publicUrl
+}
+
+export function getHash () {
+  return Math.random().toString(36).slice(-5)
 }
 
 // server helpers

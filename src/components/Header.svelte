@@ -6,19 +6,19 @@
 
   export let pathname
   export let headerStatic
-  export let headerStorageId
+  export let headerStorage
 
   let headerUrl = headerStatic
 
   async function getHeaderUrl () {
-    const { data, error } = await supabase.storage.from('headers').download(headerStorageId)
+    const { data, error } = await supabase.storage.from('headers').getPublicUrl(headerStorage)
     if (error) { return handleError(error) }
-    headerUrl = URL.createObjectURL(data)
+    headerUrl = data.publicUrl
   }
 
   onMount(() => { $headerPreview = null }) // clear preview, only used momentarily after upload
 
-  $: if (headerStorageId) { getHeaderUrl() }
+  $: if (headerStorage) { getHeaderUrl() }
 </script>
 
 <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">

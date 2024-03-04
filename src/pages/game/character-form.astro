@@ -1,6 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/CharacterForm.svelte'
+  import { uploadPortrait, getHash } from '@lib/database'
 
   const { supabase, user } = Astro.locals
   const game = Astro.url.searchParams.get('game') || ''
@@ -26,11 +27,19 @@
     character.name = data.get('charName') || 'Beze jména'
     character.appearance = data.get('charLooks') || ''
     character.bio = data.get('charBio') || ''
-    character.portrait = data.get('charPortrait') || ''
+    character.portrait = data.get('charPortrait') || null
     character.storyteller = data.get('storyteller') || false
     character.player = user.id
     if (character.storyteller) { character.accepted = true }
     if (game) { character.game = game }
+
+    // create a File from base64, upload it
+    if (character.portrait) {
+      const response = await fetch(character.portrait) // convert base64 to a blob
+      const blob = await response.blob()
+      await uploadPortrait(character.id, 'characters', blob)
+      character.portrait = getHash()
+    }
 
     const { error: error } = await supabase.from('characters').upsert(character)
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }

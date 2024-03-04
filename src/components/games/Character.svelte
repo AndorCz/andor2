@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getPortrait } from '@lib/database'
 
   export let user
   export let gameId
@@ -32,7 +32,7 @@
 <tr class='character'>
   <td class='portrait'>
     {#if character.portrait}
-      <img src={character.portrait} class='portrait' alt='portrét postavy'>
+      {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt='portrét postavy' />{/await}
     {/if}
   </td>
   <td class='name'>

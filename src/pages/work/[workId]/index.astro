@@ -16,7 +16,7 @@
   if (unreadData) { workData.unread = unreadData }
 ---
 
-<Layout title={workData?.name} headerStorageId={workData?.custom_header ? 'work-' + workData.id : null}>
+<Layout title={workData?.name} headerStorage={workData?.custom_header ? `work-${workData.id}.jpg?hash=${workData.custom_header}` : null}>
   {(showSettings ? (
     <WorkSettings data={workData} {user} client:only />
   ) : (

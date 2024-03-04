@@ -10,7 +10,7 @@
   <ul class='games'>
     {#each $bookmarks.games as bookmark}
       <li class='bookmark' class:active={'/game/' + bookmark.game_id === window.location.pathname}>
-        <a href={'/game/' + bookmark.game_id}>
+        <a href={'/game/' + bookmark.game_id + '?tab=game'}>
           {bookmark.name}
           {#if bookmark.unread}
             <span class='unread'>{bookmark.unread}</span>
