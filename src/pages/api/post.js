@@ -29,6 +29,7 @@ export const GET = async ({ url, request, locals }) => {
 export const POST = async ({ request, redirect, locals }) => {
   const data = await request.json()
   if (locals.user.id) { // check if user is signed in
+    if (Array.isArray(data.audience) && data.audience.length === 0) { data.audience = null } // don't save empty array
     const postData = { thread: data.thread, owner: data.owner, owner_type: data.ownerType, content: data.content, audience: data.audience }
     if (data.openAiThread) { // send to open ai thread
       // UNCOMMENT ONCE POST EDITING IS ALLOWED
