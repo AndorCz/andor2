@@ -104,7 +104,8 @@
           padding: 10px;
         }
     .options {
-      padding-left: 10px;
+      background-color: var(--block);
+      padding: 0px 10px;
     }
     .player {
       margin-right: 20px;

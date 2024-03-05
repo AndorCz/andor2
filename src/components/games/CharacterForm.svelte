@@ -3,7 +3,7 @@
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { cropPortrait, resizePortrait, loadBase64Image } from '@lib/utils'
-  import { handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database'
 
   export let isGameOwner
   export let userId
@@ -13,6 +13,7 @@
   let saving = false
   let generatingPortrait = false
   let newPortraitBase64
+  const isCharacterOwner = userId === character.player
 
   const generatePortrait = async () => {
     try {
@@ -31,6 +32,16 @@
       newPortraitBase64 = resizedImage.base64
       generatingPortrait = false
     } catch (error) { handleError(error) }
+  }
+
+  const deleteCharacter = async () => {
+    const { error } = await supabase.from('characters').delete().eq('id', character.id)
+    if (error) { return handleError(error) }
+    if (character.game) {
+      window.location.href = `/game/${character.game}?toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
+    } else {
+      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Postava byla smazána')
+    }
   }
 </script>
 
@@ -70,6 +81,17 @@
       <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
+
+  {#if isCharacterOwner}
+    <details>
+      <summary>Smazat postavu</summary>
+      <h3>Smazání postavy</h3>
+      Pozor, toto je nevratná akce.<br><br>
+      <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto postavu?')) { deleteCharacter() } }}>
+        <span class='material'>warning</span><span>Smazat postavu</span>
+      </button>
+    </details>
+  {/if}
 {:else}
   <div>
     <p>Pro vytvoření nové postavy se musíš přihlásit.</p>
@@ -101,6 +123,10 @@
     }
   center {
     margin-top: 20px;
+  }
+  .delete {
+    display: flex;
+    gap: 10px;
   }
 
   @media (max-width: 860px) {
