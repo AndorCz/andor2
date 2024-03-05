@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { Editor } from '@tiptap/core'
+  import { Editor, Extension } from '@tiptap/core'
   import { Color } from '@tiptap/extension-color'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
@@ -16,6 +16,7 @@
 
   export let content = ''
   export let onKeyUp = null
+  export let triggerSave = null
   export let onChange = null
   export let minHeight = 140
 
@@ -40,12 +41,28 @@
     { value: 'justify', icon: 'format_align_justify' }
   ]
 
+  const EnterKeyHandler = Extension.create({
+    name: 'enterKeyHandler',
+    addKeyboardShortcuts () {
+      return {
+        Enter: () => {
+          if (!this.editor.isActive('code') && !event.shiftKey) { // trigger save when Shift is not pressed
+            if (!this.editor.isEmpty) { triggerSave() }
+            return true // prevents the default enter behavior
+          }
+          return false // allows the default behavior (new line) when Shift is pressed
+        }
+      }
+    }
+  })
+
   onMount(() => {
-    editor = new Editor({
+    const config = {
       element: editorEl,
       content,
       extensions: [
         StarterKit,
+        EnterKeyHandler,
         Underline,
         TextStyle,
         Reply,
@@ -78,7 +95,8 @@
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
       }
-    })
+    }
+    editor = new Editor(config)
     editorEl.querySelector('.ProseMirror').style.minHeight = minHeight + 'px'
   })
 

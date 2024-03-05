@@ -6,7 +6,7 @@
   export let table
   export let identity = { portrait: null }
   export let onPortraitChange = null
-  export let newPortraitBase64
+  export let newPortraitBase64 = null
 
   export let displayWidth = 140
   export let displayHeight = 140

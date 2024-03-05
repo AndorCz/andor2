@@ -63,8 +63,10 @@
   async function triggerSave (html) {
     if (allowHtml) {
       value = await tiptap.getHTML() // get html from editor
-      await onSave()
-      tiptap.commands.clearContent(true)
+      if (value) {
+        await onSave()
+        tiptap.commands.clearContent(true)
+      }
     } else {
       onSave() // otherwise the binded textarea value is used
     }
@@ -84,9 +86,11 @@
   // handle enter and escape
   async function handleKeyDown (event) {
     if (event.key === 'Escape' && editing) { cancelEdit() }
-    if (enterSend && event.keyCode === 13 && !event.shiftKey) { // send with enter, new line with shift+enter
-      event.preventDefault()
-      triggerSave()
+    if (!allowHtml) { // TipTap has it's own input event handling
+      if (enterSend && event.keyCode === 13 && !event.shiftKey) { // send with enter, new line with shift+enter
+        event.preventDefault()
+        triggerSave()
+      }
     }
   }
 </script>
@@ -95,7 +99,7 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} />
   {:else}
     <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}
