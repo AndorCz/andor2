@@ -1,5 +1,6 @@
 <script>
   import { activeConversation } from '@lib/stores'
+  import { getPortrait } from '@lib/database'
   import GameList from '@components/games/GameList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
@@ -15,12 +16,15 @@
 <main>
   <aside>
     {#if data.portrait}
-    <img src={data.portrait} alt={data.name} id='portrait' />
-  {/if}
+      {#await getPortrait(data.id, data.portrait) then url}<img src={url} class='portrait' alt={data.name} />{/await}
+    {/if}
   </aside>
   <div class='wide'>
     <h1>{data.name}</h1>
-    <p>Uživatel od: {new Date(data.created_at).toLocaleDateString('cs')}</p>
+    <ul>
+      <li>Naposledy online: <span class='date'>{new Date(data.last_activity).toLocaleString('cs')}</span></li>
+      <li>Datum registrace: <span class='date'>{new Date(data.created_at).toLocaleDateString('cs')}</span></li>
+    </ul>
     <button on:click={openConversation}>Napsat zprávu</button>
   </div>
 </main>
@@ -43,7 +47,18 @@
     .wide {
       flex: 1;
     }
-    #portrait {
+    .portrait {
       border-radius: 10px;
     }
+    ul {
+      list-style: none;
+      padding: 0px;
+    }
+      li {
+        margin: 5px 0px;
+      }
+      .date {
+        font-weight: bold;
+        margin-left: 10px;
+      }
 </style>

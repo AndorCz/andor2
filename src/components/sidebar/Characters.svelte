@@ -1,4 +1,6 @@
 <script>
+  import { getPortrait } from '@lib/database'
+
   export let user = {}
   export let characters = { allGrouped: [], myStranded: [] }
   export let openConversation
@@ -19,7 +21,7 @@
       {#if character.player !== user.id}
         <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
           {#if character.portrait}
-            <img src={character.portrait} class='portrait' alt='portrait'>
+            {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
           {:else}
             <span class='portrait gap'></span>
           {/if}
@@ -42,7 +44,7 @@
           <li class='mine'>
             <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
               {#if character.portrait}
-                <img src={character.portrait} class='portrait' alt='portrait'>
+                {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
               {:else}
                 <span class='portrait gap'></span>
               {/if}
@@ -68,7 +70,7 @@
         <li class='mine'>
           <button on:click={openEdit(character)}>
             {#if character.portrait}
-              <img src={character.portrait} class='portrait' alt='portrait'>
+              {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
             {:else}
               <span class='portrait gap'></span>
             {/if}

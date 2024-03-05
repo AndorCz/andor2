@@ -22,7 +22,7 @@
   <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
   <div id='details'>
     <div id='nameRow'>
-      <span id='name'>{user.name || user.email}</span>
+      <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>
     </div>
     <div>
       <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>

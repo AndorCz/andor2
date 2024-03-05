@@ -23,9 +23,9 @@
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
   async function rejectCharacter (id) {
-    const { error } = await supabase.from('characters').update({ game: null }).eq('id', id)
+    const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', id)
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla odmítnuta')
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
   }
 </script>
 
@@ -48,8 +48,12 @@
   {#if isGameOwner}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
     <td class='options'>
-      {#if !character.accepted}
-        <div class='accept'>
+      {#if character.accepted}
+        <div class='manage'>
+          <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
+        </div>
+      {:else}
+        <div class='manage'>
           <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
           <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
         </div>
@@ -91,12 +95,12 @@
       .name a {
         font-size: 22px;
       }
-      .accept {
+      .manage {
         display: flex;
         gap: 10px;
         height: 100%;
       }
-        .accept button {
+        .manage button {
           padding: 10px;
         }
     .options {
