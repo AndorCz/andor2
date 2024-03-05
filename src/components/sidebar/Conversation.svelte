@@ -55,7 +55,7 @@
   }
 
   async function markMessagesRead () {
-    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === us.id && !message.read) // only where we are the recipient
+    const myUnreadMessages = $messages.filter(message => message[senderColumn] === us.id && message.read !== true) // only where we are the sender
     if (myUnreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
