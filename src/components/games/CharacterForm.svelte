@@ -12,6 +12,7 @@
   let formEl
   let saving = false
   let generatingPortrait = false
+  let newPortraitBase64
 
   const generatePortrait = async () => {
     try {
@@ -26,8 +27,8 @@
       const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
       const cropRatio = 0.5
       const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
-      const resizedImage = resizePortrait(croppedImage, 140, 140 / cropRatio) // returns base64 string
-      character.portrait = resizedImage
+      const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)
+      newPortraitBase64 = resizedImage.base64
       generatingPortrait = false
     } catch (error) { handleError(error) }
   }
@@ -47,7 +48,7 @@
       <div class='labels'><label for='charIcon'>Portrét</label></div>
       <div class='inputs'>
         <div class='portrait'>
-          <PortraitInput identity={character} table='characters' />
+          <PortraitInput identity={character} {newPortraitBase64} table='characters' />
           <span>
             <ButtonLoading type='button' label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
             <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>

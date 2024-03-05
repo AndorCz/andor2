@@ -6,6 +6,7 @@
   export let table
   export let identity = { portrait: null }
   export let onPortraitChange = null
+  export let newPortraitBase64
 
   export let displayWidth = 140
   export let displayHeight = 140
@@ -14,7 +15,6 @@
 
   let files
   let fileInputEl
-  let resizedPortraitBase64
   let uploading = false
   const maxHeight = 600
 
@@ -38,7 +38,7 @@
       const resized = await resizePortrait(img, saveWidth, saveHeight, 'image/jpeg')
       const file = new File([resized.blob], files[0].name, { type: 'image/jpeg' }) // blob to file
 
-      resizedPortraitBase64 = resized.base64 // for form submission (only way to pass modified file to the server with formdata)
+      newPortraitBase64 = resized.base64 // for form submission (only way to pass modified file to the server with formdata)
       if (onPortraitChange) { // for immediate upload
         uploading = true
         await onPortraitChange(file)
@@ -66,8 +66,8 @@
 
 <div class='wrapper' style={`--portrait-width: ${displayWidth}px; --portrait-height: ${displayHeight}px`}>
   <label>
-    {#if resizedPortraitBase64}
-      <img src={resizedPortraitBase64} class='portrait' alt='portrét' />
+    {#if newPortraitBase64}
+      <img src={newPortraitBase64} class='portrait' alt='portrét' />
     {:else if identity.portrait}
       {#await getPortrait(identity.id, identity.portrait) then url}<img src={url} class='portrait' alt='portrét' />{/await}
     {:else}
@@ -78,7 +78,7 @@
   {#if identity.portrait}
     <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
   {/if}
-  <input type='hidden' name='charPortrait' bind:value={resizedPortraitBase64} />
+  <input type='hidden' name='charPortrait' bind:value={newPortraitBase64} />
 </div>
 
 <style>
