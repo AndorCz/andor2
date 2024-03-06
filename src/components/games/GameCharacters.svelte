@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { setRead } from '@lib/database'
+  import { supabase, handleError, setRead } from '@lib/database'
   import Character from '@components/games/Character.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 
@@ -8,17 +8,10 @@
   export let data = {}
   export let isGameOwner
 
-  onMount(() => {
-    if (user.id) {
-      delete data.unread.gameCharacters
-      setRead(user.id, 'game-characters-' + data.id)
-    }
-  })
-
   // sort character categories
-  // const isVisible = (char) => { return !char.hidden || isCharPlayer(char) }
   const isCharPlayer = (char) => { return char.player?.id === user.id }
-  const characters = { playing: [], waiting: [], open: [], storytellers: [], myWaiting: [] }
+  const characters = { playing: [], waiting: [], open: [], storytellers: [], myOpen: [] }
+  let myOpenSelected = ''
 
   data.characters.forEach((char) => {
     if (char.storyteller) { // storytellers
@@ -37,6 +30,23 @@
       }
     }
   })
+
+  onMount(async () => {
+    if (user.id) {
+      delete data.unread.gameCharacters
+      setRead(user.id, 'game-characters-' + data.id)
+
+      const { data: myOpen, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('player', user.id).is('game', null)
+      if (error2) { return handleError(error2) }
+      characters.myOpen = myOpen
+    }
+  })
+
+  async function signExisting () {
+    const { error } = await supabase.from('characters').update({ game: data.id, accepted: false }).eq('id', myOpenSelected)
+    if (error) { return handleError(error) }
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přihlášena do hry')
+  }
 </script>
 
 <main>
@@ -79,7 +89,7 @@
     </table>
   {/if}
 
-  <h2>Volné</h2>
+  <h2>Volné postavy k převzetí</h2>
   <table class='characters'>
     {#if characters.open.length > 0}
       <CharacterHeader {isGameOwner} />
@@ -90,10 +100,21 @@
       <tr><td class='none'>Žádné postavy</td></tr>
     {/if}
   </table>
+
   {#if user.id}
-    <center>
+    <h2>Přihlásit se</h2>
+    <div class='row'>
+      <div class='existing' class:empty={characters.myOpen.length === 0}>
+        <select bind:value={myOpenSelected}>
+          <option value=''>Vyberte postavu bez hry</option>
+          {#each characters.myOpen as character}
+            <option value={character.id}>{character.name}</option>
+          {/each}
+        </select>
+        <button on:click={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
+      </div>
       <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button large'>Vytvořit novou postavu</a>
-    </center>
+    </div>
   {/if}
 </main>
 
@@ -119,7 +140,21 @@
     padding-left: 20px;
     color: var(--dim);
   }
-  center {
+  .row {
+    display: flex;
+    justify-content: space-around;
     margin-top: 20px;
+    gap: 40px;
   }
+  .existing {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+  }
+    .existing select {
+      flex: 1;
+    }
+    .empty {
+      opacity: 0.5;
+    }
 </style>

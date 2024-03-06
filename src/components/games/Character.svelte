@@ -23,9 +23,22 @@
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
   async function rejectCharacter (id) {
+    if (!window.confirm('Opravdu vyřadit postavu?')) { return }
     const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', id)
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
+  }
+  async function freeCharacter (id) {
+    if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
+    const { error } = await supabase.from('characters').update({ open: true }).eq('id', id)
+    if (error) { return handleError(error) }
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla uvolněna')
+  }
+  async function claimCharacter (id) {
+    if (!window.confirm('Opravdu převzít postavu?')) { return }
+    const { error } = await supabase.from('characters').update({ open: false, player: user.id }).eq('id', id)
+    if (error) { return handleError(error) }
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla převzata')
   }
 </script>
 
@@ -47,19 +60,25 @@
   </td>
   {#if isGameOwner}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
-    <td class='options'>
-      {#if character.accepted}
-        <div class='manage'>
+  {/if}
+  <td>
+    <div class='options'>
+      {#if isGameOwner}
+        {#if character.accepted}
           <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
-        </div>
-      {:else}
-        <div class='manage'>
+          {#if !character.open}
+            <button on:click={() => freeCharacter(character.id)}>uvolnit</button>
+          {/if}
+        {:else}
           <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
           <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
-        </div>
+        {/if}
       {/if}
-    </td>
-  {/if}
+      {#if character.open}
+        <button on:click={() => claimCharacter(character.id)}>převzít</button>
+      {/if}
+    </div>
+  </td>
 </tr>
 
 <style>
@@ -69,6 +88,7 @@
   }
     td {
       vertical-align: middle;
+      background-color: var(--block);
     }
     .portrait {
       width: 60px;
@@ -88,25 +108,20 @@
       }
 
     .name, .player {
-      background-color: var(--block);
       padding: 15px;
       min-width: 100px;
     }
       .name a {
         font-size: 22px;
       }
-      .manage {
-        display: flex;
-        gap: 10px;
-        height: 100%;
-      }
-        .manage button {
-          padding: 10px;
-        }
     .options {
-      background-color: var(--block);
-      padding: 0px 10px;
+      display: flex;
+      gap: 10px;
+      height: 100%;
     }
+      .options button {
+        padding: 10px;
+      }
     .player {
       margin-right: 20px;
       font-weight: bold;

@@ -19,7 +19,7 @@
   if (unreadData) { gameData.unread = unreadData }
 
   if (gameData && characterData) {
-    // filter out hidden characters for regular players
+    // filter out hidden characters of other players, when not a storyteller
     gameData.characters = gameData.owner.id === user.id ? characterData : characterData.filter((char) => !char.hidden || char.player.id === user.id) // @ts-nocheck
   }
 ---
