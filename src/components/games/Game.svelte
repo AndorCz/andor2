@@ -19,7 +19,7 @@
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const urlTab = urlParams.get('tab')
-    $gameStore.activeTab = urlTab || $gameStore.activeTab || 'game'
+    $gameStore.activeTab = urlTab || $gameStore.activeTab || 'info'
     window.history.replaceState({}, document.title, window.location.pathname) // clear params
   })
 
@@ -62,11 +62,11 @@
     <button on:click={() => { $gameStore.activeTab = 'info' }} class={$gameStore.activeTab === 'info' ? 'active' : ''}>
       Info{#if data.unread.gameInfo && $gameStore.activeTab !== 'info'}<span class='unread badge'></span>{/if}
     </button>
-    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={data.unread.gameChat}>
-      Chat{#if data.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{data.unread.gameChat}</span>{/if}
-    </button>
     <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={data.unread.gameThread}>
       Hra{#if data.unread.gameThread && $gameStore.activeTab !== 'game'}<span class='unread count'>{data.unread.gameThread}</span>{/if}
+    </button>
+    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={data.unread.gameChat}>
+      Chat{#if data.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{data.unread.gameChat}</span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
       Postavy{#if data.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}

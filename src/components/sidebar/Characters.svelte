@@ -17,23 +17,27 @@
     <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
   </h4>
   <ul class='characters'>
-    {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
-      {#if character.player !== user.id}
-        <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
-          {#if character.portrait}
-            {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-          {:else}
-            <span class='portrait gap'></span>
-          {/if}
-          <div class='name character'>
-            {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-            {character.name}
-          </div>
-          {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-          {#if character.active}<span class='status'></span>{/if}
-        </button>
-      {/if}
-    {/each}
+    {#if characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].length}
+      {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
+        {#if character.player !== user.id}
+          <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
+            {#if character.portrait}
+              {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+            {:else}
+              <span class='portrait gap'></span>
+            {/if}
+            <div class='name character'>
+              {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+              {character.name}
+            </div>
+            {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+            {#if character.active}<span class='status'></span>{/if}
+          </button>
+        {/if}
+      {/each}
+    {:else}
+      <div class='empty'>Hra nemá další postavy</div>
+    {/if}
   </ul>
 {:else}
   {#each characters.allGrouped as { id, name, characters }, gameIndex}
