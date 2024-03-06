@@ -32,7 +32,7 @@
   }
 
   function onImageClick (event) {
-    if (event.target.tagName === 'IMG') { $lightboxImage = event.target.src }
+    if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
   }
 </script>
 
