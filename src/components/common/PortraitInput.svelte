@@ -78,7 +78,7 @@
   {#if identity.portrait}
     <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
   {/if}
-  <input type='hidden' name='charPortrait' bind:value={newPortraitBase64} />
+  <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
 </div>
 
 <style>
