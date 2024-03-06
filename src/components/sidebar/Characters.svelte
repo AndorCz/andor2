@@ -17,7 +17,7 @@
     <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
   </h4>
   <ul class='characters'>
-    {#if characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].length}
+    {#if characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts.length}
       {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
         {#if character.player !== user.id}
           <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
