@@ -49,7 +49,7 @@
         if (error) { throw new Error(error)}
       }
 
-      return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přidána'))
+      return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla upravena'))
     } catch (error) {
       return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`)
     }

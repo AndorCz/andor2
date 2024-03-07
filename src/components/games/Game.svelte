@@ -17,8 +17,6 @@
   const isPlayer = data.characters.some(c => c.player.id === user.id)
   let bookmarkId
 
-  console.log('isPlayer', isPlayer)
-
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const urlTab = urlParams.get('tab')
