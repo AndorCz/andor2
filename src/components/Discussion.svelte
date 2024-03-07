@@ -10,6 +10,7 @@
   export let user = {}
   export let data = {}
   export let isOwner
+  export let isPermitted = true
   export let thread
   export let unread = 0
   export let useIdentities = false
@@ -24,10 +25,11 @@
   let pages
 
   const limit = 50
+  const showDiscussion = data.open_discussion || isPermitted
 
   // set identities for discussion
   const getMyCharacters = () => {
-    if (!useIdentities) { return [] }
+    if (!useIdentities || !showDiscussion) { return [] }
     const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
     myCharacters.forEach((char) => { char.type = 'character' })
     return myCharacters
@@ -38,7 +40,7 @@
   onMount(() => {
     if (user.id) {
       if (data.unread?.gameChat) { delete data.unread.gameChat }
-      if (useIdentities) {
+      if (showDiscussion && useIdentities) {
         $identityStore.activeChatIdentity = $identityStore.activeChatIdentity || identities[0].id
         identitySelect.value = $identityStore.activeChatIdentity
       }
@@ -103,43 +105,47 @@
   }
 </script>
 
-<h2>Veřejná diskuze</h2>
+<h2>{#if data.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
 
-{#if user.id}
-  {#if $platform === 'desktop'}
-    <div class='headlines'>
+{#if showDiscussion}
+  {#if user.id}
+    {#if $platform === 'desktop'}
+      <div class='headlines'>
+        <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
+        {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
+      </div>
+      <div class='addPostWrapper'>
+        <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        {#if useIdentities}
+          <div class='senderWrapper'>
+            <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+              {#each identities as identity}
+                <option value={identity.id} class={identity.type}>{identity.name}</option>
+              {/each}
+            </select>
+          </div>
+        {/if}
+      </div>
+    {:else}
       <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-      {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
-    </div>
-    <div class='addPostWrapper'>
       <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
       {#if useIdentities}
-        <div class='senderWrapper'>
-          <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
-            {#each identities as identity}
-              <option value={identity.id} class={identity.type}>{identity.name}</option>
-            {/each}
-          </select>
-        </div>
+        <h3 class='sender'>Identita</h3>
+        <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+          {#each identities as identity}
+            <option value={identity.id}>{identity.name}</option>
+          {/each}
+        </select>
       {/if}
-    </div>
-  {:else}
-    <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-    {#if useIdentities}
-      <h3 class='sender'>Identita</h3>
-      <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
-        {#each identities as identity}
-          <option value={identity.id}>{identity.name}</option>
-        {/each}
-      </select>
     {/if}
   {/if}
-{/if}
 
-{#key $posts}
-  <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
-{/key}
+  {#key $posts}
+    <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+  {/key}
+{:else}
+  <p>Tato hra nemá veřejnou diskuzi, pro zobrazení musíš mít ve hře postavu.</p>
+{/if}
 
 <style>
   h2 {

@@ -14,7 +14,10 @@
   // prepare store
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
+  const isPlayer = data.characters.some(c => c.player.id === user.id)
   let bookmarkId
+
+  console.log('isPlayer', isPlayer)
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -66,7 +69,7 @@
       Hra{#if data.unread.gameThread && $gameStore.activeTab !== 'game'}<span class='unread count'>{data.unread.gameThread}</span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={data.unread.gameChat}>
-      Chat{#if data.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{data.unread.gameChat}</span>{/if}
+      Diskuze{#if data.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{data.unread.gameChat}</span>{/if}
     </button>
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
       Postavy{#if data.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}
@@ -77,7 +80,7 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {user} {isGameOwner} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities identityStore={gameStore} />
+      <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} {user} {isGameOwner} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}

@@ -58,6 +58,7 @@ create table games (
   system public.game_system not null default 'base'::game_system,
   category public.game_category not null default 'other'::game_category,
   discussion_thread int4 null,
+  open_discussion boolean not null default false,
   game_thread int4 null,
   openai_thread text null,
   openai_storyteller text null,

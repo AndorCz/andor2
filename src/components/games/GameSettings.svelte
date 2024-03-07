@@ -12,6 +12,7 @@
   let originalSystem
   let originalName
   let originalCategory
+  let originalOpenDiscussion
 
   onMount(setOriginal)
 
@@ -19,11 +20,12 @@
     originalName = data.name
     originalSystem = data.system
     originalCategory = data.category
+    originalOpenDiscussion = data.open_discussion
   }
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, category: data.category, system: data.system }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, category: data.category, system: data.system, open_discussion: data.open_discussion }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -89,6 +91,16 @@
         {/each}
       </select>
       <button on:click={updateGame} disabled={saving || (originalSystem === data.system)} class='material'>check</button>
+    </div>
+
+    <h3>Mód diskuze</h3>
+    <div class='row'>
+      <!--<input type='text' id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion} />-->
+      <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion}>
+        <option value={false}>Soukromá</option>
+        <option value={true}>Veřejná</option>
+      </select>
+      <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === data.open_discussion)} class='material'>check</button>
     </div>
 
     <h3>Smazání hry</h3>
