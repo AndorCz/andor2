@@ -45,7 +45,7 @@
   }
 
   async function loadMessages () {
-    // load messages where are both recipientId and user.id (sender or recipient columns), sorted by created_at
+    // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
     const { data, error } = await supabase.from('messages').select('*')
       .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
       .order('created_at', { ascending: true })
@@ -119,9 +119,9 @@
               <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
               <div class='post' on:click={onImageClick}>
                 <!-- add tippy for time -->
-                <div use:tooltip class='content {message[senderColumn] === user.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
+                <div use:tooltip class='content {message[senderColumn] === us.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
                   <!-- add 'read' column -->
-                  {#if !message.read && message.sender !== user.id}
+                  {#if !message.read && message.sender !== us.id}
                     <div class='badge'></div>
                   {/if}
                   <Render html={message.content} />
