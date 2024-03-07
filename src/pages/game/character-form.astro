@@ -24,11 +24,9 @@
 
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
-    const newPortrait = data.get('newPortrait')
     character.name = data.get('charName') || 'Beze jména'
     character.appearance = data.get('charLooks') || ''
     character.bio = data.get('charBio') || ''
-    if (newPortrait) { character.portrait = getHash() }
     character.storyteller = data.get('storyteller') || false
     character.player = user.id
     if (character.storyteller) { character.accepted = true }
@@ -41,6 +39,7 @@
     if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
 
     // create a File from base64, upload it
+    const newPortrait = data.get('newPortrait')
     if (newPortrait) {
       character.id = characterData.id // add id for a new character
       // const response = await fetch(newPortrait) // convert base64 to a blob
