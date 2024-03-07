@@ -34,7 +34,7 @@ export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/jpeg
     canvas.height = newHeight
     ctx.drawImage(img, 0, 0, newWidth, newHeight)
     canvas.toBlob(blob => {
-      blob ? resolve({ blob, base64: canvas.toDataURL('image/jpeg') }) : reject(new Error('Konverze canvasu do blobu selhala'))
+      blob ? resolve({ blob, base64: canvas.toDataURL(mimeType) }) : reject(new Error('Konverze canvasu do blobu selhala'))
     }, mimeType)
   })
 }
@@ -106,4 +106,20 @@ export function cropImageToBlob (imageElement, crop, outputSize) {
     ctx.drawImage(imageElement, crop.pixels.x, crop.pixels.y, crop.pixels.width, crop.pixels.height, 0, 0, outputSize.width, outputSize.height)
     canvas.toBlob(blob => { blob ? resolve(blob) : reject(new Error('Konverze canvasu do blobu selhala')) }, 'image/jpeg')
   })
+}
+
+export function base64ToBlob (base64, contentType = 'image/jpeg', sliceSize = 512) {
+  const base64Data = base64.includes('base64,') ? base64.split('base64,')[1] : base64
+  const byteCharacters = atob(base64Data)
+  const byteArrays = []
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize)
+    const byteNumbers = new Array(slice.length)
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    byteArrays.push(byteArray)
+  }
+  return new Blob(byteArrays, { type: contentType })
 }
