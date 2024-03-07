@@ -43,8 +43,9 @@
     // create a File from base64, upload it
     if (newPortrait) {
       character.id = characterData.id // add id for a new character
-      const response = await fetch(newPortrait) // convert base64 to a blob
-      const blob = await response.blob()
+      // const response = await fetch(newPortrait) // convert base64 to a blob
+      // const blob = await response.blob()
+      const blob = new Blob([new Uint8Array(new Buffer(newPortrait.split(',')[1], 'base64'))], { type: 'image/jpeg' })
       await uploadPortrait(character.id, 'characters', blob)
     }
 
