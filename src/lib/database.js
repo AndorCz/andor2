@@ -40,9 +40,9 @@ export function handleError (error, astro) {
 
 export async function uploadPortrait (identityId, table, file) {
   const { error: error1 } = await supabase.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
-  if (error1) { return handleError(error1) }
+  if (error1) { return Promise.reject(error1) }
   const { error: error2 } = await supabase.from(table).update({ portrait: getHash() }).eq('id', identityId)
-  if (error2) { return handleError(error2) }
+  if (error2) { return Promise.reject(error2) }
 }
 
 export function getHeaderUrl (type, id) {
