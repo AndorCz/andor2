@@ -43,9 +43,8 @@
       const newPortrait = data.get('newPortrait')
       if (newPortrait) {
         character.id = characterData.id // add id for a new character
-        // const response = await fetch(newPortrait) // convert base64 to a blob
-        // const blob = await response.blob()
-        const blob = new Blob([new Uint8Array(new Buffer(newPortrait.split(',')[1], 'base64'))], { type: 'image/jpeg' })
+        const response = await fetch(newPortrait) // convert base64 to a blob
+        const blob = await response.blob()
         const error = await uploadPortrait(character.id, 'characters', blob)
         if (error) { throw new Error(error)}
       }
