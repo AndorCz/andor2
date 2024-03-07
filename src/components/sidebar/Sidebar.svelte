@@ -83,12 +83,12 @@
               <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
-              {#if unreadUsers}<span class='badge'></span>{/if}
+              {#if unreadUsers}<span class='unread badge'></span>{/if}
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
             </button>
             <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
-              {#if unreadCharacters}<span class='badge'></span>{/if}
+              {#if unreadCharacters}<span class='unread badge'></span>{/if}
               <span class='material'>domino_mask</span>
               <span class='label'>Postavy</span>
             </button>

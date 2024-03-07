@@ -516,7 +516,7 @@ begin
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
-      'unread_total', (select sum(unread_count) from all_characters) + (select unread_count from stranded_characters)
+      'unread_total', (select coalesce(sum(unread_count), 0) from all_characters) + (select coalesce(unread_count, 0) from stranded_characters)
     )
   );
 end;
