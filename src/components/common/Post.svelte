@@ -36,7 +36,7 @@
   }
 </script>
 
-<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread}>
+<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names}>
   {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
       {#await getPortrait($postStore.owner, $postStore.owner_portrait) then url}<img src={url} class='portrait' alt={$postStore.owner_name} />{/await}
@@ -152,6 +152,9 @@
       padding: 5px 15px;
       color: var(--dim);
     }
+      .whispered .content, .whispered .header {
+        background-color: var(--whisper);
+      }
       .header button {
         background: none;
         border: none;
@@ -170,6 +173,7 @@
       .audience {
         font-size: 15px;
         padding-left: 5px;
+        color: var(--character);
       }
       .toolbar {
         display: flex;
