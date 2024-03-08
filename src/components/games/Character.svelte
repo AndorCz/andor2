@@ -31,7 +31,7 @@
   }
   async function freeCharacter (id) {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
-    const { error } = await supabase.from('characters').update({ open: true }).eq('id', id)
+    const { error } = await supabase.from('characters').update({ open: true, hidden: false }).eq('id', id)
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla uvolněna')
   }
