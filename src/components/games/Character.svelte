@@ -56,7 +56,7 @@
     {#if isPlayer}
       <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
     {:else if isStoryteller}
-      <a href={`${window.location.origin}/game/character?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
+      <a href={`${window.location.origin}/game/character?id=${character.id}`} class='character'>{character.name}</a>
     {:else}
       {character.name}
     {/if}

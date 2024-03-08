@@ -4,26 +4,24 @@
 	import Layout from '@layouts/layout.astro'
   import CharacterInfo from '@components/games/CharacterInfo.svelte'
 
-
   const { supabase, user } = Astro.locals
-  const game = Astro.url.searchParams.get('game') || ''
   const id = Astro.url.searchParams.get('id') || ''
 
-  let character:any = {}
+  let character = {}
   let isStoryteller = false
-
-  if (game) {
-    const { data: charData, error: charError } = await supabase.from('characters').select('id').eq('game', game).eq('player', user.id).eq('storyteller', true).maybeSingle()
-    if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
-    isStoryteller = !!charData
-  } else {
-    return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
-  }
 
   if (id) {
     const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
     if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
     else { character = charData }
+
+    if (charData.game) {
+      const { data: storytellerData, error: charError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
+      if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
+      isStoryteller = !!storytellerData
+    } else {
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
+    }
   } else {
     return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr id')}`)
   }
