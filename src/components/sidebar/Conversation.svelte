@@ -118,10 +118,8 @@
             {#each $messages as message}
               <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
               <div class='post' on:click={onImageClick}>
-                <!-- add tippy for time -->
                 <div use:tooltip class='content {message[senderColumn] === us.id ? 'mine' : 'theirs'}' title={getTooltip(message)}>
-                  <!-- add 'read' column -->
-                  {#if !message.read && message.sender !== us.id}
+                  {#if !message.read && message[senderColumn] !== us.id}
                     <div class='badge'></div>
                   {/if}
                   <Render html={message.content} />
