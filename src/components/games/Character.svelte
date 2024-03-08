@@ -5,6 +5,7 @@
   export let gameId
   export let character
   export let isGameOwner
+  export let isStoryteller
 
   const isPlayer = character.player.id === user.id
 
@@ -52,8 +53,10 @@
     {#if character.storyteller}
       <span class='material star' title='Vypravěč'>star</span>
     {/if}
-    {#if isGameOwner || isPlayer}
+    {#if isPlayer}
       <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
+    {:else if isStoryteller}
+      <a href={`${window.location.origin}/game/character?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
     {:else}
       {character.name}
     {/if}
@@ -63,7 +66,7 @@
   {/if}
   <td>
     <div class='options'>
-      {#if isGameOwner}
+      {#if isStoryteller}
         {#if character.accepted}
           <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
           {#if !character.open}

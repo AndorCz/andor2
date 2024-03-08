@@ -31,8 +31,7 @@
 </div>
 
 <style>
-
-#user {
+  #user {
     padding: 20px 0px;
     display: flex;
     gap: 10px;

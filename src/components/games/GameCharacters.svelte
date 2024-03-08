@@ -7,6 +7,7 @@
   export let user = {}
   export let data = {}
   export let isGameOwner
+  export let isStoryteller
 
   // sort character categories
   const isCharPlayer = (char) => { return char.player?.id === user.id }
@@ -55,7 +56,7 @@
     {#if characters.storytellers.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.storytellers as character}
-        <Character {user} {character} {isGameOwner} gameId={data.id} />
+        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <td class='none'>Žádní vypravěči</td>
@@ -67,7 +68,7 @@
     {#if characters.playing.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.playing as character}
-        <Character {user} {character} {isGameOwner} gameId={data.id} />
+        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>
@@ -81,7 +82,7 @@
       {#if characters.waiting.length > 0}
         <CharacterHeader {isGameOwner} />
         {#each characters.waiting as character}
-          <Character {user} {character} {isGameOwner} gameId={data.id} />
+          <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>
@@ -94,7 +95,7 @@
     {#if characters.open.length > 0}
       <CharacterHeader {isGameOwner} />
       {#each characters.open as character}
-        <Character {user} {character} {isGameOwner} gameId={data.id} />
+        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>

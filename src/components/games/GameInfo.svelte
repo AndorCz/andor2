@@ -27,6 +27,7 @@
   })
 
   async function generateStory () {
+    if (!confirm('Opravdu chceš vygenerovat nové podklady pro vypravěče? Přepíše obsah tohoto pole.')) { return }
     generatingStory = true
     data.secrets = 'načítám...'
     const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ game: data.id, annotation: data.annotation, owner: data.owner.id, system: data.system }), headers: { 'Content-Type': 'application/json' } })
