@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store'
   import { clone } from '@lib/utils'
   import { posts, getGameStore } from '@lib/stores'
-  import { supabase, handleError, sendPost } from '@lib/database'
+  import { sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -92,14 +92,7 @@
   async function submitPost () {
     if (saving || textareaValue === '') { return }
     saving = true
-    const activeCharacter = myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })
     const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience
-    // reveal hidden character if posting publicly
-    if (activeCharacter && activeCharacter.hidden && audience === null) {
-      const { error } = await supabase.from('characters').update({ hidden: false }).eq('id', activeCharacter.id)
-      if (error) { return handleError(error) }
-      showSuccess('Postava odhalena')
-    }
     if (editing) {
       await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
     } else {
@@ -179,7 +172,7 @@
       </select>
       <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
         {#each otherCharacters as character}
-          <option value={character.id} class='character'>{character.name}{#if character.hidden}&nbsp;(skrytá){/if}</option>
+          <option value={character.id} class='character'>{character.name}</option>
         {/each}
       </select>
     </div>

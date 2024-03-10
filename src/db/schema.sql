@@ -94,7 +94,6 @@ create table characters (
   storyteller boolean not null default false,
   open boolean not null default false,
   accepted boolean not null default false,
-  hidden boolean not null default true,
   state public.character_state not null default 'alive'::character_state,
   constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
   constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
@@ -265,7 +264,7 @@ limit 10;
 
 create or replace function add_storyteller() returns trigger as $$
 begin
-  insert into characters (name, game, player, hidden, accepted, storyteller) values ('Vypravěč', new.id, new.owner, false, true, true);
+  insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);
   return new;
 end;
 $$ language plpgsql;
@@ -433,13 +432,11 @@ $$ language plpgsql;
 
 
 create or replace function get_characters()
-  returns json as $$
-declare
-  total_unread int := 0;
+returns json as $$
 begin
   return (
     with user_games as (
-      select distinct on (c.game) c.game, bool_or(c.storyteller) as is_storyteller
+      select c.game
       from characters c
       where c.player = auth.uid() and c.game is not null
       group by c.game
@@ -456,17 +453,6 @@ begin
             'player', c.player,
             'storyteller', c.storyteller,
             'game', c.game,
-            'unread', (
-              select sum(count)
-              from (
-                select count(*) as count
-                from messages m
-                join characters other_c on m.sender_character = other_c.id
-                where m.recipient_character = c.id and m.read = false
-                and (other_c.hidden = false or ug.is_storyteller)
-                group by other_c.id
-              ) as message_counts
-            ),
             'contacts', (
               select json_agg(
                 json_build_object(
@@ -475,29 +461,22 @@ begin
                   'portrait', other_c.portrait,
                   'player', other_c.player,
                   'storyteller', other_c.storyteller,
-                  'unread', (
+                  'unread', coalesce((
                     select count(*)
                     from messages m
                     where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false
-                  ),
+                      and m.sender_character <> c.id
+                  ), 0),
                   'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
                 ) order by other_c.name
               )
               from characters other_c
-              where other_c.game = c.game and other_c.id <> c.id
-                and (other_c.hidden = false or ug.is_storyteller)
+              where other_c.game = c.game and other_c.id <> c.id and other_c.player <> c.player
             )
-          ) order by (c.player = auth.uid()) desc, c.name
-        ) as characters,
-        sum((
-          select count(*)
-          from messages m
-          join characters other_c on m.sender_character = other_c.id
-          where m.recipient_character = c.id and m.read = false
-          and (other_c.hidden = false or ug.is_storyteller)
-        )) as unread_count
+          ) order by c.name
+        ) as characters
       from user_games ug
-      join characters c on c.game = ug.game
+      join characters c on c.game = ug.game and c.player = auth.uid()
       join games g on g.id = c.game
       group by g.id, g.name
     ),
@@ -507,21 +486,21 @@ begin
           'name', c.name,
           'id', c.id,
           'portrait', c.portrait,
-          'unread', (select count(*) from messages m where m.recipient_character = c.id and m.read = false)
+          'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)
         ) order by c.name
-      ) as characters,
-      sum((select count(*) from messages m where m.recipient_character = c.id and m.read = false)) as unread_count
+      ) as characters
       from characters c
       where c.player = auth.uid() and c.game is null
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
-      'unread_total', (select coalesce(sum(unread_count), 0) from all_characters) + (select coalesce(unread_count, 0) from stranded_characters)
+      'unread_total', (select sum((select coalesce(sum(coalesce(contact->>'unread', '0')::int), 0) from json_array_elements(characters->'contacts') as contact)) from all_characters) + (select coalesce(sum((character->>'unread')::int), 0) from json_array_elements((select characters from stranded_characters)) as character)
     )
   );
 end;
 $$ language plpgsql;
+
 
 
 create or replace function get_users()

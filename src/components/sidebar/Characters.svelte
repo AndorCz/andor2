@@ -19,21 +19,19 @@
   <ul class='characters'>
     {#if characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts.length}
       {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
-        {#if character.player !== user.id}
-          <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
-            {#if character.portrait}
-              {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-            {:else}
-              <span class='portrait gap'></span>
-            {/if}
-            <div class='name character'>
-              {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-              {character.name}
-            </div>
-            {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-            {#if character.active}<span class='status'></span>{/if}
-          </button>
-        {/if}
+        <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
+          {#if character.portrait}
+            {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+          {:else}
+            <span class='portrait gap'></span>
+          {/if}
+          <div class='name character'>
+            {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+            {character.name}
+          </div>
+          {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+          {#if character.active}<span class='status'></span>{/if}
+        </button>
       {/each}
     {:else}
       <div class='empty'>Hra nemá další postavy</div>
@@ -46,22 +44,20 @@
       <ul class='characters'>
         {#if characters.length}
           {#each characters as character, characterIndex}
-            {#if character.player === user.id}
-              <li class='mine'>
-                <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
-                  {#if character.portrait}
-                    {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-                  {:else}
-                    <span class='portrait gap'></span>
-                  {/if}
-                  <span class='name character'>
-                    {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-                    {character.name}
-                  </span>
-                  {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-                </button>
-              </li>
-            {/if}
+            <li class='mine'>
+              <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
+                {#if character.portrait}
+                  {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                {:else}
+                  <span class='portrait gap'></span>
+                {/if}
+                <span class='name character'>
+                  {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                  {character.name}
+                </span>
+                {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+              </button>
+            </li>
           {/each}
         {/if}
       </ul>

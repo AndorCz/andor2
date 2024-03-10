@@ -242,7 +242,6 @@ export const DetailsContent = Node.create({
       const contentDiv = document.createElement('div')
       const combinedAttributes = Object.assign({}, this.options.HTMLAttributes, HTMLAttributes, {
         'data-type': this.name
-        // hidden: 'hidden'
       })
 
       Object.entries(combinedAttributes).forEach(([key, value]) => {

@@ -37,7 +37,7 @@
       delete data.unread.gameCharacters
       setRead(user.id, 'game-characters-' + data.id)
 
-      const { data: myOpen, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, hidden, state, accepted').eq('player', user.id).is('game', null)
+      const { data: myOpen, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted').eq('player', user.id).is('game', null)
       if (error2) { return handleError(error2) }
       characters.myOpen = myOpen
     }
