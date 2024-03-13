@@ -19,6 +19,7 @@
   export let triggerSave = null
   export let onChange = null
   export let minHeight = 140
+  export let enterSend = false
 
   let editor
   let editorEl
@@ -46,9 +47,11 @@
     addKeyboardShortcuts () {
       return {
         Enter: () => {
-          if (!this.editor.isActive('code') && !event.shiftKey) { // trigger save when Shift is not pressed
-            if (!this.editor.isEmpty) { triggerSave() }
-            return true // prevents the default enter behavior
+          if (enterSend) {
+            if (!this.editor.isActive('code') && !event.shiftKey) { // trigger save when Shift is not pressed
+              if (!this.editor.isEmpty) { triggerSave() }
+              return true // prevents the default enter behavior
+            }
           }
           return false // allows the default behavior (new line) when Shift is pressed
         }

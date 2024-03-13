@@ -121,6 +121,9 @@
 </main>
 
 <style>
+  main {
+    padding-top: 40px;
+  }
   h2 {
     margin-top: 0px;
   }

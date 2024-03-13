@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
+  import { supabase, handleError } from '@lib/database'
   import { gameSystems, gameCategories } from '@lib/constants'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
 
   export let data = {}
@@ -13,6 +14,7 @@
   let originalName
   let originalCategory
   let originalOpenDiscussion
+  let originalAnnotation
 
   onMount(setOriginal)
 
@@ -21,11 +23,12 @@
     originalSystem = data.system
     originalCategory = data.category
     originalOpenDiscussion = data.open_discussion
+    originalAnnotation = data.annotation
   }
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, category: data.category, system: data.system, open_discussion: data.open_discussion }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -71,6 +74,12 @@
     <div class='row'>
       <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' />
       <button on:click={updateGame} disabled={saving || (originalName === data.name)} class='material'>check</button>
+    </div>
+
+    <h3>Anotace</h3>
+    <div class='row'>
+      <TextareaExpandable id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} />
+      <button on:click={updateGame} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 
     <h3>Kategorie</h3>

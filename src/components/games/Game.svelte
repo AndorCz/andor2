@@ -4,9 +4,10 @@
   import { supabase, handleError } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
+  import GameInfo from '@components/games/GameInfo.svelte'
   import GameThread from '@components/games/GameThread.svelte'
   import GameCharacters from '@components/games/GameCharacters.svelte'
-  import GameInfo from '@components/games/GameInfo.svelte'
+  import GameStoryteller from '@components/games/GameStoryteller.svelte'
 
   export let user = {}
   export let data = {}
@@ -73,17 +74,24 @@
     <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
       Postavy{#if data.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}
     </button>
+    {#if isStoryteller}
+      <button on:click={() => { $gameStore.activeTab = 'story' }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
+        Vypravěč
+      </button>
+    {/if}
   </nav>
 
   <div class='content'>
     {#if $gameStore.activeTab === 'info'}
-      <GameInfo {data} {user} {isGameOwner} />
+      <GameInfo {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'chat'}
       <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} {user} {isGameOwner} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} {isStoryteller} />
+    {:else if $gameStore.activeTab === 'story' && isStoryteller}
+      <GameStoryteller {data} {user} {isStoryteller} />
     {/if}
   </div>
 </main>
@@ -107,9 +115,6 @@
   main {
     position: relative;
   }
-    .content {
-      padding: 40px;
-    }
 
   .tabs button {
     position: relative;

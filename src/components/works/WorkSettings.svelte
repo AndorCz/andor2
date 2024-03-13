@@ -1,9 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { getImage } from '@lib/utils'
-  import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
-  import { showError, showSuccess } from '@lib/toasts'
+  import { showSuccess } from '@lib/toasts'
   import { workTags, workCategoriesText } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'

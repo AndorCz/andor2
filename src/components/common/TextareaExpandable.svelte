@@ -99,7 +99,7 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} />
   {:else}
     <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}

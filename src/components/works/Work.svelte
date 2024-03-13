@@ -2,10 +2,10 @@
   import { supabase, handleError } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
-  import { workTags } from '@lib/constants'
+  // import { workTags } from '@lib/constants'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
-  
+
   export let user = {}
   export let data = {}
 
@@ -37,9 +37,9 @@
     showSuccess('Uloženo')
   }
 
-  function getTags (value) {
-    return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
-  }
+  // function getTags (value) {
+  //   return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
+  // }
 
   $: bookmarkId = $bookmarks.works.find(b => b.work_id === data.id)?.id
 </script>

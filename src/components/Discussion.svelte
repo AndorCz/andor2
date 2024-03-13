@@ -149,7 +149,7 @@
 
 <style>
   h2 {
-    margin-top: 0px;
+    margin-top: 40px;
     margin-bottom: 0px;
   }
   .addPostWrapper {

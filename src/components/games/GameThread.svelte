@@ -200,6 +200,7 @@
   }
   */
   .toggleWrapper {
+    padding-top: 20px;
     display: flex;
     justify-content: space-between;
   }
