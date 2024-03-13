@@ -45,7 +45,7 @@
         identitySelect.value = $identityStore.activeChatIdentity
       }
     }
-    loadPosts()
+    if (showDiscussion) { loadPosts() }
   })
 
   async function loadPosts () {
