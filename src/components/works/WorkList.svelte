@@ -1,5 +1,6 @@
 <script>
   import { getHeaderUrl } from '@lib/database'
+  import { isFilledArray } from '@lib/utils'
   import { workTags, workCategoriesText } from '@lib/constants'
 
   export let user = {}
@@ -51,7 +52,7 @@
   </nav>
 {/if}
 
-{#if works?.length > 0}
+{#if isFilledArray(works)}
   {#if listView}
     <table class='list'>
       <tr>

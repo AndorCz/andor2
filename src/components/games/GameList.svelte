@@ -1,5 +1,6 @@
 <script>
   import { getHeaderUrl } from '@lib/database'
+  import { isFilledArray } from '@lib/utils'
   import { gameCategories, gameSystems } from '@lib/constants'
 
   export let user = {}
@@ -28,7 +29,7 @@
   </div>
 {/if}
 
-{#if games?.length > 0}
+{#if isFilledArray(games)}
   {#if listView}
     <table class='list'>
       <tr>

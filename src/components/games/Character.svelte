@@ -121,6 +121,7 @@
       display: flex;
       gap: 10px;
       height: 100%;
+      padding: 0px 5px;
     }
       .options button {
         padding: 10px;

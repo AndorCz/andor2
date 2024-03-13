@@ -53,7 +53,7 @@
     // get tab information
     activeUsers = users.filter(u => u.active).length
     unreadUsers = users.some(u => u.unread)
-    unreadCharacters = characters.unread_total > 0
+    unreadCharacters = characters.unreadTotal > 0
     console.log('sidebar data', data)
   }
 
@@ -100,7 +100,7 @@
             {:else if $userStore.activePanel === 'people'}
               <People {users} {openConversation} />
             {:else if $userStore.activePanel === 'characters'}
-              <Characters {user} {characters} {openConversation} />
+              <Characters {characters} {openConversation} />
             {/if}
           </div>
         {/await}

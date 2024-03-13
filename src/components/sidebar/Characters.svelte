@@ -1,7 +1,7 @@
 <script>
   import { getPortrait } from '@lib/database'
+  import { isFilledArray } from '@lib/utils'
 
-  export let user = {}
   export let characters = { allGrouped: [], myStranded: [] }
   export let openConversation
 
@@ -17,7 +17,7 @@
     <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
   </h4>
   <ul class='characters'>
-    {#if characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts.length}
+    {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
       {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
         <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
           {#if character.portrait}
@@ -38,11 +38,11 @@
     {/if}
   </ul>
 {:else}
-  {#if characters.allGrouped.length}
+  {#if isFilledArray(characters.allGrouped)}
     {#each characters.allGrouped as { id, name, characters }, gameIndex}
       <a href={'/game/' + id}><h4>{name}</h4></a>
       <ul class='characters'>
-        {#if characters.length}
+        {#if isFilledArray(characters)}
           {#each characters as character, characterIndex}
             <li class='mine'>
               <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
@@ -68,7 +68,7 @@
 
   <h4>Bez hry</h4>
 
-  {#if characters.myStranded.length}
+  {#if isFilledArray(characters.myStranded)}
     <ul class='characters'>
       {#each characters.myStranded as character}
         <li class='mine'>
@@ -91,6 +91,8 @@
     <div class='empty'>Žádné postavy</div>
   {/if}
 {/if}
+
+<a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
 
 <style>
   .empty {
@@ -176,5 +178,10 @@
         }
       .edit {
         font-size: 20px;
+      }
+      .newChar {
+        margin: 10px auto;
+        display: block;
+        width: fit-content;
       }
 </style>

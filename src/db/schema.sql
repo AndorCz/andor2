@@ -453,30 +453,38 @@ begin
             'player', c.player,
             'storyteller', c.storyteller,
             'game', c.game,
-            'contacts', (
-              select json_agg(
-                json_build_object(
-                  'name', other_c.name,
-                  'id', other_c.id,
-                  'portrait', other_c.portrait,
-                  'player', other_c.player,
-                  'storyteller', other_c.storyteller,
-                  'unread', coalesce((
-                    select count(*)
-                    from messages m
-                    where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false
-                      and m.sender_character <> c.id
-                  ), 0),
-                  'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
-                ) order by other_c.name
-              )
-              from characters other_c
-              where other_c.game = c.game and other_c.id <> c.id and other_c.player <> c.player
-            )
+            'unread', (select coalesce(sum((contact->>'unread')::int), 0) 
+                       from json_array_elements(c.contacts) as contact),
+            'contacts', c.contacts
           ) order by c.name
         ) as characters
       from user_games ug
-      join characters c on c.game = ug.game and c.player = auth.uid()
+      join (
+        select 
+          c.*,
+          (
+            select json_agg(
+              json_build_object(
+                'name', other_c.name,
+                'id', other_c.id,
+                'portrait', other_c.portrait,
+                'player', other_c.player,
+                'storyteller', other_c.storyteller,
+                'unread', coalesce((
+                  select count(*)
+                  from messages m
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false
+                    and m.sender_character <> c.id
+                ), 0),
+                'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
+              ) order by other_c.name
+            )
+            from characters other_c
+            where other_c.game = c.game and other_c.id <> c.id and other_c.player <> c.player
+          ) as contacts
+        from characters c
+        where c.player = auth.uid()
+      ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
     ),
@@ -495,7 +503,16 @@ begin
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
-      'unread_total', (select sum((select coalesce(sum(coalesce(contact->>'unread', '0')::int), 0) from json_array_elements(characters->'contacts') as contact)) from all_characters) + (select coalesce(sum((character->>'unread')::int), 0) from json_array_elements((select characters from stranded_characters)) as character)
+      'unreadTotal', (
+        select sum((character->>'unread')::int)
+        from (
+          select json_array_elements(characters) as character
+          from all_characters
+          union all
+          select json_array_elements(coalesce(characters, '[]'::json)) as character
+          from stranded_characters
+        ) as all_unreads
+      )
     )
   );
 end;

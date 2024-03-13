@@ -32,13 +32,15 @@
       character.storyteller = data.get('storyteller') || false
       character.player = user.id
       if (character.storyteller) { character.accepted = true }
-      if (game) { character.game = game }
+
+      if (game) {
+        character.game = game
+        const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game)
+        if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
+      }
 
       const { data: characterData, error: error } = await supabase.from('characters').upsert(character).select().single()
       if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-
-      const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game)
-      if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
 
       // create a File from base64, upload it
       const newPortrait = data.get('newPortrait')
@@ -49,7 +51,12 @@
         if (error) { throw new Error(error)}
       }
 
-      return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla upravena'))
+      const confirmationText = id ? 'Postava byla upravena' : 'Postava byla vytvořena'
+      if (game) {
+        return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      } else {
+        return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      }
     } catch (error) {
       return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`)
     }

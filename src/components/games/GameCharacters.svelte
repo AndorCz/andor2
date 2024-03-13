@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { supabase, handleError, setRead } from '@lib/database'
+  import { isFilledArray } from '@lib/utils'
   import Character from '@components/games/Character.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 
@@ -53,7 +54,7 @@
 <main>
   <h2>Vypravěči</h2>
   <table class='characters'>
-    {#if characters.storytellers.length > 0}
+    {#if isFilledArray(characters.storytellers)}
       <CharacterHeader {isGameOwner} />
       {#each characters.storytellers as character}
         <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
@@ -65,7 +66,7 @@
 
   <h2>Ve hře</h2>
   <table class='characters'>
-    {#if characters.playing.length > 0}
+    {#if isFilledArray(characters.playing)}
       <CharacterHeader {isGameOwner} />
       {#each characters.playing as character}
         <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
@@ -76,10 +77,10 @@
   </table>
   <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
 
-  {#if isGameOwner || characters.waiting.length > 0}
+  {#if isGameOwner || isFilledArray(characters.waiting)}
     <h2>Hlásí se</h2>
     <table class='characters'>
-      {#if characters.waiting.length > 0}
+      {#if isFilledArray(characters.waiting)}
         <CharacterHeader {isGameOwner} />
         {#each characters.waiting as character}
           <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
@@ -92,7 +93,7 @@
 
   <h2>Volné postavy k převzetí</h2>
   <table class='characters'>
-    {#if characters.open.length > 0}
+    {#if isFilledArray(characters.open)}
       <CharacterHeader {isGameOwner} />
       {#each characters.open as character}
         <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />

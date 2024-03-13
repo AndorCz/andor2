@@ -60,7 +60,7 @@
       <div class='inputs'>
         <div class='portrait'>
           <PortraitInput identity={character} {newPortraitBase64} table='characters' />
-          <span>
+          <span class='flex'>
             <ButtonLoading type='button' label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
             <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>
           </span>
