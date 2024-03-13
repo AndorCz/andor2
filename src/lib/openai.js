@@ -119,7 +119,7 @@ export async function generateStory (prompt, system) {
   }
 }
 
-export async function generatePost (thread, secrets, system) {
+export async function generatePost (thread, prompt, system) {
   try {
     /*
       This function should start the "run" of the openAI thread, get the input from the AI and return it into the textarea. AI post will then be deleted.

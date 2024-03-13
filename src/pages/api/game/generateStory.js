@@ -10,7 +10,7 @@ export const POST = async ({ request, redirect, locals }) => {
     const story = await generateStory(data.annotation, data.system)
 
     // save to db
-    const { error } = await locals.supabase.from('games').update({ secrets: story }).eq('id', data.game)
+    const { error } = await locals.supabase.from('games').update({ prompt: story }).eq('id', data.game)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 
     return new Response(JSON.stringify({ story }), { status: 200 })

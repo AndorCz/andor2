@@ -91,7 +91,7 @@
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}
-      <GameStoryteller {data} {user} {isStoryteller} />
+      <GameStoryteller {data} {isStoryteller} />
     {/if}
   </div>
 </main>
