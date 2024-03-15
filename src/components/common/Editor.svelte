@@ -1,7 +1,11 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { Editor, Extension } from '@tiptap/core'
+  import { supabase, handleError, getImage } from '@lib/database'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
+  import { resizeImage } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
+  import { Reply } from '@lib/editor/reply'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
@@ -11,9 +15,8 @@
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import Colors from '@components/common/Colors.svelte'
-  import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { Reply } from '@lib/editor/reply'
 
+  export let userId
   export let content = ''
   export let onKeyUp = null
   export let triggerSave = null
@@ -63,6 +66,29 @@
     const config = {
       element: editorEl,
       content,
+      // ProseMirror events
+      editorProps: {
+        handleDrop: async function (view, event, slice, moved) { // handle dropping of images
+          if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+            const data = await uploadImage(event.dataTransfer.files[0])
+            const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
+            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts') })
+            const transaction = view.state.tr.insert(coordinates.pos, node)
+            return view.dispatch(transaction)
+          }
+          return false
+        },
+        handlePaste: async function (view, event, slice) { // handle pasting of images
+          if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
+            const data = await uploadImage(event.clipboardData.files[0])
+            const { from } = view.state.selection
+            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts') })
+            const transaction = view.state.tr.insert(from, node)
+            return view.dispatch(transaction)
+          }
+          return false
+        }
+      },
       extensions: [
         StarterKit,
         EnterKeyHandler,
@@ -131,6 +157,7 @@
     }
   }
 
+  /*
   function addImage () {
     const url = window.prompt('Veřejná cesta k obrázku:')
     if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
@@ -139,9 +166,33 @@
       return window.alert('Obrázek musí být veřejně dostupný')
     }
   }
+  */
+
+  async function addImage () {
+    const fileInputEl = document.getElementById('addImage')
+    const file = fileInputEl.files[0]
+    if (file) {
+      const data = await uploadImage(file)
+      editor.chain().focus().setImage({ src: getImage(data.path, 'posts') }).run()
+    }
+    fileInputEl.value = ''
+  }
 
   export function addReply (postId, name) {
     editor.chain().focus().addReply({ postId, name }).run()
+  }
+
+  async function uploadImage (file) {
+    const img = document.createElement('img')
+    img.src = URL.createObjectURL(file)
+    await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
+    if (img.width > 2000 || img.height > 2000) {
+      const resizedBlob = await resizeImage(img, 2000, 2000, 'image/jpeg')
+      file = new File([resizedBlob], file.name, { type: 'image/jpeg' }) // blob to file
+    }
+    const { data, error } = await supabase.storage.from('posts').upload(`${userId}/${new Date().getTime()}.png`, file)
+    if (error) { handleError(error) }
+    return data
   }
 </script>
 
@@ -178,7 +229,8 @@
   <div class='editor' bind:this={editorEl}></div>
   {#if showToolbelt}
     <div class='toolbelt'>
-      <button type='button' on:click={addImage} class='material' title='Obrázek'>image</button>
+      <label for='addImage' class='material button' title='Obrázek'>image</label>
+      <input on:change={addImage} accept='image/*' type='file' id='addImage'>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
     </div>
@@ -192,7 +244,9 @@
   .wrapper, .editor {
     height: 100%;
   }
-
+  label {
+    padding: 5px;
+  }
   .bubble {
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;
@@ -226,6 +280,9 @@
     bottom: 10px;
     display: flex;
     gap: 10px;
+  }
+  #addImage {
+    display: none;
   }
 
   @media (max-width: 860px) {

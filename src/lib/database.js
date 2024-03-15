@@ -45,17 +45,19 @@ export async function uploadPortrait (identityId, table, file) {
   if (error2) { return Promise.reject(error2) }
 }
 
-export function getHeaderUrl (type, id) {
-  const { data, error } = supabase.storage.from('headers').getPublicUrl(`${type}-${id}.jpg`)
+export function getImage (path, storage) {
+  const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
   if (error) { handleError(error) }
   return data.publicUrl
 }
 
+export function getHeaderUrl (type, id) {
+  return getImage(`${type}-${id}.jpg`, 'headers')
+}
+
 export async function getPortrait (identityId, hash) {
   const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
-  const { data, error } = await supabase.storage.from('portraits').getPublicUrl(path)
-  if (error) { return handleError(error) }
-  return data.publicUrl
+  return getImage(path, 'portraits')
 }
 
 export function getHash () {

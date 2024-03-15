@@ -5,8 +5,9 @@
   import Loading from '@components/common/Loading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let value = ''
+  export let userId
   export let onSave
+  export let value = ''
   export let loading = false
   export let canEdit = false
   export let allowHtml = false
@@ -43,7 +44,7 @@
     <Loading />
   {/if}
   {#if isEditing}
-    <TextareaExpandable bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
+    <TextareaExpandable {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
   {:else}
     <content class='editableLong'><Render html={marked(value || '')} /></content>
     {#if canEdit}

@@ -53,7 +53,7 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled</label></div>
-      <div class='inputs'><TextareaExpandable id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
+      <div class='inputs'><TextareaExpandable {userId} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charIcon'>Portrét</label></div>
@@ -69,7 +69,7 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
-      <div class='inputs'><TextareaExpandable id='charBio' name='charBio' value={character.bio} /></div>
+      <div class='inputs'><TextareaExpandable {userId} id='charBio' name='charBio' value={character.bio} /></div>
     </div>
     {#if isGameOwner}
       <div class='row'>

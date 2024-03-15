@@ -75,7 +75,7 @@
 
     <h3>Anotace</h3>
     <div class='row'>
-      <TextareaExpandable id='workAnnotation' name='workAnnotation' bind:value={data.annotation} />
+      <TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} />
       <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 

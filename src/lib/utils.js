@@ -39,6 +39,17 @@ export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/jpeg
   })
 }
 
+export function resizeImage (img, maxWidth, maxHeight, mimeType = 'image/jpeg') {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ratio = Math.min(maxWidth / img.width, maxHeight / img.height)
+    canvas.width = img.width * ratio
+    canvas.height = img.height * ratio
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Conversion failed')), mimeType)
+  })
+}
+
 export function previewCanvas (canvas) {
   document.body.appendChild(canvas)
 }

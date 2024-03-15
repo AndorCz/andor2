@@ -55,7 +55,7 @@
     {/if}
   </div>
 
-  <EditableLong bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  <EditableLong userId={user.id} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
     <div class='author'>Autor: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a></div>

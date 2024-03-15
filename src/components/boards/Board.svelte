@@ -123,13 +123,13 @@
 </div>
 
 {#if !$boardStore.hideHeader}
-  <EditableLong bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
+  <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
 {/if}
 
 {#if user.id}
   <h3 class='text editorHeadline'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
   <div class='addPostWrapper'>
-    <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+    <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
   </div>
 {/if}
 

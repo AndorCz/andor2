@@ -3,6 +3,7 @@
   import { showError, showSuccess } from '@lib/toasts'
   import EditableLong from '@components/common/EditableLong.svelte'
 
+  export let user
   export let data
   export let isStoryteller
 
@@ -43,10 +44,10 @@
   Tuto stránku vidí pouze vypravěči.
 
   <h2>Poznámky</h2>
-  <EditableLong bind:value={data.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
+  <EditableLong userId={user.id} bind:value={data.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>Podklady pro AI</h2>
-  <EditableLong bind:value={data.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
+  <EditableLong userId={user.id} bind:value={data.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
   <br>
   <button on:click={generateStory} disabled={generatingStory}>Vygenerovat podklady AI</button>
   <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>

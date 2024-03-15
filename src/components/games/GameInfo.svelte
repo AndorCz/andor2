@@ -26,7 +26,7 @@
 
 <br><br>
 
-<EditableLong bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
+<EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
 
 <br><br>
 Správce hry: {data.owner.name}

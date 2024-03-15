@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Editor from '@components/common/Editor.svelte'
 
+  export let userId
   export let id = null
   export let value = ''
   export let onSave = null
@@ -99,7 +100,7 @@
 
 <div class='wrapper'>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} />
   {:else}
     <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
   {/if}

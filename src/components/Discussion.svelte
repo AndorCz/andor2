@@ -115,7 +115,7 @@
         {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
       </div>
       <div class='addPostWrapper'>
-        <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
         {#if useIdentities}
           <div class='senderWrapper'>
             <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
@@ -128,7 +128,7 @@
       </div>
     {:else}
       <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-      <TextareaExpandable allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+      <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
       {#if useIdentities}
         <h3 class='sender'>Identita</h3>
         <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>

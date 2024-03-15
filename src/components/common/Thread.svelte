@@ -12,12 +12,12 @@
   export let canDeleteAll = false
   export let canModerate = false
   export let myIdentities = []
-  export let allowReactions
-  export let onDelete
-  export let onEdit
-  export let onModerate
-  export let onReply
-  export let onPaging
+  export let allowReactions = false
+  export let onDelete = null
+  export let onEdit = null
+  export let onModerate = null
+  export let onReply = null
+  export let onPaging = null
   export let page = 0
   export let pages
   export let iconSize = 140

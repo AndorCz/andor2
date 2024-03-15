@@ -34,13 +34,13 @@
 
     <div class='row'>
       <div class='labels'><label for='workAnnotation'>Anotace</label></div>
-      <div class='inputs'><TextareaExpandable id='workAnnotation' name='workAnnotation' /></div>
+      <div class='inputs'><TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' /></div>
     </div>
 
     <div class='row'>
       <div class='labels'>Obsah</div>
       <div class='inputs'>
-        <TextareaExpandable bind:this={editorRef} allowHtml minHeight={500} />
+        <TextareaExpandable userId={user.id} bind:this={editorRef} allowHtml minHeight={500} />
         <input type='hidden' name='workContent' bind:this={contentInputRef} />
       </div>
     </div>
