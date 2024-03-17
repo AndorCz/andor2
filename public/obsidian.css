@@ -487,6 +487,7 @@ select {
 }
 .post .content img {
   max-width: 100%;
+  object-fit: contain;
   cursor: pointer;
 }
 .post .content a {
