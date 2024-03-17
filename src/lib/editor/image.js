@@ -18,7 +18,7 @@ export const CustomImage = Image.extend({
     const alignmentStyle = node.attrs.alignment !== 'none' ? `float: ${node.attrs.alignment};` : ''
     const sizeStyle = `width: ${node.attrs.width * node.attrs.size / 100}px; height: ${node.attrs.height * node.attrs.size / 100}px;`
     const style = `${alignmentStyle} ${sizeStyle}`
-    return ['img', { ...HTMLAttributes, style }, 0]
+    return ['img', { ...HTMLAttributes, style }]
   },
 
   addCommands () {
@@ -26,6 +26,12 @@ export const CustomImage = Image.extend({
       ...this.parent(),
       setImageAlignment: (alignment) => ({ commands }) => {
         return commands.updateAttributes('customImage', { alignment })
+      },
+      resetStyle: () => ({ commands }) => {
+        return commands.updateAttributes('customImage', {
+          alignment: 'none',
+          size: 100
+        })
       },
       increaseImageSize: () => ({ state, commands }) => {
         const { selection } = state

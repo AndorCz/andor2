@@ -73,23 +73,27 @@
       content,
       // ProseMirror events
       editorProps: {
-        handleDrop: async function (view, event, slice, moved) { // handle dropping of images
+        handleDrop: function (view, event, slice, moved) { // handle dropping of images
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
-            const { data, img } = await uploadImage(event.dataTransfer.files[0])
-            const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
-            const transaction = view.state.tr.insert(coordinates.pos, node)
-            return view.dispatch(transaction)
+            uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
+              const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
+              const node = view.state.schema.nodes.customImage.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
+              const transaction = view.state.tr.insert(coordinates.pos, node)
+              view.dispatch(transaction)
+            })
+            return true
           }
           return false
         },
-        handlePaste: async function (view, event, slice) { // handle pasting of images
+        handlePaste: function (view, event, slice) { // handle pasting of images
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
-            const { data, img } = await uploadImage(event.clipboardData.files[0])
-            const { from } = view.state.selection
-            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
-            const transaction = view.state.tr.insert(from, node)
-            return view.dispatch(transaction)
+            uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
+              const { from } = view.state.selection
+              const node = view.state.schema.nodes.customImage.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
+              const transaction = view.state.tr.insert(from, node)
+              view.dispatch(transaction)
+            })
+            return true
           }
           return false
         }
@@ -256,11 +260,12 @@
   <div class='bubble' bind:this={bubbleElImage}>
     {#if editor}
       <button type='button' on:click={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('customImage', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('none').run()} class:active={editor.isActive('customImage', { alignment: 'none' })} title='Zrušit obtékání' class='material'>format_clear</button>
       <button type='button' on:click={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('customImage', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
       <span class='sep'></span>
       <button type='button' on:click={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('customImage').size <= 20} title='Zmenšit' class='material'>photo_size_select_small</button>
       <button type='button' on:click={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('customImage').size >= 200} title='Zvětšit' class='material'>photo_size_select_large</button>
+      <span class='sep'></span>
+      <button type='button' on:click={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
