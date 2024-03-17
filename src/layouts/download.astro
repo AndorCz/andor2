@@ -1,15 +1,11 @@
 ---
-import { ViewTransitions } from 'astro:transitions'
-import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
-import Sidebar from '@components/sidebar/Sidebar.svelte'
-import Store from '@components/common/Store.svelte'
-import 'tippy.js/dist/tippy.css'
 
-const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user, bookmarks } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
+
+const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res.text())
 ---
 
 <html lang='cs'>
@@ -21,29 +17,21 @@ const { title, headerStatic, headerStorage } = Astro.props
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap' rel='stylesheet' onload="this.onload=null; this.rel='stylesheet'">
-    <link rel='icon' href='/favicon.png' type='image/png' />
-    <link rel='stylesheet' href={'/obsidian.css?v=' + version}>
+    <link rel='icon' href='https://www.andor2.cz/favicon.png' type='image/png' />
 
-    <ViewTransitions />
-    <title>Andor2.cz ― {title}</title>
+    <style type='text/css' set:html={`${obsidian}`}></style>
+
+    <title>Andor2.cz ― {title} - záloha hry</title>
   </head>
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} client:only />
+        <Header {pathname} {headerStatic} {headerStorage} showMenu={false} />
         <div id='content'>
           <slot />
         </div>
-        <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
       </main>
-      <Sidebar {user} bookmarkData={bookmarks} client:only />
     </div>
-    <script>
-      import { lookForToast, showSuccess, showError } from '@lib/toasts'
-      lookForToast()
-      window.showSuccess = showSuccess
-      window.showError = showError
-    </script>
   </body>
 </html>
 

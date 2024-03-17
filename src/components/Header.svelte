@@ -7,6 +7,7 @@
   export let pathname
   export let headerStatic
   export let headerStorage
+  export let showMenu = true
 
   let headerUrl = headerStatic
 
@@ -24,13 +25,15 @@
 <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
   <!-- svelte-ignore a11y-missing-content -->
   <a href='/' id='logo'></a>
-  <nav class='tabs'>
-    <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
-    <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
-    <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
-    <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
-    <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
-  </nav>
+  {#if showMenu}
+    <nav class='tabs'>
+      <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
+      <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
+      <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
+      <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
+      <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
+    </nav>
+  {/if}
 </header>
 
 <Lightbox />

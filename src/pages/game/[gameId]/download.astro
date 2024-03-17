@@ -1,0 +1,22 @@
+---
+	import Download from '@layouts/download.astro'
+  import GameDownload from '@components/games/GameDownload.svelte'
+
+  const { supabase, user } = Astro.locals
+  const { gameId } = Astro.params
+
+  const { data: gameData, error } = await supabase.from('games').select('id, name, category, annotation, info, recruitment, prompt, notes, owner:profiles(id, name), discussion_thread, open_discussion, open_info, game_thread, system, openai_thread, openai_storyteller, custom_header').eq('id', gameId).single()
+  if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+
+  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted').eq('game', gameId)
+  if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
+  if (characterData) { gameData.characters = characterData }
+
+  const { data: postData, error: error3 } = await supabase.from('posts_owner').select('*').eq('thread', gameData.game_thread).order('created_at', { ascending: false })
+  if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
+  gameData.posts = postData
+---
+
+<Download title={gameData?.name} headerStorage={gameData?.custom_header ? `game-${gameData.id}.jpg?hash=${gameData.custom_header}` : null}>
+  <GameDownload data={gameData} {user} />
+</Download>

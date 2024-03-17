@@ -19,7 +19,7 @@
   export let onReply = null
   export let onPaging = null
   export let page = 0
-  export let pages
+  export let pages = null
   export let iconSize = 140
 
   let threadEl
@@ -79,11 +79,13 @@
         <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
       {/if}
     {/each}
-    <div class='pagination'>
-      {#each { length: pages } as _, i}
-        <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
-      {/each}
-    </div>
+    {#if pages}
+      <div class='pagination'>
+        {#each { length: pages } as _, i}
+          <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+        {/each}
+      </div>
+    {/if}
   {:else}
     <center>Žádné příspěvky</center>
   {/if}

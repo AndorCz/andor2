@@ -56,6 +56,10 @@
   function showGame () {
     window.location.href = `/game/${data.id}`
   }
+
+  function exportGame () {
+    window.location.href = '/api/game/download?game=' + data.id
+  }
 </script>
 
 <main>
@@ -122,6 +126,11 @@
       <button on:click={updateGame} disabled={saving || (originalOpenInfo === data.open_info)} class='material'>check</button>
     </div>
 
+    <h3>Záloha do souboru</h3>
+    <button class='export' on:click={exportGame}>
+      <span class='material'>download</span><span>Stáhnout zálohu</span>
+    </button>
+
     <h3>Smazání hry</h3>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
@@ -161,7 +170,7 @@
       width: 100%;
       max-width: 400px;
     }
-  .delete {
+  .delete, .export {
     display: flex;
     gap: 10px;
   }
