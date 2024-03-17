@@ -2,7 +2,9 @@
   import { onMount } from 'svelte'
   import { supabase, handleError, setRead } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
+  import { showSuccess } from '@lib/toasts'
   import Character from '@components/games/Character.svelte'
+  import EditableLong from '@components/common/EditableLong.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
 
   export let user = {}
@@ -44,6 +46,14 @@
     }
   })
 
+  async function updateRecruitment () {
+    const newData = { recruitment: data.recruitment }
+    newData.characters_changed_at = new Date()
+    const { error } = await supabase.from('games').update(newData).eq('id', data.id)
+    if (error) { return handleError(error) }
+    showSuccess('Uloženo')
+  }
+
   async function signExisting () {
     const { error } = await supabase.from('characters').update({ game: data.id, accepted: false }).eq('id', myOpenSelected)
     if (error) { return handleError(error) }
@@ -77,6 +87,11 @@
   </table>
   <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
 
+  <hr>
+
+  <h1>Nábor</h1>
+  <EditableLong userId={user.id} bind:value={data.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
+  <br>
   {#if isGameOwner || isFilledArray(characters.waiting)}
     <h2>Hlásí se</h2>
     <table class='characters'>
@@ -123,6 +138,12 @@
 <style>
   main {
     padding-top: 40px;
+  }
+  hr {
+    height: 10px;
+    background-color: var(--background);
+    border: none;
+    margin: 60px -60px;
   }
   h2 {
     margin-top: 0px;

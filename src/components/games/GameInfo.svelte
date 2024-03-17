@@ -25,7 +25,11 @@
 </script>
 
 <main>
-  <EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
+  {#if data.open_info}
+    <EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
+  {:else}
+    <p>Informace o hře nejsou veřejné</p>
+  {/if}
   <br><br>
   Správce hry: {data.owner.name}
 </main>

@@ -14,6 +14,7 @@
   let originalName
   let originalCategory
   let originalOpenDiscussion
+  let originalOpenInfo
   let originalAnnotation
 
   onMount(setOriginal)
@@ -24,11 +25,12 @@
     originalCategory = data.category
     originalOpenDiscussion = data.open_discussion
     originalAnnotation = data.annotation
+    originalOpenInfo = data.open_info
   }
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -104,12 +106,20 @@
 
     <h3>Mód diskuze</h3>
     <div class='row'>
-      <!--<input type='text' id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion} />-->
       <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion}>
         <option value={false}>Soukromá</option>
         <option value={true}>Veřejná</option>
       </select>
       <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === data.open_discussion)} class='material'>check</button>
+    </div>
+
+    <h3>Mód info stránky</h3>
+    <div class='row'>
+      <select id='gameOpenInfo' name='gameOpenInfo' bind:value={data.open_info}>
+        <option value={true}>Veřejná</option>
+        <option value={false}>Soukromá</option>
+      </select>
+      <button on:click={updateGame} disabled={saving || (originalOpenInfo === data.open_info)} class='material'>check</button>
     </div>
 
     <h3>Smazání hry</h3>
