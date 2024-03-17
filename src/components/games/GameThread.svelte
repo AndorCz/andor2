@@ -139,47 +139,49 @@
   */
 </script>
 
-{#if $gameStore.activeGameCharacterId}
-  <div class='toggleWrapper tabs tertiary'>
-    {#if showDiceBox}
-      <button on:click={() => { showDiceBox = false }} class='diceToggle tab'>Psát příspěvek</button>
-      <h3>Házet kostky</h3>
-    {:else}
-      <h3>{#if editing}Upravit příspěvek{:else}Psát příspěvek{/if}</h3>
-      <button on:click={() => { showDiceBox = true }} class='diceToggle tab'>Házet kostky</button>
-    {/if}
-    <!--
-    {#if isGameOwner}
-      <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
-    {/if}
-    -->
-  </div>
-  <div class='addPostWrapper'>
-    {#if showDiceBox}
-      <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
-    {:else}
-      <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-    {/if}
-    <div class='headlineWrapper'>
-      <h3>Jako</h3>
-      <h3>Komu</h3>
+<main>
+  {#if $gameStore.activeGameCharacterId}
+    <div class='toggleWrapper tabs tertiary'>
+      {#if showDiceBox}
+        <button on:click={() => { showDiceBox = false }} class='diceToggle tab'>Psát příspěvek</button>
+        <h3>Házet kostky</h3>
+      {:else}
+        <h3>{#if editing}Upravit příspěvek{:else}Psát příspěvek{/if}</h3>
+        <button on:click={() => { showDiceBox = true }} class='diceToggle tab'>Házet kostky</button>
+      {/if}
+      <!--
+      {#if isGameOwner}
+        <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
+      {/if}
+      -->
     </div>
-    <div class='selectWrapper'>
-      <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
-        {#each myCharacters as character}
-          <option value={character.id} class='character'>{character.name}</option>
-        {/each}
-      </select>
-      <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
-        {#each otherCharacters as character}
-          <option value={character.id} class='character'>{character.name}</option>
-        {/each}
-      </select>
+    <div class='addPostWrapper'>
+      {#if showDiceBox}
+        <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
+      {:else}
+        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+      {/if}
+      <div class='headlineWrapper'>
+        <h3>Jako</h3>
+        <h3>Komu</h3>
+      </div>
+      <div class='selectWrapper'>
+        <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
+          {#each myCharacters as character}
+            <option value={character.id} class='character'>{character.name}</option>
+          {/each}
+        </select>
+        <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
+          {#each otherCharacters as character}
+            <option value={character.id} class='character'>{character.name}</option>
+          {/each}
+        </select>
+      </div>
     </div>
-  </div>
-{:else}
-  <center>Nemáš ve hře žádnou postavu</center>
-{/if}
+  {:else}
+    <center>Nemáš ve hře žádnou postavu</center>
+  {/if}
+</main>
 
 {#if filterActive}
   <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
@@ -191,6 +193,9 @@
 {/key}
 
 <style>
+  main {
+    padding-top: 40px;
+  }
   .addPostWrapper {
     width: 100%;
   }

@@ -24,9 +24,14 @@
   }
 </script>
 
-<br><br>
+<main>
+  <EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
+  <br><br>
+  Správce hry: {data.owner.name}
+</main>
 
-<EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
-
-<br><br>
-Správce hry: {data.owner.name}
+<style>
+  main {
+    padding-top: 40px;
+  }
+</style>

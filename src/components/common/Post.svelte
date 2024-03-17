@@ -83,6 +83,7 @@
       {#if user && allowReactions}
         <Reactions {user} {postStore} />
       {/if}
+      <div class='clear'></div>
     </div>
   </div>
 </div>
@@ -192,6 +193,9 @@
           .time:hover, .delete:hover, .edit:hover, .moderate:hover, .reply:hover {
             opacity: 1;
           }
+    .clear {
+      clear: both;
+    }
 
   @media (max-width: 860px) {
     .post {

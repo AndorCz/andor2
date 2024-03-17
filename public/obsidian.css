@@ -564,6 +564,10 @@ select {
     font-style: normal;
     font-variation-settings: 'wght' 600;
   }
+  img.ProseMirror-selectednode {
+    outline: 2px var(--maximum) solid;
+    border-radius: 5px;
+  }
 
 /* Svelte Easy Crop */
 

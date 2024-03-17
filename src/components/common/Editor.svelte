@@ -3,6 +3,7 @@
   import { Editor, Extension } from '@tiptap/core'
   import { supabase, handleError, getImage } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
+  import { CustomImage } from '@lib/editor/image'
   import { resizeImage } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
@@ -27,6 +28,7 @@
   let editor
   let editorEl
   let bubbleEl
+  let bubbleElImage
   let currentStyle
   let currentAlign
   let showToolbelt = false
@@ -62,6 +64,9 @@
     }
   })
 
+  const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
+  const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
+
   onMount(() => {
     const config = {
       element: editorEl,
@@ -70,9 +75,9 @@
       editorProps: {
         handleDrop: async function (view, event, slice, moved) { // handle dropping of images
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
-            const data = await uploadImage(event.dataTransfer.files[0])
+            const { data, img } = await uploadImage(event.dataTransfer.files[0])
             const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts') })
+            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
             const transaction = view.state.tr.insert(coordinates.pos, node)
             return view.dispatch(transaction)
           }
@@ -80,9 +85,9 @@
         },
         handlePaste: async function (view, event, slice) { // handle pasting of images
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
-            const data = await uploadImage(event.clipboardData.files[0])
+            const { data, img } = await uploadImage(event.clipboardData.files[0])
             const { from } = view.state.selection
-            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts') })
+            const node = view.state.schema.nodes.image.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
             const transaction = view.state.tr.insert(from, node)
             return view.dispatch(transaction)
           }
@@ -99,13 +104,33 @@
         DetailsSummary,
         DetailsContent,
         Image.configure(),
+        CustomImage,
         Link.configure({ openOnClick: false }),
         Color.configure({ types: ['textStyle'] }),
-        BubbleMenu.configure({
+        BubbleMenuText.configure({
+          pluginKey: 'bubbleMain',
           element: bubbleEl,
           tippyOptions: {
             maxWidth: 'none',
             onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+          },
+          shouldShow: ({ editor, view }) => { // don't show for images
+            const { selection } = editor.state
+            const isImage = selection.node && selection.node.type.name === 'customImage'
+            return !selection.empty && !isImage
+          }
+        }),
+        BubbleMenuImage.configure({
+          pluginKey: 'bubbleImage',
+          element: bubbleElImage,
+          tippyOptions: {
+            maxWidth: 'none',
+            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+          },
+          shouldShow: ({ editor, view }) => { // only show for images
+            const { selection } = editor.state
+            const isImage = selection.node && selection.node.type.name === 'customImage'
+            return isImage
           }
         }),
         TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
@@ -172,8 +197,8 @@
     const fileInputEl = document.getElementById('addImage')
     const file = fileInputEl.files[0]
     if (file) {
-      const data = await uploadImage(file)
-      editor.chain().focus().setImage({ src: getImage(data.path, 'posts') }).run()
+      const { data, img } = await uploadImage(file)
+      editor.chain().focus().setImage({ src: getImage(data.path, 'posts'), width: img.width, height: img.height }).run()
     }
     fileInputEl.value = ''
   }
@@ -192,7 +217,7 @@
     }
     const { data, error } = await supabase.storage.from('posts').upload(`${userId}/${new Date().getTime()}.png`, file)
     if (error) { handleError(error) }
-    return data
+    return { data, img }
   }
 </script>
 
@@ -208,6 +233,7 @@
 
 <div class='wrapper'>
   <Colors />
+  <!-- Main bubble menu -->
   <div class='bubble' bind:this={bubbleEl}>
     {#if editor}
       <!-- buttons need to have type=button to not submit forms the editor might be in -->
@@ -224,6 +250,17 @@
       <span class='sep'></span>
       <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
       <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
+    {/if}
+  </div>
+  <!-- Image bubble menu -->
+  <div class='bubble' bind:this={bubbleElImage}>
+    {#if editor}
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('customImage', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('none').run()} class:active={editor.isActive('customImage', { alignment: 'none' })} title='Zrušit obtékání' class='material'>format_clear</button>
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('customImage', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
+      <span class='sep'></span>
+      <button type='button' on:click={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('customImage').size <= 20} title='Zmenšit' class='material'>photo_size_select_small</button>
+      <button type='button' on:click={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('customImage').size >= 200} title='Zvětšit' class='material'>photo_size_select_large</button>
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
