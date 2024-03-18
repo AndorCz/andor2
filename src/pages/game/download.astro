@@ -18,7 +18,6 @@
   const portraits = {}
   
   try {
-
     function getImageUrl (path, storage) {
       const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
       if (error) { handleError(error) }
@@ -29,8 +28,10 @@
       try {
         const response = await fetch(url)
         if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`)
-        const buffer = await response.arrayBuffer()
-        const base64 = Buffer.from(buffer).toString('base64')
+        const arrayBuffer = await response.arrayBuffer()
+        const bytes = new Uint8Array(arrayBuffer)
+        const binary = bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), '')
+        const base64 = btoa(binary)
         return `data:${response.headers.get('content-type')};base64,${base64}`
       } catch (error) {
         console.error('Error converting image to base64:', error)
