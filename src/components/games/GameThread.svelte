@@ -22,6 +22,7 @@
   let saving = false
   let editing = false
   let filterActive = false
+  let searchTerms = ''
   let showDiceBox = false
   let page = 0
   let pages
@@ -73,16 +74,21 @@
   })
 
   async function loadPosts () {
-    // filter posts based on current audience selection
-    let ownersToFilter = []
-    if ($activeGameAudienceIds?.length && $activeGameAudienceIds.includes('*') === false) {
-      ownersToFilter = clone($activeGameAudienceIds)
-      if ($gameStore.activeGameCharacterId) { ownersToFilter.push($gameStore.activeGameCharacterId) } // add my active character
-      filterActive = true
+    let res
+    if (searchTerms) {
+      res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&search=${searchTerms}`, { method: 'GET' })
     } else {
-      filterActive = false
+      // filter posts based on current audience selection
+      let ownersToFilter = []
+      if ($activeGameAudienceIds?.length && $activeGameAudienceIds.includes('*') === false) {
+        ownersToFilter = clone($activeGameAudienceIds)
+        if ($gameStore.activeGameCharacterId) { ownersToFilter.push($gameStore.activeGameCharacterId) } // add my active character
+        filterActive = true
+      } else {
+        filterActive = false
+      }
+      res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     }
-    const res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     $posts = json.posts
@@ -124,6 +130,11 @@
   function onAudienceSelect () {
     if ($activeGameAudienceIds.includes('*')) { $activeGameAudienceIds = ['*'] } // set all
     loadPosts() // filter posts based on audience selection
+  }
+
+  function onSearch (terms) {
+    searchTerms = terms
+    loadPosts()
   }
 
   /* waiting for option to delete posts in openai api
@@ -183,19 +194,18 @@
   {/if}
 </main>
 
-{#if filterActive}
+{#if searchTerms}
+  <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
+{:else if filterActive}
   <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
 {/if}
 <!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
 {#key $posts}
-  <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+  <Thread {posts} {user} {unread} id={data.game_thread} {onSearch} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
 {/key}
 
 <style>
-  main {
-    padding-top: 40px;
-  }
   .addPostWrapper {
     width: 100%;
   }

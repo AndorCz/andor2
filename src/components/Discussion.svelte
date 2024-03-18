@@ -145,7 +145,7 @@
       <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
     {/key}
   {:else}
-    <p>Tato hra nemá veřejnou diskuzi, pro zobrazení musíš mít ve hře postavu.</p>
+    <p>Tato diskuze není veřejná.</p>
   {/if}
 </main>
 

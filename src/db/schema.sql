@@ -320,7 +320,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer)
+create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
 returns json as $$
 declare
   is_storyteller boolean;
@@ -340,6 +340,7 @@ begin
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
+      and (_search is null or p.content @@ to_tsquery(_search))
     ), ordered_posts as (select * from filtered_posts order by created_at desc limit _limit offset _offset)
     select json_build_object(
       'posts', (select json_agg(op) from ordered_posts op),
