@@ -21,13 +21,10 @@
   export let page = 0
   export let pages = null
   export let iconSize = 140
-  export let onSearch = null
 
   let threadEl
   let replyPostEl
   let replyPostData
-  let searchOpen = false
-  let searchTerms = ''
   const replies = {}
 
   onMount(async () => {
@@ -68,32 +65,10 @@
     threadEl.scrollIntoView({ behavior: 'smooth' })
   }
 
-  function handleSearch () {
-    if (searchTerms) { onSearch(searchTerms) }
-    searchOpen = true
-  }
-
-  function clearSearch () {
-    searchTerms = ''
-    onSearch('')
-    searchOpen = false
-  }
-
   $: if (posts) { setRead(user.id, 'thread-' + id) } // set read on every change of posts prop (thread re-render)
 </script>
 
 <main bind:this={threadEl}>
-  <div class='toolbar'>
-    {#if onSearch}
-      <div class='search'>
-        {#if searchOpen}
-          <input type='text' size='30' bind:value={searchTerms} placeholder='vyhledat' autofocus />
-          <button class='material clear' on:click={clearSearch}>close</button>
-        {/if}
-        <button class='material' on:click={handleSearch}>search</button>
-      </div>
-    {/if}
-  </div>
   {#if isFilledArray($posts)}
     {#each $posts as post, index}
       {#if post.dice}
@@ -129,26 +104,6 @@
   main, center {
     margin-top: 30px;
   }
-    .toolbar {
-      padding-bottom: 20px;
-      text-align: right;
-    }
-      .toolbar button {
-        padding: 10px;
-      }
-      .search {
-        position: relative;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-      .clear {
-        position: absolute;
-        top: 5px;
-        right: 60px;
-        background: none;
-        border: none;
-      }
 
   .dicePost {
     display: inline-block;

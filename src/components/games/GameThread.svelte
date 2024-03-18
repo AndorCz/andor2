@@ -15,17 +15,19 @@
   export let isGameOwner
   export let unread = 0
 
-  let textareaRef
+  let textareaEl
+  let searchEl
   let textareaValue = ''
   let identitySelect
   let audienceSelect
   let saving = false
   let editing = false
   let filterActive = false
-  let searchTerms = ''
   let showDiceBox = false
   let page = 0
   let pages
+  let searchOpen = false
+  let searchTerms = ''
   // let generatingPost = false
 
   const activeGameAudienceIds = writable()
@@ -122,7 +124,7 @@
   async function triggerEdit (id, content) {
     editing = id
     textareaValue = content
-    textareaRef.triggerEdit(id, content)
+    textareaEl.triggerEdit(id, content)
     document.getElementsByClassName('addPostWrapper')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
@@ -132,9 +134,20 @@
     loadPosts() // filter posts based on audience selection
   }
 
+  function handleSearch () {
+    if (searchEl?.value) { onSearch(searchEl.value) }
+    searchOpen = true
+  }
+
   function onSearch (terms) {
     searchTerms = terms
     loadPosts()
+  }
+
+  function clearSearch () {
+    searchTerms = ''
+    onSearch('')
+    searchOpen = false
   }
 
   /* waiting for option to delete posts in openai api
@@ -170,7 +183,7 @@
       {#if showDiceBox}
         <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
       {:else}
-        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaEl} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
       {/if}
       <div class='headlineWrapper'>
         <h3>Jako</h3>
@@ -194,6 +207,18 @@
   {/if}
 </main>
 
+<div class='toolbar'>
+  {#if onSearch}
+    <div class='search'>
+      {#if searchOpen}
+        <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+        <button class='material clear' on:click={clearSearch}>close</button>
+      {/if}
+      <button class='material' on:click={handleSearch}>search</button>
+    </div>
+  {/if}
+</div>
+
 {#if searchTerms}
   <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
 {:else if filterActive}
@@ -206,6 +231,27 @@
 {/key}
 
 <style>
+  .toolbar {
+    margin-top: 30px;
+    text-align: right;
+  }
+    .toolbar button {
+      padding: 10px;
+    }
+    .search {
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .clear {
+      position: absolute;
+      top: 5px;
+      right: 60px;
+      background: none;
+      border: none;
+    }
+
   .addPostWrapper {
     width: 100%;
   }
