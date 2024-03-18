@@ -1,6 +1,6 @@
 ---
 	import Download from '@layouts/download.astro'
-  import GameDownload from '@components/games/GameDownload.svelte'
+  import { formatDate } from '@lib/utils'
 
   const { supabase, user } = Astro.locals
   const gameId = Astro.url.searchParams.get('id') || ''
@@ -12,11 +12,186 @@
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
   if (characterData) { gameData.characters = characterData }
 
-  const { data: postData, error: error3 } = await supabase.from('posts_owner').select('*').eq('thread', gameData.game_thread).order('created_at', { ascending: false })
+  const { data: postData, error: error3 } = await supabase.from('posts_owner').select('*').eq('thread', gameData.game_thread).order('created_at', { ascending: true })
   if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
-  gameData.posts = postData
+
+  const portraits = {}
+
+  function getImageUrl (path, storage) {
+    const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
+    if (error) { handleError(error) }
+    return data.publicUrl
+  }
+
+  async function imageToBase64(url) {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`)
+      const buffer = await response.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      return `data:${response.headers.get('content-type')};base64,${base64}`
+    } catch (error) {
+      console.error('Error converting image to base64:', error)
+      throw error
+    }
+  }
+
+  async function getPortrait (identityId, hash) {
+    const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
+    const imageUrl = await getImageUrl(path, 'portraits')
+    if (!portraits[identityId]) {
+      // console.log('imageUrl', imageUrl)
+      const b64 = await imageToBase64(imageUrl)
+      portraits[identityId] = b64
+    }
+    return portraits[identityId]
+  }
+
+  // go through all characters and get their portraits, to save into base64 (to have them embedded in the html)
+  for (const character of characterData) {
+    if (character.portrait) {
+      portraits[character.id] = await getPortrait(character.id, character.portrait)
+    }
+  }
 ---
 
+<script set:html={`window.portraits = ${JSON.stringify(portraits)}`}/>
+
+<script type='module'>
+  // load the images from the object dynamically, to have every image data just once
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.portrait').forEach(img => {
+      const characterId = img.getAttribute('data-character-id')
+      img.src = window.portraits[characterId] || ''
+    })
+  })
+</script>
+
 <Download title={gameData?.name} headerStorage={gameData?.custom_header ? `game-${gameData.id}.jpg?hash=${gameData.custom_header}` : null}>
-  <GameDownload data={gameData} {user} />
+  <h1>{gameData.name}</h1>
+  {gameData.owner.id === user.id ? (
+    <main>
+      {postData.map((post, index) => (
+        <div key={index} class={`post ${post.audience_names ? 'whispered' : ''}`}>
+          {post.owner_portrait && (
+            <div class='icon' style='--iconSize: 100px'>
+              <img data-character-id={post.owner} class='portrait' alt={post.owner_name} />
+            </div>
+          )}
+          <div class='body'>
+            <div class='header'>
+              <span class='title'>
+                {post.owner_name}
+                {post.audience_names && (
+                  <span class='audience'>jen pro: <b>{post.audience_names.join(', ')}</b></span>
+                )}
+              </span>
+              <span class='toolbar'>
+                <span class='time'>{formatDate(post.created_at)}</span>
+              </span>
+            </div>
+            <div class='content' set:html={post.content}></div>
+          </div>
+        </div>
+      ))}
+    </main>
+  ) : (
+    <p>Nemůžeš exportovat, nejsi vlastníkem hry</p>
+  )}
 </Download>
+
+<style>
+  .post {
+    display: flex;
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: left;
+    gap: 10px;
+  }
+    .icon {
+      min-width: var(--iconSize);
+      overflow: hidden;
+      position: relative;
+    }
+      .icon img {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        display: block;
+      }
+
+  .body {
+    flex: 1;
+    overflow: hidden;
+  }
+    .content {
+      background-color: var(--block);
+      padding: 20px;
+      overflow-wrap: break-word;
+      /* box-shadow: 2px 2px 3px #0002; */
+    }
+    .header {
+      position: relative;
+      width: 100%;
+      min-height: 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px var(--panel) solid;
+      background-color: var(--block);
+      padding: 5px 15px;
+      color: var(--dim);
+    }
+      .whispered .content, .whispered .header {
+        background-color: var(--whisper);
+      }
+      .header button {
+        background: none;
+        border: none;
+        box-shadow: none;
+        color: var(--dim);
+      }
+      .title {
+        flex: 1;
+      }
+      .time {
+        font-family: arial, sans-serif;
+        font-size: 14px;
+        opacity: 0.7;
+        margin-right: 5px;
+      }
+      .audience {
+        font-size: 15px;
+        padding-left: 5px;
+        color: var(--character);
+      }
+    .clear {
+      clear: both;
+    }
+
+  @media (max-width: 860px) {
+    .post {
+      gap: 0px;
+    }
+    .sep {
+      display: none;
+    }
+    .header {
+      display: block;
+      padding: 10px 10px 5px 10px;
+      padding-left: 15px;
+    }
+      .toolbar {
+        width: 100%;
+        display: flex;
+      }
+        .toolbar .time {
+          flex: 1;
+        }
+    .content {
+      padding: 15px;
+    }
+  }
+</style>

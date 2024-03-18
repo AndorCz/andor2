@@ -53,7 +53,7 @@
       return $activeGameAudienceIds // set audience characters from localStorage
     } else if (otherCharacters[0]) {
       return [otherCharacters[0].id] // no audience in localStorage, set all
-    } else { return [] } // no character
+    } else { return ['*'] } // no character
   }
 
   // prepare gameStore
