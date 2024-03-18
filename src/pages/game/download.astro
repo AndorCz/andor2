@@ -16,42 +16,47 @@
   if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
 
   const portraits = {}
+  
+  try {
 
-  function getImageUrl (path, storage) {
-    const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
-    if (error) { handleError(error) }
-    return data.publicUrl
-  }
-
-  async function imageToBase64(url) {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`)
-      const buffer = await response.arrayBuffer()
-      const base64 = Buffer.from(buffer).toString('base64')
-      return `data:${response.headers.get('content-type')};base64,${base64}`
-    } catch (error) {
-      console.error('Error converting image to base64:', error)
-      throw error
+    function getImageUrl (path, storage) {
+      const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
+      if (error) { handleError(error) }
+      return data.publicUrl
     }
-  }
 
-  async function getPortrait (identityId, hash) {
-    const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
-    const imageUrl = await getImageUrl(path, 'portraits')
-    if (!portraits[identityId]) {
-      // console.log('imageUrl', imageUrl)
-      const b64 = await imageToBase64(imageUrl)
-      portraits[identityId] = b64
+    async function imageToBase64(url) {
+      try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`)
+        const buffer = await response.arrayBuffer()
+        const base64 = Buffer.from(buffer).toString('base64')
+        return `data:${response.headers.get('content-type')};base64,${base64}`
+      } catch (error) {
+        console.error('Error converting image to base64:', error)
+        throw error
+      }
     }
-    return portraits[identityId]
-  }
 
-  // go through all characters and get their portraits, to save into base64 (to have them embedded in the html)
-  for (const character of characterData) {
-    if (character.portrait) {
-      portraits[character.id] = await getPortrait(character.id, character.portrait)
+    async function getPortrait (identityId, hash) {
+      const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
+      const imageUrl = await getImageUrl(path, 'portraits')
+      if (!portraits[identityId]) {
+        // console.log('imageUrl', imageUrl)
+        const b64 = await imageToBase64(imageUrl)
+        portraits[identityId] = b64
+      }
+      return portraits[identityId]
     }
+
+    // go through all characters and get their portraits, to save into base64 (to have them embedded in the html)
+    for (const character of characterData) {
+      if (character.portrait) {
+        portraits[character.id] = await getPortrait(character.id, character.portrait)
+      }
+    }
+  } catch (e) {
+    return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + e.message)}`)
   }
 ---
 
