@@ -3,7 +3,7 @@ export const GET = async ({ url, request, locals }) => {
   const { game } = Object.fromEntries(url.searchParams)
 
   const cookieHeader = request.headers.get('cookie')
-  const response = await fetch(`${url.origin}/game/${game}/download`, {
+  const response = await fetch(`${url.origin}/game/download?id=${game}`, {
     headers: { ...(cookieHeader ? { Cookie: cookieHeader } : {}) }
   })
   const gameHtml = await response.text()

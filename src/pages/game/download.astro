@@ -3,7 +3,7 @@
   import GameDownload from '@components/games/GameDownload.svelte'
 
   const { supabase, user } = Astro.locals
-  const { gameId } = Astro.params
+  const gameId = Astro.url.searchParams.get('id') || ''
 
   const { data: gameData, error } = await supabase.from('games').select('id, name, category, annotation, info, recruitment, prompt, notes, owner:profiles(id, name), discussion_thread, open_discussion, open_info, game_thread, system, openai_thread, openai_storyteller, custom_header').eq('id', gameId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
