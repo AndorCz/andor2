@@ -10,7 +10,7 @@
     if (userName) {
       const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
       if (error) {
-        toast = 'Toto jméno je již zabrané'
+        toast = 'Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'
       } else {
         return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
       }

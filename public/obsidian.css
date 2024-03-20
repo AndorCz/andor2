@@ -260,6 +260,11 @@ select {
   background-size: 14px 14px;
 }
 
+.highlight {
+  color: var(--new);
+  font-weight: bold;
+}
+
 .user {
   color: var(--user);
 }

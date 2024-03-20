@@ -334,16 +334,30 @@ begin
 
   return (
     with filtered_posts as (
-      select p.* from posts_owner p where p.thread = thread_id
+      select p.*,
+        (
+          select string_agg(
+          case
+            when word_similarity(word, _search) > 0.5 then '<span class="highlight">' || word || '</span>'
+            else word
+          end, ' ')
+          from unnest(string_to_array(p.content, ' ')) as word
+        ) as highlighted_content
+      from posts_owner p where p.thread = thread_id
       and (
         p.audience is null or is_storyteller or
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
-      and (_search is null or p.content @@ to_tsquery(_search))
-    ), ordered_posts as (select * from filtered_posts order by created_at desc limit _limit offset _offset)
+      and (_search is null or _search % ANY(STRING_TO_ARRAY(p.content, ' ')))
+    ), ordered_posts as (
+      select to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post
+      from filtered_posts fp
+      order by created_at desc
+      limit _limit offset _offset
+    )
     select json_build_object(
-      'posts', (select json_agg(op) from ordered_posts op),
+      'posts', (select json_agg(op.post) from ordered_posts op),
       'count', (select count(*) from filtered_posts)
     )
   );
