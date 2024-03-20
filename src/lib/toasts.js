@@ -7,8 +7,8 @@ export const notyf = new Notyf({
   position: { x: 'center', y: 'top' },
   ripple: false,
   types: [
-    { type: 'success', background: 'var(--green)', icon: false },
-    { type: 'error', background: 'var(--error)', icon: false }
+    { type: 'success', className: 'success', background: 'var(--maximum)', icon: false },
+    { type: 'error', className: 'error', background: 'var(--error)', icon: false }
   ]
 })
 

@@ -128,6 +128,9 @@ summary {
 .notyf__toast {
   border-radius: 10px !important;
 }
+.success {
+  color: var(--background);
+}
 
 /* FORM */
 

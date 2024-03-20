@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { getUserStore, activeConversation, bookmarks } from '@lib/stores'
+  import { showSuccess } from '@lib/toasts'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -124,7 +125,10 @@
           <input type='password' placeholder='Heslo' bind:value={password} />
           <button type='submit' class='material confirm' on:click={signInWithEmail}>login</button>
         </div>
-        <a href='/signup' class='register'>Registrovat</a>
+        <div class='row links'>
+          <a href='/signup' class='register'>Registrovat</a>
+          <a href='/reset'>Reset hesla</a>
+        </div>
       </div>
       <div class='login google'>
         <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
@@ -203,6 +207,8 @@
     }
     .row {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 15px;
     }
     .login .confirm {
@@ -213,7 +219,7 @@
       flex-direction: column;
       gap: 15px;
     }
-    .register {
+    .links {
       margin-top: 10px;
     }
 

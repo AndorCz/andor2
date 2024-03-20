@@ -7,5 +7,5 @@ export const GET = async ({ request, cookies, redirect, locals }) => {
   } catch (error) {
     console.error(error.message)
   }
-  return redirect('/')
+  return redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatel odhlášen'))
 }
