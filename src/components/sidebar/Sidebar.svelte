@@ -21,6 +21,8 @@
   let users = []
   let activeUsers = 0
   let unreadUsers = false
+  let email = ''
+  let password = ''
 
   // characters
   let characters = { allGrouped: [], myStranded: [] }
@@ -61,6 +63,17 @@
     Object.keys($bookmarks.games).forEach(gameId => { total += $bookmarks.games[gameId].unread })
     Object.keys($bookmarks.boards).forEach(boardId => { total += $bookmarks.boards[boardId].unread })
     return total
+  }
+
+  async function signInWithEmail () {
+    if (!email || !password) { return }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) { handleError(new Error('Neplatné přihlašovací údaje')) }
+    if (data.session?.access_token && data.session?.refresh_token) {
+      document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=100*1000*60*60*24*365` // 100 years
+      document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=100*1000*60*60*24*365`
+      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Přihlášení proběhlo úspěšně')
+    }
   }
 </script>
 
@@ -105,7 +118,15 @@
         {/await}
       {/if}
     {:else}
-      <div id='panels' class='login'>
+      <div class='login email'>
+        <input type='email' class='w100' placeholder='E-mail' bind:value={email} />
+        <div class='row'>
+          <input type='password' placeholder='Heslo' bind:value={password} />
+          <button type='submit' class='material confirm' on:click={signInWithEmail}>login</button>
+        </div>
+        <a href='/signup' class='register'>Registrovat</a>
+      </div>
+      <div class='login google'>
         <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
           <button value='google' name='provider' type='submit' class='google w100 large'>Přihlásit přes Google</button>
         </form>
@@ -171,17 +192,33 @@
         color: var(--new);
       }
 
-  #panels {
+  #panels, .login {
     padding: 20px;
     border-radius: 10px;
     background-color: var(--panel);
     position: relative;
   }
+    .login {
+      margin-top: 20px;
+    }
+    .row {
+      display: flex;
+      gap: 15px;
+    }
+    .login .confirm {
+      padding: 15px;
+    }
+    .email {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .register {
+      margin-top: 10px;
+    }
+
   .w100 {
     width: 100%;
-  }
-  .login {
-    margin-top: 20px;
   }
 
   /* mobile elements */

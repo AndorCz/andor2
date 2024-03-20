@@ -48,7 +48,7 @@
       align-items: center;
     }
       #name {
-        max-width: 180px;
+        max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

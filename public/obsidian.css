@@ -185,7 +185,7 @@ button, .button {
     box-shadow: inset 2px 2px 2px #0003;
   }
 
-input[type=text], textarea, input[type=checkbox], .ProseMirror {
+input[type=text], input[type=email], input[type=password], textarea, input[type=checkbox], .ProseMirror {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   padding: 15px;
   margin: 0px;
@@ -218,7 +218,7 @@ textarea, .ProseMirror {
     padding: 0px;
     appearance: none;
   }
-  input[type="color"]::-webkit-color-swatch-wrapper {
+  input[type=color]::-webkit-color-swatch-wrapper {
     padding: 3px;
   }
   input[type=checkbox]:checked {
