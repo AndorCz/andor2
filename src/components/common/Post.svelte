@@ -90,6 +90,7 @@
 
 <style>
   .post {
+    position: relative;
     display: flex;
     width: 100%;
     padding-top: 10px;
