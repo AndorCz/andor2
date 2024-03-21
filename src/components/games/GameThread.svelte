@@ -231,6 +231,9 @@
 {/key}
 
 <style>
+  center {
+    margin-top: 50px;
+  }
   .toolbar {
     margin-top: 30px;
     text-align: right;
