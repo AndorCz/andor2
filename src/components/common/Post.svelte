@@ -93,7 +93,7 @@
     position: relative;
     display: flex;
     width: 100%;
-    padding-top: 10px;
+    margin-top: 10px;
     padding-bottom: 10px;
     text-align: left;
     gap: 10px;

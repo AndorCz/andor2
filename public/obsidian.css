@@ -471,6 +471,7 @@ select {
   border-radius: 50%;
   box-shadow: 2px 2px 4px #0006;
   background-color: var(--new);
+  z-index: 100;
 }
 
 .status {
