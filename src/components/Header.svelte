@@ -43,7 +43,8 @@
     position: relative;
     height: 226px;
     background-image: var(--header-path);
-    background-position: top right;
+    background-position: center right;
+    background-size: cover;
   }
     #logo {
       position: absolute;
