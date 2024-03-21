@@ -211,6 +211,7 @@
   {#if onSearch}
     <div class='search'>
       {#if searchOpen}
+        <!-- svelte-ignore a11y-autofocus -->
         <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
         <button class='material clear' on:click={clearSearch}>close</button>
       {/if}
