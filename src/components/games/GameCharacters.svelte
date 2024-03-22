@@ -46,9 +46,13 @@
     }
   })
 
+  async function charactersChanged (event) {
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', data.id)
+    if (timestampError) { return handleError(timestampError) }
+  }
+
   async function updateRecruitment () {
-    const newData = { recruitment: data.recruitment }
-    newData.characters_changed_at = new Date()
+    const newData = { recruitment: data.recruitment, characters_changed_at: new Date() }
     const { error } = await supabase.from('games').update(newData).eq('id', data.id)
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
@@ -57,6 +61,7 @@
   async function signExisting () {
     const { error } = await supabase.from('characters').update({ game: data.id, accepted: false }).eq('id', myOpenSelected)
     if (error) { return handleError(error) }
+    await charactersChanged()
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přihlášena do hry')
   }
 </script>

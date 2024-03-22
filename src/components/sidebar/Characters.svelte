@@ -10,86 +10,90 @@
   function openEdit (character) { window.location = `/game/character-form?id=${character.id}` }
 </script>
 
-{#if selected}
-  <h4>
-    <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
-    <div class='name'>{selected.character.name}</div>
-    <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
-  </h4>
-  <ul class='characters'>
-    {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
-      {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
-        <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
-          {#if character.portrait}
-            {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-          {:else}
-            <span class='portrait gap'></span>
-          {/if}
-          <div class='name character'>
-            {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-            {character.name}
-          </div>
-          {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-          {#if character.active}<span class='status'></span>{/if}
-        </button>
-      {/each}
-    {:else}
-      <div class='empty'>Hra nemá další postavy</div>
-    {/if}
-  </ul>
-{:else}
-  {#if isFilledArray(characters.allGrouped)}
-    {#each characters.allGrouped as { id, name, characters }, gameIndex}
-      <a href={'/game/' + id}><h4>{name}</h4></a>
-      <ul class='characters'>
-        {#if isFilledArray(characters)}
-          {#each characters as character, characterIndex}
-            <li class='mine'>
-              <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
-                {#if character.portrait}
-                  {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-                {:else}
-                  <span class='portrait gap'></span>
-                {/if}
-                <span class='name character'>
-                  {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-                  {character.name}
-                </span>
-                {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-              </button>
-            </li>
-          {/each}
-        {/if}
-      </ul>
-    {/each}
-  {:else}
-    <div class='empty'>Žádné postavy</div>
-  {/if}
-
-  <h4>Bez hry</h4>
-
-  {#if isFilledArray(characters.myStranded)}
+{#if isFilledArray(characters.allGrouped) || isFilledArray(characters.myStranded)}
+  {#if selected}
+    <h4>
+      <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
+      <div class='name'>{selected.character.name}</div>
+      <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
+    </h4>
     <ul class='characters'>
-      {#each characters.myStranded as character}
-        <li class='mine'>
-          <button on:click={openEdit(character)}>
+      {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
+        {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
+          <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
             {#if character.portrait}
               {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
             {:else}
               <span class='portrait gap'></span>
             {/if}
-            <span class='name character'>
+            <div class='name character'>
               {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
               {character.name}
-            </span>
+            </div>
+            {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
             {#if character.active}<span class='status'></span>{/if}
           </button>
-        </li>
-      {/each}
+        {/each}
+      {:else}
+        <div class='empty'>Hra nemá další postavy</div>
+      {/if}
     </ul>
   {:else}
-    <div class='empty'>Žádné postavy</div>
+    {#if isFilledArray(characters.allGrouped)}
+      {#each characters.allGrouped as { id, name, characters }, gameIndex}
+        <a href={'/game/' + id}><h4>{name}</h4></a>
+        <ul class='characters'>
+          {#if isFilledArray(characters)}
+            {#each characters as character, characterIndex}
+              <li class='mine'>
+                <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
+                  {#if character.portrait}
+                    {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                  {:else}
+                    <span class='portrait gap'></span>
+                  {/if}
+                  <span class='name character'>
+                    {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                    {character.name}
+                  </span>
+                  {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+                </button>
+              </li>
+            {/each}
+          {/if}
+        </ul>
+      {/each}
+    {:else}
+      <div class='empty'>Žádné postavy</div>
+    {/if}
+
+    <h4>Bez hry</h4>
+
+    {#if isFilledArray(characters.myStranded)}
+      <ul class='characters'>
+        {#each characters.myStranded as character}
+          <li class='mine'>
+            <button on:click={openEdit(character)}>
+              {#if character.portrait}
+                {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+              {:else}
+                <span class='portrait gap'></span>
+              {/if}
+              <span class='name character'>
+                {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                {character.name}
+              </span>
+              {#if character.active}<span class='status'></span>{/if}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <div class='empty'>Žádné postavy</div>
+    {/if}
   {/if}
+{:else}
+  <div class='empty'>Žádné postavy</div>
 {/if}
 
 <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>

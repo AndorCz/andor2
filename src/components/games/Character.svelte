@@ -9,13 +9,15 @@
 
   const isPlayer = character.player.id === user.id
 
+  async function charactersChanged (event) {
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
+    if (timestampError) { return handleError(timestampError) }
+  }
+
   async function acceptCharacter (id) {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
     if (error) { return handleError(error) }
-
-    // update timestamp
-    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
-    if (timestampError) { return handleError(timestampError) }
+    await charactersChanged()
 
     // add bookmark to the user of the accepted character
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
@@ -23,21 +25,23 @@
 
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
-  async function rejectCharacter (id) {
-    if (!window.confirm('Opravdu vyřadit postavu?')) { return }
+  async function rejectCharacter (id, own = false) {
+    if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
     const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', id)
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent(own ? 'Přihláška byla zrušena' : 'Postava byla vyřazena ze hry')
   }
   async function freeCharacter (id) {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', id)
+    await charactersChanged()
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla uvolněna')
   }
   async function claimCharacter (id) {
     if (!window.confirm('Opravdu převzít postavu?')) { return }
     const { error } = await supabase.from('characters').update({ open: false, player: user.id }).eq('id', id)
+    await charactersChanged()
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla převzata')
   }
@@ -65,22 +69,27 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td>
-    <div class='options'>
-      {#if isStoryteller}
-        {#if character.accepted}
-          <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
-          {#if !character.open}
-            <button on:click={() => freeCharacter(character.id)}>uvolnit</button>
+    {#if isStoryteller || !character.accepted || character.open}
+      <div class='options'>
+        {#if isStoryteller}
+          {#if character.accepted}
+            <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
+            {#if !character.open}
+              <button on:click={() => freeCharacter(character.id)}>uvolnit</button>
+            {/if}
+          {:else}
+            <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
+            <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
           {/if}
-        {:else}
-          <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
-          <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
         {/if}
-      {/if}
-      {#if character.open}
-        <button on:click={() => claimCharacter(character.id)}>převzít</button>
-      {/if}
-    </div>
+        {#if isPlayer && !character.accepted && !isStoryteller}
+          <button on:click={() => rejectCharacter(character.id, true)}>zrušit</button>
+        {/if}
+        {#if character.open}
+          <button on:click={() => claimCharacter(character.id)}>převzít</button>
+        {/if}
+      </div>
+    {/if}
   </td>
 </tr>
 

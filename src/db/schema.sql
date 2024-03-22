@@ -325,7 +325,11 @@ returns json as $$
 declare
   is_storyteller boolean;
   player_characters uuid[];
+  search_lower text;
 begin
+  -- Normalize the search term to lowercase, handling NULL cases
+  search_lower := lower(coalesce(_search, ''));
+
   -- check if the user is a storyteller in this game
   select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
 
@@ -335,21 +339,18 @@ begin
   return (
     with filtered_posts as (
       select p.*,
-        (
-          select string_agg(
-          case
-            when word_similarity(word, _search) > 0.5 then '<span class="highlight">' || word || '</span>'
-            else word
-          end, ' ')
-          from unnest(string_to_array(p.content, ' ')) as word
-        ) as highlighted_content
+        -- Check if a search term is provided, if not, use the original content
+        case
+          when search_lower = '' then p.content
+          else replace(lower(p.content), search_lower, '<span class="highlight">' || search_lower || '</span>')
+        end as highlighted_content
       from posts_owner p where p.thread = thread_id
       and (
         p.audience is null or is_storyteller or
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
-      and (_search is null or _search % ANY(STRING_TO_ARRAY(p.content, ' ')))
+      and (_search is null or lower(p.content) like '%' || search_lower || '%')
     ), ordered_posts as (
       select to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post
       from filtered_posts fp
@@ -363,6 +364,7 @@ begin
   );
 end;
 $$ language plpgsql;
+
 
 
 create or replace function update_reaction(post_id int4, reaction_type text, action text)
