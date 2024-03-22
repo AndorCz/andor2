@@ -67,9 +67,8 @@
       <div class='empty'>Žádné postavy</div>
     {/if}
 
-    <h4>Bez hry</h4>
-
     {#if isFilledArray(characters.myStranded)}
+      <h4>Bez hry</h4>
       <ul class='characters'>
         {#each characters.myStranded as character}
           <li class='mine'>
@@ -88,8 +87,6 @@
           </li>
         {/each}
       </ul>
-    {:else}
-      <div class='empty'>Žádné postavy</div>
     {/if}
   {/if}
 {:else}

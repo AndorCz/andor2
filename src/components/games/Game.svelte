@@ -15,7 +15,7 @@
   // prepare store
   const gameStore = getGameStore(data.id)
   const isGameOwner = data.owner.id === user.id
-  const isPlayer = data.characters.some(c => c.player.id === user.id)
+  const isPlayer = data.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = data.characters.some(c => c.storyteller && c.player.id === user.id)
   let bookmarkId
 
