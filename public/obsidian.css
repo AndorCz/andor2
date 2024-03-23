@@ -362,7 +362,7 @@ select {
       color: var(--text);
       background-color: var(--panel);
       border-radius: 8px 8px 0px 0px;
-      padding: 13px 25px;
+      padding: 13px 20px;
       opacity: 1;
       position: relative;
     }

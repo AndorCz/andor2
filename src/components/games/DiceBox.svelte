@@ -172,6 +172,7 @@
     #diceBox {
       width: 100%;
       height: 300px;
+      background: url('/feld.jpg');
     }
 
   @media (max-width: 860px) {

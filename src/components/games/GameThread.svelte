@@ -7,12 +7,13 @@
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'
+  import Maps from '@components/games/Maps.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
   export let data = {}
-  export let isGameOwner
+  export let isStoryteller
   export let unread = 0
 
   let textareaEl
@@ -23,10 +24,9 @@
   let saving = false
   let editing = false
   let filterActive = false
-  let showDiceBox = false
+  let tool = 'post'
   let page = 0
   let pages
-  let searchOpen = false
   let searchTerms = ''
   // let generatingPost = false
 
@@ -136,18 +136,11 @@
 
   function handleSearch () {
     if (searchEl?.value) { onSearch(searchEl.value) }
-    searchOpen = true
   }
 
   function onSearch (terms) {
     searchTerms = terms
     loadPosts()
-  }
-
-  function clearSearch () {
-    searchTerms = ''
-    onSearch('')
-    searchOpen = false
   }
 
   /* waiting for option to delete posts in openai api
@@ -165,60 +158,54 @@
 
 <main>
   {#if $gameStore.activeGameCharacterId}
-    <div class='toggleWrapper tabs tertiary'>
-      {#if showDiceBox}
-        <button on:click={() => { showDiceBox = false }} class='diceToggle tab'>Psát příspěvek</button>
-        <h3>Házet kostky</h3>
-      {:else}
-        <h3>{#if editing}Upravit příspěvek{:else}Psát příspěvek{/if}</h3>
-        <button on:click={() => { showDiceBox = true }} class='diceToggle tab'>Házet kostky</button>
-      {/if}
-      <!--
-      {#if isGameOwner}
-        <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
-      {/if}
-      -->
+    <div class='tabs tertiary tools'>
+      <button on:click={() => { tool = 'post' }} class='tab' class:active={tool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+      <button on:click={() => { tool = 'maps' }} class='tab' class:active={tool === 'maps'}><span class='material'>explore</span>Mapy</button>
+      <button on:click={() => { tool = 'dice' }} class='tab' class:active={tool === 'dice'}><span class='material'>casino</span>Kostky</button>
+      <button on:click={() => { tool = 'find' }} class='tab' class:active={tool === 'find'}><span class='material'>search</span>Hledat</button>
     </div>
     <div class='addPostWrapper'>
-      {#if showDiceBox}
+      {#if tool === 'dice'}
         <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
+      {:else if tool === 'maps'}
+        <Maps {data} {isStoryteller} />
+      {:else if tool === 'find'}
+        <div class='searchBox'>
+          <!-- svelte-ignore a11y-autofocus -->
+          <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+          <button class='material' on:click={handleSearch}>search</button>
+        </div>
       {:else}
         <TextareaExpandable userId={user.id} allowHtml bind:this={textareaEl} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <!--
+        {#if isStoryteller}
+          <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
+        {/if}
+        -->
       {/if}
-      <div class='headlineWrapper'>
-        <h3>Jako</h3>
-        <h3>Komu</h3>
-      </div>
-      <div class='selectWrapper'>
-        <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
-          {#each myCharacters as character}
-            <option value={character.id} class='character'>{character.name}</option>
-          {/each}
-        </select>
-        <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
-          {#each otherCharacters as character}
-            <option value={character.id} class='character'>{character.name}</option>
-          {/each}
-        </select>
-      </div>
+      {#if tool === 'post' || tool === 'dice'}
+        <div class='headlineWrapper'>
+          <h3>Jako</h3>
+          <h3>Komu</h3>
+        </div>
+        <div class='selectWrapper'>
+          <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
+            {#each myCharacters as character}
+              <option value={character.id} class='character'>{character.name}</option>
+            {/each}
+          </select>
+          <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
+            {#each otherCharacters as character}
+              <option value={character.id} class='character'>{character.name}</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
     </div>
   {:else}
     <center>Nemáš ve hře žádnou postavu</center>
   {/if}
 </main>
-
-<div class='toolbar'>
-  {#if onSearch}
-    <div class='search'>
-      {#if searchOpen}
-        <!-- svelte-ignore a11y-autofocus -->
-        <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-        <button class='material clear' on:click={clearSearch}>close</button>
-      {/if}
-      <button class='material' on:click={handleSearch}>search</button>
-    </div>
-  {/if}
-</div>
 
 {#if searchTerms}
   <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
@@ -228,33 +215,21 @@
 <!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
 {#key $posts}
-  <Thread {posts} {user} {unread} id={data.game_thread} {onSearch} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isGameOwner} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+  <Thread {posts} {user} {unread} id={data.game_thread} {onSearch} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
 {/key}
 
 <style>
   center {
     margin-top: 50px;
   }
-  .toolbar {
-    margin-top: 30px;
-    text-align: right;
+  .searchBox {
+    margin: auto;
+    background: var(--panel);
+    display: flex;
+    width: fit-content;
+    gap: 10px;
+    padding: 20px;
   }
-    .toolbar button {
-      padding: 10px;
-    }
-    .search {
-      position: relative;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .clear {
-      position: absolute;
-      top: 5px;
-      right: 60px;
-      background: none;
-      border: none;
-    }
 
   .addPostWrapper {
     width: 100%;
@@ -264,11 +239,18 @@
     height: fit-content;
   }
   */
-  .toggleWrapper {
-    padding-top: 20px;
-    display: flex;
-    justify-content: space-between;
+  .tools {
+    margin-top: 20px;
+    margin-bottom: 10px;
   }
+    .tools button {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .tools .active {
+      color: var(--text);
+    }
   .headlineWrapper, .selectWrapper {
     display: flex;
     gap: 40px;
@@ -279,9 +261,6 @@
     .selectWrapper select {
       background: none;
       flex: 1;
-    }
-    .diceToggle {
-      padding: 15px;
     }
   .filterHeadline {
     margin-top: 50px;

@@ -17,6 +17,7 @@
   export let minHeight = 140
   export let enterSend = false
   export let disableEmpty = false
+  export let maxlength = 0
 
   let editorRef
   let tiptap
@@ -102,7 +103,10 @@
   {#if allowHtml}
     <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} />
   {:else}
-    <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton}></textarea>
+    {#if maxlength}
+      <span class='counter'>{maxlength - value.length}</span>
+    {/if}
+    <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle}>
@@ -145,6 +149,12 @@
         top: 0px;
         border-radius: 0px 10px 0px 10px;
       }
+    .counter {
+      position: absolute;
+      right: 15px;
+      bottom: 15px;
+      text-align: right;
+    }
   @media (max-width: 860px) {
     button {
       padding: 10px 15px;

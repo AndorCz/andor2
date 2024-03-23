@@ -44,7 +44,7 @@
 
     <div class='row'>
       <div class='labels'><label for='gameAnnotation'>Anotace</label></div>
-      <div class='inputs'><TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' /></div>
+      <div class='inputs'><TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' minHeight={80} maxlength={150} /></div>
     </div>
 
     <center>

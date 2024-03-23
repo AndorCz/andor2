@@ -74,6 +74,16 @@ create table games (
   constraint games_game_thread_fkey foreign key (game_thread) references threads (id)
 );
 
+create table maps (
+  id int4 not null primary key generated always as identity,
+  game int4 not null,
+  name text not null,
+  image text not null,
+  character_positions json not null default '{}',
+  created_at timestamp with time zone default current_timestamp,
+  constraint maps_game_fkey foreign key (game) references games (id) on delete cascade
+);
+
 create table boards (
   id int4 not null primary key generated always as identity,
   name text unique not null,

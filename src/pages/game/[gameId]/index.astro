@@ -15,8 +15,12 @@
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
   if (characterData) { gameData.characters = characterData }
 
-  const { data: unreadData, error: error3 } = await supabase.rpc('get_game_unread', { game: gameId, game_thread: gameData.game_thread, discussion_thread: gameData.discussion_thread })
-  if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
+  const { data: mapData, error: error3 } = await supabase.from('maps').select('*').eq('game', gameId)
+  if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error4.message)}`) }
+  if (mapData) { gameData.maps = mapData }
+
+  const { data: unreadData, error: error4 } = await supabase.rpc('get_game_unread', { game: gameId, game_thread: gameData.game_thread, discussion_thread: gameData.discussion_thread })
+  if (error4) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
   if (unreadData) { gameData.unread = unreadData }
 ---
 
