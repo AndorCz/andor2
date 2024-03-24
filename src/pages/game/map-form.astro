@@ -1,30 +1,47 @@
 ---
+  import { getHash } from '@lib/database'
 	import Layout from '@layouts/layout.astro'
   import MapForm from '@components/games/MapForm.svelte'
 
   const { supabase, user } = Astro.locals
+  const mapId = Astro.url.searchParams.get('id')
   const gameId = Astro.url.searchParams.get('gameId')
   let isStoryteller = false
-  let data = {}
+  let game = {}
+  let map = {}
 
   if (gameId) {
-    const { data: gameData, error } = await supabase.from('games').select('*').eq('id', gameId).single()
-    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    data = gameData
+    const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', gameId).single()
+    if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
+    game = gameData
 
-    const { data: characterData, error: error2 } = await supabase.from('characters').select('player:profiles(id, name), storyteller').eq('game', gameId)
-    if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
-    data.characters = characterData
-
+    const { data: characterData, error: characterError } = await supabase.from('characters').select('player:profiles(id, name), storyteller').eq('game', gameId)
+    if (characterError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
     isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
 
-    if (Astro.request.method === 'POST') {
-      const formData = await Astro.request.formData()
-      const name = formData.get('gameName')
+    if (id) { // edit
+      const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', id).single()
+      if (mapData) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + mapError.message)}`) }
+      map = mapData
+    }
 
-      const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
-      if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-      return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
+    if (Astro.request.method === 'POST' && isStoryteller) {
+      const formData = await Astro.request.formData()
+      const name = formData.get('mapName')
+      const mapImage = formData.get('mapImage')
+      const description = formData.get('mapDescription')
+      if (name && mapImage) {
+        const { data: mapData, error: insertError } = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
+        if (insertError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + insertError.message)}`) }
+        map.id = mapData.id // add id for a new map
+
+        const { error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, mapImage, { upsert: true })
+        if (uploadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + uploadError.message)}`) }
+
+        return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${encodeURIComponent('Mapa byla přidána')}`)
+      } else {
+        return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí obrázek nebo název mapy')}`)
+      }
     }
   }
 ---

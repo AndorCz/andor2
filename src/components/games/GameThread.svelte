@@ -15,6 +15,7 @@
   export let data = {}
   export let isStoryteller
   export let unread = 0
+  export let activeTool = 'post'
 
   let textareaEl
   let searchEl
@@ -24,7 +25,6 @@
   let saving = false
   let editing = false
   let filterActive = false
-  let tool = 'post'
   let page = 0
   let pages
   let searchTerms = ''
@@ -159,17 +159,17 @@
 <main>
   {#if $gameStore.activeGameCharacterId}
     <div class='tabs tertiary tools'>
-      <button on:click={() => { tool = 'post' }} class='tab' class:active={tool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
-      <button on:click={() => { tool = 'maps' }} class='tab' class:active={tool === 'maps'}><span class='material'>explore</span>Mapy</button>
-      <button on:click={() => { tool = 'dice' }} class='tab' class:active={tool === 'dice'}><span class='material'>casino</span>Kostky</button>
-      <button on:click={() => { tool = 'find' }} class='tab' class:active={tool === 'find'}><span class='material'>search</span>Hledat</button>
+      <button on:click={() => { activeTool = 'post' }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+      <button on:click={() => { activeTool = 'maps' }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
+      <button on:click={() => { activeTool = 'dice' }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
+      <button on:click={() => { activeTool = 'find' }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
     </div>
     <div class='addPostWrapper'>
-      {#if tool === 'dice'}
+      {#if activeTool === 'dice'}
         <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
-      {:else if tool === 'maps'}
+      {:else if activeTool === 'maps'}
         <Maps {data} {isStoryteller} />
-      {:else if tool === 'find'}
+      {:else if activeTool === 'find'}
         <div class='searchBox'>
           <!-- svelte-ignore a11y-autofocus -->
           <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
@@ -183,7 +183,7 @@
         {/if}
         -->
       {/if}
-      {#if tool === 'post' || tool === 'dice'}
+      {#if activeTool === 'post' || activeTool === 'dice'}
         <div class='headlineWrapper'>
           <h3>Jako</h3>
           <h3>Komu</h3>

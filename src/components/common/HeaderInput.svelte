@@ -25,8 +25,6 @@
       newHeaderEl = await getImage(file)
       if (newHeaderEl.width < 1100) { return showError(`Obrázek má malou šířku (${newHeaderEl.width}px), je třeba alespoň 1100px`) }
       if (newHeaderEl.width < 226) { return showError(`Obrázek má malou výšku (${newHeaderEl.height}px), je třeba alespoň 226px`) }
-      // if (newHeaderEl.width >= 1100 && newHeaderEl.width < 2000 && newHeaderEl.height === 226) { // Correct size
-      // uploadHeader(file) // can't use, need to convert to jpg
       cropping = true
       newHeaderUrl = URL.createObjectURL(file)
     }

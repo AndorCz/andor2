@@ -18,10 +18,12 @@
   const isPlayer = data.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = data.characters.some(c => c.storyteller && c.player.id === user.id)
   let bookmarkId
+  let activeTool
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const urlTab = urlParams.get('tab')
+    activeTool = urlParams.get('tool')
     $gameStore.activeTab = urlTab || $gameStore.activeTab || 'info'
     window.history.replaceState({}, document.title, window.location.pathname) // clear params
   })
@@ -87,7 +89,7 @@
     {:else if $gameStore.activeTab === 'chat'}
       <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} {user} {isStoryteller} unread={data.unread.gameThread} />
+      <GameThread {data} {user} {isStoryteller} tool={activeTool} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}

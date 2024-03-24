@@ -1,5 +1,6 @@
 <script>
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte' 
+  import { lightboxImage } from '@lib/stores'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let userId
   export let data
@@ -78,7 +79,8 @@
   {#if img}
     <div id='mapPreview'>
       <h3>Náhled</h3>
-      <img src={img.src} alt='Náhled mapy' />
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions a11y-click-events-have-key-events -->
+      <img src={img.src} alt='Náhled mapy' on:click={() => { $lightboxImage = img.src }} />
     </div>
   {/if}
 
@@ -110,6 +112,7 @@
       max-width: 100%;
       margin: auto;
       display: block;
+      cursor: pointer;
     }
   #addImage {
     display: flex;
