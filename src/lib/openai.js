@@ -138,6 +138,6 @@ export async function generatePortrait (appearance, user) {
     prompt: `Digital painting, no text, RPG character in full-length and background environment: ${appearance}`,
     size: '1024x1024',
     response_format: 'b64_json',
-    user
+    user // for cases of inappropriate content
   }).catch(error => { return error })
 }

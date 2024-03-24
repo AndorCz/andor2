@@ -17,7 +17,7 @@
   export let minHeight = 140
   export let enterSend = false
   export let disableEmpty = false
-  export let maxlength = 0
+  export let maxlength = null
 
   let editorRef
   let tiptap

@@ -15,7 +15,7 @@
   let newPortraitBase64
   const isCharacterOwner = userId === character.player
 
-  const generatePortrait = async () => {
+  async function generatePortrait () {
     try {
       generatingPortrait = true
       const response = await fetch('/api/game/generatePortrait', {
@@ -34,7 +34,7 @@
     } catch (error) { handleError(error) }
   }
 
-  const deleteCharacter = async () => {
+  async function deleteCharacter () {
     const { error } = await supabase.from('characters').delete().eq('id', character.id)
     if (error) { return handleError(error) }
     if (character.game) {
@@ -48,8 +48,8 @@
 {#if userId}
   <form method='POST' autocomplete='off' bind:this={formEl}>
     <div class='row'>
-      <div class='labels'><label for='charName'>Jméno</label></div>
-      <div class='inputs'><input type='text' id='charName' name='charName' maxlength='100' value={character.name || ''} /></div>
+      <div class='labels'><label for='charName'>Jméno *</label></div>
+      <div class='inputs'><input type='text' id='charName' name='charName' maxlength='100' bind:value={character.name} /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled</label></div>
@@ -78,7 +78,7 @@
       </div>
     {/if}
     <center>
-      <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving || !character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 

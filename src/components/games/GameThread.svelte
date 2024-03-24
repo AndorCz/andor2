@@ -215,7 +215,7 @@
 <!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
 {#key $posts}
-  <Thread {posts} {user} {unread} id={data.game_thread} {onSearch} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+  <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
 {/key}
 
 <style>

@@ -14,6 +14,6 @@
     {/each}
   {/if}
   {#if isStoryteller}
-    <button>Přidat mapu</button>
+    <a href={`/game/map-form?gameId=${data.id}`} class='button'>Přidat mapu</a>
   {/if}
 </div>

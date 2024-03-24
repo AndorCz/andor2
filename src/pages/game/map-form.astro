@@ -1,0 +1,39 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import MapForm from '@components/games/MapForm.svelte'
+
+  const { supabase, user } = Astro.locals
+  const gameId = Astro.url.searchParams.get('gameId')
+  let isStoryteller = false
+  let data = {}
+
+  if (gameId) {
+    const { data: gameData, error } = await supabase.from('games').select('*').eq('id', gameId).single()
+    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+    data = gameData
+
+    const { data: characterData, error: error2 } = await supabase.from('characters').select('player:profiles(id, name), storyteller').eq('game', gameId)
+    if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
+    data.characters = characterData
+
+    isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
+
+    if (Astro.request.method === 'POST') {
+      const formData = await Astro.request.formData()
+      const name = formData.get('gameName')
+
+      const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
+      if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+      return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
+    }
+  }
+---
+
+<Layout title='Přidat mapu'>
+  <a href='javascript:history.back()'>zpět</a>
+  {user.id && gameId && isStoryteller ? (
+    <MapForm {data} userId={user.id} client:only />
+  ) : (
+    <center>Tato stránka je jen pro vypravěče hry</center>
+  )}
+</Layout>

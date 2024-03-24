@@ -145,6 +145,7 @@ button, .button {
   border: 1px color-mix(in srgb, var(--buttonBg), var(--accent) 15%) solid;
   cursor: pointer;
   box-shadow: 2px 2px 3px #0003;
+  text-align: center;
 }
 
   button.large, .button.large {
@@ -427,6 +428,9 @@ select {
   .tabs.tertiary button {
     color: var(--link);
   }
+    .tabs.tertiary button:first-child {
+      padding-left: 0px;
+    }
 
 /* MISC */
 
