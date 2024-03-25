@@ -3,7 +3,8 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let userId
-  export let data
+  export let map
+  export let game
 
   let files
   let imageReady = false
@@ -45,7 +46,7 @@
   }
 </script>
 
-<h1>Přidat mapu do "{data.name}"</h1>
+<h1>Přidat mapu do "{game.name}"</h1>
 
 <form method='POST' autocomplete='off'>
   <div class='row'>

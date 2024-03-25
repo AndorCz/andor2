@@ -19,8 +19,8 @@
     if (characterError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
     isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
 
-    if (id) { // edit
-      const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', id).single()
+    if (mapId) { // edit
+      const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', mapId).single()
       if (mapData) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + mapError.message)}`) }
       map = mapData
     }
@@ -31,9 +31,9 @@
       const mapImage = formData.get('mapImage')
       const description = formData.get('mapDescription')
       if (name && mapImage) {
-        const { data: mapData, error: insertError } = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
+        const { data: mapDataInsert, error: insertError } = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
         if (insertError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + insertError.message)}`) }
-        map.id = mapData.id // add id for a new map
+        map.id = mapDataInsert.id // add id for a new map
 
         const { error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, mapImage, { upsert: true })
         if (uploadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + uploadError.message)}`) }
@@ -49,7 +49,7 @@
 <Layout title='Přidat mapu'>
   <a href='javascript:history.back()'>zpět</a>
   {user.id && gameId && isStoryteller ? (
-    <MapForm {data} userId={user.id} client:only />
+    <MapForm {map} {game} userId={user.id} client:only />
   ) : (
     <center>Tato stránka je jen pro vypravěče hry</center>
   )}
