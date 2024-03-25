@@ -29,7 +29,7 @@
     {#each groups as group}
       <a href={`/${group.headline.contentType}/${group.headline.contentId}`}><h4>{group.headline.contentName}</h4></a>
       {#each group.posts as post}
-        <Post {post} {user} iconSize={80} />
+        <Post {post} {user} iconSize={80} allowReactions={post.owner_type === 'user'} />
       {/each}
     {/each}
   {/if}

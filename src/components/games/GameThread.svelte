@@ -168,7 +168,7 @@
       {#if activeTool === 'dice'}
         <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
       {:else if activeTool === 'maps'}
-        <Maps {data} {isStoryteller} />
+        <Maps game={data} {isStoryteller} />
       {:else if activeTool === 'find'}
         <div class='searchBox'>
           <!-- svelte-ignore a11y-autofocus -->

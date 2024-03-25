@@ -66,12 +66,14 @@ create table games (
   openai_thread text null,
   openai_storyteller text null,
   custom_header text null,
+  active_map integer null,
   created_at timestamp with time zone default current_timestamp,
   info_changed_at timestamp with time zone default current_timestamp,
   characters_changed_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
-  constraint games_game_thread_fkey foreign key (game_thread) references threads (id)
+  constraint games_game_thread_fkey foreign key (game_thread) references threads (id),
+  constraint games_active_map_fkey foreign key (active_map) references maps (id) on delete set null
 );
 
 create table maps (
@@ -246,11 +248,11 @@ select p.id, p.content, p.created_at,
   coalesce(g.id::text, b.id::text, w.id::text) as content_id,
   p.owner,
   p.owner_type,
-  case 
+  case
     when p.owner_type = 'user' then pr.name
     when p.owner_type = 'character' then ch.name
   end as owner_name,
-  case 
+  case
     when p.owner_type = 'user' then pr.portrait
     when p.owner_type = 'character' then ch.portrait
   end as owner_portrait,
@@ -258,7 +260,8 @@ select p.id, p.content, p.created_at,
     when g.id is not null then g.name
     when b.id is not null then b.name
     when w.id is not null then w.name
-  end as content_name
+  end as content_name,
+  p.frowns, p.hearts, p.laughs, p.thumbs
 from
   posts p
   left join games g on p.thread = g.game_thread
