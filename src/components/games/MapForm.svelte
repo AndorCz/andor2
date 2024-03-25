@@ -48,7 +48,7 @@
 
 <h1>Přidat mapu do "{game.name}"</h1>
 
-<form method='POST' autocomplete='off'>
+<form method='POST' autocomplete='off' enctype='multipart/form-data'>
   <div class='row'>
     <div class='labels'>
       <label for='mapName'>Název mapy *</label>
@@ -63,7 +63,7 @@
       <label for='mapDescription'>Popis mapy</label>
     </div>
     <div class='inputs'>
-      <TextareaExpandable id='mapDescription' bind:value={description} />
+      <TextareaExpandable id='mapDescription' name='mapDescription' bind:value={description} />
     </div>
   </div>
 

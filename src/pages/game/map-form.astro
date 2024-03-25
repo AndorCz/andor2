@@ -30,6 +30,8 @@
       const name = formData.get('mapName')
       const mapImage = formData.get('mapImage')
       const description = formData.get('mapDescription')
+      console.log('mapImage', mapImage)
+
       if (name && mapImage) {
         const { data: mapDataInsert, error: insertError } = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
         if (insertError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + insertError.message)}`) }
@@ -42,6 +44,7 @@
       } else {
         return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí obrázek nebo název mapy')}`)
       }
+      return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${encodeURIComponent('Mapa byla přidána')}`)
     }
   }
 ---

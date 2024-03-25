@@ -24,7 +24,6 @@
 </script>
 
 {#key $postStore}
-  {console.log($postStore)}
   {#if user.id && $postStore.owner !== user.id}
     <span class='reactions'>
       <button on:click={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek' class='icon'>{#if $postStore.frowns?.length}<span class='count'>{$postStore.frowns.length}</span>{/if}</button>

@@ -89,7 +89,7 @@
     {:else if $gameStore.activeTab === 'chat'}
       <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} {user} {isStoryteller} tool={activeTool} unread={data.unread.gameThread} />
+      <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isGameOwner} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}
