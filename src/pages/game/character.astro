@@ -3,22 +3,24 @@
   import CharacterInfo from '@components/games/CharacterInfo.svelte'
 
   const { supabase, user } = Astro.locals
-  const id = Astro.url.searchParams.get('id') || ''
+  const id = Astro.url.searchParams.get('id')
 
   let character = {}
   let isStoryteller = false
 
   if (id) {
     const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
-    if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
-    else { character = charData }
+    if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení postavy: ' + charError.message)}`) }
+    character = charData
 
-    if (charData.game) {
-      const { data: storytellerData, error: charError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
-      if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
-      isStoryteller = !!storytellerData
-    } else {
-      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
+    if (user.id) {
+      if (charData.game) {
+        const { data: storytellerData, error: storytellerError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
+        if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
+        isStoryteller = !!storytellerData
+      } else {
+        return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
+      }
     }
   } else {
     return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr id')}`)

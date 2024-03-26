@@ -14,11 +14,11 @@
 </script>
 
 <main>
-  <aside>
-    {#if data.portrait}
+  {#if data.portrait}
+    <aside>
       {#await getPortrait(data.id, data.portrait) then url}<img src={url} class='portrait' alt={data.name} />{/await}
-    {/if}
-  </aside>
+    </aside>
+  {/if}
   <div class='wide'>
     <h1>{data.name}</h1>
     <ul>
@@ -42,8 +42,10 @@
   main {
     display: flex;
     align-items: center;
-    gap: 40px;
   }
+    aside {
+      margin-right: 40px;
+    }
     .wide {
       flex: 1;
     }
