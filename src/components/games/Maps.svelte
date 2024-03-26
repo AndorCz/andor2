@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, getImage } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
+  import { lightboxImage } from '@lib/stores'
+  import { supabase, handleError, getImage } from '@lib/database'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
@@ -32,21 +33,29 @@
       showSuccess('Mapa byla smazána')
     }
   }
+
+  async function activateMap (mapId) {
+    game.active_map = game.maps.find(map => map.id === mapId)
+    activeMapUrl = getImage(`${game.id}/${game.active_map.id}`, 'maps')
+    const { error } = await supabase.from('games').update({ active_map: mapId }).eq('id', game.id)
+    if (error) { handleError(error) }
+  }
 </script>
 
 <div class='maps'>
   {#if game.active_map}
     <h2>{game.active_map.name}</h2>
-    <img src={activeMapUrl} alt={game.active_map.name} />
+    <div id='map'>
+      <img class='mapImage' src={activeMapUrl} alt={game.active_map.name} on:click={() => { $lightboxImage = activeMapUrl }} />
+    </div>
     <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={game.active_map.description} allowHtml />
     {/if}
-  <h2 class='row'>Seznam map</h2>
+  <h2>Seznam map</h2>
   {#if game.maps.length === 0}
     <center>Žádné mapy nenalezeny</center>
   {:else}
     <table class='mapList'>
       <tr>
-        <th class='show'>Aktivní</th>
         <th class='name'>Název</th>
         {#if isStoryteller}
           <th class='tools'></th>
@@ -54,12 +63,14 @@
       </tr>
       {#each game.maps as map}
         <tr>
-          <td class='show'></td>
           <td class='name'>{map.name}</td>
           {#if isStoryteller}
             <td class='tools row'>
-              <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button'>Upravit</a>
-              <button type='button' on:click={() => { deleteMap(map.id) }}>Smazat</button>
+              {#if game.active_map && game.active_map.id !== map.id}
+                <button type='button' on:click={() => { activateMap(map.id) }} class='row'><span class='material'>visibility</span>Aktivovat</button>
+              {/if}
+              <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button material' title='Upravit'>edit</a>
+              <button type='button' on:click={() => { deleteMap(map.id) }} class='material' title='Smazat'>delete</button>
             </td>
           {/if}
         </tr>
@@ -78,7 +89,16 @@
   .row {
     display: flex;
     gap: 10px;
+    justify-content: flex-end;
   }
+  #map {
+    margin: auto;
+    width: fit-content;
+  }
+    .mapImage {
+      max-width: 100%;
+      cursor: pointer;
+    }
   .mapList {
     width: 100%;
   }
