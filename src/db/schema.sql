@@ -142,6 +142,7 @@ create table posts (
   content text,
   thumbs uuid[] null default '{}'::uuid[],
   frowns uuid[] null default '{}'::uuid[],
+  shocks uuid[] null default '{}'::uuid[],
   hearts uuid[] null default '{}'::uuid[],
   laughs uuid[] null default '{}'::uuid[],
   audience uuid[] null,
@@ -261,7 +262,7 @@ select p.id, p.content, p.created_at,
     when b.id is not null then b.name
     when w.id is not null then w.name
   end as content_name,
-  p.frowns, p.hearts, p.laughs, p.thumbs
+  p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
 from
   posts p
   left join games g on p.thread = g.game_thread
@@ -390,6 +391,7 @@ begin
     set
       thumbs = case when reaction_type = 'thumbs' and not (auth.uid() = any(thumbs)) then array_append(thumbs, auth.uid()) else thumbs end,
       frowns = case when reaction_type = 'frowns' and not (auth.uid() = any(frowns)) then array_append(frowns, auth.uid()) else frowns end,
+      shocks = case when reaction_type = 'shocks' and not (auth.uid() = any(shocks)) then array_append(shocks, auth.uid()) else shocks end,
       hearts = case when reaction_type = 'hearts' and not (auth.uid() = any(hearts)) then array_append(hearts, auth.uid()) else hearts end,
       laughs = case when reaction_type = 'laughs' and not (auth.uid() = any(laughs)) then array_append(laughs, auth.uid()) else laughs end
     where id = post_id
@@ -400,6 +402,7 @@ begin
     set
       thumbs = case when reaction_type = 'thumbs' then array_remove(thumbs, auth.uid()) else thumbs end,
       frowns = case when reaction_type = 'frowns' then array_remove(frowns, auth.uid()) else frowns end,
+      shocks = case when reaction_type = 'shocks' then array_remove(shocks, auth.uid()) else shocks end,
       hearts = case when reaction_type = 'hearts' then array_remove(hearts, auth.uid()) else hearts end,
       laughs = case when reaction_type = 'laughs' then array_remove(laughs, auth.uid()) else laughs end
     where id = post_id
