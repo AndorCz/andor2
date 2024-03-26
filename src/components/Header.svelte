@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
+  import { initToasts, lookForToast } from '@lib/toasts'
   import Lightbox from '@components/common/Lightbox.svelte'
 
   export let pathname
@@ -17,7 +18,12 @@
     headerUrl = data.publicUrl
   }
 
-  onMount(() => { $headerPreview = null }) // clear preview, only used momentarily after upload
+  onMount(() => {
+    $headerPreview = null // clear preview, only used momentarily after upload
+    initToasts()
+    lookForToast()
+    document.addEventListener('astro:page-load', () => { lookForToast() })
+  })
 
   $: if (headerStorage) { getHeaderUrl() }
 </script>

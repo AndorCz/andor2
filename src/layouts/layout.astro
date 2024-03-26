@@ -38,12 +38,6 @@ const { title, headerStatic, headerStorage } = Astro.props
       </main>
       <Sidebar {user} bookmarkData={bookmarks} client:only />
     </div>
-    <script>
-      import { lookForToast, showSuccess, showError } from '@lib/toasts'
-      lookForToast()
-      window.showSuccess = showSuccess
-      window.showError = showError
-    </script>
   </body>
 </html>
 

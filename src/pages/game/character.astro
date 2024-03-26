@@ -13,15 +13,15 @@
     if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení postavy: ' + charError.message)}`) }
     character = charData
 
-    if (user.id) {
-      if (charData.game) {
-        const { data: storytellerData, error: storytellerError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
-        if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
-        isStoryteller = !!storytellerData
-      } else {
-        return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
-      }
+    // if (user.id) {
+    if (charData.game) {
+      const { data: storytellerData, error: storytellerError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
+      if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
+      isStoryteller = !!storytellerData
+    } else {
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
     }
+    // }
   } else {
     return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr id')}`)
   }
