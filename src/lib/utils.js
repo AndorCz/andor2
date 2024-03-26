@@ -54,15 +54,6 @@ export function previewCanvas (canvas) {
   document.body.appendChild(canvas)
 }
 
-export function loadBase64Image (base64String) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = 'data:image/png;base64,' + base64String
-  })
-}
-
 export function formatDate (time) {
   const dt = DateTime.fromISO(time)
   // return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)

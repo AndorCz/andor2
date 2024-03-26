@@ -13,7 +13,7 @@
 
   onMount(async () => {
     if (game.active_map) {
-      activeMapUrl = await getImage(`${game.id}/${game.active_map.id}`, 'maps')
+      activeMapUrl = await getImage(`${game.id}/${game.active_map.id}?${game.active_map.image}`, 'maps')
     }
   })
 
@@ -46,11 +46,15 @@
   {#if game.active_map}
     <h2>{game.active_map.name}</h2>
     <div id='map'>
+      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
       <img class='mapImage' src={activeMapUrl} alt={game.active_map.name} on:click={() => { $lightboxImage = activeMapUrl }} />
     </div>
     <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={game.active_map.description} allowHtml />
+    {#if isStoryteller}
+      <center><a href={`/game/map-form?gameId=${game.id}&mapId=${game.active_map.id}`} class='button large'>Upravit mapu</a></center>
     {/if}
-  <h2>Seznam map</h2>
+  {/if}
+  <h2>Ostatní mapy</h2>
   {#if game.maps.length === 0}
     <center>Žádné mapy nenalezeny</center>
   {:else}

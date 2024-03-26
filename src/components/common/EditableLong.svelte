@@ -2,7 +2,6 @@
   // Shows a long text that can be edited in place
   import { marked } from 'marked'
   import { Render } from '@jill64/svelte-sanitize'
-  import Loading from '@components/common/Loading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let userId
@@ -40,11 +39,8 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <div class='wrapper'>
-  {#if loading}
-    <Loading />
-  {/if}
   {#if isEditing}
-    <TextareaExpandable {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
+    <TextareaExpandable {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
   {:else}
     <content class='editableLong'><Render html={marked(value || '')} /></content>
     {#if canEdit}

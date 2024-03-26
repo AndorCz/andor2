@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import Editor from '@components/common/Editor.svelte'
+  import Loading from '@components/common/Loading.svelte'
 
   export let userId
   export let id = null
@@ -18,6 +19,7 @@
   export let enterSend = false
   export let disableEmpty = false
   export let maxlength = null
+  export let loading = false
 
   let editorRef
   let tiptap
@@ -117,6 +119,9 @@
     <button on:click={cancelEdit} class='cancel' title='Zrušit'>
       <span class='material'>close</span>
     </button>
+  {/if}
+  {#if loading}
+    <Loading />
   {/if}
 </div>
 

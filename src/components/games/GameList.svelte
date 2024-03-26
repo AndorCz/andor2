@@ -58,7 +58,7 @@
             <div class='category' title='kategorie'>{getCategory(game.category)}</div>
             {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner user' title='správce'>{game.owner_name}</div>
+            <div class='owner' title='správce'><a href={'./user?id=' + game.owner} class='user'>{game.owner_name}</a></div>
           </div>
           <div class='row annotation'>{game.annotation}</div>
         </div>

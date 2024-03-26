@@ -2,7 +2,7 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { cropPortrait, resizePortrait, loadBase64Image } from '@lib/utils'
+  import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
   import { supabase, handleError } from '@lib/database'
 
   export let isGameOwner
@@ -23,9 +23,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appearance: character.appearance, userId })
       })
-      const generatedJson = await response.json() // returns 1024x1024 image in base64
+      const generatedJson = await response.json() // returns 1024x1024 image
       if (generatedJson.error) { throw generatedJson.error }
-      const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
+      const generatedImage = await getImage(generatedJson.data[0].url)
       const cropRatio = 0.5
       const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
       const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)
@@ -61,7 +61,7 @@
         <div class='portrait'>
           <PortraitInput identity={character} {newPortraitBase64} table='characters' />
           <span class='flex'>
-            <ButtonLoading type='button' label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
+            <ButtonLoading label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
             <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>
           </span>
         </div>
