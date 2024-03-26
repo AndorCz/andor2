@@ -198,19 +198,21 @@ create table user_reads (
 create view posts_owner as
   select
     p.*,
-    case 
+    case
       when p.owner_type = 'user' then profiles.name
       when p.owner_type = 'character' then characters.name
     end as owner_name,
-    case 
+    case
       when p.owner_type = 'user' then profiles.portrait
       when p.owner_type = 'character' then characters.portrait
     end as owner_portrait,
-    get_character_names(p.audience) AS audience_names
-  from posts p
-  left join profiles on p.owner = profiles.id and p.owner_type = 'user'
-  left join characters on p.owner = characters.id and p.owner_type = 'character';
-  order by p.created_at desc;
+    get_character_names (p.audience) as audience_names
+  from
+    posts p
+    left join profiles on p.owner = profiles.id and p.owner_type = 'user'
+    left join characters on p.owner = characters.id and p.owner_type = 'character'
+  order by
+    p.created_at desc;
 
 create view board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count

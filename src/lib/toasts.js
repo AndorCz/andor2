@@ -9,7 +9,7 @@ export const initToasts = () => {
     ripple: false,
     types: [
       { type: 'success', className: 'success', background: 'var(--maximum)', icon: false },
-      { type: 'error', className: 'error', background: 'var(--error)', icon: false }
+      { type: 'error', className: 'error', background: 'var(--error)', icon: false, duration: 99999, dismissible: true }
     ]
   })
   window.showSuccess = (text) => {
