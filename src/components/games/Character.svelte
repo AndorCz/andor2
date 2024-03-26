@@ -112,7 +112,6 @@
       }
     .name {
       width: 100%;
-      vertical-align: middle;
     }
       .name .star {
         font-size: 17px;

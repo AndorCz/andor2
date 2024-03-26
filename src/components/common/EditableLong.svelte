@@ -18,7 +18,7 @@
 
   function onSaveWrapper () {
     isEditing = false
-    onSave()
+    onSave(value)
     originalValue = value
   }
 

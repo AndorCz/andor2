@@ -1,37 +1,51 @@
 <script>
+  import { onMount } from 'svelte'
+  import { getImage } from '@lib/database'
   import { lightboxImage } from '@lib/stores'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
+  export let map = { name: '', description: '' }
   export let userId
-  export let map
   export let game
 
+  const mapName = map.name
   let files
+  let imageInputEl
+  let descriptionTextareaEl
+  let descriptionInputEl
   let imageReady = false
-  let imageInputEl = null
   let generatingMap = false
-  let name = ''
-  let description = ''
   let img
 
-  async function showImage () {
+  onMount(async () => {
+    if (map.id) {
+      const imgUrl = await getImage(`${game.id}/${map.id}`, 'maps')
+      await addImage(imgUrl)
+    }
+  })
+
+  async function addImage (url) {
+    img = document.createElement('img')
+    img.src = url
+    await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
+    imageReady = true
+  }
+
+  async function showImageFromFile () {
     if (files && files[0]) {
-      img = document.createElement('img')
-      img.src = URL.createObjectURL(files[0])
-      await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
-      imageReady = true
+      addImage(URL.createObjectURL(files[0]))
     }
   }
 
   async function generateMap () {
-    console.log('description', description)
+    console.log('description', map.description)
     /*
     try {
       generatingMap = true
       const response = await fetch('/api/game/generateMap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description, userId })
+        body: JSON.stringify({ description: map.description, userId })
       })
       const generatedJson = await response.json() // returns 1024x1024 image in base64
       if (generatedJson.error) { throw generatedJson.error }
@@ -44,9 +58,21 @@
     } catch (error) { handleError(error) }
     */
   }
+
+  async function submitForm () {
+    descriptionInputEl.value = await descriptionTextareaEl.getContent()
+    this.disabled = true
+    this.form.submit()
+  }
 </script>
 
-<h1>Přidat mapu do "{game.name}"</h1>
+<h1>
+  {#if map.id}
+    Upravit mapu "{mapName}"
+  {:else}
+    Přidat mapu do "{game.name}"
+  {/if}
+</h1>
 
 <form method='POST' autocomplete='off' enctype='multipart/form-data'>
   <div class='row'>
@@ -54,7 +80,7 @@
       <label for='mapName'>Název mapy *</label>
     </div>
     <div class='inputs'>
-      <input type='text' id='mapName' name='mapName' maxlength='40' bind:value={name} />
+      <input type='text' id='mapName' name='mapName' maxlength='40' bind:value={map.name} />
     </div>
   </div>
 
@@ -63,7 +89,8 @@
       <label for='mapDescription'>Popis mapy</label>
     </div>
     <div class='inputs'>
-      <TextareaExpandable id='mapDescription' name='mapDescription' bind:value={description} />
+      <TextareaExpandable bind:this={descriptionTextareaEl} id='mapDescription' value={map.description} allowHtml />
+      <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
     </div>
   </div>
 
@@ -73,8 +100,8 @@
       Nahrát vlastní obrázek
     </label>
     nebo
-    <button on:click={generateMap} disabled={description.length < 20}>Generovat z popisu mapy</button>
-    <input type='file' accept='image/*' bind:this={imageInputEl} bind:files on:change={showImage} id='mapImage' name='mapImage' />
+    <button on:click={generateMap} disabled={map.description?.length < 20}>Generovat z popisu mapy</button>
+    <input type='file' accept='image/*' bind:this={imageInputEl} bind:files on:change={showImageFromFile} id='mapImage' name='mapImage' />
   </div>
 
   {#if img}
@@ -86,7 +113,9 @@
   {/if}
 
   <center>
-    <button type='submit' class='large' onclick='this.disabled=true; this.form.submit()' disabled={!(imageReady && name)}>Přidat mapu</button>
+    <button class='large' on:click={submitForm} disabled={!(imageReady && map.name)}>
+      {#if map.id}Uložit mapu{:else}Přidat mapu{/if}
+    </button>
   </center>
 </form>
 

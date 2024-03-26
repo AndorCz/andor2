@@ -135,6 +135,7 @@ summary {
 /* FORM */
 
 button, .button {
+  display: inline-block;
   font-family: 'Alegreya Sans';
   font-size: 20px;
   font-variation-settings: 'wght' 600;

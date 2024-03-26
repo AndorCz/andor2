@@ -4,11 +4,12 @@
   import MapForm from '@components/games/MapForm.svelte'
 
   const { supabase, user } = Astro.locals
-  const mapId = Astro.url.searchParams.get('id')
-  const gameId = Astro.url.searchParams.get('gameId')
+  let mapId = Astro.url.searchParams.get('mapId')
+  let gameId = Astro.url.searchParams.get('gameId')
   let isStoryteller = false
   let game = {}
   let map = {}
+  const edit = !!mapId
 
   if (gameId) {
     const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', gameId).single()
@@ -19,37 +20,40 @@
     if (characterError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
     isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
 
-    if (mapId) { // edit
+    if (edit) {
       const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', mapId).single()
-      if (mapData) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + mapError.message)}`) }
+      if (mapError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + mapError.message)}`) }
       map = mapData
     }
 
     if (Astro.request.method === 'POST' && isStoryteller) {
       const formData = await Astro.request.formData()
       const name = formData.get('mapName')
-      const mapImage = formData.get('mapImage')
+      const image = formData.get('mapImage')
       const description = formData.get('mapDescription')
-      console.log('mapImage', mapImage)
 
-      if (name && mapImage) {
-        const { data: mapDataInsert, error: insertError } = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
-        if (insertError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + insertError.message)}`) }
-        map.id = mapDataInsert.id // add id for a new map
+      if (name && image) {
+        let res
+        if (edit) {
+          res = await supabase.from('maps').update({ name, description, image: getHash() }).eq('id', mapId).select().single()
+        } else {
+          res = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
+        }
+        if (res.error) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + res.error.message)}`) }
+        map = res.data
 
-        const { error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, mapImage, { upsert: true })
+        const { error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, image, { upsert: true })
         if (uploadError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + uploadError.message)}`) }
 
-        return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${encodeURIComponent('Mapa byla přidána')}`)
+        return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${edit ? encodeURIComponent('Mapa byla upravena') : encodeURIComponent('Mapa byla přidána')}`)
       } else {
         return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí obrázek nebo název mapy')}`)
       }
-      return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${encodeURIComponent('Mapa byla přidána')}`)
     }
   }
 ---
 
-<Layout title='Přidat mapu'>
+<Layout title={edit ? 'Upravit mapu' : 'Přidat mapu'}>
   <a href='javascript:history.back()'>zpět</a>
   {user.id && gameId && isStoryteller ? (
     <MapForm {map} {game} userId={user.id} client:only />

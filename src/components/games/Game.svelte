@@ -22,9 +22,8 @@
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    const urlTab = urlParams.get('tab')
-    activeTool = urlParams.get('tool')
-    $gameStore.activeTab = urlTab || $gameStore.activeTab || 'info'
+    $gameStore.activeTab = urlParams.get('tab') || $gameStore.activeTab || 'info'
+    activeTool = urlParams.get('tool') || 'post'
     window.history.replaceState({}, document.title, window.location.pathname) // clear params
   })
 

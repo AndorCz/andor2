@@ -168,7 +168,7 @@
       {#if activeTool === 'dice'}
         <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
       {:else if activeTool === 'maps'}
-        <Maps game={data} {isStoryteller} />
+        <Maps {user} game={data} {isStoryteller} />
       {:else if activeTool === 'find'}
         <div class='searchBox'>
           <!-- svelte-ignore a11y-autofocus -->
@@ -214,9 +214,11 @@
 {/if}
 <!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-{#key $posts}
-  <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
-{/key}
+{#if activeTool !== 'maps'}
+  {#key $posts}
+    <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+  {/key}
+{/if}
 
 <style>
   center {
