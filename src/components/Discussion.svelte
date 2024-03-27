@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
-  import { posts } from '@lib/stores'
+  import { getSavedStore, posts } from '@lib/stores'
   import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -10,22 +10,24 @@
   export let user = {}
   export let data = {}
   export let isOwner
+  export let slug
   export let isPermitted = true
   export let thread
   export let unread = 0
   export let useIdentities = false
   export let identityStore = null
 
+  const limit = 50
+  const showDiscussion = data.open_discussion || isPermitted
+  const discussionStore = getSavedStore(slug)
+
   let textareaRef
-  let textareaValue = ''
+  let textareaValue = $discussionStore.unsent || '' // load unsent post
   let identitySelect
   let saving = false
   let editing = false
   let page = 0
   let pages
-
-  const limit = 50
-  const showDiscussion = data.open_discussion || isPermitted
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -46,6 +48,7 @@
       }
     }
     if (showDiscussion) { loadPosts() }
+    window.addEventListener('pagehide', saveUnsent)
   })
 
   async function loadPosts () {
@@ -103,11 +106,13 @@
   async function triggerReply (postId, userName) {
     textareaRef.addReply(postId, userName)
   }
+
+  async function saveUnsent () {
+    if (textareaRef) { $discussionStore.unsent = await textareaRef.getContent() }
+  }
 </script>
 
 <main>
-  <h2>{#if data.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
-
   {#if showDiscussion}
     {#if user.id}
       {#if $platform === 'desktop'}
@@ -150,13 +155,6 @@
 </main>
 
 <style>
-  main {
-    padding-top: 40px;
-  }
-  h2 {
-    margin-top: 0px;
-    margin-bottom: 0px;
-  }
   .addPostWrapper {
     display: flex;
     width: 100%;

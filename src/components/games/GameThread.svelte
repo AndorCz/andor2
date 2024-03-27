@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { clone } from '@lib/utils'
-  import { posts, getGameStore } from '@lib/stores'
+  import { posts, getSavedStore } from '@lib/stores'
   import { sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -17,7 +17,7 @@
   export let unread = 0
   export let activeTool = 'post'
 
-  const gameStore = getGameStore(data.id)
+  const gameStore = getSavedStore('game-' + data.id)
   const activeGameAudienceIds = writable()
 
   let textareaRef

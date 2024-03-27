@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getGameStore, bookmarks } from '@lib/stores'
+  import { getSavedStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
@@ -13,7 +13,7 @@
   export let data = {}
 
   // prepare store
-  const gameStore = getGameStore(data.id)
+  const gameStore = getSavedStore('game-' + data.id)
   const isGameOwner = data.owner.id === user.id
   const isPlayer = data.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = data.characters.some(c => c.storyteller && c.player.id === user.id)
@@ -85,7 +85,8 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
+      <h2>{#if data.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
+      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} slug={'game-discussion-' + data.id} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
@@ -107,7 +108,11 @@
       margin: 0px;
       flex: 1;
     }
-    .headline button {
+    h2 {
+      margin-top: 40px;
+      margin-bottom: 0px;
+    }
+   .headline button {
       padding: 10px;
       margin-left: 10px;
     }

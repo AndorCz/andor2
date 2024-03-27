@@ -2,7 +2,7 @@
   import DiceBox from '@3d-dice/dice-box-threejs'
   import { onMount } from 'svelte'
   import { showError } from '@lib/toasts'
-  import { getGameStore } from '@lib/stores'
+  import { getSavedStore } from '@lib/stores'
 
   export let threadId
   export let gameId
@@ -11,7 +11,7 @@
   let diceBox
 
   const defaults = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 }
-  const gameStore = getGameStore(gameId)
+  const gameStore = getSavedStore('game-' + gameId)
   $gameStore.dice = $gameStore.dice || defaults
 
   onMount(() => {
