@@ -47,7 +47,7 @@
     replyPostData = replies[id]
     if (replyPostData) {
       replyPostEl.style.display = 'block'
-      replyPostEl.style.top = event.target.offsetTop + 30 + 'px'
+      replyPostEl.style.top = event.target.getBoundingClientRect().top + window.pageYOffset + 30 + 'px'
     }
   }
 

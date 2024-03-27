@@ -15,13 +15,13 @@
 
 <Layout title='Hlavní strana'>
 	<main>
-		<aside>
-			<News client:load />
-		</aside>
 		<section>
 			<Editorial {lastEditorial} client:only />
 			<Feed {user} {lastPosts} client:only />
 		</section>
+		<aside>
+			<News client:load />
+		</aside>
 	</main>
 </Layout>
 
@@ -39,9 +39,10 @@
 
 	@media (max-width: 500px) {
     main {
-			display: block;
+			display: flex;
+			flex-direction: column;
 		}
-			aside, content {
+			aside, content, section {
 				width: 100%;
 			}
   }
