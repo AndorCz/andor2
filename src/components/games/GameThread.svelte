@@ -17,9 +17,12 @@
   export let unread = 0
   export let activeTool = 'post'
 
-  let textareaEl
+  const gameStore = getGameStore(data.id)
+  const activeGameAudienceIds = writable()
+
+  let textareaRef
   let searchEl
-  let textareaValue = ''
+  let textareaValue = $gameStore.unsent || '' // load unsent post
   let identitySelect
   let audienceSelect
   let saving = false
@@ -30,17 +33,31 @@
   let searchTerms = ''
   // let generatingPost = false
 
-  const activeGameAudienceIds = writable()
-
   const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   let otherCharacters = []
+
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },
       ...data.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeGameCharacterId)
     ]
   }
+
+  $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
+  $activeGameAudienceIds = getActiveAudience()
+
+  onMount(() => { // set select value on mount
+    if (user.id) {
+      delete data.unread.gameThread
+      if (identitySelect) { // might not exist if no character
+        $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
+      }
+      if (audienceSelect) { audienceSelect.selectedIndex = 0 } // select first audience (everyone)
+    }
+    loadPosts()
+    window.addEventListener('pagehide', saveUnsent)
+  })
 
   function getActiveCharacterId () {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
@@ -59,21 +76,9 @@
     } else { return ['*'] } // no character
   }
 
-  // prepare gameStore
-  const gameStore = getGameStore(data.id)
-  $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
-  $activeGameAudienceIds = getActiveAudience()
-
-  onMount(() => { // set select value on mount
-    if (user.id) {
-      delete data.unread.gameThread
-      if (identitySelect) { // might not exist if no character
-        $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
-      }
-      if (audienceSelect) { audienceSelect.selectedIndex = 0 }
-    }
-    loadPosts()
-  })
+  async function saveUnsent () {
+    if (textareaRef) { $gameStore.unsent = await textareaRef.getContent() }
+  }
 
   async function loadPosts () {
     let res
@@ -107,6 +112,7 @@
       await sendPost('POST', { thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
     }
     textareaValue = ''
+    $gameStore.unsent = ''
     await loadPosts()
     saving = false
     editing = false
@@ -124,7 +130,7 @@
   async function triggerEdit (id, content) {
     editing = id
     textareaValue = content
-    textareaEl.triggerEdit(id, content)
+    textareaRef.triggerEdit(id, content)
     document.getElementsByClassName('addPostWrapper')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
@@ -176,7 +182,7 @@
           <button class='material' on:click={handleSearch}>search</button>
         </div>
       {:else}
-        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaEl} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
         <!--
         {#if isStoryteller}
           <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>

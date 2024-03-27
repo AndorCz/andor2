@@ -21,10 +21,10 @@
   export let maxlength = null
   export let loading = false
 
+  let isEmpty = value === ''
   let editorRef
   let tiptap
   let originalValue = value
-  let isEmpty = true
 
   onMount(() => {
     if (allowHtml) {
@@ -51,6 +51,8 @@
     value = originalValue
     if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
   }
+
+  export function getIsEmpty () { return isEmpty }
 
   export async function getContent () {
     return allowHtml ? await tiptap.getHTML() : value

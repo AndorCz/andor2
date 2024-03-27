@@ -13,10 +13,10 @@
 
   const boardStore = getBoardStore(data.id)
   const isBoardOwner = data.owner.id === user.id
-  let bookmarkId
 
+  let bookmarkId
   let textareaRef
-  let textareaValue = ''
+  let textareaValue = $boardStore.unsent || '' // load unsent post
   let saving = false
   let editing = false
   let page = 0
@@ -24,7 +24,10 @@
 
   const limit = 50
 
-  onMount(() => { loadPosts() })
+  onMount(() => {
+    loadPosts()
+    window.addEventListener('pagehide', saveUnsent)
+  })
 
   async function loadPosts () {
     const { data: postData, count, error } = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', data.thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
@@ -90,6 +93,10 @@
 
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
+  }
+
+  async function saveUnsent () {
+    if (textareaRef) { $boardStore.unsent = await textareaRef.getContent() }
   }
 
   async function addBookmark () {
