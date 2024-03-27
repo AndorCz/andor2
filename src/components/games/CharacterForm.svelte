@@ -10,7 +10,8 @@
   export let character = {}
 
   let formEl
-  let saving = false
+  let bioInputEl
+  let bioTextareaEl
   let generatingPortrait = false
   let newPortraitBase64
   const isCharacterOwner = userId === character.player
@@ -42,6 +43,12 @@
       window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Postava byla smazána')
     }
   }
+
+  async function submitForm () {
+    bioInputEl.value = await bioTextareaEl.getContent()
+    this.disabled = true
+    this.form.submit()
+  }
 </script>
 
 {#if userId}
@@ -68,7 +75,10 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
-      <div class='inputs'><TextareaExpandable {userId} id='charBio' name='charBio' value={character.bio} /></div>
+      <div class='inputs'>
+        <TextareaExpandable bind:this={bioTextareaEl} {userId} id='charBio' value={character.bio} allowHtml />
+        <input type='hidden' bind:this={bioInputEl} name='charBio' />
+      </div>
     </div>
     {#if isGameOwner}
       <div class='row'>
@@ -77,7 +87,7 @@
       </div>
     {/if}
     <center>
-      <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving || !character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button on:click={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 
