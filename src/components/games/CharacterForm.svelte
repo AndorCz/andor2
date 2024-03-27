@@ -23,9 +23,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appearance: character.appearance, userId })
       })
-      const generatedJson = await response.json() // returns 1024x1024 image
-      if (generatedJson.error) { throw generatedJson.error }
-      const generatedImage = await getImage(generatedJson.data[0].url)
+      const generatedBlob = await response.blob() // returns 1024x1024 image
+      const generatedImage = await getImage(generatedBlob)
       const cropRatio = 0.5
       const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
       const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)

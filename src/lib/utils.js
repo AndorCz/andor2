@@ -85,6 +85,7 @@ export function getImage (image) {
     const img = new Image()
     img.onload = () => { resolve(img) }
     img.onerror = () => reject(new Error('Obrázek se nepodařilo přečíst'))
+    img.crossOrigin = 'anonymous'
     let src
     if (image instanceof File) { // support File
       src = URL.createObjectURL(image)
