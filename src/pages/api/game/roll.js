@@ -1,5 +1,10 @@
 
-const rollDice = (sides, count) => Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
+const rollDice = (sides, count) => {
+  const roll = (d) => Math.floor(Math.random() * d) + 1
+  return Array.from({ length: count }, () => {
+    return sides === 100 ? roll(10) * 10 : roll(sides)
+  })
+}
 
 export const GET = async ({ request, url, redirect, locals }) => {
   const { thread, dice, owner } = Object.fromEntries(url.searchParams)
@@ -11,24 +16,19 @@ export const GET = async ({ request, url, redirect, locals }) => {
     // roll random numbers
     const notationParts = []
     const rolledValues = []
+    const readableResults = {}
     Object.entries(diceObject).forEach(([type, count]) => {
       if (count > 0) {
         const sides = parseInt(type.slice(1))
         const rolls = rollDice(sides, count)
         notationParts.push(`${count}${type}`)
         rolledValues.push(...rolls)
+        readableResults[type] = rolls
       }
     })
 
     // prepare readable results
-    const readableResults = {}
     let post = "<div class='diceRoll'><h3>Hod kostkami</h3>"
-    Object.entries(diceObject).forEach(([type, count]) => {
-      if (count > 0) {
-        const sides = parseInt(type.slice(1))
-        readableResults[type] = rollDice(sides, count)
-      }
-    })
     Object.entries(readableResults).forEach(([type, rolls]) => { post += `<div class='row'><span class='type'>${rolls.length}${type}:</span><b>${rolls.join(' ')}</b> = ${rolls.reduce((a, b) => a + b, 0)}</div>` })
     post += '</div>'
 

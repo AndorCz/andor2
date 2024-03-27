@@ -27,6 +27,7 @@
       const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeGameCharacterId}`, { method: 'GET' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
+      console.log('json.results', json.results)
       await diceBox.roll(json.results)
       onRoll()
     } else {
@@ -171,7 +172,7 @@
         }
     #diceBox {
       width: 100%;
-      height: 300px;
+      height: 600px;
       background: url('/feld.jpg');
     }
 
