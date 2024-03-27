@@ -2,6 +2,7 @@
   import { getHeaderUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
   import { gameCategories, gameSystems } from '@lib/constants'
+  import { tooltip } from '@lib/tooltip'
 
   export let user = {}
   export let games = []
@@ -60,7 +61,7 @@
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
             <div class='owner' title='správce'><a href={'./user?id=' + game.owner} class='user'>{game.owner_name}</a></div>
           </div>
-          <div class='row annotation'>{game.annotation}</div>
+          <div class='row annotation' title={game.annotation} use:tooltip>{game.annotation}</div>
         </div>
         {#if game.custom_header}
           <div class='col image'>

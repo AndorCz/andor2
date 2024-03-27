@@ -1,6 +1,7 @@
 <script>
   import { getHeaderUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
 
   export let user = {}
   export let boards = []
@@ -50,7 +51,7 @@
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
             <div class='owner user' title='správce'>{board.owner_name}</div>
           </div>
-          <div class='row annotation'>{board.header}</div>
+          <div class='row annotation' title={board.header} use:tooltip>{board.header}</div>
         </div>
         {#if board.custom_header}
           <div class='col image'>
