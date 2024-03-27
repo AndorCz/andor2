@@ -5,6 +5,7 @@
   import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
   import { supabase, handleError } from '@lib/database'
 
+  export let isStoryteller
   export let isGameOwner
   export let userId
   export let character = {}
@@ -80,7 +81,7 @@
         <input type='hidden' bind:this={bioInputEl} name='charBio' />
       </div>
     </div>
-    {#if isGameOwner}
+    {#if isGameOwner || isStoryteller}
       <div class='row'>
         <div class='labels'><label for='storyteller'>Vypravěč</label></div>
         <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></div>

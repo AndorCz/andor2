@@ -136,7 +136,7 @@
     left: 20px;
     min-width: 50vw;
     display: none;
-    transform: scale(0.5);
+    transform: scale(0.75);
     transform-origin: top left;
     padding: 20px;
   }

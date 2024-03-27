@@ -325,8 +325,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_character_names(audience_ids uuid[])
-returns text[] as $$
+create or replace function get_character_names(audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -339,7 +338,7 @@ $$ language plpgsql;
 
 
 create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
-returns json as $$
+  returns json as $$
 declare
   is_storyteller boolean;
   player_characters uuid[];
@@ -386,7 +385,7 @@ $$ language plpgsql;
 
 
 create or replace function update_reaction(post_id int4, reaction_type text, action text)
-returns setof posts as $$
+  returns setof posts as $$
 begin
   if action = 'add' then
     return query
@@ -415,8 +414,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_bookmarks()
-returns jsonb as $$
+create or replace function get_bookmarks() returns jsonb as $$
 declare
   games_json jsonb;
   boards_json jsonb;
@@ -471,8 +469,17 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_characters()
-returns json as $$
+create or replace function is_storyteller (game_id int4) returns boolean as $$
+declare
+  is_storyteller boolean;
+begin
+  select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
+  return is_storyteller;
+end;
+$$ language plpgsql;
+
+
+create or replace function get_characters() returns json as $$
 begin
   return (
     with user_games as (
@@ -559,9 +566,7 @@ end;
 $$ language plpgsql;
 
 
-
-create or replace function get_users()
-  returns json as $$
+create or replace function get_users() returns json as $$
 begin
   return (
     with unread_users as (
@@ -603,8 +608,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_sidebar_data()
-  returns json as $$
+create or replace function get_sidebar_data() returns json as $$
 declare
   users_data json;
   characters_data json;
@@ -617,7 +621,7 @@ $$ language plpgsql;
 
 
 create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
-returns jsonb as $$
+  returns jsonb as $$
 begin
   return jsonb_build_object(
     'gameInfo', calculate_unread_count(auth.uid(), 'game-info-' || game::text),
@@ -629,16 +633,14 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_thread_unread(thread int4)
-returns integer as $$
+create or replace function get_thread_unread(thread int4) returns integer as $$
 begin
   return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
 end;
 $$ language plpgsql;
 
 
-create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
-returns int as $$
+create or replace function calculate_unread_count(user_uuid uuid, slug_alias text) returns int as $$
 declare
   unread_count int;
   numeric_id int;
@@ -683,8 +685,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function delete_old_chat_posts()
-  returns void as $$
+create or replace function delete_old_chat_posts() returns void as $$
 begin
   delete from posts
   where id not in (
@@ -697,8 +698,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function upsert_user_read(p_user_id uuid, p_slug text)
-  returns void as $$
+create or replace function upsert_user_read(p_user_id uuid, p_slug text) returns void as $$
 begin
   insert into user_reads (user_id, slug, read_at)
   values (p_user_id, p_slug, now())
