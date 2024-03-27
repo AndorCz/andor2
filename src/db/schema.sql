@@ -60,6 +60,7 @@ create table games (
   system public.game_system not null default 'base'::game_system,
   category public.game_category not null default 'other'::game_category,
   discussion_thread int4 null,
+  recruitment_open boolean not null default true,
   open_discussion boolean not null default false,
   open_info boolean not null default true,
   game_thread int4 null,

@@ -96,46 +96,50 @@
   <h1>Nábor</h1>
   <EditableLong userId={user.id} bind:value={data.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
   <br>
-  {#if isStoryteller || isFilledArray(characters.waiting)}
-    <h2>Hlásí se</h2>
+  {#if data.recruitment_open}
+    {#if isStoryteller || isFilledArray(characters.waiting)}
+      <h2>Hlásí se</h2>
+      <table class='characters'>
+        {#if isFilledArray(characters.waiting)}
+          <CharacterHeader {isStoryteller} />
+          {#each characters.waiting as character}
+            <Character {user} {character} {isStoryteller} gameId={data.id} />
+          {/each}
+        {:else}
+          <tr><td class='none'>Žádné postavy</td></tr>
+        {/if}
+      </table>
+    {/if}
+
+    <h2>Volné postavy k převzetí</h2>
     <table class='characters'>
-      {#if isFilledArray(characters.waiting)}
+      {#if isFilledArray(characters.open)}
         <CharacterHeader {isStoryteller} />
-        {#each characters.waiting as character}
+        {#each characters.open as character}
           <Character {user} {character} {isStoryteller} gameId={data.id} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>
       {/if}
     </table>
-  {/if}
 
-  <h2>Volné postavy k převzetí</h2>
-  <table class='characters'>
-    {#if isFilledArray(characters.open)}
-      <CharacterHeader {isStoryteller} />
-      {#each characters.open as character}
-        <Character {user} {character} {isStoryteller} gameId={data.id} />
-      {/each}
-    {:else}
-      <tr><td class='none'>Žádné postavy</td></tr>
-    {/if}
-  </table>
-
-  {#if user.id}
-    <h2>Přihlásit se</h2>
-    <div class='row'>
-      <div class='existing' class:empty={characters.myOpen.length === 0}>
-        <select bind:value={myOpenSelected}>
-          <option value=''>Vyberte postavu bez hry</option>
-          {#each characters.myOpen as character}
-            <option value={character.id}>{character.name}</option>
-          {/each}
-        </select>
-        <button on:click={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
+    {#if user.id}
+      <h2>Přihlásit se</h2>
+      <div class='row'>
+        <div class='existing' class:empty={characters.myOpen.length === 0}>
+          <select bind:value={myOpenSelected}>
+            <option value=''>Vyberte postavu bez hry</option>
+            {#each characters.myOpen as character}
+              <option value={character.id}>{character.name}</option>
+            {/each}
+          </select>
+          <button on:click={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
+        </div>
+        <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button large'>Vytvořit novou postavu</a>
       </div>
-      <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button large'>Vytvořit novou postavu</a>
-    </div>
+    {/if}
+  {:else}
+    <center><div class='note'><span class='material'>info</span>Nábor je uzavřený</div></center>
   {/if}
 </main>
 
@@ -151,6 +155,11 @@
   }
   h2 {
     margin-top: 0px;
+  }
+  center {
+    display: flex;
+    padding-top: 20px;
+    justify-content: center;
   }
   .note {
     font-style: italic;
