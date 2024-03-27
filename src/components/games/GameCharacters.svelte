@@ -9,7 +9,6 @@
 
   export let user = {}
   export let data = {}
-  export let isGameOwner
   export let isStoryteller
 
   // sort character categories
@@ -26,7 +25,7 @@
       if (char.accepted) { // playing
         characters.playing.push(char)
       } else { // waiting
-        if (isGameOwner) { // all waiting to owner
+        if (isStoryteller) { // all waiting to storytellers
           characters.waiting.push(char)
         } else if (isCharPlayer(char)) { // only their to player
           characters.waiting.push(char)
@@ -70,9 +69,9 @@
   <h2>Vypravěči</h2>
   <table class='characters'>
     {#if isFilledArray(characters.storytellers)}
-      <CharacterHeader {isGameOwner} />
+      <CharacterHeader {isStoryteller} />
       {#each characters.storytellers as character}
-        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
+        <Character {user} {character} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <td class='none'>Žádní vypravěči</td>
@@ -82,9 +81,9 @@
   <h2>Ve hře</h2>
   <table class='characters'>
     {#if isFilledArray(characters.playing)}
-      <CharacterHeader {isGameOwner} />
+      <CharacterHeader {isStoryteller} />
       {#each characters.playing as character}
-        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
+        <Character {user} {character} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>
@@ -97,13 +96,13 @@
   <h1>Nábor</h1>
   <EditableLong userId={user.id} bind:value={data.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
   <br>
-  {#if isGameOwner || isFilledArray(characters.waiting)}
+  {#if isStoryteller || isFilledArray(characters.waiting)}
     <h2>Hlásí se</h2>
     <table class='characters'>
       {#if isFilledArray(characters.waiting)}
-        <CharacterHeader {isGameOwner} />
+        <CharacterHeader {isStoryteller} />
         {#each characters.waiting as character}
-          <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
+          <Character {user} {character} {isStoryteller} gameId={data.id} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>
@@ -114,9 +113,9 @@
   <h2>Volné postavy k převzetí</h2>
   <table class='characters'>
     {#if isFilledArray(characters.open)}
-      <CharacterHeader {isGameOwner} />
+      <CharacterHeader {isStoryteller} />
       {#each characters.open as character}
-        <Character {user} {character} {isGameOwner} {isStoryteller} gameId={data.id} />
+        <Character {user} {character} {isStoryteller} gameId={data.id} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>

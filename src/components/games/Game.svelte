@@ -51,7 +51,6 @@
 </script>
 
 <main>
-
   <div class='headline'>
     <h1>{data.name}</h1>
     {#if user.id}
@@ -86,11 +85,11 @@
     {#if $gameStore.activeTab === 'info'}
       <GameInfo {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'chat'}
-      <Discussion {data} {user} {isGameOwner} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
+      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
-      <GameCharacters {data} {user} {isGameOwner} {isStoryteller} />
+      <GameCharacters {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}
       <GameStoryteller {data} {user} {isStoryteller} />
     {/if}

@@ -1,8 +1,8 @@
 <script>
-  export let isGameOwner = false
+  export let isStoryteller = false
 </script>
 
-{#if isGameOwner}
+{#if isStoryteller}
   <tr>
     <th class='portrait'></th>
     <th class='name'>Jméno</th>

@@ -1,10 +1,10 @@
 <script>
   import { supabase, handleError, getPortrait } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
 
   export let user
   export let gameId
   export let character
-  export let isGameOwner
   export let isStoryteller
 
   const isPlayer = character.player.id === user.id
@@ -47,7 +47,7 @@
   }
 </script>
 
-<tr class='character'>
+<tr class='char'>
   <td class='portrait'>
     {#if character.portrait}
       {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt='portrét postavy' />{/await}
@@ -55,7 +55,7 @@
   </td>
   <td class='name'>
     {#if character.storyteller}
-      <span class='material star' title='Vypravěč'>star</span>
+      <span use:tooltip class='material star' title='Vypravěč'>star</span>
     {/if}
     {#if isPlayer}
       <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
@@ -65,7 +65,7 @@
       {character.name}
     {/if}
   </td>
-  {#if isGameOwner}
+  {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td>
@@ -94,7 +94,7 @@
 </tr>
 
 <style>
-  .character {
+  .char {
     margin-bottom: 2px;
     padding: 10px;
   }
