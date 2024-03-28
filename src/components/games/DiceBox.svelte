@@ -1,7 +1,7 @@
 <script>
   import DiceBox from '@3d-dice/dice-box-threejs'
   import { onMount } from 'svelte'
-  import { showError } from '@lib/toasts'
+  import { showError, showSuccess } from '@lib/toasts'
   import { getSavedStore } from '@lib/stores'
 
   export let threadId
@@ -9,6 +9,7 @@
   export let onRoll
 
   let diceBox
+  let notation = ''
 
   const defaults = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 }
   const gameStore = getSavedStore('game-' + gameId)
@@ -35,9 +36,34 @@
     }
   }
 
-  function addDice (type) { $gameStore.dice[type]++ }
-  function subDice (type) { $gameStore.dice[type]-- }
+  function parseNotation (event) {
+    const dicePattern = /(\d+)(d\d+)/g
+    let match
+    const newDiceValues = { ...defaults }
+
+    while ((match = dicePattern.exec(event.target.value)) !== null) {
+      const [, count, diceType] = match
+      if (diceType in newDiceValues) {
+        newDiceValues[diceType] = parseInt(count, 10)
+      }
+    }
+
+    Object.keys($gameStore.dice).forEach(type => { $gameStore.dice[type] = newDiceValues[type] })
+  }
+
+  function addDice (type) { if ($gameStore.dice[type] < 50) { $gameStore.dice[type]++ } }
+  function subDice (type) { if ($gameStore.dice[type] > 0) { $gameStore.dice[type]-- } }
   function clearDice (type) { $gameStore.dice[type] = 0 }
+  function copyNotation () {
+    navigator.clipboard.writeText(notation)
+    showSuccess('Kostky byly zkopírovány do schránky')
+  }
+
+  // sanitize dice values
+  $: { Object.keys($gameStore.dice).forEach(type => { $gameStore.dice[type] = Number($gameStore.dice[type].toString().replace(/[^0-9]/g, '')) }) }
+
+  // parse dice values into dice notation (eg. '2d4,3d6,1d20,2d10')
+  $: { if ($gameStore) { notation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',') } }
 </script>
 
 <div class='wrapper'>
@@ -46,54 +72,58 @@
     <div class='die'>
       <button on:click={() => { clearDice('d4') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d4') }} class='addLarge d4'>d4</button>
-      <div class='count'><input type='number' value={$gameStore.dice.d4}></div>
+      <input type='text' bind:value={$gameStore.dice.d4} maxlength='2' class='count' />
       <button on:click={() => { subDice('d4') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d4') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d6') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d6') }} class='addLarge d6'>d6</button>
-      <div class='count'>{$gameStore.dice.d6}</div>
+      <input type='text' bind:value={$gameStore.dice.d6} maxlength='2' class='count' />
       <button on:click={() => { subDice('d6') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d6') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d8') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d8') }} class='addLarge d8'>d8</button>
-      <div class='count'>{$gameStore.dice.d8}</div>
+      <input type='text' bind:value={$gameStore.dice.d8} maxlength='2' class='count' />
       <button on:click={() => { subDice('d8') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d8') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d10') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d10') }} class='addLarge d10'>d10</button>
-      <div class='count'>{$gameStore.dice.d10}</div>
+      <input type='text' bind:value={$gameStore.dice.d10} maxlength='2' class='count' />
       <button on:click={() => { subDice('d10') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d10') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d12') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d12') }} class='addLarge d12'>d12</button>
-      <div class='count'>{$gameStore.dice.d12}</div>
+      <input type='text' bind:value={$gameStore.dice.d12} maxlength='2' class='count' />
       <button on:click={() => { subDice('d12') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d12') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d20') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d20') }} class='addLarge d20'>d20</button>
-      <div class='count'>{$gameStore.dice.d20}</div>
+      <input type='text' bind:value={$gameStore.dice.d20} maxlength='2' class='count' />
       <button on:click={() => { subDice('d20') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d20') }} class='add material'>add</button>
     </div>
     <div class='die'>
       <button on:click={() => { clearDice('d100') }} class='clear material'>delete</button>
       <button on:click={() => { addDice('d100') }} class='addLarge d10'>d100</button>
-      <div class='count'>{$gameStore.dice.d100}</div>
+      <input type='text' bind:value={$gameStore.dice.d100} maxlength='2' class='count' />
       <button on:click={() => { subDice('d100') }} class='sub material'>remove</button>
       <button on:click={() => { addDice('d100') }} class='add material'>add</button>
     </div>
   </div>
   <div class='row'>
+    <div class='notation'>
+      <input type='text' value={notation} on:input={parseNotation} size='30' />
+      <button on:click={copyNotation} class='copy material plain'>content_copy</button>
+    </div>
     <button on:click={showRoll} class='roll' disabled>Hodit bez uložení</button>
     <button on:click={showRoll} class='roll' disabled>Hodit soukromě</button>
     <button on:click={showRoll} class='roll'>Hodit veřejně</button>
@@ -161,9 +191,14 @@
         .count {
           text-align: center;
           font-weight: bold;
-          width: 100%;
+          width: 50%;
+          font-family: var(--font);
+          background: none;
+          color: var(--text);
           padding-bottom: 10px;
           font-size: 2.5rem;
+          appearance: none;
+          padding: 5px;
         }
         button.d4 {
           background-image: url('/dice/d4.png');
@@ -196,6 +231,17 @@
       display: flex;
       justify-content: space-around;
     }
+    .notation {
+      position: relative;
+    }
+      .notation input {
+        width: 100%;
+      }
+      .copy {
+        position: absolute;
+        top: 5px;
+        right: -5px;
+      }
 
   @media (max-width: 860px) {
     .tools {
