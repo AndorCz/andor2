@@ -44,48 +44,59 @@
   <div id='diceBox'></div>
   <div class='tools'>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d4}</div>
-      <button on:click={() => { addDice('d4') }} class='add d4'>d4</button>
-      <button on:click={() => { subDice('d4') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d4') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d4') }} class='addLarge d4'>d4</button>
+      <div class='count'><input type='number' value={$gameStore.dice.d4}></div>
+      <button on:click={() => { subDice('d4') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d4') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d6}</div>
-      <button on:click={() => { addDice('d6') }} class='add d6'>d6</button>
-      <button on:click={() => { subDice('d6') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d6') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d6') }} class='addLarge d6'>d6</button>
+      <div class='count'>{$gameStore.dice.d6}</div>
+      <button on:click={() => { subDice('d6') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d6') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d8}</div>
-      <button on:click={() => { addDice('d8') }} class='add d8'>d8</button>
-      <button on:click={() => { subDice('d8') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d8') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d8') }} class='addLarge d8'>d8</button>
+      <div class='count'>{$gameStore.dice.d8}</div>
+      <button on:click={() => { subDice('d8') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d8') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d10}</div>
-      <button on:click={() => { addDice('d10') }} class='add d10'>d10</button>
-      <button on:click={() => { subDice('d10') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d10') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d10') }} class='addLarge d10'>d10</button>
+      <div class='count'>{$gameStore.dice.d10}</div>
+      <button on:click={() => { subDice('d10') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d10') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d12}</div>
-      <button on:click={() => { addDice('d12') }} class='add d12'>d12</button>
-      <button on:click={() => { subDice('d12') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d12') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d12') }} class='addLarge d12'>d12</button>
+      <div class='count'>{$gameStore.dice.d12}</div>
+      <button on:click={() => { subDice('d12') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d12') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d20}</div>
-      <button on:click={() => { addDice('d20') }} class='add d20'>d20</button>
-      <button on:click={() => { subDice('d20') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d20') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d20') }} class='addLarge d20'>d20</button>
+      <div class='count'>{$gameStore.dice.d20}</div>
+      <button on:click={() => { subDice('d20') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d20') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <div class='count'>{$gameStore.dice.d100}</div>
-      <button on:click={() => { addDice('d100') }} class='add d10'>d100</button>
-      <button on:click={() => { subDice('d100') }} class='sub material'>remove</button>
       <button on:click={() => { clearDice('d100') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('d100') }} class='addLarge d10'>d100</button>
+      <div class='count'>{$gameStore.dice.d100}</div>
+      <button on:click={() => { subDice('d100') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('d100') }} class='add material'>add</button>
     </div>
-    <button on:click={showRoll} class='roll'>Hodit</button>
+  </div>
+  <div class='row'>
+    <button on:click={showRoll} class='roll' disabled>Hodit bez uložení</button>
+    <button on:click={showRoll} class='roll' disabled>Hodit soukromě</button>
+    <button on:click={showRoll} class='roll'>Hodit veřejně</button>
   </div>
 </div>
 
@@ -107,13 +118,13 @@
         background-color: var(--block);
         border-radius: 10px;
         text-align: center;
-        padding-bottom: 30px;
       }
-        .add {
+        .addLarge {
           background: none;
           border: none;
           padding: 0;
           margin: 0;
+          margin-top: 10px;
           box-shadow: none;
           text-shadow: 1px 1px 6px #0005;
           width: 80px;
@@ -123,29 +134,34 @@
           position: relative;
           font-size: 2rem;
         }
-          .add:hover, .clear:hover {
+          .addLarge:hover, .add:hover, .sub:hover, .clear:hover {
             transform: scale(1.1);
           }
-        .clear, .sub {
+        .clear, .sub, .add {
           position: absolute;
-          bottom: 0px;
           padding: 5px;
           font-size: 1.2rem;
           color: var(--dim);
         }
         .sub {
           border-radius: 0px 10px 0px 10px;
+          bottom: 0px;
           left: 0px;
+        }
+        .add {
+          border-radius: 10px 0px 10px 0px;
+          bottom: 0px;
+          right: 0px;
         }
         .clear {
           border-radius: 10px 0px 10px 0px;
-          right: 0px;
+          top: 0px;
+          left: 0px;
         }
         .count {
           text-align: center;
           font-weight: bold;
           width: 100%;
-          padding-top: 15px;
           padding-bottom: 10px;
           font-size: 2.5rem;
         }
@@ -172,8 +188,13 @@
         }
     #diceBox {
       width: 100%;
-      height: 600px;
+      height: 400px;
       background: url('/feld.jpg');
+    }
+    .row {
+      padding: 20px;
+      display: flex;
+      justify-content: space-around;
     }
 
   @media (max-width: 860px) {
