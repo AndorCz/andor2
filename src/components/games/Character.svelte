@@ -36,13 +36,15 @@
   async function kickCharacter () {
     if (!window.confirm('Opravdu vyhodit postavu? Její příspěvky zůstanou.')) { return }
     // update the original character to remove the player
-    const { error } = await supabase.from('characters').update({ game: null }).eq('id', character.id)
+    const { error } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
     // create a new character with the same data for the player to keep
     delete character.id
-    const { error: newCharacterError } = await supabase.from('characters').insert([{ ...character, game: null }])
+    delete character.player
+    const newChar = { ...character, game: null, player: user.id }
+    const { error: newCharacterError } = await supabase.from('characters').insert(newChar)
     if (newCharacterError) { return handleError(newCharacterError) }
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
   }
 
   async function freeCharacter () {
