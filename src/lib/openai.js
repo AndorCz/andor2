@@ -133,11 +133,25 @@ export async function generatePost (thread, prompt, system) {
 }
 
 export async function generatePortrait (appearance, user) {
-  return await openai.images.generate({
+  const image = await openai.images.generate({
     model: 'dall-e-3',
     prompt: `Digital painting, no text, RPG character in full-length and background environment: ${appearance}`,
     size: '1024x1024',
-    response_format: 'b64_json',
+    response_format: 'url',
+    user // for cases of inappropriate content
+  }).catch(error => { return error })
+
+  const response = await fetch(image.data[0].url, { headers: { 'Access-Control-Allow-Origin': '*' } })
+  const blob = await response.blob()
+  return blob
+}
+
+export async function generateMap (description, user) {
+  return await openai.images.generate({
+    model: 'dall-e-3',
+    prompt: `D&D RPG map, digital painting, top-down view, dark background, tiled with square grid: ${description}`,
+    size: '1024x1024',
+    response_format: 'url',
     user // for cases of inappropriate content
   }).catch(error => { return error })
 }

@@ -2,15 +2,17 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { cropPortrait, resizePortrait, loadBase64Image } from '@lib/utils'
+  import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
   import { supabase, handleError } from '@lib/database'
 
+  export let isStoryteller
   export let isGameOwner
   export let userId
   export let character = {}
 
   let formEl
-  let saving = false
+  let bioInputEl
+  let bioTextareaEl
   let generatingPortrait = false
   let newPortraitBase64
   const isCharacterOwner = userId === character.player
@@ -23,9 +25,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appearance: character.appearance, userId })
       })
-      const generatedJson = await response.json() // returns 1024x1024 image in base64
-      if (generatedJson.error) { throw generatedJson.error }
-      const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
+      const generatedBlob = await response.blob() // returns 1024x1024 image
+      const generatedImage = await getImage(generatedBlob)
       const cropRatio = 0.5
       const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
       const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)
@@ -35,13 +36,21 @@
   }
 
   async function deleteCharacter () {
-    const { error } = await supabase.from('characters').delete().eq('id', character.id)
-    if (error) { return handleError(error) }
     if (character.game) {
+      const { error: updateError } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
+      if (updateError) { return handleError(updateError) }
       window.location.href = `/game/${character.game}?toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
     } else {
+      const { error: deleteError } = await supabase.from('characters').delete().eq('id', character.id)
+      if (deleteError) { return handleError(deleteError) }
       window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Postava byla smazána')
     }
+  }
+
+  async function submitForm () {
+    bioInputEl.value = await bioTextareaEl.getContent()
+    this.disabled = true
+    this.form.submit()
   }
 </script>
 
@@ -61,7 +70,7 @@
         <div class='portrait'>
           <PortraitInput identity={character} {newPortraitBase64} table='characters' />
           <span class='flex'>
-            <ButtonLoading type='button' label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
+            <ButtonLoading label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
             <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>
           </span>
         </div>
@@ -69,16 +78,19 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
-      <div class='inputs'><TextareaExpandable {userId} id='charBio' name='charBio' value={character.bio} /></div>
+      <div class='inputs'>
+        <TextareaExpandable bind:this={bioTextareaEl} {userId} id='charBio' value={character.bio} allowHtml />
+        <input type='hidden' bind:this={bioInputEl} name='charBio' />
+      </div>
     </div>
-    {#if isGameOwner}
+    {#if isGameOwner || isStoryteller}
       <div class='row'>
         <div class='labels'><label for='storyteller'>Vypravěč</label></div>
         <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' checked={character.storyteller} /></div>
       </div>
     {/if}
     <center>
-      <button type='submit' class='large' on:click={() => { saving = true; formEl.submit() }} disabled={saving || !character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button on:click={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 

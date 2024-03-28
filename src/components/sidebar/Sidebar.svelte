@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
-  import { getUserStore, activeConversation, bookmarks } from '@lib/stores'
-  import { showSuccess } from '@lib/toasts'
+  import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -30,7 +29,7 @@
   let unreadCharacters = false
 
   onMount(async () => {
-    userStore = getUserStore()
+    userStore = getSavedStore('user')
     bookmarkUnreadTotal = getBookmarkUnreadTotal()
     if (bookmarkData) { $bookmarks = bookmarkData }
     $userStore.activePanel = $userStore.activePanel || 'booked'

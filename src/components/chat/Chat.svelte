@@ -109,12 +109,13 @@
   $: if (postsEl && $posts.length) {
     if (previousPostsLength === 0 && $posts.length > 0) {
       // Instant scroll for the initial load
-      postsEl.scrollTop = postsEl.scrollHeight
+      setTimeout(() => { postsEl.scrollTop = postsEl.scrollHeight }, 10)
+      // postsEl.scrollTop = postsEl.scrollHeight
     } else if (previousPostsLength < $posts.length) {
       // Smooth scroll for subsequent updates (new messages)
       tick().then(() => {
         // Smooth scroll to the bottom
-        postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' })
+        setTimeout(() => { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }, 10)
         previousPostsLength = $posts.length // update count
       })
     }

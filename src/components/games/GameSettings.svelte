@@ -14,6 +14,7 @@
   let originalName
   let originalCategory
   let originalOpenDiscussion
+  let originalRecruitmentOpen
   let originalOpenInfo
   let originalAnnotation
 
@@ -24,13 +25,14 @@
     originalSystem = data.system
     originalCategory = data.category
     originalOpenDiscussion = data.open_discussion
+    originalRecruitmentOpen = data.recruitment_open
     originalAnnotation = data.annotation
     originalOpenInfo = data.open_info
   }
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info, recruitment_open: data.recruitment_open }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -84,7 +86,7 @@
 
     <h3>Anotace</h3>
     <div class='row'>
-      <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} />
+      <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
       <button on:click={updateGame} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 
@@ -106,6 +108,15 @@
         {/each}
       </select>
       <button on:click={updateGame} disabled={saving || (originalSystem === data.system)} class='material'>check</button>
+    </div>
+
+    <h3>Nábor</h3>
+    <div class='row'>
+      <select id='gameRecruitmentOpen' name='gameRecruitmentOpen' bind:value={data.recruitment_open}>
+        <option value={false}>Uzavřený</option>
+        <option value={true}>Otevřený</option>
+      </select>
+      <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === data.recruitment_open)} class='material'>check</button>
     </div>
 
     <h3>Mód diskuze</h3>

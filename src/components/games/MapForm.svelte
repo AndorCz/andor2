@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { getImage } from '@lib/database'
   import { lightboxImage } from '@lib/stores'
+  import { getImage, handleError } from '@lib/database'
+  import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let map = { name: '', description: '' }
@@ -13,13 +14,14 @@
   let imageInputEl
   let descriptionTextareaEl
   let descriptionInputEl
+  let imageGeneratedUrl
   let imageReady = false
   let generatingMap = false
   let img
 
   onMount(async () => {
     if (map.id) {
-      const imgUrl = await getImage(`${game.id}/${map.id}`, 'maps')
+      const imgUrl = await getImage(`${game.id}/${map.id}?${map.image}`, 'maps')
       await addImage(imgUrl)
     }
   })
@@ -34,12 +36,11 @@
   async function showImageFromFile () {
     if (files && files[0]) {
       addImage(URL.createObjectURL(files[0]))
+      imageGeneratedUrl = null
     }
   }
 
   async function generateMap () {
-    console.log('description', map.description)
-    /*
     try {
       generatingMap = true
       const response = await fetch('/api/game/generateMap', {
@@ -47,16 +48,13 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: map.description, userId })
       })
-      const generatedJson = await response.json() // returns 1024x1024 image in base64
+      const generatedJson = await response.json() // returns 1024x1024 image
       if (generatedJson.error) { throw generatedJson.error }
-      const generatedImage = await loadBase64Image(generatedJson.data[0].b64_json)
-      const cropRatio = 0.5
-      const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
-      const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)
-      newPortraitBase64 = resizedImage.base64
-      generatingPortrait = false
+      imageGeneratedUrl = generatedJson.data[0].url
+      addImage(imageGeneratedUrl)
+      generatingMap = false
+      imageInputEl.value = null
     } catch (error) { handleError(error) }
-    */
   }
 
   async function submitForm () {
@@ -89,7 +87,7 @@
       <label for='mapDescription'>Popis mapy</label>
     </div>
     <div class='inputs'>
-      <TextareaExpandable bind:this={descriptionTextareaEl} id='mapDescription' value={map.description} allowHtml />
+      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} allowHtml />
       <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
     </div>
   </div>
@@ -100,8 +98,9 @@
       Nahrát vlastní obrázek
     </label>
     nebo
-    <button on:click={generateMap} disabled={map.description?.length < 20}>Generovat z popisu mapy</button>
+    <ButtonLoading label='Generovat z popisu mapy' handleClick={generateMap} loading={generatingMap} disabled={map.description?.length < 20} />
     <input type='file' accept='image/*' bind:this={imageInputEl} bind:files on:change={showImageFromFile} id='mapImage' name='mapImage' />
+    <input type='hidden' name='mapGeneratedUrl' bind:value={imageGeneratedUrl} />
   </div>
 
   {#if img}

@@ -108,7 +108,11 @@
             {#await getPortrait(them.id, them.portrait) then url}<img src={url} class='portrait' alt={them.name} />{/await}
           {/if}
           <div class='label'>
-            <div class='name'>{them.name}</div>
+            {#if $activeConversation.type === 'character'}
+              <a href='/game/character?id={them.id}' class='name character'>{them.name}</a>
+            {:else}
+              <a href='/user?id={them.id}' class='name user'>{them.name}</a>
+            {/if}
             <div class='subtitle'>soukromá konverzace</div>
           </div>
         </h2>
@@ -170,6 +174,9 @@
       padding-bottom: 20px;
       margin-bottom: 0px;
     }
+      .name {
+        font-size: 30px;
+      }
       .portrait {
         display: block;
         width: 70px;

@@ -1,5 +1,6 @@
 ---
   import { getHash } from '@lib/database'
+  import { base64ToBlob } from '@lib/utils'
 	import Layout from '@layouts/layout.astro'
   import MapForm from '@components/games/MapForm.svelte'
 
@@ -16,9 +17,9 @@
     if (gameError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
     game = gameData
 
-    const { data: characterData, error: characterError } = await supabase.from('characters').select('player:profiles(id, name), storyteller').eq('game', gameId)
+    const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: gameId }).single()
     if (characterError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
-    isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
+    isStoryteller = storytellerData
 
     if (edit) {
       const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', mapId).single()
@@ -29,9 +30,16 @@
     if (Astro.request.method === 'POST' && isStoryteller) {
       const formData = await Astro.request.formData()
       const name = formData.get('mapName')
-      const image = formData.get('mapImage')
       const description = formData.get('mapDescription')
-
+      
+      let image = formData.get('mapImage')
+      const imageUrl = formData.get('mapGeneratedUrl')
+      if (imageUrl) {
+        const res = await fetch(imageUrl)
+        if (res.error) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + res.error)}`) }
+        image = await res.blob()
+      }
+      
       if (name && image) {
         let res
         if (edit) {
@@ -42,8 +50,9 @@
         if (res.error) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + res.error.message)}`) }
         map = res.data
 
-        const { error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, image, { upsert: true })
+        const { data: uploadData, error: uploadError } = await supabase.storage.from('maps').upload(`${gameId}/${map.id}`, image, { upsert: true })
         if (uploadError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + uploadError.message)}`) }
+        console.log('uploadData', uploadData)
 
         return Astro.redirect(`/game/${gameId}?tab=game&tool=maps&toastType=success&toastText=${edit ? encodeURIComponent('Mapa byla upravena') : encodeURIComponent('Mapa byla přidána')}`)
       } else {

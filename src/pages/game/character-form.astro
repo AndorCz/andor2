@@ -10,11 +10,16 @@
 
   let character:any = {}
   let isGameOwner = false
+  let isStoryteller = false
 
   if (game) {
     const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
     if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
     isGameOwner = gameData.owner === user.id
+
+    const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: game }).single()
+    if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + storytellerError.message)}`) }
+    isStoryteller = storytellerData
   }
 
   if (id) { // edit
@@ -67,5 +72,5 @@
   <a href='javascript:history.back()'>zpět</a>
 
   <h1>{id ? 'Upravit postavu' : 'Vytvořit postavu'}</h1>
-  <CharacterForm {character} {isGameOwner} userId={user.id} client:only />
+  <CharacterForm {character} {isGameOwner} {isStoryteller} userId={user.id} client:only />
 </Layout>

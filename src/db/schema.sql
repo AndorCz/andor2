@@ -60,6 +60,7 @@ create table games (
   system public.game_system not null default 'base'::game_system,
   category public.game_category not null default 'other'::game_category,
   discussion_thread int4 null,
+  recruitment_open boolean not null default true,
   open_discussion boolean not null default false,
   open_info boolean not null default true,
   game_thread int4 null,
@@ -242,41 +243,41 @@ create view work_list as
   order by w.created_at desc;
 
 create or replace view last_posts as
-select p.id, p.content, p.created_at,
-  case
-    when g.id is not null then 'game'
-    when b.id is not null then 'board'
-    when w.id is not null then 'work'
-  end as content_type,
-  coalesce(g.id::text, b.id::text, w.id::text) as content_id,
-  p.owner,
-  p.owner_type,
-  case
-    when p.owner_type = 'user' then pr.name
-    when p.owner_type = 'character' then ch.name
-  end as owner_name,
-  case
-    when p.owner_type = 'user' then pr.portrait
-    when p.owner_type = 'character' then ch.portrait
-  end as owner_portrait,
-  case
-    when g.id is not null then g.name
-    when b.id is not null then b.name
-    when w.id is not null then w.name
-  end as content_name,
-  p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
-from
-  posts p
-  left join games g on p.thread = g.game_thread
-  left join boards b on p.thread = b.thread
-  left join works w on p.thread = w.thread
-  left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
-  left join characters ch on p.owner = ch.id and p.owner_type = 'character'
-where
-  p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE
-order by
-  p.created_at desc
-limit 10;
+  select p.id, p.content, p.created_at,
+    case
+      when g.id is not null then 'game'
+      when b.id is not null then 'board'
+      when w.id is not null then 'work'
+    end as content_type,
+    coalesce(g.id::text, b.id::text, w.id::text) as content_id,
+    p.owner,
+    p.owner_type,
+    case
+      when p.owner_type = 'user' then pr.name
+      when p.owner_type = 'character' then ch.name
+    end as owner_name,
+    case
+      when p.owner_type = 'user' then pr.portrait
+      when p.owner_type = 'character' then ch.portrait
+    end as owner_portrait,
+    case
+      when g.id is not null then g.name
+      when b.id is not null then b.name
+      when w.id is not null then w.name
+    end as content_name,
+    p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
+  from
+    posts p
+    left join games g on p.thread = g.game_thread
+    left join boards b on p.thread = b.thread
+    left join works w on p.thread = w.thread
+    left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
+    left join characters ch on p.owner = ch.id and p.owner_type = 'character'
+  where
+    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE
+  order by
+    p.created_at desc
+  limit 10;
 
 
 -- FUNCTIONS
@@ -324,8 +325,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_character_names(audience_ids uuid[])
-returns text[] as $$
+create or replace function get_character_names(audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -338,7 +338,7 @@ $$ language plpgsql;
 
 
 create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
-returns json as $$
+  returns json as $$
 declare
   is_storyteller boolean;
   player_characters uuid[];
@@ -385,7 +385,7 @@ $$ language plpgsql;
 
 
 create or replace function update_reaction(post_id int4, reaction_type text, action text)
-returns setof posts as $$
+  returns setof posts as $$
 begin
   if action = 'add' then
     return query
@@ -414,8 +414,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_bookmarks()
-returns jsonb as $$
+create or replace function get_bookmarks() returns jsonb as $$
 declare
   games_json jsonb;
   boards_json jsonb;
@@ -470,8 +469,17 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_characters()
-returns json as $$
+create or replace function is_storyteller (game_id int4) returns boolean as $$
+declare
+  is_storyteller boolean;
+begin
+  select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
+  return is_storyteller;
+end;
+$$ language plpgsql;
+
+
+create or replace function get_characters() returns json as $$
 begin
   return (
     with user_games as (
@@ -558,9 +566,7 @@ end;
 $$ language plpgsql;
 
 
-
-create or replace function get_users()
-  returns json as $$
+create or replace function get_users() returns json as $$
 begin
   return (
     with unread_users as (
@@ -602,8 +608,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_sidebar_data()
-  returns json as $$
+create or replace function get_sidebar_data() returns json as $$
 declare
   users_data json;
   characters_data json;
@@ -616,7 +621,7 @@ $$ language plpgsql;
 
 
 create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
-returns jsonb as $$
+  returns jsonb as $$
 begin
   return jsonb_build_object(
     'gameInfo', calculate_unread_count(auth.uid(), 'game-info-' || game::text),
@@ -628,16 +633,14 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_thread_unread(thread int4)
-returns integer as $$
+create or replace function get_thread_unread(thread int4) returns integer as $$
 begin
   return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
 end;
 $$ language plpgsql;
 
 
-create or replace function calculate_unread_count(user_uuid uuid, slug_alias text)
-returns int as $$
+create or replace function calculate_unread_count(user_uuid uuid, slug_alias text) returns int as $$
 declare
   unread_count int;
   numeric_id int;
@@ -682,8 +685,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function delete_old_chat_posts()
-  returns void as $$
+create or replace function delete_old_chat_posts() returns void as $$
 begin
   delete from posts
   where id not in (
@@ -696,8 +698,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function upsert_user_read(p_user_id uuid, p_slug text)
-  returns void as $$
+create or replace function upsert_user_read(p_user_id uuid, p_slug text) returns void as $$
 begin
   insert into user_reads (user_id, slug, read_at)
   values (p_user_id, p_slug, now())

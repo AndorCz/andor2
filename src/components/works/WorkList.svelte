@@ -2,6 +2,7 @@
   import { getHeaderUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
   import { workTags, workCategoriesText } from '@lib/constants'
+  import { tooltip } from '@lib/tooltip'
 
   export let user = {}
   export let works = []
@@ -83,7 +84,7 @@
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <div class='owner user' title='autor'>{work.owner_name}</div>
           </div>
-          <div class='row annotation'>{work.annotation}</div>
+          <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation}</div>
         </div>
         {#if work.custom_header}
           <div class='col image'>

@@ -47,7 +47,7 @@
     replyPostData = replies[id]
     if (replyPostData) {
       replyPostEl.style.display = 'block'
-      replyPostEl.style.top = event.target.offsetTop + 30 + 'px'
+      replyPostEl.style.top = event.target.getBoundingClientRect().top + window.pageYOffset + 30 + 'px'
     }
   }
 
@@ -136,7 +136,7 @@
     left: 20px;
     min-width: 50vw;
     display: none;
-    transform: scale(0.5);
+    transform: scale(0.75);
     transform-origin: top left;
     padding: 20px;
   }

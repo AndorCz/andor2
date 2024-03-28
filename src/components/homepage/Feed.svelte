@@ -1,5 +1,6 @@
 <script>
   import Post from '@components/common/Post.svelte'
+  import { platform } from '@components/common/MediaQuery.svelte'
 
   export let lastPosts = []
   export let user = {}
@@ -29,7 +30,7 @@
     {#each groups as group}
       <a href={`/${group.headline.contentType}/${group.headline.contentId}`}><h4>{group.headline.contentName}</h4></a>
       {#each group.posts as post}
-        <Post {post} {user} iconSize={80} allowReactions={post.owner_type === 'user'} />
+        <Post {post} {user} iconSize={$platform === 'desktop' ? 80 : 40} allowReactions={post.owner_type === 'user'} />
       {/each}
     {/each}
   {/if}

@@ -1,10 +1,10 @@
 <script>
   import { supabase, handleError, getPortrait } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
 
   export let user
   export let gameId
   export let character
-  export let isGameOwner
   export let isStoryteller
 
   const isPlayer = character.player.id === user.id
@@ -14,8 +14,8 @@
     if (timestampError) { return handleError(timestampError) }
   }
 
-  async function acceptCharacter (id) {
-    const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', id)
+  async function acceptCharacter () {
+    const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', character.id)
     if (error) { return handleError(error) }
     await charactersChanged()
 
@@ -25,29 +25,46 @@
 
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
-  async function rejectCharacter (id, own = false) {
+
+  async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
-    const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', id)
+    const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', character.id)
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent(own ? 'Přihláška byla zrušena' : 'Postava byla vyřazena ze hry')
   }
-  async function freeCharacter (id) {
+
+  async function kickCharacter () {
+    if (!window.confirm('Opravdu vyhodit postavu? Její příspěvky zůstanou.')) { return }
+    // update the original character to remove the player
+    const { error } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
+    if (error) { return handleError(error) }
+    // create a new character with the same data for the player to keep
+    delete character.id
+    delete character.player
+    const newChar = { ...character, game: null, player: user.id }
+    const { error: newCharacterError } = await supabase.from('characters').insert(newChar)
+    if (newCharacterError) { return handleError(newCharacterError) }
+    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
+  }
+
+  async function freeCharacter () {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
-    const { error } = await supabase.from('characters').update({ open: true }).eq('id', id)
+    const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
     await charactersChanged()
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla uvolněna')
   }
-  async function claimCharacter (id) {
+
+  async function claimCharacter () {
     if (!window.confirm('Opravdu převzít postavu?')) { return }
-    const { error } = await supabase.from('characters').update({ open: false, player: user.id }).eq('id', id)
+    const { error } = await supabase.from('characters').update({ open: false, player: user.id }).eq('id', character.id)
     await charactersChanged()
     if (error) { return handleError(error) }
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla převzata')
   }
 </script>
 
-<tr class='character'>
+<tr class='char'>
   <td class='portrait'>
     {#if character.portrait}
       {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt='portrét postavy' />{/await}
@@ -55,7 +72,7 @@
   </td>
   <td class='name'>
     {#if character.storyteller}
-      <span class='material star' title='Vypravěč'>star</span>
+      <span use:tooltip class='material star' title='Vypravěč'>star</span>
     {/if}
     {#if isPlayer}
       <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
@@ -65,28 +82,28 @@
       {character.name}
     {/if}
   </td>
-  {#if isGameOwner}
+  {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td>
     {#if isStoryteller || !character.accepted || character.open}
       <div class='options'>
-        {#if isStoryteller}
-          {#if character.accepted}
-            <button on:click={() => rejectCharacter(character.id)}>vyloučit</button>
-            {#if !character.open}
-              <button on:click={() => freeCharacter(character.id)}>uvolnit</button>
-            {/if}
-          {:else}
-            <button on:click={() => acceptCharacter(character.id)}>přijmout</button>
-            <button on:click={() => rejectCharacter(character.id)}>odmítnout</button>
-          {/if}
+        {#if character.open}
+          <button on:click={() => claimCharacter()}>převzít</button>
         {/if}
         {#if isPlayer && !character.accepted && !isStoryteller}
-          <button on:click={() => rejectCharacter(character.id, true)}>zrušit</button>
+          <button on:click={() => rejectCharacter(true)}>zrušit</button>
         {/if}
-        {#if character.open}
-          <button on:click={() => claimCharacter(character.id)}>převzít</button>
+        {#if isStoryteller}
+          {#if character.accepted}
+            {#if !character.open}
+              <button on:click={() => freeCharacter()}>uvolnit</button>
+            {/if}
+            <button on:click={() => kickCharacter()}>vyloučit</button>
+          {:else}
+            <button on:click={() => acceptCharacter()}>přijmout</button>
+            <button on:click={() => rejectCharacter()}>odmítnout</button>
+          {/if}
         {/if}
       </div>
     {/if}
@@ -94,7 +111,7 @@
 </tr>
 
 <style>
-  .character {
+  .char {
     margin-bottom: 2px;
     padding: 10px;
   }
