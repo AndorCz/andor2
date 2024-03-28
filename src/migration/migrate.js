@@ -36,6 +36,11 @@ export async function getOldUserInfo(login, password) {
     return results
 }
 
+export async function getOldUserLogin(id){
+  const sqlQuery = `SELECT old_login FROM old_users WHERE old_id = '${id}'`;
+  const results = await queryDatabase(sqlQuery);
+  return results
+}
 
 // Testing lol
 // getOldUserInfo('Avium','123')
