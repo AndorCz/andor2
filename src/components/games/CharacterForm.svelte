@@ -36,11 +36,13 @@
   }
 
   async function deleteCharacter () {
-    const { error } = await supabase.from('characters').delete().eq('id', character.id)
-    if (error) { return handleError(error) }
     if (character.game) {
+      const { error: updateError } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
+      if (updateError) { return handleError(updateError) }
       window.location.href = `/game/${character.game}?toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
     } else {
+      const { error: deleteError } = await supabase.from('characters').delete().eq('id', character.id)
+      if (deleteError) { return handleError(deleteError) }
       window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Postava byla smazána')
     }
   }

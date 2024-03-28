@@ -17,9 +17,9 @@
     if (gameError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
     game = gameData
 
-    const { data: characterData, error: characterError } = await supabase.from('characters').select('player:profiles(id, name), storyteller').eq('game', gameId)
+    const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: gameId }).single()
     if (characterError) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
-    isStoryteller = characterData.some(c => c.storyteller && c.player.id === user.id)
+    isStoryteller = storytellerData
 
     if (edit) {
       const { data: mapData, error: mapError } = await supabase.from('maps').select('*').eq('id', mapId).single()

@@ -15,9 +15,9 @@
 
     if (user.id) {
       if (charData.game) {
-        const { data: storytellerData, error: storytellerError } = await supabase.from('characters').select('id').eq('game', charData.game).eq('player', user.id).eq('storyteller', true).maybeSingle()
+        const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: charData.game }).single()
         if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
-        isStoryteller = !!storytellerData
+        isStoryteller = storytellerData
       } else {
         return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
       }

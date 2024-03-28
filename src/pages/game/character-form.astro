@@ -17,9 +17,9 @@
     if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
     isGameOwner = gameData.owner === user.id
 
-    const { data: storytelleData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: game }).single()
+    const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: game }).single()
     if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + storytellerError.message)}`) }
-    isStoryteller = storytelleData
+    isStoryteller = storytellerData
   }
 
   if (id) { // edit

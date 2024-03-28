@@ -145,6 +145,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 20px;
       /*
       background-color: color-mix(in srgb, var(--block), var(--panel) 50%);
       box-shadow: 2px 2px 3px #0002;
