@@ -11,7 +11,7 @@
   let diceBox
   let notation = ''
 
-  const defaults = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 }
+  const defaults = { k4: 0, k6: 0, k8: 0, k10: 0, k12: 0, k20: 0, k100: 0 }
   const gameStore = getSavedStore('game-' + gameId)
   $gameStore.dice = $gameStore.dice || defaults
 
@@ -21,14 +21,14 @@
   })
 
   async function showRoll () {
-    // convert into dice notation (eg. '2d4,3d6,1d20,2d10')
+    // convert into czech dice notation (eg. '2k4,3k6,1k20,2k10')
     const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
     if (diceNotation) {
       // rolls are happening on the server
       const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeGameCharacterId}`, { method: 'GET' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
-      console.log('json.results', json.results)
+      json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
       await diceBox.roll(json.results)
       onRoll()
     } else {
@@ -37,7 +37,7 @@
   }
 
   function parseNotation (event) {
-    const dicePattern = /(\d+)(d\d+)/g
+    const dicePattern = /(\d+)(k\d+)/g
     let match
     const newDiceValues = { ...defaults }
 
@@ -62,7 +62,7 @@
   // sanitize dice values
   $: { Object.keys($gameStore.dice).forEach(type => { $gameStore.dice[type] = Number($gameStore.dice[type].toString().replace(/[^0-9]/g, '')) }) }
 
-  // parse dice values into dice notation (eg. '2d4,3d6,1d20,2d10')
+  // parse dice values into dice notation
   $: { if ($gameStore) { notation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',') } }
 </script>
 
@@ -70,53 +70,53 @@
   <div id='diceBox'></div>
   <div class='tools'>
     <div class='die'>
-      <button on:click={() => { clearDice('d4') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d4') }} class='addLarge d4'>d4</button>
-      <input type='text' bind:value={$gameStore.dice.d4} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d4') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d4') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k4') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k4') }} class='addLarge k4'>k4</button>
+      <input type='text' bind:value={$gameStore.dice.k4} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k4') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k4') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d6') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d6') }} class='addLarge d6'>d6</button>
-      <input type='text' bind:value={$gameStore.dice.d6} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d6') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d6') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k6') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k6') }} class='addLarge k6'>k6</button>
+      <input type='text' bind:value={$gameStore.dice.k6} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k6') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k6') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d8') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d8') }} class='addLarge d8'>d8</button>
-      <input type='text' bind:value={$gameStore.dice.d8} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d8') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d8') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k8') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k8') }} class='addLarge k8'>k8</button>
+      <input type='text' bind:value={$gameStore.dice.k8} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k8') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k8') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d10') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d10') }} class='addLarge d10'>d10</button>
-      <input type='text' bind:value={$gameStore.dice.d10} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d10') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d10') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k10') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k10') }} class='addLarge k10'>k10</button>
+      <input type='text' bind:value={$gameStore.dice.k10} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k10') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k10') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d12') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d12') }} class='addLarge d12'>d12</button>
-      <input type='text' bind:value={$gameStore.dice.d12} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d12') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d12') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k12') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k12') }} class='addLarge k12'>k12</button>
+      <input type='text' bind:value={$gameStore.dice.k12} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k12') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k12') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d20') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d20') }} class='addLarge d20'>d20</button>
-      <input type='text' bind:value={$gameStore.dice.d20} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d20') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d20') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k20') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k20') }} class='addLarge k20'>k20</button>
+      <input type='text' bind:value={$gameStore.dice.k20} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k20') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k20') }} class='add material'>add</button>
     </div>
     <div class='die'>
-      <button on:click={() => { clearDice('d100') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('d100') }} class='addLarge d10'>d100</button>
-      <input type='text' bind:value={$gameStore.dice.d100} maxlength='2' class='count' />
-      <button on:click={() => { subDice('d100') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('d100') }} class='add material'>add</button>
+      <button on:click={() => { clearDice('k100') }} class='clear material'>delete</button>
+      <button on:click={() => { addDice('k100') }} class='addLarge k10'>k100</button>
+      <input type='text' bind:value={$gameStore.dice.k100} maxlength='2' class='count' />
+      <button on:click={() => { subDice('k100') }} class='sub material'>remove</button>
+      <button on:click={() => { addDice('k100') }} class='add material'>add</button>
     </div>
   </div>
   <div class='row'>
@@ -200,26 +200,26 @@
           appearance: none;
           padding: 5px;
         }
-        button.d4 {
-          background-image: url('/dice/d4.png');
+        button.k4 {
+          background-image: url('/dice/k4.png');
         }
-        button.d6 {
-          background-image: url('/dice/d6.png');
+        button.k6 {
+          background-image: url('/dice/k6.png');
         }
-        button.d8 {
-          background-image: url('/dice/d8.png');
+        button.k8 {
+          background-image: url('/dice/k8.png');
         }
-        button.d10 {
-          background-image: url('/dice/d10.png');
+        button.k10 {
+          background-image: url('/dice/k10.png');
         }
-        button.d12 {
-          background-image: url('/dice/d12.png');
+        button.k12 {
+          background-image: url('/dice/k12.png');
         }
-        button.d12 {
-          background-image: url('/dice/d12.png');
+        button.k12 {
+          background-image: url('/dice/k12.png');
         }
-        button.d20 {
-          background-image: url('/dice/d20.png');
+        button.k20 {
+          background-image: url('/dice/k20.png');
         }
     #diceBox {
       width: 100%;
