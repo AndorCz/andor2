@@ -55,31 +55,31 @@
 
 <main>
   <div class='headline'>
-    <h2>Nastavení díla "{data.name}"</h2>
+    <h1>Nastavení díla "{data.name}"</h1>
     <button on:click={showWork} class='material' title='Zpět do díla'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
-    <h3 class='first'>Vlastní hlavička</h3>
+    <h2 class='first'>Vlastní hlavička</h2>
     Obrázek musí mít velikost alespoň 1100×226 px<br><br>
     <div class='row'>
       <label class='button' for='headerImage'>Nahrát obrázek</label>
       <HeaderInput {data} section='works' unit='work' />
     </div>
 
-    <h3>Název</h3>
+    <h2>Název</h2>
     <div class='row'>
       <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
       <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save'>check</button>
     </div>
 
-    <h3>Anotace</h3>
+    <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
       <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 
-    <h3>Kategorie</h3>
+    <h2>Kategorie</h2>
     <div class='row'>
       <select id='workCategory' name='workCategory' bind:value={data.category}>
         {#each workCategoriesText as category}
@@ -89,7 +89,7 @@
       <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save'>check</button>
     </div>
 
-    <h3>Tagy</h3>
+    <h2>Tagy</h2>
     <div class='row'>
       <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
         <div slot='empty'>Více tagů nelze přidat</div>
@@ -97,7 +97,7 @@
       <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save'>check</button>
     </div>
 
-    <h3>Smazání díla</h3>
+    <h2>Smazání díla</h2>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat toto dílo?')) { deleteWork() } }}>
       <span class='material'>warning</span><span>Smazat dílo</span>
@@ -114,7 +114,7 @@
     align-items: center;
     margin-bottom: 20px;
   }
-    h2 {
+    h1 {
       margin: 0px;
     }
     .headline button {
@@ -122,7 +122,7 @@
       margin-left: 10px;
     }
 
-  h3 {
+  h2 {
     margin-top: 50px;
   }
   .row {

@@ -119,8 +119,11 @@ code {
   line-height: 150%;
 }
 
-summary {
-  cursor: pointer;
+summary { cursor: pointer }
+
+fieldset {
+  border: none;
+  padding: 0px;
 }
 
 /* TOASTS */

@@ -1,0 +1,9 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Settings from '@components/user/Settings.svelte'
+  const { user } = Astro.locals
+---
+
+<Layout title='Uživatelské nastavení'>
+  <Settings {user} client:load />
+</Layout>

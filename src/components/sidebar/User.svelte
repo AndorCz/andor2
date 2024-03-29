@@ -24,7 +24,8 @@
     <div id='nameRow'>
       <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>
     </div>
-    <div>
+    <div id='buttons'>
+      <a href='/settings' id='settings' class='button material' title='nastavení'>settings</a>
       <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
     </div>
   </div>
@@ -53,8 +54,13 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-    #logout {
-      padding: 0px;
-      padding: 5px;
+    #buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+      #logout, #settings {
+        padding: 0px;
+        padding: 5px;
+      }
 </style>

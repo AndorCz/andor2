@@ -7,6 +7,7 @@
   let password2 = ''
 
   async function signUpNewUser () {
+    if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
     if (error) { handleError(error) }
