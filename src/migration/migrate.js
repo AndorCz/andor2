@@ -1,15 +1,16 @@
 
 import { createHash } from 'node:crypto'
-import { open } from 'sqlite'
-import sqlite3 from 'sqlite3'
+// import { open } from 'sqlite'
+// import sqlite3 from 'sqlite3'
 
-const dbPath = import.meta.env.SQLITE_PATH
+// const dbPath = import.meta.env.SQLITE_PATH
 
 async function queryDatabase (sqlQuery) {
-  const db = await open({ filename: dbPath, driver: sqlite3.Database })
-  const row = await db.get(sqlQuery)
-  await db.close()
-  return row
+  // sqlite
+  // const db = await open({ filename: dbPath, driver: sqlite3.Database })
+  // const row = await db.get(sqlQuery)
+  // await db.close()
+  // return row
 }
 
 export async function getOldUserInfo (login, password) {
