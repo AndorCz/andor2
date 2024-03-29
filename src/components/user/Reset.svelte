@@ -13,7 +13,7 @@
     if (error) { handleError(error) }
     if (data) {
       email = ''
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím zkontroluj svůj e-mail pro dokončení obnovy hesla.')
+      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím potvrď svůj e-mail pro dokončení obnovy hesla.')
     }
   }
 

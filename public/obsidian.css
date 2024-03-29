@@ -119,8 +119,11 @@ code {
   line-height: 150%;
 }
 
-summary {
-  cursor: pointer;
+summary { cursor: pointer }
+
+fieldset {
+  border: none;
+  padding: 0px;
 }
 
 /* TOASTS */
@@ -148,6 +151,16 @@ button, .button {
   box-shadow: 2px 2px 3px #0003;
   text-align: center;
 }
+
+  button.plain {
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+    button.plain:hover {
+      border: none;
+      background: none;
+    }
 
   button.large, .button.large {
     padding: 15px 30px;
@@ -347,6 +360,7 @@ select {
     font-variation-settings: 'wght' 600;
     display: inline-block;
     padding: 13px 20px;
+    height: 50px;
     text-decoration: none;
     font-size: 22px;
     color: #fff;

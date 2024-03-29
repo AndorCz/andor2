@@ -12,27 +12,6 @@
   let isRegistering = true;
   let isConfirming = false;
 
-  async function signUpNewUser() {
-    if (password !== password2) {
-      return showError("Potvrzení hesla nesouhlasí");
-    }
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    if (error) {
-      handleError(error);
-    }
-    if (data.user) {
-      window.location.href =
-        "/?toastType=success&toastText=" +
-        encodeURIComponent(
-          "Prosím zkontroluj svůj e-mail pro dokončení registrace.",
-        );
-    }
-  }
-
   async function importUser() {
     const response = await fetch("/api/import", {
       method: "POST",
@@ -86,6 +65,14 @@
         );
     } else {
       return showError(data.error);
+
+  async function signUpNewUser () {
+    if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
+    if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+    if (error) { handleError(error) }
+    if (data.user) {
+      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím potvrď svůj e-mail pro dokončení registrace.')
     }
   }
 </script>

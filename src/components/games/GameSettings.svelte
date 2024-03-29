@@ -66,31 +66,31 @@
 
 <main>
   <div class='headline'>
-    <h2>Nastavení hry "{data.name}"</h2>
+    <h1>Nastavení hry "{data.name}"</h1>
     <button on:click={showGame} class='material' title='Zpět do hry'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
-    <h3 class='first'>Vlastní hlavička</h3>
+    <h2 class='first'>Vlastní hlavička</h2>
     Obrázek musí mít velikost alespoň 1100×226 px<br><br>
     <div class='row'>
       <label class='button' for='headerImage'>Nahrát obrázek</label>
       <HeaderInput {data} section='games' unit='game' />
     </div>
 
-    <h3>Název</h3>
+    <h2>Název</h2>
     <div class='row'>
       <input type='text' id='gameName' name='gameName' bind:value={data.name} maxlength='80' />
       <button on:click={updateGame} disabled={saving || (originalName === data.name)} class='material'>check</button>
     </div>
 
-    <h3>Anotace</h3>
+    <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
       <button on:click={updateGame} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
     </div>
 
-    <h3>Kategorie</h3>
+    <h2>Kategorie</h2>
     <div class='row'>
       <select id='gameCategory' name='gameCategory' bind:value={data.category}>
         {#each gameCategories as category}
@@ -100,7 +100,7 @@
       <button on:click={updateGame} disabled={saving || (originalCategory === data.category)} class='material'>check</button>
     </div>
 
-    <h3>Herní systém</h3>
+    <h2>Herní systém</h2>
     <div class='row'>
       <select id='gameSystem' name='gameSystem' bind:value={data.system}>
         {#each gameSystems as system}
@@ -110,7 +110,7 @@
       <button on:click={updateGame} disabled={saving || (originalSystem === data.system)} class='material'>check</button>
     </div>
 
-    <h3>Nábor</h3>
+    <h2>Nábor</h2>
     <div class='row'>
       <select id='gameRecruitmentOpen' name='gameRecruitmentOpen' bind:value={data.recruitment_open}>
         <option value={false}>Uzavřený</option>
@@ -119,7 +119,7 @@
       <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === data.recruitment_open)} class='material'>check</button>
     </div>
 
-    <h3>Mód diskuze</h3>
+    <h2>Mód diskuze</h2>
     <div class='row'>
       <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion}>
         <option value={false}>Soukromá</option>
@@ -128,7 +128,7 @@
       <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === data.open_discussion)} class='material'>check</button>
     </div>
 
-    <h3>Mód info stránky</h3>
+    <h2>Mód info stránky</h2>
     <div class='row'>
       <select id='gameOpenInfo' name='gameOpenInfo' bind:value={data.open_info}>
         <option value={true}>Veřejná</option>
@@ -137,12 +137,12 @@
       <button on:click={updateGame} disabled={saving || (originalOpenInfo === data.open_info)} class='material'>check</button>
     </div>
 
-    <h3>Záloha do souboru</h3>
+    <h2>Záloha do souboru</h2>
     <button class='export' on:click={exportGame}>
       <span class='material'>download</span><span>Stáhnout zálohu</span>
     </button>
 
-    <h3>Smazání hry</h3>
+    <h2>Smazání hry</h2>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
       <span class='material'>warning</span><span>Smazat hru</span>
@@ -159,7 +159,7 @@
     align-items: center;
     margin-bottom: 20px;
   }
-    h2 {
+    h1 {
       margin: 0px;
     }
     .headline button {
@@ -167,7 +167,7 @@
       margin-left: 10px;
     }
 
-  h3 {
+  h2 {
     margin-top: 50px;
   }
   .row {

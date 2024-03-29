@@ -111,7 +111,7 @@
     height: 50px;
     margin: 5px;
     margin-left: 0px;
-    background-image: url('/dice/d10.png');
+    background-image: url('/dice/k10.png');
     background-size: 75% 75%;
     background-repeat: no-repeat;
     background-position: center;

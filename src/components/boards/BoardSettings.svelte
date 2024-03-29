@@ -40,25 +40,25 @@
 
 <main>
   <div class='headline'>
-    <h2>Nastavení diskuze "{data.name}"</h2>
+    <h1>Nastavení diskuze "{data.name}"</h1>
     <button on:click={showBoard} class='material' title='Zpět do diskuze'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
-    <h3 class='first'>Vlastní hlavička</h3>
+    <h2 class='first'>Vlastní hlavička</h2>
     Obrázek musí mít velikost alespoň 1100×226 px<br><br>
     <div class='row'>
       <label class='button' for='headerImage'>Nahrát obrázek</label>
       <HeaderInput {data} section='boards' unit='board' />
     </div>
 
-    <h3>Název</h3>
+    <h2>Název</h2>
     <div class='row'>
       <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
       <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material'>check</button>
     </div>
 
-    <h3>Smazání diskuze</h3>
+    <h2>Smazání diskuze</h2>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
       <span class='material'>warning</span><span>Smazat diskuzi</span>
@@ -75,7 +75,7 @@
     align-items: center;
     margin-bottom: 20px;
   }
-    h2 {
+    h1 {
       margin: 0px;
     }
     .headline button {
@@ -83,7 +83,7 @@
       margin-left: 10px;
     }
 
-  h3 {
+  h2 {
     margin-top: 50px;
   }
   .row {

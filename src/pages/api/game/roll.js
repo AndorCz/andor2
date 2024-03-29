@@ -8,20 +8,20 @@ export const GET = async ({ request, url, redirect, locals }) => {
 
   if (thread && dice && owner) {
     // parse dice notation
-    const diceObject = dice.split(',').reduce((acc, curr) => { const [count, type] = curr.split('d').map(Number); acc['d' + type] = count; return acc }, {})
+    const diceObject = dice.split(',').reduce((acc, curr) => { const [count, type] = curr.split('k').map(Number); acc['k' + type] = count; return acc }, {})
 
     // roll random numbers
-    const typeResults = { d4: [], d6: [], d8: [], d10: [], d12: [], d20: [], d100: [] }
+    const typeResults = { k4: [], k6: [], k8: [], k10: [], k12: [], k20: [], k100: [] }
     const readableResults = {}
     Object.entries(diceObject).forEach(([type, count]) => {
       if (count > 0) {
         const sides = parseInt(type.slice(1))
         const rolls = rollDice(sides, count)
         if (sides === 100) {
-          // add two dice (d10 and d100) for percentile dice
+          // add two dice (k10 and k100) for percentile dice
           rolls.forEach((roll, index) => { // split roll into two parts
-            typeResults.d10.push(roll % 10)
-            typeResults.d100.push(Math.floor(roll / 10) * 10)
+            typeResults.k10.push(roll % 10)
+            typeResults.k100.push(Math.floor(roll / 10) * 10)
           })
         } else {
           typeResults[type].push(...rolls)
