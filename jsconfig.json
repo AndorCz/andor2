@@ -5,7 +5,8 @@
       "@components/*": ["src/components/*"],
       "@layouts/*": ["src/layouts/*"],
       "@lib/*": ["src/lib/*"],
-      "@db/*": ["src/db/*"]
+      "@db/*": ["src/db/*"],
+      "@mig/*": ["src/migration/*"]
     }
   }
 }
