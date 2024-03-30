@@ -9,6 +9,7 @@
   export let game
   export let isStoryteller
 
+  let shownMap
   let activeMapUrl
 
   onMount(async () => {
@@ -40,10 +41,14 @@
     const { error } = await supabase.from('games').update({ active_map: mapId }).eq('id', game.id)
     if (error) { handleError(error) }
   }
+
+  function showMap (id) {
+    shownMap = game.maps.find(map => map.id === id)
+  }
 </script>
 
 <div class='maps'>
-  {#if game.active_map}
+  {#if shownMap || game.active_map}
     <h2>{game.active_map.name}</h2>
     <div id='map'>
       <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -67,7 +72,9 @@
       </tr>
       {#each game.maps as map}
         <tr>
-          <td class='name'>{map.name}</td>
+          <td class='name'>
+            <button class='plain' on:click={() => showMap(map.id)}>{map.name}</button>
+          </td>
           {#if isStoryteller}
             <td class='tools row'>
               {#if game.active_map && game.active_map.id !== map.id}
