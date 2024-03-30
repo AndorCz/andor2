@@ -60,15 +60,6 @@
     } else { return null } // no character
   }
 
-  function getActiveAudience () {
-    if ($activeGameAudienceIds?.length) {
-      if ($activeGameAudienceIds.includes('*')) { return ['*'] } // set all
-      return $activeGameAudienceIds // set audience characters from localStorage
-    } else if (otherCharacters[0]) {
-      return [otherCharacters[0].id] // no audience in localStorage, set all
-    } else { return ['*'] } // no character
-  }
-
   async function saveUnsent () {
     if (textareaRef) { $gameStore.unsent = await textareaRef.getContent() }
   }
@@ -126,6 +117,15 @@
     textareaRef.triggerEdit(id, content)
     document.getElementsByClassName('toolWrapper')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
+  }
+
+  function getActiveAudience () {
+    if ($activeGameAudienceIds?.length) {
+      if ($activeGameAudienceIds.includes('*')) { return ['*'] } // set all
+      return $activeGameAudienceIds // set audience characters from localStorage
+    } else if (otherCharacters[0]) {
+      return [otherCharacters[0].id] // no audience in localStorage, set all
+    } else { return ['*'] } // no character
   }
 
   function onAudienceSelect () {

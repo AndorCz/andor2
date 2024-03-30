@@ -4,7 +4,7 @@ const rollDice = (sides, count) => {
 }
 
 export const GET = async ({ request, url, redirect, locals }) => {
-  const { thread, dice, owner } = Object.fromEntries(url.searchParams)
+  let { thread, dice, owner, audience } = Object.fromEntries(url.searchParams)
 
   if (thread && dice && owner) {
     // parse dice notation
@@ -31,14 +31,18 @@ export const GET = async ({ request, url, redirect, locals }) => {
     })
 
     // prepare readable results
-    let post = "<div class='diceRoll'><h3>Hod kostkami</h3>"
+    let post = "<div class='diceRoll'>"
     Object.entries(readableResults)
       .filter(([type, rolls]) => rolls.length > 0) // Filter out empty keys
       .forEach(([type, rolls]) => { post += `<div class='row'><span class='type'>${rolls.length}${type}:</span><b>${rolls.join(' ')}</b> = ${rolls.reduce((a, b) => a + b, 0)}</div>` })
     post += '</div>'
 
     // save as a post to db
-    const { error } = await locals.supabase.from('posts').insert({ thread, owner, owner_type: 'character', content: post, dice: true })
+    console.log('audience', audience)
+    audience = audience && audience.length ? JSON.parse(audience) : null
+    const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience }
+    console.log('postData', postData)
+    const { error } = await locals.supabase.from('posts').insert(postData)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 
     // return to the game

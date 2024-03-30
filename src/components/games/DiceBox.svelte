@@ -5,12 +5,12 @@
   import CharacterSelect from '@components/games/CharacterSelect.svelte'
 
   export let threadId
+  export let gameStore
+  export let activeGameAudienceIds
   export let onRoll
   export let onAudienceSelect
   export let myCharacters
   export let otherCharacters
-  export let activeGameAudienceIds
-  export let gameStore
 
   let diceBox
   let notation = ''
@@ -28,7 +28,8 @@
     const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
     if (diceNotation) {
       // rolls are happening on the server
-      const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeGameCharacterId}`, { method: 'GET' })
+      const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience
+      const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeGameCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
       json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
