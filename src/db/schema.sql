@@ -74,7 +74,6 @@ create table games (
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
   constraint games_game_thread_fkey foreign key (game_thread) references threads (id),
-  constraint games_active_map_fkey foreign key (active_map) references maps (id) on delete set null
 );
 
 create table maps (
@@ -87,6 +86,8 @@ create table maps (
   created_at timestamp with time zone default current_timestamp,
   constraint maps_game_fkey foreign key (game) references games (id) on delete cascade
 );
+
+alter table games add constraint games_active_map_fkey foreign key (active_map) references maps (id) on delete set null;
 
 create table boards (
   id int4 not null primary key generated always as identity,
@@ -131,7 +132,7 @@ create table works (
   dislikes uuid[] null default '{}'::uuid[],
   reports uuid[] null default '{}'::uuid[],
   editorial boolean null default false,
-  created_at timestamp with time zone default current_timestamp
+  created_at timestamp with time zone default current_timestamp,
   constraint works_owner_fkey foreign key (owner) references profiles (id) on delete set null
 );
 
@@ -165,7 +166,7 @@ create table messages (
   moderated boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint messages_sender_user_fkey foreign key (sender_user) references profiles (id) on delete cascade,
-  constraint messages_recipient_user_fkey foreign key (recipient_user) references profiles (id) on delete cascade
+  constraint messages_recipient_user_fkey foreign key (recipient_user) references profiles (id) on delete cascade,
   constraint messages_sender_character_fkey foreign key (sender_character) references characters (id) on delete cascade,
   constraint messages_recipient_character_fkey foreign key (recipient_character) references characters (id) on delete cascade
 );
