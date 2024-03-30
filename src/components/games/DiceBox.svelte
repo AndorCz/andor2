@@ -1,18 +1,21 @@
 <script>
-  import DiceBox from '@3d-dice/dice-box-threejs'
   import { onMount } from 'svelte'
   import { showError, showSuccess } from '@lib/toasts'
-  import { getSavedStore } from '@lib/stores'
+  import DiceBox from '@3d-dice/dice-box-threejs'
+  import CharacterSelect from '@components/games/CharacterSelect.svelte'
 
   export let threadId
-  export let gameId
   export let onRoll
+  export let onAudienceSelect
+  export let myCharacters
+  export let otherCharacters
+  export let activeGameAudienceIds
+  export let gameStore
 
   let diceBox
   let notation = ''
 
   const defaults = { k4: 0, k6: 0, k8: 0, k10: 0, k12: 0, k20: 0, k100: 0 }
-  const gameStore = getSavedStore('game-' + gameId)
   $gameStore.dice = $gameStore.dice || defaults
 
   onMount(() => {
@@ -119,14 +122,15 @@
       <button on:click={() => { addDice('k100') }} class='add material'>add</button>
     </div>
   </div>
+
+  <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+
   <div class='row'>
     <div class='notation'>
       <input type='text' value={notation} on:input={parseNotation} size='30' />
       <button on:click={copyNotation} class='copy material plain'>content_copy</button>
     </div>
-    <button on:click={showRoll} class='roll' disabled>Hodit bez uložení</button>
-    <button on:click={showRoll} class='roll' disabled>Hodit soukromě</button>
-    <button on:click={showRoll} class='roll'>Hodit veřejně</button>
+    <button on:click={showRoll} class='roll'>Hodit kostky</button>
   </div>
 </div>
 
@@ -150,22 +154,26 @@
         text-align: center;
       }
         .addLarge {
+          position: absolute;
+          left: 50%;
+          top: -60px;
           background: none;
           border: none;
           padding: 0;
           margin: 0;
-          margin-top: 10px;
+          margin-top: 0px;
           box-shadow: none;
           text-shadow: 1px 1px 6px #0005;
-          width: 80px;
-          height: 80px;
+          width: 70px;
+          height: 70px;
           background-size: contain;
           background-repeat: no-repeat;
-          position: relative;
           font-size: 2rem;
+          transform: translateX(-50%);
+          transform-origin: 50% 50%;
         }
           .addLarge:hover, .add:hover, .sub:hover, .clear:hover {
-            transform: scale(1.1);
+            transform: translateX(-50%) scale(1.1);
           }
         .clear, .sub, .add {
           position: absolute;
@@ -173,19 +181,19 @@
           font-size: 1.2rem;
           color: var(--dim);
         }
-        .sub {
-          border-radius: 0px 10px 0px 10px;
-          bottom: 0px;
-          left: 0px;
-        }
         .add {
+          border-radius: 0px 10px 0px 10px;
+          top: 0px;
+          right: 0px;
+        }
+        .sub {
           border-radius: 10px 0px 10px 0px;
           bottom: 0px;
           right: 0px;
         }
         .clear {
-          border-radius: 10px 0px 10px 0px;
-          top: 0px;
+          border-radius: 0px 10px 0px 10px;
+          bottom: 0px;
           left: 0px;
         }
         .count {
@@ -198,7 +206,9 @@
           padding-bottom: 10px;
           font-size: 2.5rem;
           appearance: none;
-          padding: 5px;
+          padding: 10px 5px;
+          display: block;
+          margin: auto;
         }
         button.k4 {
           background-image: url('/dice/k4.png');

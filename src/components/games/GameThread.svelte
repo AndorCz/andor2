@@ -9,6 +9,7 @@
   import Thread from '@components/common/Thread.svelte'
   import Maps from '@components/games/Maps.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
+  import CharacterSelect from '@components/games/CharacterSelect.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
@@ -23,8 +24,6 @@
   let textareaRef
   let searchEl
   let textareaValue = $gameStore.unsent || '' // load unsent post
-  let identitySelect
-  let audienceSelect
   let saving = false
   let editing = false
   let filterActive = false
@@ -47,14 +46,8 @@
   $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
   $activeGameAudienceIds = getActiveAudience()
 
-  onMount(() => { // set select value on mount
-    if (user.id) {
-      delete data.unread.gameThread
-      if (identitySelect) { // might not exist if no character
-        $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
-      }
-      if (audienceSelect) { audienceSelect.selectedIndex = 0 } // select first audience (everyone)
-    }
+  onMount(() => {
+    if (user.id) { delete data.unread.gameThread }
     loadPosts()
     window.addEventListener('pagehide', saveUnsent)
   })
@@ -131,7 +124,7 @@
     editing = id
     textareaValue = content
     textareaRef.triggerEdit(id, content)
-    document.getElementsByClassName('addPostWrapper')[0].scrollIntoView({ behavior: 'smooth' })
+    document.getElementsByClassName('toolWrapper')[0].scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
 
@@ -163,54 +156,30 @@
 </script>
 
 <main>
-  {#if $gameStore.activeGameCharacterId}
-    <div class='tabs tertiary tools'>
-      <button on:click={() => { activeTool = 'post' }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
-      <button on:click={() => { activeTool = 'maps' }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
-      <button on:click={() => { activeTool = 'dice' }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
-      <button on:click={() => { activeTool = 'find' }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
-    </div>
-    <div class='addPostWrapper'>
-      {#if activeTool === 'dice'}
-        <DiceBox threadId={data.game_thread} gameId={data.id} onRoll={loadPosts} />
-      {:else if activeTool === 'maps'}
-        <Maps {user} game={data} {isStoryteller} />
-      {:else if activeTool === 'find'}
-        <div class='searchBox'>
-          <!-- svelte-ignore a11y-autofocus -->
-          <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-          <button class='material' on:click={handleSearch}>search</button>
-        </div>
-      {:else}
-        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-        <!--
-        {#if isStoryteller}
-          <button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>
-        {/if}
-        -->
-      {/if}
-      {#if activeTool === 'post' || activeTool === 'dice'}
-        <div class='headlineWrapper'>
-          <h3>Jako</h3>
-          <h3>Komu</h3>
-        </div>
-        <div class='selectWrapper'>
-          <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
-            {#each myCharacters as character}
-              <option value={character.id} class='character'>{character.name}</option>
-            {/each}
-          </select>
-          <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
-            {#each otherCharacters as character}
-              <option value={character.id} class='character'>{character.name}</option>
-            {/each}
-          </select>
-        </div>
-      {/if}
-    </div>
-  {:else}
-    <center>Nemáš ve hře žádnou postavu</center>
-  {/if}
+  <div class='tabs tertiary tools'>
+    <button on:click={() => { activeTool = 'post' }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+    <button on:click={() => { activeTool = 'maps' }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
+    <button on:click={() => { activeTool = 'dice' }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
+    <button on:click={() => { activeTool = 'find' }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
+  </div>
+
+  <div class='toolWrapper'>
+    {#if activeTool === 'dice' && user.id && $gameStore.activeGameCharacterId}
+      <DiceBox threadId={data.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+    {:else if activeTool === 'maps'}
+      <Maps {user} game={data} {isStoryteller} />
+    {:else if activeTool === 'find'}
+      <div class='searchBox'>
+        <!-- svelte-ignore a11y-autofocus -->
+        <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+        <button class='material' on:click={handleSearch}>search</button>
+      </div>
+    {:else if activeTool === 'post' && user.id && $gameStore.activeGameCharacterId}
+      <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+      <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+      <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
+    {/if}
+  </div>
 </main>
 
 {#if searchTerms}
@@ -222,14 +191,11 @@
 
 {#if activeTool !== 'maps'}
   {#key $posts}
-    <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+    <Thread {posts} {user} {unread} id={data.game_thread} diceMode={activeTool === 'dice'} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
   {/key}
 {/if}
 
 <style>
-  center {
-    margin-top: 50px;
-  }
   .searchBox {
     margin: auto;
     background: var(--panel);
@@ -239,7 +205,7 @@
     padding: 20px;
   }
 
-  .addPostWrapper {
+  .toolWrapper {
     width: 100%;
   }
   /*
@@ -259,17 +225,6 @@
     .tools .active {
       color: var(--text);
     }
-  .headlineWrapper, .selectWrapper {
-    display: flex;
-    gap: 40px;
-  }
-    .headlineWrapper h3 {
-      flex: 1;
-    }
-    .selectWrapper select {
-      background: none;
-      flex: 1;
-    }
   .filterHeadline {
     margin-top: 50px;
   }
@@ -277,11 +232,5 @@
     padding: 5px;
     font-size: 19px;
     margin-left: 10px;
-  }
-
-  @media (max-width: 860px) {
-    .headlineWrapper, .selectWrapper {
-      gap: 10px;
-    }
   }
 </style>
