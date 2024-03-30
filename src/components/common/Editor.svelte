@@ -10,6 +10,7 @@
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
+  import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
@@ -45,6 +46,14 @@
     { value: 'center', icon: 'format_align_center' },
     { value: 'right', icon: 'format_align_right' },
     { value: 'justify', icon: 'format_align_justify' }
+  ]
+
+  const fontOptions = [
+    { value: 'sans-serif', label: "<span class='sansserif'>Bezpatkové</span>" },
+    { value: 'monospace', label: "<span class='monospace'>Strojové</span>" },
+    { value: 'cursive', label: "<span class='cursive'>Psané</span>" },
+    { value: 'caveat', label: "<span class='caveat'>Caveat</span>" },
+    { value: 'orbitron', label: "<span class='orbitron'>Orbitron</span>" }
   ]
 
   const EnterKeyHandler = Extension.create({
@@ -103,6 +112,7 @@
         EnterKeyHandler,
         Underline,
         TextStyle,
+        FontFamily,
         Reply,
         Details.configure({ HTMLAttributes: { class: 'details' } }),
         DetailsSummary,
@@ -177,6 +187,10 @@
     // selectedAlign = selectedOption.value
   }
 
+  function handleFontSelect (selectedOption) {
+    editor.chain().focus().setFontFamily(selectedOption.detail.value).run()
+  }
+
   function setLink () {
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('URL', previousUrl)
@@ -246,11 +260,13 @@
       <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
       <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
       <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
-      <span><Dropdown iconsOnly current={currentStyle} defaultLabel='format_paragraph' options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
-      <span><Dropdown iconsOnly current={currentAlign} defaultLabel='format_align_left' options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
+      <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
+      <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
+      <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
+      <button type='button' on:click={() => editor.chain().focus().unsetFontFamily().run()} title='Zrušit font' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
       <span class='sep'></span>
       <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
-      <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.isActive('textStyle')} title='Reset barvy'>format_color_reset</button>
+      <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
       <span class='sep'></span>
       <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
       <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>

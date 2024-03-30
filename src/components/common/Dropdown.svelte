@@ -3,16 +3,16 @@
 
   export let options = []
   export let iconsOnly = false
-  export let current = null
+  export let selected = null
   export let defaultLabel
   export let title
 
-  let selected = null
+  // let selected = null
   let isOpen = false
   let dropdownEl
   const dispatch = createEventDispatcher()
 
-  $: selected = current // Automatically update selected based on 'current' prop
+  // $: selected = current // Automatically update selected based on 'current' prop
 
   onMount(() => { document.addEventListener('click', handleClickOutside) })
   onDestroy(() => { document.removeEventListener('click', handleClickOutside) })
@@ -33,27 +33,25 @@
 </script>
 
 <span class='dropdown' bind:this={dropdownEl}>
-  <button type='button' class='dropdown-toggle {iconsOnly && 'material'}' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
-    {#key selected}
-      {#if findSelectedOption()}
-        {#if iconsOnly}
-          {findSelectedOption().icon}
-        {:else}
-          {findSelectedOption().label}
-        {/if}
+  <button type='button' class='dropdown-toggle material' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
+    {#if selected && findSelectedOption()}
+      {#if iconsOnly}
+        {findSelectedOption().icon}
       {:else}
-        {defaultLabel}
+        {@html findSelectedOption().label}
       {/if}
-    {/key}
+    {:else}
+      {defaultLabel}
+    {/if}
   </button>
   {#if isOpen}
     <div class='options'>
       {#each getUnselectedOptions() as option}
-        <button type='button' on:click={() => selectOption(option)} class={iconsOnly && 'material'} class:selected={option.value === selected}>
+        <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
           {#if iconsOnly}
             {option.icon}
           {:else}
-            {option.label}
+            {@html option.label}
           {/if}
         </button>
       {/each}
@@ -80,4 +78,8 @@
     flex-direction: column;
     gap: 10px;
   }
+    .options button.label {
+      height: 45px;
+      padding: 0 20px;
+    }
 </style>

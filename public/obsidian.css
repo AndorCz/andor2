@@ -598,6 +598,12 @@ select {
     border-radius: 5px;
   }
 
+  .sansserif { font-family: 'Alegreya Sans' }
+  .monospace { font-family: monospace }
+  .cursive { font-family: cursive }
+  .caveat { font-family: 'Caveat' }
+  .orbitron { font-family: 'Orbitron' }
+
 /* Svelte Easy Crop */
 
 .cropperArea {
