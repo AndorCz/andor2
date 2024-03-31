@@ -150,4 +150,14 @@
   button {
     margin-top: 20px;
   }
+
+  @media (max-width: 600px) {
+    main {
+      flex-direction: column;
+      gap: 40px;
+    }
+    .divider {
+      display: none;
+    }
+  }
 </style>
