@@ -1,69 +1,58 @@
-import { getOldUserInfo } from '@mig/migrate.js';
-import { supabase } from "@lib/database";
 
-export const POST = async ({ request }) => {
-    
-    try {
-        const { action, login, password, email, old_password, old_login } = await request.json();
-        switch (action) {
-            case 'import':
-                const userInfo = await getOldUserInfo(old_login, old_password);
-                if (userInfo) {
-                    // User found
-                    //console.log("Found")
-                    return new Response(JSON.stringify({ userInfo }), { status: 200 });
-                } else {
-                    // User not found
-                    //console.log("Not found")
-                    return new Response(JSON.stringify({ error: "Uživatel nenalezen" }), { status: 404 });
-                }
-            case 'signup':
+import { getOldUserInfo } from '@mig/migrate.js'
 
-                // get old_id again - do not trust whatever user would send
-                const userInfoMigrate = await getOldUserInfo(old_login, old_password);
+export const POST = async ({ request, locals }) => {
+  try {
+    const { action, oldLogin, oldPassword, email, password } = await request.json()
 
-                const old_id = userInfoMigrate.old_id
-                const { data: idCheck, error: idError } = await supabase
-                .from("profiles")
-                .select("old_id")
-                .eq("old_id", parseInt(old_id,10))
-                .maybeSingle();
-
-                if (idCheck) {
-                return new Response(JSON.stringify({ error:`Id původního uživatele ${old_login} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.` }), { status: 409 });
-                }    
-
-                const { data: profileCheck, error: profileError } = await supabase
-                .from("profiles")
-                .select("name")
-                .eq("name", old_login)
-                .maybeSingle();
-
-              if (profileCheck) {
-                return new Response(JSON.stringify({ error: "Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to." }), { status: 409 });
-              }
-
-              // register user
-              const { data: authData, error: authError } = await supabase.auth.signUp({
-                email,
-                password,
-              });
-
-              if (authError) {
-                console.error(authError)
-                return new Response(JSON.stringify({ error:"Chyba u registrace" }), { status: 400 });
-              } else if (authData && authData.user) {
-                const { data: profileData, error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: login, old_id: old_id })
-
-                return new Response(JSON.stringify({}), { status: 200 });
-              }
-
-            default:
-                return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400 });
-
+    switch (action) {
+      case 'validate': {
+        const userInfo = await getOldUserInfo(oldLogin, oldPassword)
+        if (userInfo) { // User found
+          return new Response(JSON.stringify({ userInfo }), { status: 200 })
+        } else { // User not found
+          return new Response(JSON.stringify({ error: 'Uživatel nenalezen' }), { status: 404 })
         }
-    } catch (error) {
-        // Handle unexpected errors
-        return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+      }
+      case 'signup': {
+        const userInfoMigrate = await getOldUserInfo(oldLogin, oldPassword)
+        const oldId = userInfoMigrate.old_id
+        const { data: idCheck, error: idError } = await locals.supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
+        if (idError) { return new Response(JSON.stringify({ error: idError.message }), { status: 500 }) }
+
+        if (idCheck) {
+          return new Response(
+            JSON.stringify({ error: `Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.` }), { status: 409 }
+          )
+        }
+
+        // 2DO: REWORK - CHECK FROM OLD DB IF USER NAME EXISTS
+        /*
+        const { data: profile, error: profileError } = await locals.supabase.from('profiles').select('name').eq('name', oldLogin).maybeSingle()
+        if (profileError) { return new Response(JSON.stringify({ error: profileError.message }), { status: 500 }) }
+
+        if (!profile) {
+          return new Response(
+            JSON.stringify({ error: 'Tvoje jméno chybí v naší databázi. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.' }),
+            { status: 409 }
+          )
+        }
+        */
+
+        // register user
+        const { data: authData, error: authError } = await locals.supabase.auth.signUp({ email, password })
+        if (authError) { return new Response(JSON.stringify({ error: authError.message }), { status: 400 }) }
+
+        if (authData && authData.user) {
+          const { data: profileData, error: profileError2 } = await locals.supabase.from('profiles').insert({ id: authData.user.id, name: oldLogin, old_id: oldId })
+          if (profileError2) { return new Response(JSON.stringify({ error: profileError2.message }), { status: 500 }) }
+          return new Response(JSON.stringify({ profileData }), { status: 200 })
+        }
+        break
+      }
+      default: return new Response(JSON.stringify({ error: 'Unknown action' }), { status: 400 })
     }
-};
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 })
+  }
+}
