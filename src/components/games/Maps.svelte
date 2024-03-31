@@ -88,9 +88,9 @@
             {#if isStoryteller}
               <td class='tools row'>
                 {#if game.active_map && game.active_map.id === map.id}
-                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row' title='Skryje zobrazení mapy všem hráčům' use:tooltip>Deaktivovat</button>
+                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row'>Deaktivovat</button>
                 {:else}
-                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row' title='Zobrazí mapu všem hráčům' use:tooltip>Aktivovat</button>
+                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row' title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
                 {/if}
                 <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button material' title='Upravit'>edit</a>
                 <button type='button' on:click={() => { deleteMap(map.id) }} class='material' title='Smazat'>delete</button>
