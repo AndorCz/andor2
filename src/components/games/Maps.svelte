@@ -25,7 +25,7 @@
   {:else}
     {#each game.maps as map}
       {#if !map.hidden || isStoryteller}
-        <Map {user} {game} {map} {isStoryteller} isActive={map.id === game.active_map.id} onDeleteMap={deleteMap} />
+        <Map {user} {game} {map} {isStoryteller} isActive={map.id === game.active_map?.id} onDeleteMap={deleteMap} />
       {/if}
     {/each}
   {/if}

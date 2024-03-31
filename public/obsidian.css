@@ -120,6 +120,7 @@ code {
 }
 
 summary { cursor: pointer }
+summary:hover { color: var(--maximum) }
 
 fieldset {
   border: none;
