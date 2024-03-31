@@ -19,6 +19,8 @@
   export let onReply = null
   export let iconSize = 140
 
+  const canDelete = post.dice ? canDeleteAll : isMyPost
+
   const postStore = writable(post)
   let expanded = false
 
@@ -65,7 +67,7 @@
           {#if onEdit}
             <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
           {/if}
-          {#if onDelete && !(isMyPost && post.dice)}
+          {#if onDelete && canDelete}
             <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat'>delete</button>
           {/if}
         {:else if canModerate && !$postStore.moderated}
