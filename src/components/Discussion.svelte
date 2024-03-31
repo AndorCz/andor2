@@ -146,9 +146,11 @@
       {/if}
     {/if}
 
-    {#key $posts}
-      <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
-    {/key}
+    {#if $posts.length}
+      {#key $posts}
+        <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} />
+      {/key}
+    {/if}
   {:else}
     <p>Tato diskuze není veřejná.</p>
   {/if}

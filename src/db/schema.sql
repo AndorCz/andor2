@@ -40,6 +40,7 @@ create table profiles (
   created_at timestamp with time zone default current_timestamp,
   last_activity timestamp with time zone,
   old_id int4 null,
+  autorefresh boolean default false,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 

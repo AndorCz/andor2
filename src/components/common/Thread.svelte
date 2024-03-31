@@ -26,7 +26,12 @@
   let threadEl
   let replyPostEl
   let replyPostData
+  let lastRefresh = Date.now()
+  let autorefreshRunning
+
   const replies = {}
+
+  if (user.autorefresh && !autorefreshRunning) { refresh() }
 
   onMount(async () => {
     // handle replies
@@ -42,6 +47,16 @@
       }
     }
   })
+
+  // autorefresh every 10 seconds, if enabled in user settings
+  function refresh () {
+    autorefreshRunning = true
+    if (Date.now() - lastRefresh > 10000) {
+      lastRefresh = Date.now()
+      onPaging(page)
+    }
+    requestAnimationFrame(refresh)
+  }
 
   function showReply (event) {
     const id = parseInt(event.target.getAttribute('data-id'))

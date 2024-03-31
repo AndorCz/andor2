@@ -6,6 +6,7 @@
 
   let password = ''
   let password2 = ''
+  let originalAutorefresh = user.autorefresh
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -14,6 +15,20 @@
     if (data) { showSuccess('Heslo bylo úspěšně změněno') }
     password = ''
     password2 = ''
+  }
+
+  async function updateUser () {
+    const { error } = await supabase.from('profiles').update({ autorefresh: user.autorefresh }).eq('id', user.id)
+    if (error) { return showError(error.message) }
+    originalAutorefresh = user.autorefresh
+    showSuccess('Nastavení bylo uloženo')
+  }
+
+  async function deleteUser () {
+    if (!confirm('Opravdu chcete smazat svůj účet?')) { return }
+    const { error } = await supabase.auth.delete()
+    if (error) { return showError(error.message) }
+    showSuccess('Účet byl úspěšně smazán')
   }
 </script>
 
@@ -36,6 +51,16 @@
       </td>
     </tr>
   </table>
+
+  <h2>Automatický refresh příspěvků</h2>
+  <div class='row'>
+    <div class='inputs'><input type='checkbox' id='autorefresh' name='autorefresh' bind:checked={user.autorefresh} /></div>
+    <button on:click={updateUser} class='material square' disabled={originalAutorefresh === user.autorefresh}>check</button>
+  </div>
+
+  <h2>Smazat účet</h2>
+  <p>Smazáním účtu se odstraní veškerá data spojená s tímto účtem. Tato akce je nevratná.</p>
+  <button on:click={deleteUser}>Smazat účet</button>
 {:else}
   <h1>Uživatel nenalezen</h1>
 {/if}
@@ -43,14 +68,10 @@
 <style>
   h2 {
     margin-top: 50px;
-    margin-bottom: 0px;
   }
-  table {
-    border-collapse: separate;
-    border-spacing: 0 1em;
-  }
-  tr {
+  td {
     margin-bottom: 20px;
+    padding-bottom: 20px;
   }
   .label {
     padding-right: 20px;
