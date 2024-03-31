@@ -5,27 +5,28 @@
   import { base64ToBlob } from '@lib/utils'
 
   const { supabase, user } = Astro.locals
-  const game = Astro.url.searchParams.get('game') || ''
   const id = Astro.url.searchParams.get('id') || ''
 
   let character:any = {}
   let isGameOwner = false
   let isStoryteller = false
-
-  if (game) {
-    const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', game).single()
-    if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
-    isGameOwner = gameData.owner === user.id
-
-    const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: game }).single()
-    if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + storytellerError.message)}`) }
-    isStoryteller = storytellerData
-  }
+  let gameId
 
   if (id) { // edit
     const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
     if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + charError.message)}`) }
     character = charData
+
+    if (charData.game) {
+      gameId = charData.game
+      const { data: gameData, error: gameError } = await supabase.from('games').select('*').eq('id', gameId).single()
+      if (gameError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + gameError.message)}`) }
+      isGameOwner = gameData.owner === user.id
+
+      const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: gameId }).single()
+      if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + storytellerError.message)}`) }
+      isStoryteller = storytellerData
+    }
   }
 
   if (Astro.request.method === 'POST') {
@@ -38,9 +39,9 @@
       character.player = user.id
       if (character.storyteller) { character.accepted = true }
 
-      if (game) {
-        character.game = game
-        const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game)
+      if (gameId) {
+        character.game = gameId
+        const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
         if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
       }
 
@@ -57,8 +58,8 @@
       }
 
       const confirmationText = id ? 'Postava byla upravena' : 'Postava byla vytvořena'
-      if (game) {
-        return Astro.redirect('/game/' + game + '/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      if (gameId) {
+        return Astro.redirect('/game/' + gameId + '/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
       } else {
         return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
       }

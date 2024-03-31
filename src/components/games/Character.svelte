@@ -74,9 +74,7 @@
     {#if character.storyteller}
       <span use:tooltip class='material star' title='Vypravěč'>star</span>
     {/if}
-    {#if isPlayer}
-      <a href={`${window.location.origin}/game/character-form?game=${gameId}&id=${character.id}`} class='character'>{character.name}</a>
-    {:else if isStoryteller}
+    {#if isPlayer || isStoryteller}
       <a href={`${window.location.origin}/game/character?id=${character.id}`} class='character'>{character.name}</a>
     {:else}
       {character.name}

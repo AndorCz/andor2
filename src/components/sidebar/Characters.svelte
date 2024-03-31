@@ -7,18 +7,22 @@
 
   let selected // { character, gameIndex, characterIndex }
 
-  function openEdit (character) { window.location = `/game/character-form?id=${character.id}` }
+  function openProfile (character) {
+    window.location = `${window.location.origin}/game/character?id=${character.id}`
+  }
 </script>
 
 {#if isFilledArray(characters.allGrouped) || isFilledArray(characters.myStranded)}
   {#if selected}
     <h4>
       <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
-      <div class='name'>{selected.character.name}</div>
-      <a href={`/game/character-form?game=${selected.character.game}&id=${selected.character.id}`} class='material edit'>edit</a>
+      <a href={`${window.location.origin}/game/character?id=${selected.character.id}`} class='character profile'>
+        <div class='name character'>{selected.character.name}</div>
+      </a>
     </h4>
     <ul class='characters'>
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
+        <h4>Kontakty</h4>
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
           <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
             {#if character.portrait}
@@ -72,7 +76,7 @@
       <ul class='characters'>
         {#each characters.myStranded as character}
           <li class='mine'>
-            <button on:click={openEdit(character)}>
+            <button on:click={openProfile(character)}>
               {#if character.portrait}
                 {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
               {:else}
@@ -88,12 +92,11 @@
         {/each}
       </ul>
     {/if}
+    <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
   {/if}
 {:else}
   <div class='empty'>Žádné postavy</div>
 {/if}
-
-<a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
 
 <style>
   .empty {
@@ -177,11 +180,17 @@
         .back:hover {
           color: var(--linkHover);
         }
-      .edit {
-        font-size: 20px;
+      .profile {
+        font-family: var(--font);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 25px;
       }
       .newChar {
-        margin: 10px auto;
+        margin: auto;
+        margin-top: 30px;
         display: block;
         width: fit-content;
       }

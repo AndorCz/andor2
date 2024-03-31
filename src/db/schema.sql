@@ -113,6 +113,7 @@ create table characters (
   name text,
   bio text,
   appearance text,
+  storyteller_notes text,
   storyteller boolean not null default false,
   open boolean not null default false,
   accepted boolean not null default false,

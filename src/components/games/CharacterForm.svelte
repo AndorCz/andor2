@@ -1,9 +1,9 @@
 <script>
+  import { supabase, handleError } from '@lib/database'
+  import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
-  import { supabase, handleError } from '@lib/database'
 
   export let isStoryteller
   export let isGameOwner

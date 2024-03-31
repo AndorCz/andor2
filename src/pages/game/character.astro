@@ -18,8 +18,6 @@
         const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: charData.game }).single()
         if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
         isStoryteller = storytellerData
-      } else {
-        return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí parametr game')}`)
       }
     }
   } else {
@@ -29,5 +27,5 @@
 
 <Layout title={character.name}>
   <a href='javascript:history.back()'>zpět</a>
-  <CharacterInfo {character} {isStoryteller} client:load />
+  <CharacterInfo {character} {isStoryteller} {user} client:load />
 </Layout>
