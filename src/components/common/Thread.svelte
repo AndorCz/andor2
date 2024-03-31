@@ -114,16 +114,15 @@
 
   .dicePost {
     display: inline-block;
-    width: 50px;
-    height: 50px;
-    margin: 5px;
+    width: 40px;
+    height: 40px;
     margin-left: 0px;
     background-image: url('/dice/k10.png');
     background-size: 75% 75%;
     background-repeat: no-repeat;
     background-position: center;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0.3;
   }
     .dicePost:hover {
       opacity: 1;

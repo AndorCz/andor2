@@ -173,8 +173,11 @@
           transform: translateX(-50%);
           transform-origin: 50% 50%;
         }
-          .addLarge:hover, .add:hover, .sub:hover, .clear:hover {
+          .addLarge:hover {
             transform: translateX(-50%) scale(1.1);
+          }
+          .add:hover, .sub:hover, .clear:hover {
+            transform: scale(1.1);
           }
         .clear, .sub, .add {
           position: absolute;

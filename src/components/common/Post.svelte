@@ -65,7 +65,7 @@
           {#if onEdit}
             <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
           {/if}
-          {#if onDelete}
+          {#if onDelete && !(isMyPost && post.dice)}
             <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat'>delete</button>
           {/if}
         {:else if canModerate && !$postStore.moderated}
