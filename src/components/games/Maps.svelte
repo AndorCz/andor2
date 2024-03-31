@@ -9,11 +9,12 @@
   export let game
   export let isStoryteller
 
-  let shownMap
+  let shownMap = {}
   let activeMapUrl
 
   onMount(async () => {
     if (game.active_map) {
+      shownMap = game.active_map
       activeMapUrl = await getImage(`${game.id}/${game.active_map.id}?${game.active_map.image}`, 'maps')
     }
   })
@@ -43,23 +44,23 @@
   }
 
   function showMap (id) {
-    shownMap = game.maps.find(map => map.id === id)
+    if (id !== shownMap?.id) {
+      shownMap = game.maps.find(map => map.id === id)
+      activeMapUrl = getImage(`${game.id}/${shownMap.id}`, 'maps')
+    }
   }
 </script>
 
 <div class='maps'>
-  {#if shownMap || game.active_map}
-    <h2>{game.active_map.name}</h2>
+  {#if shownMap}
+    <h2>{shownMap.name}</h2>
     <div id='map'>
       <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
-      <img class='mapImage' src={activeMapUrl} alt={game.active_map.name} on:click={() => { $lightboxImage = activeMapUrl }} />
+      <img class='mapImage' src={activeMapUrl} alt={shownMap.name} on:click={() => { $lightboxImage = activeMapUrl }} />
     </div>
-    <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={game.active_map.description} allowHtml />
-    {#if isStoryteller}
-      <center><a href={`/game/map-form?gameId=${game.id}&mapId=${game.active_map.id}`} class='button large'>Upravit mapu</a></center>
-    {/if}
+    <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={shownMap.description} allowHtml />
   {/if}
-  <h2>Ostatní mapy</h2>
+  <h2>Seznam map</h2>
   {#if game.maps.length === 0}
     <center>Žádné mapy nenalezeny</center>
   {:else}
@@ -73,12 +74,16 @@
       {#each game.maps as map}
         <tr>
           <td class='name'>
-            <button class='plain' on:click={() => showMap(map.id)}>{map.name}</button>
+            {#if shownMap.id === map.id}
+              <div class='mapName row'><span class='material'>visibility</span> {map.name}</div>
+            {:else}
+              <button class='mapName plain' on:click={() => showMap(map.id)}>{map.name}</button>
+            {/if}
           </td>
           {#if isStoryteller}
             <td class='tools row'>
               {#if game.active_map && game.active_map.id !== map.id}
-                <button type='button' on:click={() => { activateMap(map.id) }} class='row'><span class='material'>visibility</span>Aktivovat</button>
+                <button type='button' on:click={() => { activateMap(map.id) }} class='row'>Aktivovat</button>
               {/if}
               <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button material' title='Upravit'>edit</a>
               <button type='button' on:click={() => { deleteMap(map.id) }} class='material' title='Smazat'>delete</button>
@@ -100,6 +105,8 @@
   .row {
     display: flex;
     gap: 10px;
+  }
+  .tools {
     justify-content: flex-end;
   }
   #map {
@@ -129,4 +136,9 @@
   .name {
     width: 100%;
   }
+    .mapName  {
+      padding: 10px 0px;
+      width: 100%;
+      text-align: left;
+    }
 </style>

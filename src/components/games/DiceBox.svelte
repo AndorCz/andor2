@@ -128,7 +128,7 @@
 
   <div class='row'>
     <div class='notation'>
-      <input type='text' value={notation} on:input={parseNotation} size='30' />
+      <input type='text' value={notation} on:input={parseNotation} size='48' />
       <button on:click={copyNotation} class='copy material plain'>content_copy</button>
     </div>
     <button on:click={showRoll} class='roll'>Hodit kostky</button>
@@ -238,9 +238,9 @@
       background: url('/feld.jpg');
     }
     .row {
-      padding: 20px;
+      padding: 20px 0px;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
     }
     .notation {
       position: relative;
@@ -250,8 +250,8 @@
       }
       .copy {
         position: absolute;
-        top: 5px;
-        right: -5px;
+        top: 15px;
+        right: 15px;
       }
 
   @media (max-width: 860px) {

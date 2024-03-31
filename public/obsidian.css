@@ -156,6 +156,8 @@ button, .button {
     background: none;
     border: none;
     box-shadow: none;
+    padding: 0px;
+    border-radius: 0px;
   }
     button.plain:hover {
       border: none;
