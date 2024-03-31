@@ -17,6 +17,7 @@
   let originalRecruitmentOpen
   let originalOpenInfo
   let originalAnnotation
+  let originalContextDice
 
   onMount(setOriginal)
 
@@ -28,11 +29,12 @@
     originalRecruitmentOpen = data.recruitment_open
     originalAnnotation = data.annotation
     originalOpenInfo = data.open_info
+    originalContextDice = data.context_dice
   }
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info, recruitment_open: data.recruitment_open }).eq('id', data.id)
+    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info, recruitment_open: data.recruitment_open, context_dice: data.context_dice }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -135,6 +137,12 @@
         <option value={false}>Soukromá</option>
       </select>
       <button on:click={updateGame} disabled={saving || (originalOpenInfo === data.open_info)} class='material'>check</button>
+    </div>
+
+    <h2>Zobrazit hody mezi příspěvky</h2>
+    <div class='row'>
+      <input type='checkbox' id='contextDice' name='contextDice' bind:checked={data.context_dice} />
+      <button on:click={updateGame} disabled={saving || (originalContextDice === data.context_dice)} class='material'>check</button>
     </div>
 
     <h2>Záloha do souboru</h2>

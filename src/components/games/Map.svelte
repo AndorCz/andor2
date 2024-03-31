@@ -30,7 +30,9 @@
   async function toggleActive () {
     const { error } = await supabase.from('games').update({ active_map: isActive ? null : map.id }).eq('id', game.id)
     if (error) { return handleError(error) }
-    return showSuccess(isActive ? 'Mapa byla deaktivována' : 'Mapa byla aktivována, zobrazí se všem hráčům')
+    isActive = !isActive
+    isOpen = !isOpen
+    return showSuccess(isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
   }
 </script>
 

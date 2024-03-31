@@ -30,6 +30,7 @@
   let page = 0
   let pages
   let searchTerms = ''
+  let diceMode = 'icon'
   // let generatingPost = false
 
   const limit = 50
@@ -153,6 +154,8 @@
     generatingPost = false
   }
   */
+
+  $: diceMode = activeTool === 'dice' ? 'post' : (data.context_dice ? 'icon' : 'none')
 </script>
 
 <main>
@@ -191,7 +194,7 @@
 
 {#if activeTool !== 'maps'}
   {#key $posts}
-    <Thread {posts} {user} {unread} id={data.game_thread} diceMode={activeTool === 'dice'} bind:page={page} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
+    <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} />
   {/key}
 {/if}
 

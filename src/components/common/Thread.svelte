@@ -21,7 +21,7 @@
   export let page = 0
   export let pages = null
   export let iconSize = 140
-  export let diceMode = false
+  export let diceMode = 'none' // 'post', 'icon', 'none'
 
   let threadEl
   let replyPostEl
@@ -72,18 +72,16 @@
 <main bind:this={threadEl}>
   {#if isFilledArray($posts)}
     {#each $posts as post, index}
-      {#if diceMode}
-        {#if post.dice}
+      {#if post.dice}
+        {#if diceMode === 'post'}
           <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
-        {/if}
-      {:else}
-        {#if post.dice}
+        {:else if diceMode === 'icon'}
           <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
             <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
           </span>
-        {:else}
-          <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
         {/if}
+      {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
+        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
       {/if}
     {/each}
     {#if pages}
