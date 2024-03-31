@@ -48,11 +48,11 @@
 
 <div class='headline'>
   <h1>{data.name}</h1>
-  <button on:click={toggleHeader} class='material toggleHeader' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
+  <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
   {#if user.id}
-    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
     {#if isBoardOwner}
-      <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+      <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
     {/if}
   {/if}
 </div>
@@ -73,9 +73,5 @@
     h1 {
       margin: 0px;
       flex: 1;
-    }
-    .headline button {
-      padding: 10px;
-      margin-left: 10px;
     }
 </style>

@@ -89,20 +89,20 @@
     {#if isStoryteller || !character.accepted || character.open}
       <div class='options'>
         {#if character.open}
-          <button on:click={() => claimCharacter()}>převzít</button>
+          <button on:click={() => claimCharacter()} class='square'>převzít</button>
         {/if}
         {#if isPlayer && !character.accepted && !isStoryteller}
-          <button on:click={() => rejectCharacter(true)}>zrušit</button>
+          <button on:click={() => rejectCharacter(true)} class='square'>zrušit</button>
         {/if}
         {#if isStoryteller}
           {#if character.accepted}
             {#if !character.open}
-              <button on:click={() => freeCharacter()}>uvolnit</button>
+              <button on:click={() => freeCharacter()} class='square'>uvolnit</button>
             {/if}
-            <button on:click={() => kickCharacter()}>vyloučit</button>
+            <button on:click={() => kickCharacter()} class='square'>vyloučit</button>
           {:else}
-            <button on:click={() => acceptCharacter()}>přijmout</button>
-            <button on:click={() => rejectCharacter()}>odmítnout</button>
+            <button on:click={() => acceptCharacter()} class='square'>přijmout</button>
+            <button on:click={() => rejectCharacter()} class='square'>odmítnout</button>
           {/if}
         {/if}
       </div>
@@ -148,9 +148,6 @@
       height: 100%;
       padding: 0px 5px;
     }
-      .options button {
-        padding: 10px;
-      }
     .player {
       margin-right: 20px;
       font-weight: bold;

@@ -67,7 +67,7 @@
 <main>
   <div class='headline'>
     <h1>Nastavení hry "{data.name}"</h1>
-    <button on:click={showGame} class='material' title='Zpět do hry'>check</button>
+    <button on:click={showGame} class='material square' title='Zpět do hry'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
@@ -163,7 +163,6 @@
       margin: 0px;
     }
     .headline button {
-      padding: 10px;
       margin-left: 10px;
     }
 

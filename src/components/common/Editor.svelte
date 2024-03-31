@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { Editor, Extension } from '@tiptap/core'
-  import { supabase, handleError, getImage } from '@lib/database'
+  import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { CustomImage } from '@lib/editor/image'
   import { resizeImage } from '@lib/utils'
@@ -86,7 +86,7 @@
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
             uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
               const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-              const node = view.state.schema.nodes.customImage.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.customImage.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(coordinates.pos, node)
               view.dispatch(transaction)
             })
@@ -98,7 +98,7 @@
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
-              const node = view.state.schema.nodes.customImage.create({ src: getImage(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.customImage.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(from, node)
               view.dispatch(transaction)
             })
@@ -216,7 +216,7 @@
     const file = fileInputEl.files[0]
     if (file) {
       const { data, img } = await uploadImage(file)
-      editor.chain().focus().setImage({ src: getImage(data.path, 'posts'), width: img.width, height: img.height }).run()
+      editor.chain().focus().setImage({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height }).run()
     }
     fileInputEl.value = ''
   }

@@ -1,6 +1,7 @@
 ---
 	import Download from '@layouts/download.astro'
   import { formatDate } from '@lib/utils'
+  import { getImageUrl } from '@lib/database'
 
   const { supabase, user } = Astro.locals
   const gameId = Astro.url.searchParams.get('id') || ''
@@ -18,12 +19,6 @@
   const portraits = {}
   
   try {
-    function getImageUrl (path, storage) {
-      const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
-      if (error) { handleError(error) }
-      return data.publicUrl
-    }
-
     async function imageToBase64(url) {
       try {
         const response = await fetch(url)

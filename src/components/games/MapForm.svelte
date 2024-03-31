@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { lightboxImage } from '@lib/stores'
-  import { getImage, handleError } from '@lib/database'
+  import { getImageUrl, handleError } from '@lib/database'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -21,7 +21,7 @@
 
   onMount(async () => {
     if (map.id) {
-      const imgUrl = await getImage(`${game.id}/${map.id}?${map.image}`, 'maps')
+      const imgUrl = await getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
       await addImage(imgUrl)
     }
   })

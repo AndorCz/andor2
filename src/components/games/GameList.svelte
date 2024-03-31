@@ -191,9 +191,7 @@
     }
     .desktop { display: none }
     .mobile { display: block }
-    .button {
-      padding: 10px;
-    }
+    .button { padding: 10px }
   }
 
   @media (max-width: 500px) {

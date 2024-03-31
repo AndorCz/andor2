@@ -41,7 +41,7 @@
 <main>
   <div class='headline'>
     <h1>Nastavení diskuze "{data.name}"</h1>
-    <button on:click={showBoard} class='material' title='Zpět do diskuze'>check</button>
+    <button on:click={showBoard} class='material square' title='Zpět do diskuze'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
@@ -79,7 +79,6 @@
       margin: 0px;
     }
     .headline button {
-      padding: 10px;
       margin-left: 10px;
     }
 

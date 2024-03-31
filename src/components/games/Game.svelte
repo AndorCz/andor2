@@ -54,9 +54,9 @@
   <div class='headline'>
     <h1>{data.name}</h1>
     {#if user.id}
-      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
       {#if isGameOwner}
-        <button on:click={showSettings} class='material settings' title='Nastavení'>settings</button>
+        <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
       {/if}
     {/if}
   </div>
@@ -113,7 +113,6 @@
       margin-bottom: 0px;
     }
    .headline button {
-      padding: 10px;
       margin-left: 10px;
     }
 

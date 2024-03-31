@@ -152,14 +152,17 @@ button, .button {
   text-align: center;
 }
 
-  button.plain {
+  button.square, .button.square {
+    padding: 10px;
+  }
+  button.plain, .button.plain {
     background: none;
     border: none;
     box-shadow: none;
     padding: 0px;
     border-radius: 0px;
   }
-    button.plain:hover {
+    button.plain:hover, .button.plain:hover {
       border: none;
       background: none;
     }

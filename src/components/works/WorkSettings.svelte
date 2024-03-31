@@ -56,7 +56,7 @@
 <main>
   <div class='headline'>
     <h1>Nastavení díla "{data.name}"</h1>
-    <button on:click={showWork} class='material' title='Zpět do díla'>check</button>
+    <button on:click={showWork} class='material square' title='Zpět do díla'>check</button>
   </div>
 
   {#if data.owner.id === user.id}
@@ -118,7 +118,6 @@
       margin: 0px;
     }
     .headline button {
-      padding: 10px;
       margin-left: 10px;
     }
 
