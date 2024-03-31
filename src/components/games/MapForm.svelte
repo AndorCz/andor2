@@ -111,6 +111,11 @@
     </div>
   {/if}
 
+  <div class='row'>
+    <div class='labels'><label for='mapDescription'>Skrytá</label></div>
+    <div class='inputs'><input type='checkbox' id='mapHidden' name='mapHidden' bind:checked={map.hidden} /></div>
+  </div>
+
   <center>
     <button class='large' on:click={submitForm} disabled={!(imageReady && map.name)}>
       {#if map.id}Uložit mapu{:else}Přidat mapu{/if}
@@ -131,7 +136,7 @@
     .inputs {
       flex: 1;
     }
-      input {
+      input[type='text'] {
         width: 100%;
       }
   #mapPreview {

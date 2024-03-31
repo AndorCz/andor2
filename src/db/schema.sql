@@ -83,8 +83,10 @@ create table maps (
   name text not null,
   image text not null,
   description text,
+  hidden boolean null,
   character_positions json not null default '{}',
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
   constraint maps_game_fkey foreign key (game) references games (id) on delete cascade
 );
 
@@ -709,6 +711,14 @@ end;
 $$ language plpgsql;
 
 
+create or replace function update_updated_at () returns trigger as $$
+begin
+  new.updated_at := current_timestamp;
+  return new;
+end;
+$$ language plpgsql;
+
+
 -- TRIGGERS
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
@@ -718,6 +728,7 @@ create or replace trigger add_board_thread before insert on boards for each row 
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_thread();
 create or replace trigger add_work_thread before insert on works for each row execute function add_thread ();
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
+create or replace trigger update_map_updated_at after update on maps for each row execute procedure update_updated_at();
 
 -- SEED
 

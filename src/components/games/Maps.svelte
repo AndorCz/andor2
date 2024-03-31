@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { lightboxImage } from '@lib/stores'
   import { supabase, handleError, getImage } from '@lib/database'
@@ -15,12 +16,12 @@
   onMount(async () => {
     if (game.active_map) {
       shownMap = game.active_map
-      activeMapUrl = await getImage(`${game.id}/${game.active_map.id}?${game.active_map.image}`, 'maps')
+      activeMapUrl = await getImage(`${game.id}/${shownMap.id}?${shownMap.image}`, 'maps')
     }
   })
 
   async function updateMapDescription (description) {
-    const { error } = await supabase.from('maps').update({ description }).eq('id', game.active_map.id)
+    const { error } = await supabase.from('maps').update({ description }).eq('id', shownMap.id)
     if (error) { handleError(error) }
     showSuccess('Popis mapy byl upraven')
   }
@@ -36,23 +37,26 @@
     }
   }
 
-  async function activateMap (mapId) {
-    game.active_map = game.maps.find(map => map.id === mapId)
-    activeMapUrl = getImage(`${game.id}/${game.active_map.id}`, 'maps')
-    const { error } = await supabase.from('games').update({ active_map: mapId }).eq('id', game.id)
-    if (error) { handleError(error) }
+  async function toggleActive (mapId) {
+    const isActive = game.active_map && game.active_map.id === mapId
+    game.active_map = isActive ? null : game.maps.find(map => map.id === mapId)
+    activeMapUrl = isActive ? '' : getImage(`${game.id}/${game.active_map.id}?${game.active_map.image}`, 'maps')
+    const { error } = await supabase.from('games').update({ active_map: isActive ? null : mapId }).eq('id', game.id)
+    if (error) { return handleError(error) }
+    if (isActive) { shownMap = {} } else { showMap(mapId) }
+    return showSuccess(isActive ? 'Mapa byla deaktivována' : 'Mapa byla aktivována, zobrazí se všem hráčům')
   }
 
   function showMap (id) {
     if (id !== shownMap?.id) {
       shownMap = game.maps.find(map => map.id === id)
-      activeMapUrl = getImage(`${game.id}/${shownMap.id}`, 'maps')
+      activeMapUrl = getImage(`${game.id}/${shownMap.id}?${shownMap.image}`, 'maps')
     }
   }
 </script>
 
 <div class='maps'>
-  {#if shownMap}
+  {#if shownMap.id}
     <h2>{shownMap.name}</h2>
     <div id='map'>
       <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -72,24 +76,28 @@
         {/if}
       </tr>
       {#each game.maps as map}
-        <tr>
-          <td class='name'>
-            {#if shownMap.id === map.id}
-              <div class='mapName row'><span class='material'>visibility</span> {map.name}</div>
-            {:else}
-              <button class='mapName plain' on:click={() => showMap(map.id)}>{map.name}</button>
-            {/if}
-          </td>
-          {#if isStoryteller}
-            <td class='tools row'>
-              {#if game.active_map && game.active_map.id !== map.id}
-                <button type='button' on:click={() => { activateMap(map.id) }} class='row'>Aktivovat</button>
+        {#if !map.hidden || isStoryteller}
+          <tr>
+            <td class='name'>
+              {#if shownMap.id === map.id}
+                <div class='mapName row'><span class='material'>visibility</span> {map.name}</div>
+              {:else}
+                <button class='mapName plain' on:click={() => showMap(map.id)}>{map.name}</button>
               {/if}
-              <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button material' title='Upravit'>edit</a>
-              <button type='button' on:click={() => { deleteMap(map.id) }} class='material' title='Smazat'>delete</button>
             </td>
-          {/if}
-        </tr>
+            {#if isStoryteller}
+              <td class='tools row'>
+                {#if game.active_map && game.active_map.id === map.id}
+                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row' title='Skryje zobrazení mapy všem hráčům' use:tooltip>Deaktivovat</button>
+                {:else}
+                  <button type='button' on:click={() => { toggleActive(map.id) }} class='row' title='Zobrazí mapu všem hráčům' use:tooltip>Aktivovat</button>
+                {/if}
+                <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='button material' title='Upravit'>edit</a>
+                <button type='button' on:click={() => { deleteMap(map.id) }} class='material' title='Smazat'>delete</button>
+              </td>
+            {/if}
+          </tr>
+        {/if}
       {/each}
     </table>
   {/if}
