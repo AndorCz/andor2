@@ -16,7 +16,7 @@
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
-      $bookmarks.works = [...$bookmarks.works, { id: newBookmark.id, work_id: data.id, name: data.name }]
+      $bookmarks.works = [...$bookmarks.works, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]
       showSuccess('Záložka přidána')
     }
   }
@@ -24,7 +24,7 @@
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.works = $bookmarks.works.filter(b => b.work_id !== data.id)
+    $bookmarks.works = $bookmarks.works.filter(b => b.id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
@@ -41,7 +41,7 @@
   //   return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
   // }
 
-  $: bookmarkId = $bookmarks.works.find(b => b.work_id === data.id)?.id
+  $: bookmarkId = $bookmarks.works.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <main>
@@ -62,7 +62,7 @@
   </div>
 
   <br><br>
-  <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} />
+  <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection={'works'} />
 </main>
 
 <style>

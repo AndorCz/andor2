@@ -9,7 +9,6 @@
   import User from '@components/sidebar/User.svelte'
 
   export let user = {}
-  export let bookmarkData
 
   let showSidebar = false
 
@@ -30,8 +29,6 @@
 
   onMount(async () => {
     userStore = getSavedStore('user')
-    bookmarkUnreadTotal = getBookmarkUnreadTotal()
-    if (bookmarkData) { $bookmarks = bookmarkData }
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
   })
@@ -50,6 +47,8 @@
   async function loadData () {
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { handleError(error) }
+    $bookmarks = data.bookmarks
+    console.log('$bookmarks', $bookmarks)
     users = data.users || []
     characters = data.characters
     // get tab information
@@ -58,10 +57,10 @@
     unreadCharacters = characters.unreadTotal > 0
   }
 
-  function getBookmarkUnreadTotal () {
+  function getBookmarkUnreadTotal (bookmarks) {
     let total = 0
-    Object.keys($bookmarks.games).forEach(gameId => { total += $bookmarks.games[gameId].unread })
-    Object.keys($bookmarks.boards).forEach(boardId => { total += $bookmarks.boards[boardId].unread })
+    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread })
+    Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId].unread })
     return total
   }
 
@@ -75,6 +74,8 @@
       window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Přihlášení proběhlo úspěšně')
     }
   }
+
+  $: bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -92,16 +93,16 @@
           <User {user} />
           <div id='tabs'>
             <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
-              {#if bookmarkUnreadTotal}<span class='unread badge'></span>{/if}
+              {#if bookmarkUnreadTotal && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
               <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
-              {#if unreadUsers}<span class='unread badge'></span>{/if}
+              {#if unreadUsers && $userStore.activePanel !== 'people'}<span class='unread badge'></span>{/if}
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
             </button>
             <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
-              {#if unreadCharacters}<span class='unread badge'></span>{/if}
+              {#if unreadCharacters && $userStore.activePanel !== 'characters'}<span class='unread badge'></span>{/if}
               <span class='material'>domino_mask</span>
               <span class='label'>Postavy</span>
             </button>

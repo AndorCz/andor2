@@ -31,7 +31,7 @@
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
-      $bookmarks.boards = [...$bookmarks.boards, { id: newBookmark.id, board_id: data.id, name: data.name }]
+      $bookmarks.boards = [...$bookmarks.boards, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]
       showSuccess('Záložka přidána')
     }
   }
@@ -39,11 +39,11 @@
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.boards = $bookmarks.boards.filter(b => b.board_id !== data.id)
+    $bookmarks.boards = $bookmarks.boards.filter(b => b.id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.boards.find(b => b.board_id === data.id)?.id
+  $: bookmarkId = $bookmarks.boards.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <div class='headline'>
@@ -61,7 +61,7 @@
   <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
 {/if}
 
-<Discussion {data} {user} isOwner={isBoardOwner} unread={data.unread} thread={data.thread} slug={'board-' + data.id} />
+<Discussion {data} {user} isOwner={isBoardOwner} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection={'boards'} />
 
 <style>
   .headline {

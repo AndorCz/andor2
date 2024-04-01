@@ -37,13 +37,6 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         locals.user = { ...profileData, ...locals.user }
         const { error: profileError } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
         if (profileError) { return handleError(profileError) }
-        // load bookmarks
-        const { data: bookmarkData, error: bookmarkError } = await locals.supabase.rpc('get_bookmarks').maybeSingle()
-        if (bookmarkError) { return handleError(bookmarkError) }
-        bookmarkData.games = bookmarkData.games || []
-        bookmarkData.boards = bookmarkData.boards || []
-        bookmarkData.works = bookmarkData.works || []
-        locals.bookmarks = bookmarkData
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
         return redirect('/onboarding')

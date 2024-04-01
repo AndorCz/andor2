@@ -428,47 +428,56 @@ declare
   works_json jsonb;
   user_uuid uuid := auth.uid();
 begin
-  games_json := (
-    select jsonb_agg(jsonb_build_object(
-      'id', b.id,
-      'game_id', g.id,
-      'name', g.name,
-      'created_at', b.created_at,
-      'unread', 
-        calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text) +
-        calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text) +
-        calculate_unread_count(user_uuid, 'game-info-' || g.id::text) +
-        calculate_unread_count(user_uuid, 'game-characters-' || g.id::text)
-    ))
-    from bookmarks b
-    left join games g on g.id = b.game_id
-    where b.user_id = user_uuid and b.game_id is not null
+  games_json := COALESCE(
+    (
+      select jsonb_agg(jsonb_build_object(
+        'bookmark_id', b.id,
+        'id', g.id,
+        'name', g.name,
+        'created_at', b.created_at,
+        'unread', 
+          calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text) +
+          calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text) +
+          calculate_unread_count(user_uuid, 'game-info-' || g.id::text) +
+          calculate_unread_count(user_uuid, 'game-characters-' || g.id::text)
+      ))
+      from bookmarks b
+      left join games g on g.id = b.game_id
+      where b.user_id = user_uuid and b.game_id is not null
+    ),
+    '[]'::jsonb
   );
 
-  boards_json := (
-    select jsonb_agg(jsonb_build_object(
-      'id', b.id,
-      'board_id', brd.id,
-      'name', brd.name,
-      'created_at', b.created_at,
-      'unread', calculate_unread_count(user_uuid, 'thread-' || brd.thread::text)
-    ))
-    from bookmarks b
-    left join boards brd on brd.id = b.board_id
-    where b.user_id = user_uuid and b.board_id is not null
+  boards_json := COALESCE(
+    (
+      select jsonb_agg(jsonb_build_object(
+        'bookmark_id', b.id,
+        'id', brd.id,
+        'name', brd.name,
+        'created_at', b.created_at,
+        'unread', calculate_unread_count(user_uuid, 'thread-' || brd.thread::text)
+      ))
+      from bookmarks b
+      left join boards brd on brd.id = b.board_id
+      where b.user_id = user_uuid and b.board_id is not null
+    ),
+    '[]'::jsonb
   );
 
-  works_json := (
-    select jsonb_agg(jsonb_build_object(
-      'id', b.id,
-      'work_id', w.id,
-      'name', w.name,
-      'created_at', b.created_at,
-      'unread', calculate_unread_count(user_uuid, 'thread-' || w.thread::text)
-    ))
-    from bookmarks b
-    left join works w on w.id = b.work_id
-    where b.user_id = user_uuid and b.work_id is not null
+  works_json := COALESCE(
+    (
+      select jsonb_agg(jsonb_build_object(
+        'bookmark_id', b.id,
+        'id', w.id,
+        'name', w.name,
+        'created_at', b.created_at,
+        'unread', calculate_unread_count(user_uuid, 'thread-' || w.thread::text)
+      ))
+      from bookmarks b
+      left join works w on w.id = b.work_id
+      where b.user_id = user_uuid and b.work_id is not null
+    ),
+    '[]'::jsonb
   );
 
   return jsonb_build_object('games', games_json, 'boards', boards_json, 'works', works_json);
@@ -617,12 +626,14 @@ $$ language plpgsql;
 
 create or replace function get_sidebar_data() returns json as $$
 declare
+  bookmarks_data json;
   users_data json;
   characters_data json;
 begin
+  bookmarks_data := get_bookmarks();
   users_data := get_users();
   characters_data := get_characters();
-  return json_build_object('users', users_data, 'characters', characters_data);
+  return json_build_object('users', users_data, 'characters', characters_data, 'bookmarks', bookmarks_data);
 end;
 $$ language plpgsql;
 

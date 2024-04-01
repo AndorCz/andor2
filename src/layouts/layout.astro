@@ -8,7 +8,7 @@ import 'tippy.js/dist/tippy.css'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
-const { user, bookmarks } = Astro.locals
+const { user } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
 ---
 
@@ -40,7 +40,7 @@ const { title, headerStatic, headerStorage } = Astro.props
         </div>
         <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
       </main>
-      <Sidebar {user} bookmarkData={bookmarks} client:only />
+      <Sidebar {user} client:only />
     </div>
   </body>
 </html>

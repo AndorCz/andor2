@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte'
   import { supabase, handleError, setRead } from '@lib/database'
-  import { isFilledArray } from '@lib/utils'
+  import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
+  import { isFilledArray } from '@lib/utils'
   import Character from '@components/games/Character.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CharacterHeader from '@components/games/CharacterHeader.svelte'
@@ -36,9 +37,6 @@
 
   onMount(async () => {
     if (user.id) {
-      delete data.unread.gameCharacters
-      setRead(user.id, 'game-characters-' + data.id)
-
       const { data: myOpen, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted').eq('player', user.id).is('game', null)
       if (error2) { return handleError(error2) }
       characters.myOpen = myOpen
@@ -63,6 +61,14 @@
     await charactersChanged()
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přihlášena do hry')
   }
+
+  function seen () {
+    setRead(user.id, 'game-characters-' + data.id)
+    $bookmarks.games[data.id].unread = 0
+    delete data.unread.gameCharacters
+  }
+
+  $: if ($bookmarks.games.length) { seen() }
 </script>
 
 <main>

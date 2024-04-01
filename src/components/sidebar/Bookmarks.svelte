@@ -9,10 +9,10 @@
   <h4>Hry</h4>
   <ul class='games'>
     {#each $bookmarks.games as bookmark}
-      <li class='bookmark' class:active={'/game/' + bookmark.game_id === window.location.pathname}>
-        <a href={'/game/' + bookmark.game_id + '?tab=game'}>
+      <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname}>
+        <a href={'/game/' + bookmark.id + '?tab=game'}>
           {bookmark.name}
-          {#if bookmark.unread}
+          {#if bookmark.unread && window.location.pathname !== '/game/' + bookmark.id}
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
@@ -25,10 +25,10 @@
   <h4>Diskuze</h4>
   <ul class='boards'>
     {#each $bookmarks.boards as bookmark}
-      <li class='bookmark' class:active={'/board/' + bookmark.board_id === window.location.pathname}>
-        <a href={'/board/' + bookmark.board_id}>
+      <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname}>
+        <a href={'/board/' + bookmark.id}>
           {bookmark.name}
-          {#if bookmark.unread}
+          {#if bookmark.unread && window.location.pathname !== '/board/' + bookmark.id}
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
@@ -41,10 +41,10 @@
   <h4>Tvorba</h4>
   <ul class='works'>
     {#each $bookmarks.works as work}
-      <li class='bookmark' class:active={'/work/' + work.work_id === window.location.pathname}>
-        <a href={'/work/' + work.work_id}>
+      <li class='bookmark' class:active={'/work/' + work.id === window.location.pathname}>
+        <a href={'/work/' + work.id}>
           {work.name}
-          {#if work.unread}
+          {#if work.unread && window.location.pathname !== '/work/' + work.id}
             <span class='unread'>{work.unread}</span>
           {/if}
         </a>

@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { setRead, getReply } from '@lib/database'
+  import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
   import Post from '@components/common/Post.svelte'
@@ -8,6 +9,8 @@
   export let id
   export let user
   export let posts
+  export let contentId
+  export let contentSection
   export let unread = 0
   export let canDeleteAll = false
   export let canModerate = false
@@ -81,7 +84,16 @@
     threadEl.scrollIntoView({ behavior: 'smooth' })
   }
 
-  $: if (posts) { setRead(user.id, 'thread-' + id) } // set read on every change of posts prop (thread re-render)
+  function seen () {
+    setRead(user.id, 'thread-' + id)
+    if (contentSection && contentId) {
+      const game = $bookmarks.games.find((game) => { return game.id === contentId })
+      if (game) { game.unread = 0 }
+      $bookmarks = $bookmarks
+    }
+  }
+
+  $: if (posts && $bookmarks.games.length) { seen() } // set read on every change of posts prop (thread re-render)
 </script>
 
 <main bind:this={threadEl}>

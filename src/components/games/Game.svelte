@@ -35,7 +35,7 @@
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
-      $bookmarks.games = [...$bookmarks.games, { id: newBookmark.id, game_id: data.id, name: data.name }]
+      $bookmarks.games = [...$bookmarks.games, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]
       showSuccess('Záložka přidána')
     }
   }
@@ -43,11 +43,11 @@
   async function removeBookmark () {
     const { error } = await supabase.from('bookmarks').delete().eq('id', bookmarkId)
     if (error) { return handleError(error) }
-    $bookmarks.games = $bookmarks.games.filter(b => b.game_id !== data.id)
+    $bookmarks.games = $bookmarks.games.filter(b => b.id !== data.id)
     showSuccess('Záložka odebrána')
   }
 
-  $: bookmarkId = $bookmarks.games.find(b => b.game_id === data.id)?.id
+  $: bookmarkId = $bookmarks.games.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <main>
@@ -86,7 +86,7 @@
       <GameInfo {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'chat'}
       <h2>{#if data.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
-      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} slug={'game-discussion-' + data.id} />
+      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} slug={'game-discussion-' + data.id} contentSection={'games'} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} />
     {:else if $gameStore.activeTab === 'chars'}
