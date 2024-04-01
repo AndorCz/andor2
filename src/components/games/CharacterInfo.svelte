@@ -1,8 +1,9 @@
 <script>
   import { supabase, handleError, getPortrait } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
-  import EditableLong from '@components/common/EditableLong.svelte'
   import { Render } from '@jill64/svelte-sanitize'
+  import { tooltip } from '@lib/tooltip'
+  import EditableLong from '@components/common/EditableLong.svelte'
 
   export let isStoryteller
   export let character = {}
@@ -45,7 +46,7 @@
       </p>
 
       {#if character.storyteller_notes || isStoryteller}
-        <h2>Poznámky vypravěče</h2>
+        <h2 class='withIcon'>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
         <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
       {/if}
 
@@ -88,6 +89,11 @@
     }
     .bio {
       padding: 1px 20px;
+    }
+    .withIcon {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
   center {
     padding-top: 40px;
