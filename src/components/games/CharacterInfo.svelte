@@ -37,15 +37,17 @@
       <h1>{character.name}</h1>
 
       <h2>Vzhled</h2>
-      <p class='content'>{character.appearance}</p>
+      <p class='content appearance'>{character.appearance}</p>
 
       <h2>Životopis</h2>
-      <p class='content'>
+      <p class='content bio'>
         <Render html={character.bio} />
       </p>
 
-      <h2>Poznámky vypravěče</h2>
-      <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
+      {#if character.storyteller_notes || isStoryteller}
+        <h2>Poznámky vypravěče</h2>
+        <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
+      {/if}
 
       {#if isStoryteller}
         <h2>Status vypravěče</h2>
@@ -79,8 +81,13 @@
     flex: 1;
   }
     .content {
-      padding: 20px;
       background-color: var(--block);
+    }
+    .appearance {
+      padding: 20px;
+    }
+    .bio {
+      padding: 1px 20px;
     }
   center {
     padding-top: 40px;
