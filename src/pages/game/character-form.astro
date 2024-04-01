@@ -58,11 +58,7 @@
       }
 
       const confirmationText = id ? 'Postava byla upravena' : 'Postava byla vytvořena'
-      if (gameId) {
-        return Astro.redirect('/game/' + gameId + '/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
-      } else {
-        return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent(confirmationText))
-      }
+      return Astro.redirect('/game/character?id=' + character.id + '&toastType=success&toastText=' + encodeURIComponent(confirmationText))
     } catch (error) {
       return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`)
     }
