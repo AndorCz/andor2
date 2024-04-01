@@ -21,7 +21,6 @@
   })
 
   async function updateMapDescription (description) {
-    console.log('updating map id', map.id)
     const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
     if (error) { handleError(error) }
     showSuccess('Popis mapy byl upraven')

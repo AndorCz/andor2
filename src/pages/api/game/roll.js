@@ -38,10 +38,8 @@ export const GET = async ({ request, url, redirect, locals }) => {
     post += '</div>'
 
     // save as a post to db
-    console.log('audience', audience)
     audience = audience && audience.length ? JSON.parse(audience) : null
     const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience }
-    console.log('postData', postData)
     const { error } = await locals.supabase.from('posts').insert(postData)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
 

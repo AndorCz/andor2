@@ -2,6 +2,7 @@
   import { supabase, handleError, getPortrait } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import EditableLong from '@components/common/EditableLong.svelte'
+  import { Render } from '@jill64/svelte-sanitize'
 
   export let isStoryteller
   export let character = {}
@@ -36,7 +37,7 @@
       <h1>{character.name}</h1>
 
       <h2>Vzhled</h2>
-      <p>{character.appearance}</p>
+      <Render html={character.appearance} />
 
       <h2>Životopis</h2>
       <p>{character.bio}</p>
@@ -44,18 +45,18 @@
       <h2>Poznámky vypravěče</h2>
       <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
 
-      {#if isPlayer}
-        <center>
-          <a href={`/game/character-form?id=${character.id}`} class='button large' title='Upravit'>Upravit postavu</a>
-        </center>
-      {/if}
-
       {#if isStoryteller}
         <h2>Status vypravěče</h2>
         <div class='row'>
           <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' bind:checked={character.storyteller} /></div>
           <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller}>check</button>
         </div>
+      {/if}
+
+      {#if isPlayer}
+        <center>
+          <a href={`/game/character-form?id=${character.id}`} class='button large' title='Upravit'>Upravit postavu</a>
+        </center>
       {/if}
     </div>
   </main>

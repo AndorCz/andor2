@@ -48,7 +48,6 @@
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { handleError(error) }
     $bookmarks = data.bookmarks
-    console.log('$bookmarks', $bookmarks)
     users = data.users || []
     characters = data.characters
     // get tab information

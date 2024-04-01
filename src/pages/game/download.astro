@@ -38,7 +38,6 @@
       const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
       const imageUrl = await getImageUrl(path, 'portraits')
       if (!portraits[identityId]) {
-        // console.log('imageUrl', imageUrl)
         const b64 = await imageToBase64(imageUrl)
         portraits[identityId] = b64
       }

@@ -27,6 +27,7 @@
   let originalValue = value
 
   onMount(() => {
+    console.log('value', value)
     if (allowHtml) {
       tiptap = editorRef.getEditor()
       if (value) {
