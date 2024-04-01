@@ -5,7 +5,7 @@ import { isFilledArray } from '@lib/utils'
 // get all posts
 
 export const GET = async ({ url, request, locals }) => {
-  const { thread, game, owners, limit = 0, offset = 100, search } = Object.fromEntries(url.searchParams)
+  const { thread, game, owners, limit = 100, offset = 0, search } = Object.fromEntries(url.searchParams)
   const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
   let res, posts, count
   if (game) { // handle game thread
@@ -14,7 +14,7 @@ export const GET = async ({ url, request, locals }) => {
     posts = res.data.posts
     count = res.data.count
   } else { // handle other threads
-    const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit)
+    const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit - 1)
     if (search) { query.ilike('content', `%${search}%`) } // search in posts
     if (filterOwners) { query.in('owner', filterOwners) } // add your posts
     query.order('created_at', { ascending: false })

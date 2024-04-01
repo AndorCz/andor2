@@ -92,10 +92,12 @@
         {/each}
       </ul>
     {/if}
-    <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
   {/if}
 {:else}
   <div class='empty'>Žádné postavy</div>
+{/if}
+{#if !selected}
+  <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
 {/if}
 
 <style>

@@ -92,6 +92,7 @@
     <div class='empty'>Žádné konverzace</div>
   {/if}
 {/if}
+<a href='/users' class='button search'>Vyhledat</a>
 
 <style>
   .empty {
@@ -176,5 +177,11 @@
   .new {
     color: var(--new);
     pointer-events: none;
+  }
+  .search {
+    margin: auto;
+    margin-top: 30px;
+    display: block;
+    width: fit-content;
   }
 </style>

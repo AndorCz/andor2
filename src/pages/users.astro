@@ -1,0 +1,10 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Users from '@components/Users.svelte'
+
+  const { user } = Astro.locals
+---
+
+<Layout title='Uživatelé'>
+  <Users client:only />
+</Layout>
