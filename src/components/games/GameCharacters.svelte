@@ -64,7 +64,9 @@
 
   function seen () {
     setRead(user.id, 'game-characters-' + data.id)
-    $bookmarks.games[data.id].unread = 0
+    const game = $bookmarks.games.find((game) => { return game.id === data.id })
+    if (game) { game.unread = 0 }
+    $bookmarks = $bookmarks
     delete data.unread.gameCharacters
   }
 
@@ -77,7 +79,7 @@
     {#if isFilledArray(characters.storytellers)}
       <CharacterHeader {isStoryteller} />
       {#each characters.storytellers as character}
-        <Character {user} {character} {isStoryteller} gameId={data.id} />
+        <Character {user} {character} {isStoryteller} game={data} />
       {/each}
     {:else}
       <td class='none'>Žádní vypravěči</td>
@@ -89,7 +91,7 @@
     {#if isFilledArray(characters.playing)}
       <CharacterHeader {isStoryteller} />
       {#each characters.playing as character}
-        <Character {user} {character} {isStoryteller} gameId={data.id} />
+        <Character {user} {character} {isStoryteller} game={data} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>
@@ -109,7 +111,7 @@
         {#if isFilledArray(characters.waiting)}
           <CharacterHeader {isStoryteller} />
           {#each characters.waiting as character}
-            <Character {user} {character} {isStoryteller} gameId={data.id} />
+            <Character {user} {character} {isStoryteller} game={data} />
           {/each}
         {:else}
           <tr><td class='none'>Žádné postavy</td></tr>
@@ -122,7 +124,7 @@
       {#if isFilledArray(characters.open)}
         <CharacterHeader {isStoryteller} />
         {#each characters.open as character}
-          <Character {user} {character} {isStoryteller} gameId={data.id} />
+          <Character {user} {character} {isStoryteller} game={data} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>

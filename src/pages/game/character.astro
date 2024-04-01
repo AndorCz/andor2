@@ -1,6 +1,6 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import CharacterInfo from '@components/games/CharacterInfo.svelte'
+  import CharacterProfile from '@components/games/CharacterProfile.svelte'
 
   const { supabase, user } = Astro.locals
   const id = Astro.url.searchParams.get('id')
@@ -27,5 +27,5 @@
 
 <Layout title={character.name}>
   <a href='javascript:history.back()'>zpět</a>
-  <CharacterInfo {character} {isStoryteller} {user} client:only />
+  <CharacterProfile {character} {isStoryteller} {user} client:only />
 </Layout>

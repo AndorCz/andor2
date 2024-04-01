@@ -70,6 +70,7 @@ create table games (
   openai_storyteller text null,
   custom_header text null,
   active_map integer null,
+  welcome_message text null default 'Vítej v naší hře!'::text,
   context_dice boolean not null default true,
   created_at timestamp with time zone default current_timestamp,
   info_changed_at timestamp with time zone default current_timestamp,

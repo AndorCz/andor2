@@ -46,7 +46,7 @@
       </p>
 
       {#if character.storyteller_notes || isStoryteller}
-        <h2 class='withIcon'>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
+        <h2>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
         <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
       {/if}
 
@@ -81,6 +81,11 @@
   .wide {
     flex: 1;
   }
+    h2 {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
     .content {
       background-color: var(--block);
     }
@@ -89,11 +94,6 @@
     }
     .bio {
       padding: 1px 20px;
-    }
-    .withIcon {
-      display: flex;
-      gap: 10px;
-      align-items: center;
     }
   center {
     padding-top: 40px;

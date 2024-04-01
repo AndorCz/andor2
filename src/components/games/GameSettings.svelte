@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
   import { gameSystems, gameCategories } from '@lib/constants'
@@ -18,6 +19,8 @@
   let originalOpenInfo
   let originalAnnotation
   let originalContextDice
+  let welcomeMessageRef
+  let isWelcomeMessageDirty = false
 
   onMount(setOriginal)
 
@@ -34,7 +37,8 @@
 
   async function updateGame () {
     saving = true
-    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info, recruitment_open: data.recruitment_open, context_dice: data.context_dice }).eq('id', data.id)
+    const welcomeMessage = await welcomeMessageRef.getContent()
+    const { error } = await supabase.from('games').update({ name: data.name, annotation: data.annotation, category: data.category, system: data.system, open_discussion: data.open_discussion, open_info: data.open_info, recruitment_open: data.recruitment_open, context_dice: data.context_dice, welcome_message: welcomeMessage }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -121,6 +125,12 @@
       <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === data.recruitment_open)} class='material'>check</button>
     </div>
 
+    <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
+    <div class='row'>
+      <TextareaExpandable bind:this={welcomeMessageRef} userId={user.id} id='gameWelcomeMessage' name='gameWelcomeMessage' value={data.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
+      <button on:click={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save'>check</button>
+    </div>
+
     <h2>Mód diskuze</h2>
     <div class='row'>
       <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={data.open_discussion}>
@@ -176,6 +186,9 @@
 
   h2 {
     margin-top: 50px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   .row {
     display: flex;

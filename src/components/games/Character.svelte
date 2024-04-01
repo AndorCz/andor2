@@ -3,14 +3,14 @@
   import { tooltip } from '@lib/tooltip'
 
   export let user
-  export let gameId
+  export let game
   export let character
   export let isStoryteller
 
   const isPlayer = character.player.id === user.id
 
   async function charactersChanged (event) {
-    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game.id)
     if (timestampError) { return handleError(timestampError) }
   }
 
@@ -19,9 +19,13 @@
     if (error) { return handleError(error) }
     await charactersChanged()
 
-    // add bookmark to the user of the accepted character
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    // add bookmark to the new player
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
+
+    // send welcome message to the new player
+    const { error: messageError } = await supabase.from('messages').insert({ content: game.welcome_message, sender_user: user.id, recipient_user: character.player.id })
+    if (messageError) { return handleError(messageError) }
 
     window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
   }
