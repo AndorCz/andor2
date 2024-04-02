@@ -14,7 +14,7 @@
   onMount(() => {
     window.grecaptcha.ready(async () => {
       try {
-        captchaToken = await window.grecaptcha.execute('6LdQuqwpAAAAAGWzOFDEp-MczyB9Mx32X-HLP7ZZ', { action: 'submit' })
+        captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' })
       } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
     })
   })
