@@ -29,7 +29,7 @@
 </script>
 
 <main>
-  {#if data.open_info}
+  {#if data.open_info || isStoryteller}
     <EditableLong userId={user.id} bind:value={data.info} onSave={updateGameInfo} canEdit={isStoryteller} enterSend={false} allowHtml />
   {:else}
     <p>Informace o hře nejsou veřejné</p>
