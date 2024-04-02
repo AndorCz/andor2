@@ -5,19 +5,9 @@ import cloudflare from '@astrojs/cloudflare'
 // import { loadEnv } from 'vite'
 // const env = loadEnv('', process.cwd(), '')
 
-import sentry from '@sentry/astro'
-
 // https://astro.build/config
 export default defineConfig({
-  integrations: [
-    svelte(),
-    sentry(
-      {
-        dsn: 'https://66ac9aee9a3f24ea74156bc743b2d5e9@o4507019414142976.ingest.us.sentry.io/4507019416764416',
-        sourceMapsUploadOptions: { project: 'andor2', authToken: process.env.SENTRY_AUTH_TOKEN }
-      }
-    )
-  ],
+  integrations: [svelte()],
   output: 'server',
   adapter: cloudflare()
   /* disabled because of issues with cloudflare cache, had to clear it manually
@@ -37,4 +27,4 @@ export default defineConfig({
       }
     }
   */
-});
+})
