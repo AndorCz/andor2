@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showError } from '@lib/toasts'
 
@@ -8,18 +9,37 @@
   let password = ''
   let password2 = ''
   let isConfirming = false
+  let captchaToken = ''
+
+  onMount(() => {
+    window.grecaptcha.ready(async () => {
+      try {
+        captchaToken = await window.grecaptcha.execute('6LdQuqwpAAAAAGWzOFDEp-MczyB9Mx32X-HLP7ZZ', { action: 'submit' })
+      } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
+    })
+  })
+
+  async function verifyCaptcha () {
+    console.log('captchaToken', captchaToken)
+    const response = await fetch(`/api/auth/verify?token=${captchaToken}`, { method: 'GET' })
+    if (!response.ok) { showError('Chyba při ověření reCAPTCHA') }
+    const data = await response.json()
+    return response.ok && data.success
+  }
 
   async function signUpNewUser () {
+    if (!await verifyCaptcha()) { return }
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
-    if (error) { handleError(error) }
+    if (error) { return handleError(error) }
     if (data.user) {
       window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím potvrď svůj e-mail pro dokončení registrace.')
     }
   }
 
   async function validateUser () {
+    if (!await verifyCaptcha()) { return }
     const response = await fetch('/api/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
