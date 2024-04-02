@@ -20,7 +20,6 @@
   })
 
   async function verifyCaptcha () {
-    console.log('captchaToken', captchaToken)
     const response = await fetch(`/api/auth/verify?token=${captchaToken}`, { method: 'GET' })
     if (!response.ok) { showError('Chyba při ověření reCAPTCHA') }
     const data = await response.json()
