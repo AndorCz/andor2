@@ -192,7 +192,7 @@
 {/if}
 <!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-{#if activeTool !== 'maps' && $posts.length}
+{#if activeTool !== 'maps' && $posts?.length}
   {#key $posts}
     <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={data.id} />
   {/key}

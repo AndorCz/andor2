@@ -87,13 +87,13 @@
   function seen () {
     setRead(user.id, 'thread-' + id)
     if (contentSection && contentId) {
-      const game = $bookmarks.games.find((game) => { return game.id === contentId })
+      const game = $bookmarks.games?.find((game) => { return game.id === contentId })
       if (game) { game.unread = 0 }
       $bookmarks = $bookmarks
     }
   }
 
-  $: if (posts && $bookmarks.games.length) { seen() } // set read on every change of posts prop (thread re-render)
+  $: if (posts && $bookmarks.games?.length) { seen() } // set read on every change of posts prop (thread re-render)
 </script>
 
 <main bind:this={threadEl}>

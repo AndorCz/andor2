@@ -12,11 +12,11 @@
   let captchaToken = ''
 
   onMount(() => {
-    window.grecaptcha.ready(async () => {
-      try {
+    try {
+      window.grecaptcha?.ready(async () => {
         captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' })
-      } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
-    })
+      })
+    } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
   })
 
   async function verifyCaptcha () {
