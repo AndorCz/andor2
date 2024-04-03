@@ -4,9 +4,9 @@
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray } from '@lib/utils'
-  import Character from '@components/games/Character.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
-  import CharacterHeader from '@components/games/CharacterHeader.svelte'
+  import Character from '@components/games/characters/Character.svelte'
+  import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
 
   export let user = {}
   export let data = {}

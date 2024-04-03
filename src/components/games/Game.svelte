@@ -6,8 +6,8 @@
   import Discussion from '@components/Discussion.svelte'
   import GameInfo from '@components/games/GameInfo.svelte'
   import GameThread from '@components/games/GameThread.svelte'
-  import GameCharacters from '@components/games/GameCharacters.svelte'
   import GameStoryteller from '@components/games/GameStoryteller.svelte'
+  import GameCharacters from '@components/games/characters/GameCharacters.svelte'
 
   export let user = {}
   export let data = {}
@@ -119,22 +119,25 @@
     position: relative;
   }
 
-  .tabs button {
-    position: relative;
+  .secondary {
+    display: flex;
   }
-    .tabs button.hasUnread {
-      margin-right: 10px;
+    .secondary button {
+      position: relative;
     }
-    .tabs .unread {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      color: var(--new);
-    }
-    .tabs .count {
-      top: -5px;
-      right: 5px;
-    }
+      .secondary button.hasUnread {
+        margin-right: 10px;
+      }
+      .secondary .unread {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        color: var(--new);
+      }
+      .secondary .count {
+        top: -5px;
+        right: 5px;
+      }
 
   @media (max-width: 860px) {
     .content {

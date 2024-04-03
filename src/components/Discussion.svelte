@@ -1,10 +1,11 @@
 <script>
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
-  import { supabase, handleError, sendPost } from '@lib/database'
-  import { showSuccess, showError } from '@lib/toasts'
   import { getSavedStore } from '@lib/stores'
+  import { showSuccess, showError } from '@lib/toasts'
+  import { supabase, handleError, sendPost } from '@lib/database'
   import { platform } from '@components/common/MediaQuery.svelte'
+  import { clone } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
@@ -34,7 +35,8 @@
   // set identities for discussion
   const getMyCharacters = () => {
     if (!useIdentities || !showDiscussion) { return [] }
-    const myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
+    let myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
+    myCharacters = clone(myCharacters)
     myCharacters.forEach((char) => { char.type = 'character' })
     return myCharacters
   }

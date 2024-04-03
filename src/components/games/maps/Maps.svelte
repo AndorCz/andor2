@@ -1,7 +1,7 @@
 <script>
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
-  import Map from '@components/games/Map.svelte'
+  import Map from '@components/games/maps/Map.svelte'
 
   export let user
   export let game

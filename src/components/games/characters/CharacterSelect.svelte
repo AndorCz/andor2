@@ -5,7 +5,7 @@
   export let to = 'Komu'
   export let myCharacters
   export let otherCharacters
-  export let activeGameAudienceIds
+  export let activeAudienceIds
   export let onAudienceSelect
   export let gameStore
 
@@ -14,7 +14,7 @@
 
   onMount(() => { // set select value on mount
     if (identitySelect) { // might not exist if no character
-      $gameStore.activeGameCharacterId ? identitySelect.value = $gameStore.activeGameCharacterId : identitySelect.selectedIndex = 0
+      $gameStore.activeCharacterId ? identitySelect.value = $gameStore.activeCharacterId : identitySelect.selectedIndex = 0
     }
     if (audienceSelect) { audienceSelect.selectedIndex = 0 } // select first audience (everyone)
   })
@@ -25,12 +25,12 @@
   <h3>{to}</h3>
 </div>
 <div class='selectWrapper'>
-  <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeGameCharacterId}>
+  <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeCharacterId}>
     {#each myCharacters as character}
       <option value={character.id} class='character'>{character.name}</option>
     {/each}
   </select>
-  <select size='4' bind:this={audienceSelect} bind:value={$activeGameAudienceIds} on:change={onAudienceSelect} multiple>
+  <select size='4' bind:this={audienceSelect} bind:value={$activeAudienceIds} on:change={onAudienceSelect} multiple>
     {#each otherCharacters as character}
       <option value={character.id} class='character'>{character.name}</option>
     {/each}

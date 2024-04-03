@@ -6,9 +6,9 @@
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'
-  import Maps from '@components/games/Maps.svelte'
+  import Maps from '@components/games/maps/Maps.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
-  import CharacterSelect from '@components/games/CharacterSelect.svelte'
+  import CharacterSelect from '@components/games/characters/CharacterSelect.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
@@ -30,7 +30,7 @@
   let diceMode = 'icon'
   // let generatingPost = false
 
-  const activeGameAudienceIds = writable()
+  const activeAudienceIds = writable()
   const posts = writable([])
   const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
@@ -39,12 +39,12 @@
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },
-      ...data.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeGameCharacterId)
+      ...data.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId)
     ]
   }
 
-  $gameStore.activeGameCharacterId = getActiveCharacterId() // set default value
-  $activeGameAudienceIds = getActiveAudience()
+  $gameStore.activeCharacterId = getActiveCharacterId() // set default value
+  $activeAudienceIds = getActiveAudience()
 
   onMount(() => {
     if (user.id) { delete data.unread.gameThread }
@@ -53,8 +53,8 @@
   })
 
   function getActiveCharacterId () {
-    if (myCharacters.find((char) => { return char.id === $gameStore.activeGameCharacterId })) {
-      return $gameStore.activeGameCharacterId // set character from localStorage
+    if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId })) {
+      return $gameStore.activeCharacterId // set character from localStorage
     } else if (myCharacters[0]) {
       return myCharacters[0].id // no character in localStorage, set first character
     } else { return null } // no character
@@ -71,9 +71,9 @@
     } else {
       // filter posts based on current audience selection
       let ownersToFilter = []
-      if ($activeGameAudienceIds?.length && $activeGameAudienceIds.includes('*') === false) {
-        ownersToFilter = clone($activeGameAudienceIds)
-        if ($gameStore.activeGameCharacterId) { ownersToFilter.push($gameStore.activeGameCharacterId) } // add my active character
+      if ($activeAudienceIds?.length && $activeAudienceIds.includes('*') === false) {
+        ownersToFilter = clone($activeAudienceIds)
+        if ($gameStore.activeCharacterId) { ownersToFilter.push($gameStore.activeCharacterId) } // add my active character
         filterActive = true
       } else {
         filterActive = false
@@ -89,11 +89,11 @@
   async function submitPost () {
     if (saving || textareaValue === '') { return }
     saving = true
-    const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience
+    const audience = $activeAudienceIds.includes('*') ? null : $activeAudienceIds // clean '*' from audience
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
+      await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     } else {
-      await sendPost('POST', { thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeGameCharacterId, ownerType: 'character', audience })
+      await sendPost('POST', { thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     }
     textareaValue = ''
     $gameStore.unsent = ''
@@ -120,16 +120,16 @@
   }
 
   function getActiveAudience () {
-    if ($activeGameAudienceIds?.length) {
-      if ($activeGameAudienceIds.includes('*')) { return ['*'] } // set all
-      return $activeGameAudienceIds // set audience characters from localStorage
+    if ($activeAudienceIds?.length) {
+      if ($activeAudienceIds.includes('*')) { return ['*'] } // set all
+      return $activeAudienceIds // set audience characters from localStorage
     } else if (otherCharacters[0]) {
       return [otherCharacters[0].id] // no audience in localStorage, set all
     } else { return ['*'] } // no character
   }
 
   function onAudienceSelect () {
-    if ($activeGameAudienceIds.includes('*')) { $activeGameAudienceIds = ['*'] } // set all
+    if ($activeAudienceIds.includes('*')) { $activeAudienceIds = ['*'] } // set all
     loadPosts() // filter posts based on audience selection
   }
 
@@ -166,8 +166,8 @@
   </div>
 
   <div class='toolWrapper'>
-    {#if activeTool === 'dice' && user.id && $gameStore.activeGameCharacterId}
-      <DiceBox threadId={data.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+    {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
+      <DiceBox threadId={data.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
     {:else if activeTool === 'maps'}
       <Maps {user} game={data} {isStoryteller} />
     {:else if activeTool === 'find'}
@@ -176,9 +176,9 @@
         <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
         <button class='material' on:click={handleSearch}>search</button>
       </div>
-    {:else if activeTool === 'post' && user.id && $gameStore.activeGameCharacterId}
+    {:else if activeTool === 'post' && user.id && $gameStore.activeCharacterId}
       <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-      <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+      <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
       <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
     {/if}
   </div>
@@ -187,9 +187,9 @@
 {#if searchTerms}
   <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
 {:else if filterActive}
-  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeGameAudienceIds = ['*']; loadPosts() }}>close</button></h2>
+  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeAudienceIds = ['*']; loadPosts() }}>close</button></h2>
 {/if}
-<!--({$activeGameAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
+<!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
 {#if activeTool !== 'maps' && $posts?.length}
   {#key $posts}

@@ -2,11 +2,11 @@
   import { onMount } from 'svelte'
   import { showError, showSuccess } from '@lib/toasts'
   import DiceBox from '@3d-dice/dice-box-threejs'
-  import CharacterSelect from '@components/games/CharacterSelect.svelte'
+  import CharacterSelect from '@components/games/characters/CharacterSelect.svelte'
 
   export let threadId
   export let gameStore
-  export let activeGameAudienceIds
+  export let activeAudienceIds
   export let onRoll
   export let onAudienceSelect
   export let myCharacters
@@ -28,8 +28,8 @@
     const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
     if (diceNotation) {
       // rolls are happening on the server
-      const audience = $activeGameAudienceIds.includes('*') ? null : $activeGameAudienceIds // clean '*' from audience
-      const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeGameCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
+      const audience = $activeAudienceIds.includes('*') ? null : $activeAudienceIds // clean '*' from audience
+      const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
       json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
@@ -124,7 +124,7 @@
     </div>
   </div>
 
-  <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeGameAudienceIds} {gameStore} />
+  <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
 
   <div class='row'>
     <div class='notation'>

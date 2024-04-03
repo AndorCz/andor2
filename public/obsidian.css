@@ -699,7 +699,7 @@ select {
     font-size: 30px;
   }
 
-  .tabs a, .tabs button {
+  .tabs a.active, .tabs button.active {
     padding: 10px 15px;
     font-size: 20px;
   }
@@ -713,7 +713,7 @@ select {
   .tabs a, .tabs button {
     padding: 10px 8px;
   }
-    .tabs a.active {
+    .tabs a.active, .tabs button.active {
       padding: 10px 15px;
     }
   .ProseMirror {
