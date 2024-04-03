@@ -106,7 +106,7 @@
   }, 3000)
 
   // Reactive statement for scrolling
-  $: if (postsEl && $posts.length) {
+  $: if (postsEl && $posts?.length) {
     if (previousPostsLength === 0 && $posts.length > 0) {
       // Instant scroll for the initial load
       setTimeout(() => { postsEl.scrollTop = postsEl.scrollHeight }, 10)

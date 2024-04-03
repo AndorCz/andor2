@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte'
+  import { writable } from 'svelte/store'
   import { supabase, handleError, sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
-  import { getSavedStore, posts } from '@lib/stores'
+  import { getSavedStore } from '@lib/stores'
   import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -16,8 +17,8 @@
   export let thread
   export let unread = 0
   export let useIdentities = false
-  export let identityStore = null
 
+  const posts = writable([])
   const limit = 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
@@ -44,8 +45,8 @@
     if (user.id) {
       if (data.unread?.gameChat) { delete data.unread.gameChat }
       if (showDiscussion && useIdentities) {
-        $identityStore.activeChatIdentity = $identityStore.activeChatIdentity || identities[0].id
-        identitySelect.value = $identityStore.activeChatIdentity
+        $discussionStore.activeIdentity = $discussionStore.activeIdentity || identities[0].id
+        identitySelect.value = $discussionStore.activeIdentity
       }
     }
     if (showDiscussion) { loadPosts() }
@@ -60,7 +61,7 @@
   }
 
   function getIdentity () {
-    return identities.find((identity) => { return identity.id === $identityStore.activeChatIdentity })
+    return identities.find((identity) => { return identity.id === $discussionStore.activeIdentity })
   }
 
   async function submitPost () {
@@ -125,7 +126,7 @@
           <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
           {#if useIdentities}
             <div class='senderWrapper'>
-              <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+              <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
                 {#each identities as identity}
                   <option value={identity.id} class={identity.type}>{identity.name}</option>
                 {/each}
@@ -138,7 +139,7 @@
         <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
         {#if useIdentities}
           <h3 class='sender'>Identita</h3>
-          <select size='4' bind:this={identitySelect} bind:value={$identityStore.activeChatIdentity}>
+          <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
             {#each identities as identity}
               <option value={identity.id}>{identity.name}</option>
             {/each}

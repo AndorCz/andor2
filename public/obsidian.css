@@ -639,6 +639,12 @@ select {
     display: none;
   }
 
+/* MISC */
+
+.grecaptcha-badge { 
+    visibility: hidden !important;
+}
+
 /* Component overrides */
 
 #newsCategorySelect button {

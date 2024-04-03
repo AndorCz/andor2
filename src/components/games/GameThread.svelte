@@ -2,7 +2,6 @@
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { clone } from '@lib/utils'
-  import { posts, getSavedStore } from '@lib/stores'
   import { sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -14,12 +13,10 @@
 
   export let user = {}
   export let data = {}
+  export let gameStore
   export let isStoryteller
   export let unread = 0
   export let activeTool = 'post'
-
-  const gameStore = getSavedStore('game-' + data.id)
-  const activeGameAudienceIds = writable()
 
   let textareaRef
   let searchEl
@@ -33,6 +30,8 @@
   let diceMode = 'icon'
   // let generatingPost = false
 
+  const activeGameAudienceIds = writable()
+  const posts = writable([])
   const limit = 50
   const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   let otherCharacters = []

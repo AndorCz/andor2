@@ -12,13 +12,12 @@
   export let user = {}
   export let data = {}
 
-  // prepare store
+  let bookmarkId
+  let activeTool
   const gameStore = getSavedStore('game-' + data.id)
   const isGameOwner = data.owner.id === user.id
   const isPlayer = data.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = data.characters.some(c => c.storyteller && c.player.id === user.id)
-  let bookmarkId
-  let activeTool
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -86,9 +85,9 @@
       <GameInfo {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'chat'}
       <h2>{#if data.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
-      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} identityStore={gameStore} slug={'game-discussion-' + data.id} contentSection={'games'} />
+      <Discussion {data} {user} isOwner={isStoryteller} unread={data.unread.gameChat} thread={data.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + data.id} contentSection={'games'} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} />
+      <GameThread {data} {user} {isStoryteller} {activeTool} unread={data.unread.gameThread} {gameStore} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {data} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}

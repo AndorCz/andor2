@@ -4,7 +4,6 @@ import { writable } from 'svelte/store'
 export const headerPreview = writable(null)
 export const activeConversation = writable(null)
 export const bookmarks = writable({ games: [], boards: [], works: [] })
-export const posts = writable([])
 export const lightboxImage = writable(null)
 
 // LOCAL STORAGE SYNCED STORE: has to be a function to allow for multiple instances of the store with different names
