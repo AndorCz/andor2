@@ -78,7 +78,7 @@
 
 <style>
   main {
-    padding: 40px;
+    padding: 40px 0px;
   }
   .codex {
     display: flex;

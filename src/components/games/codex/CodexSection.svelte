@@ -20,7 +20,6 @@
 
     const page = new URLSearchParams(window.location.search).get('codex_page')
     activePage = page ? pages.find((p) => { return p.slug === page }) || pages[0] : pages[0]
-    console.log('activePage', activePage)
   }
 
   async function updatePage () {
@@ -49,13 +48,15 @@
       {/if}
     </div>
     {#if activePage}
-      <footer class='content'>
-        <table>
-          <tr><td>Vytvořeno</td><td>{new Date(activePage.created_at).toLocaleDateString('cs')}</td></tr>
-          <tr><td>Aktualizováno</td><td>{new Date(activePage.updated_at).toLocaleDateString('cs')}</td></tr>
-        </table>
+      <footer>
+        <div class='meta'>
+          <table>
+            <tr><td>Vytvořeno</td><td>{new Date(activePage.created_at).toLocaleDateString('cs')}</td></tr>
+            <tr><td>Aktualizováno</td><td>{new Date(activePage.updated_at).toLocaleDateString('cs')}</td></tr>
+          </table>
+        </div>
+        <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
       </footer>
-      <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
     {/if}
   </main>
 </div>
@@ -69,7 +70,7 @@
       flex: 1;
       line-height: 150%;
     }
-      .content {
+      .content, .meta, .url {
         background-color: var(--block);
       }
       main p {
@@ -83,27 +84,43 @@
       padding: 20px;
     }
   footer {
-    margin-top: 10px;
-    padding: 20px 0px;
+    margin-top: 40px;
+    opacity: 0.5;
   }
-    footer table {
-      border-spacing: 20px 0px;
+    footer:hover {
+      opacity: 1;
     }
-      .url {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: var(--block);
-        font-family: monospace;
-        font-size: 14px;
-        padding: 10px;
-        margin-top: 10px;
-        position: relative;
-        border-radius: 10px;
+    .meta {
+      padding: 20px 0px;
+    }
+      footer table {
+        border-spacing: 20px 0px;
       }
-        .copy {
-          position: absolute;
-          right: 0px;
-          top: 0px;
-        }
+    .url {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--block);
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      margin-top: 10px;
+      position: relative;
+      border-radius: 10px;
+    }
+      .copy {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+      }
+
+  @media (max-width: 700px) {
+    .wrapper {
+      flex-direction: column-reverse;
+    }
+      aside {
+        margin-top: 30px;
+        width: 100%;
+      }
+  }
 </style>

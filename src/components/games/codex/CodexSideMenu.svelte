@@ -23,40 +23,52 @@
   }
 </script>
 
-<ul>
-  {#if activePage && Array.isArray(pages)}
-    {#each pages as item}
-      <li class:active={item.id === activePage.id}><button on:click={() => { activate(item) }} class='plain'>{item.name}</button></li>
-    {/each}
-  {/if}
-  <li class='add'><button on:click={addPage}>Přidat stránku</button></li>
-</ul>
+<div class='menu'>
+  <ul>
+    {#if activePage && Array.isArray(pages)}
+      {#each pages as item}
+        <li class:active={item.id === activePage.id}><button on:click={() => { activate(item) }} class='plain'>{item.name}</button></li>
+      {/each}
+    {/if}
+  </ul>
+  <div class='add'><button on:click={addPage}>Přidat stránku</button></div>
+</div>
 
 <style>
-  ul {
-    list-style-type: none;
+  .menu {
     background-color: var(--block);
-    padding: 20px;
-    margin: 0px;
-    width: 100%;
   }
-    li {
+    ul {
+      list-style-type: none;
       margin: 0px;
-      padding: 0px;
-    }
-    button.plain {
-      display: block;
+      padding: 20px;
       width: 100%;
-      height: 100%;
-      text-align: left;
-      padding: 5px 0px;
-      color: var(--link);
     }
-      li.active button {
-        color: var(--text);
+      li {
+        margin: 0px;
+        padding: 0px;
       }
-    .add {
-      margin-top: 20px;
-      text-align: center;
+      button.plain {
+        display: block;
+        width: 100%;
+        height: 100%;
+        text-align: left;
+        padding: 5px 0px;
+        color: var(--link);
+      }
+        li.active button {
+          color: var(--text);
+        }
+      .add {
+        padding: 20px;
+        padding-top: 0px;
+        text-align: center;
+      }
+
+  @media (max-width: 700px) {
+    ul {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
     }
+  }
 </style>
