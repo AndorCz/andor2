@@ -16,8 +16,8 @@
   export let gameStore
   export let isStoryteller
   export let unread = 0
-  export let activeTool = 'post'
 
+  let activeTool = 'post'
   let textareaRef
   let searchEl
   let textareaValue = $gameStore.unsent || '' // load unsent post
@@ -47,6 +47,7 @@
   $activeAudienceIds = getActiveAudience()
 
   onMount(() => {
+    activeTool = new URLSearchParams(window.location.search).get('tool') || 'post'
     if (user.id) { delete game.unread.gameThread }
     loadPosts()
     window.addEventListener('pagehide', saveUnsent)

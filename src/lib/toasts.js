@@ -1,5 +1,6 @@
 
 import { Notyf } from 'notyf'
+import { removeURLParam } from '@lib/utils'
 import 'notyf/notyf.min.css'
 
 export const initToasts = () => {
@@ -24,17 +25,14 @@ export const initToasts = () => {
 
 export const lookForToast = () => {
   setTimeout(() => {
-    const url = new URL(window.location.href)
-    const toastType = url.searchParams.get('toastType')
-    const toastText = url.searchParams.get('toastText')
+    const { toastType, toastText } = Object.fromEntries(new URLSearchParams(window.location.search))
     if (toastType && toastText) {
       switch (toastType) {
         case 'success': window.showSuccess(toastText); break
         case 'error': window.showError(toastText); break
       }
-      url.searchParams.delete('toastType')
-      url.searchParams.delete('toastText')
-      window.history.pushState({}, '', url.href)
+      removeURLParam('toastType')
+      removeURLParam('toastText')
     }
   }, 100)
 }

@@ -1,6 +1,7 @@
 <script>
-  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
+  import { showSuccess } from '@lib/toasts'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSideMenu from '@components/games/codex/CodexSideMenu.svelte'
 
@@ -12,21 +13,27 @@
   let pages = []
   let activePage
 
-  onMount(async () => {
-    await loadData()
-    if (pages[0]) { activePage = pages[0] }
-  })
-
   async function loadData () {
     const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id })
     if (error) { return handleError(error) }
     pages = pagesData
+
+    const page = new URLSearchParams(window.location.search).get('codex_page')
+    activePage = page ? pages.find((p) => { return p.slug === page }) || pages[0] : pages[0]
+    console.log('activePage', activePage)
   }
 
   async function updatePage () {
     const { error } = await supabase.from('codex_pages').update({ content: activePage.content }).eq('id', activePage.id)
     if (error) { return handleError(error) }
   }
+
+  function copyUrl () {
+    navigator.clipboard.writeText(window.location)
+    showSuccess('Cesta k této stránce byla vložena do schránky, můžeš jí vložit jinam')
+  }
+
+  $: if (activeSection) { loadData() }
 </script>
 
 <div class='wrapper'>
@@ -38,9 +45,18 @@
       {#if activePage}
         <EditableLong userId={user.id} bind:value={activePage.content} onSave={updatePage} canEdit={isStoryteller} allowHtml />
       {:else}
-        <p>V této sekci není žádný obsah</p>
+        <p class='info'>V této sekci není žádný obsah</p>
       {/if}
     </div>
+    {#if activePage}
+      <footer class='content'>
+        <table>
+          <tr><td>Vytvořeno</td><td>{new Date(activePage.created_at).toLocaleDateString('cs')}</td></tr>
+          <tr><td>Aktualizováno</td><td>{new Date(activePage.updated_at).toLocaleDateString('cs')}</td></tr>
+        </table>
+      </footer>
+      <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
+    {/if}
   </main>
 </div>
 
@@ -61,7 +77,33 @@
         margin: 0px;
       }
     aside {
-      width: 200px;
-      background-color: var(--block);
+      width: 220px;
     }
+    .info {
+      padding: 20px;
+    }
+  footer {
+    margin-top: 10px;
+    padding: 20px 0px;
+  }
+    footer table {
+      border-spacing: 20px 0px;
+    }
+      .url {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--block);
+        font-family: monospace;
+        font-size: 14px;
+        padding: 10px;
+        margin-top: 10px;
+        position: relative;
+        border-radius: 10px;
+      }
+        .copy {
+          position: absolute;
+          right: 0px;
+          top: 0px;
+        }
 </style>

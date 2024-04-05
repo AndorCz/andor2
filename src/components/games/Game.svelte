@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte'
+  import { showSuccess } from '@lib/toasts'
+  import { removeURLParam } from '@lib/utils'
   import { getSavedStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database'
-  import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
   import GameCodex from '@components/games/codex/GameCodex.svelte'
   import GameThread from '@components/games/GameThread.svelte'
@@ -13,17 +14,14 @@
   export let game = {}
 
   let bookmarkId
-  let activeTool
   const gameStore = getSavedStore('game-' + game.id)
   const isGameOwner = game.owner.id === user.id
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
 
   onMount(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    $gameStore.activeTab = urlParams.get('tab') || $gameStore.activeTab || 'codex'
-    activeTool = urlParams.get('tool') || 'post'
-    window.history.replaceState({}, document.title, window.location.pathname) // clear params
+    $gameStore.activeTab = new URLSearchParams(window.location.search).get('tab') || $gameStore.activeTab || 'codex'
+    removeURLParam('tab')
   })
 
   function showSettings () {
@@ -87,7 +85,7 @@
       <h2>{#if game.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
       <Discussion data={game} {user} isOwner={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection={'games'} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {game} {user} {isStoryteller} {activeTool} unread={game.unread.gameThread} {gameStore} />
+      <GameThread {game} {user} {isStoryteller} unread={game.unread.gameThread} {gameStore} />
     {:else if $gameStore.activeTab === 'chars'}
       <GameCharacters {game} {user} {isStoryteller} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}

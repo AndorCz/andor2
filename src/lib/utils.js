@@ -126,3 +126,19 @@ export function base64ToBlob (base64, contentType = 'image/jpeg', sliceSize = 51
   }
   return new Blob(byteArrays, { type: contentType })
 }
+
+export function createSlug (name) {
+  return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
+}
+
+export function removeURLParam (param) {
+  const urlParams = new URLSearchParams(window.location.search)
+  urlParams.delete(param)
+  window.history.replaceState({}, '', `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`)
+}
+
+export function updateURLParam (key, value) {
+  const url = new URL(window.location)
+  url.searchParams.set(key, value)
+  window.history.pushState({}, '', url)
+}

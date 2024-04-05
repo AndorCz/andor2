@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
+  import { createSlug } from '@lib/utils'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
   import { gameSystems, gameCategories } from '@lib/constants'
@@ -63,7 +64,7 @@
   }
 
   async function addCodexSection () {
-    const slug = newCodexSection.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
+    const slug = createSlug(newCodexSection)
     const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index: game.codexSections.length + 1 }).select()
     if (error) { return handleError(error) }
     game.codexSections.push({ id: newSection.id, slug, name: newCodexSection })

@@ -3,6 +3,7 @@
   import { supabase, handleError, setRead } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
+  import { updateURLParam } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSection from '@components/games/codex/CodexSection.svelte'
 
@@ -13,11 +14,21 @@
   let sections = [{ slug: 'general', name: 'Obecné' }]
   let activeSection = sections[0]
 
-  function activate (section) { activeSection = section }
-
   onMount(() => {
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
+    const section = new URLSearchParams(window.location.search).get('codex_section')
+    if (section) { activeSection = sections.find((s) => { return s.slug === section }) || sections[0] }
+    console.log('activeSection', activeSection)
   })
+
+  function activate (section) {
+    activeSection = section
+    if (section.slug === 'general') {
+      window.history.pushState({}, '', window.location.pathname)
+    } else {
+      updateURLParam('codex_section', section.slug)
+    }
+  }
 
   async function updateGeneral (publicChange = true) {
     const newData = { info: game.info }
@@ -61,7 +72,7 @@
       <CodexSection {user} {game} {activeSection} {isStoryteller} />
     {/if}
   {:else}
-    <p>Informace o hře nejsou veřejné</p>
+    <p class='info'>Informace o hře nejsou veřejné</p>
   {/if}
 </main>
 

@@ -5,8 +5,7 @@
   import MapForm from '@components/games/maps/MapForm.svelte'
 
   const { supabase, user } = Astro.locals
-  let mapId = Astro.url.searchParams.get('mapId')
-  let gameId = Astro.url.searchParams.get('gameId')
+  const { mapId, gameId } = Object.fromEntries(Astro.url.searchParams)
   let isStoryteller = false
   let game = {}
   let map = {}

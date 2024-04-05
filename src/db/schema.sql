@@ -96,6 +96,7 @@ create table codex_pages (
   game int4 not null,
   section int4 not null,
   name text not null,
+  slug text not null,
   content text,
   hidden boolean not null default false,
   created_at timestamp with time zone default current_timestamp,
