@@ -321,6 +321,10 @@ select {
   margin: 0px;
 }
 
+.editableLong h1:first-child {
+  margin-top: 0px;
+}
+
 /* SVELTE-SELECT */
 
 .svelte-select {

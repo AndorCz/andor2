@@ -64,7 +64,7 @@ create table games (
   discussion_thread int4 null,
   recruitment_open boolean not null default true,
   open_discussion boolean not null default false,
-  open_info boolean not null default true,
+  open_codex boolean not null default true,
   game_thread int4 null,
   openai_thread text null,
   openai_storyteller text null,
@@ -78,6 +78,30 @@ create table games (
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
   constraint games_game_thread_fkey foreign key (game_thread) references threads (id),
+);
+
+create table codex_sections (
+  id int4 not null primary key generated always as identity,
+  game int4 not null,
+  name text not null,
+  slug text not null,
+  hidden boolean not null default false,
+  index smallint null default 0,
+  created_at timestamp with time zone default current_timestamp,
+  constraint codex_game_fkey foreign key (game) references games (id) on delete cascade
+);
+
+create table codex_pages (
+  id int4 not null primary key generated always as identity,
+  game int4 not null,
+  section int4 not null,
+  name text not null,
+  content text,
+  hidden boolean not null default false,
+  created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
+  constraint codex_game_fkey foreign key (game) references games (id) on delete cascade,
+  constraint codex_sections_fkey foreign key (section) references codex_sections (id) on delete cascade
 );
 
 create table maps (
@@ -337,9 +361,7 @@ create or replace function get_character_names(audience_ids uuid[]) returns text
 declare
   names text[];
 begin
-  select array_agg(name) into names
-  from unnest(audience_ids) as audience_id
-  join characters on characters.id = audience_id;
+  select array_agg(name) into names from unnest(audience_ids) as audience_id join characters on characters.id = audience_id;
   return names;
 end;
 $$ language plpgsql;
@@ -389,7 +411,6 @@ begin
   );
 end;
 $$ language plpgsql;
-
 
 
 create or replace function update_reaction(post_id int4, reaction_type text, action text)
@@ -517,8 +538,7 @@ begin
             'player', c.player,
             'storyteller', c.storyteller,
             'game', c.game,
-            'unread', (select coalesce(sum((contact->>'unread')::int), 0) 
-                       from json_array_elements(c.contacts) as contact),
+            'unread', (select coalesce(sum((contact->>'unread')::int), 0) from json_array_elements(c.contacts) as contact),
             'contacts', c.contacts
           ) order by c.name
         ) as characters
@@ -537,8 +557,7 @@ begin
                 'unread', coalesce((
                   select count(*)
                   from messages m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false
-                    and m.sender_character <> c.id
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character <> c.id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by other_c.name
@@ -553,14 +572,8 @@ begin
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(
-        json_build_object(
-          'name', c.name,
-          'id', c.id,
-          'portrait', c.portrait,
-          'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)
-        ) order by c.name
-      ) as characters
+      select json_agg(json_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
+      as characters
       from characters c
       where c.player = auth.uid() and c.game is null
     )
@@ -569,13 +582,8 @@ begin
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
       'unreadTotal', (
         select sum((character->>'unread')::int)
-        from (
-          select json_array_elements(characters) as character
-          from all_characters
-          union all
-          select json_array_elements(coalesce(characters, '[]'::json)) as character
-          from stranded_characters
-        ) as all_unreads
+        from (select json_array_elements(characters) as character from all_characters union all select json_array_elements(coalesce(characters, '[]'::json)) as character from stranded_characters)
+        as all_unreads
       )
     )
   );
@@ -601,11 +609,7 @@ begin
       and p.id != auth.uid()
       group by p.id
     ),
-    active_users as (
-      select p.id
-      from profiles p
-      where p.last_activity > (now() - interval '5 minutes') and p.id != auth.uid()
-    ),
+    active_users as (select p.id from profiles p where p.last_activity > (now() - interval '5 minutes') and p.id != auth.uid()),
     combined_users as (
       select p.id, p.name, p.portrait,
         (p.id in (select id from unread_users)) as has_unread,
@@ -665,54 +669,53 @@ declare
   numeric_id int;
 begin
   numeric_id := substring(slug_alias from '\d+$')::int; -- Extract numeric part
-
   if slug_alias like 'thread-%' then
     -- Calculate unread posts for threads
     unread_count := (
-      select count(*) 
-      from posts p
-      where p.thread = numeric_id
-      and p.created_at > (
-        select coalesce(max(read_at), '1970-01-01')
-        from user_reads
-        where user_id = user_uuid and slug = slug_alias
-      )
+      select count(*) from posts p where p.thread = numeric_id and p.created_at > (select coalesce(max(read_at), '1970-01-01')
+      from user_reads where user_id = user_uuid and slug = slug_alias)
     );
   elsif slug_alias like 'game-info-%' or slug_alias like 'game-characters-%' then
     -- Calculate unread for game info or characters
     unread_count := (
       select case 
         when coalesce(max(read_at), '1970-01-01') < (
-          select case 
-            when slug_alias like 'game-info-%' then g.info_changed_at 
-            else g.characters_changed_at 
-          end
-          from games g
-          where g.id = numeric_id
+          select case when slug_alias like 'game-info-%' then g.info_changed_at else g.characters_changed_at end
+          from games g where g.id = numeric_id
         ) then 1
         else 0
       end
-      from user_reads
-      where user_id = user_uuid and slug = slug_alias
+      from user_reads where user_id = user_uuid and slug = slug_alias
     );
   else
     unread_count := 0; -- Default case for unsupported slugs
   end if;
-
   return unread_count;
+end;
+$$ language plpgsql;
+
+
+create or replace function get_game_data(game_id int) returns jsonb as $$
+declare
+  game_data jsonb;
+  character_data jsonb;
+  map_data jsonb;
+  unread_data jsonb;
+  codex_data jsonb;
+begin
+  select to_jsonb(t) into game_data from (select g.*, p as owner, m as active_map from games g left join profiles p on g.owner = p.id left join maps m on g.active_map = m.id where g.id = game_id) t;
+  select jsonb_agg(t) into character_data from (select c.*, p as player from characters c left join profiles p on c.player = p.id where c.game = game_id) t;
+  select jsonb_agg(t) into map_data from (select * from maps where game = game_id order by updated_at desc) t;
+  select to_jsonb(get_game_unread(game_id, (game_data->>'game_thread')::int, (game_data->>'discussion_thread')::int)) into unread_data;
+  select jsonb_agg(t) into codex_data from (select * from codex_sections where game = game_id order by index) t;
+  return game_data || jsonb_build_object('characters', character_data, 'maps', map_data, 'unread', unread_data, 'codexSections', codex_data);
 end;
 $$ language plpgsql;
 
 
 create or replace function delete_old_chat_posts() returns void as $$
 begin
-  delete from posts
-  where id not in (
-    select id from posts
-    where thread = 1 -- chat thread
-    order by created_at desc
-    limit 100
-  );
+  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100);
 end;
 $$ language plpgsql;
 

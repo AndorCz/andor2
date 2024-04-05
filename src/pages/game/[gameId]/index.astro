@@ -5,29 +5,17 @@
 
   const { supabase, user } = Astro.locals
   const { gameId } = Astro.params
-
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: gameData, error } = await supabase.from('games').select('id, name, category, annotation, info, recruitment, prompt, notes, owner:profiles(id, name), discussion_thread, open_discussion, open_info, game_thread, system, openai_thread, recruitment_open, openai_storyteller, custom_header, active_map:maps!games_active_map_fkey(*), context_dice, welcome_message').eq('id', gameId).single()
+  const { data, error } = await supabase.rpc('get_game_data', { game_id: gameId });
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-
-  const { data: characterData, error: error2 } = await supabase.from('characters').select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted').eq('game', gameId)
-  if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
-  if (characterData) { gameData.characters = characterData }
-
-  const { data: mapData, error: error3 } = await supabase.from('maps').select('*').eq('game', gameId).order('updated_at', { ascending: false })
-  if (error3) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
-  if (mapData) { gameData.maps = mapData }
-
-  const { data: unreadData, error: error4 } = await supabase.rpc('get_game_unread', { game: gameId, game_thread: gameData.game_thread, discussion_thread: gameData.discussion_thread })
-  if (error4) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error3.message)}`) }
-  if (unreadData) { gameData.unread = unreadData }
+  const gameData = data
 ---
 
 <Layout title={gameData?.name} headerStorage={gameData?.custom_header ? `game-${gameData.id}.jpg?hash=${gameData.custom_header}` : null}>
   {(showSettings ? (
-    <GameSettings data={gameData} {user} client:only />
+    <GameSettings game={gameData} {user} client:only />
   ) : (
-    <Game data={gameData} {user} client:only />
+    <Game game={gameData} {user} client:only />
   ))}
 </Layout>

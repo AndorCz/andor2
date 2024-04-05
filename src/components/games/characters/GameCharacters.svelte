@@ -9,7 +9,7 @@
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
 
   export let user = {}
-  export let data = {}
+  export let game = {}
   export let isStoryteller
 
   // sort character categories
@@ -17,7 +17,7 @@
   const characters = { playing: [], waiting: [], open: [], storytellers: [], myOpen: [] }
   let myOpenSelected = ''
 
-  data.characters.forEach((char) => {
+  game.characters.forEach((char) => {
     if (char.storyteller) { // storytellers
       characters.storytellers.push(char)
     } else if (char.open) { // open
@@ -44,30 +44,30 @@
   })
 
   async function charactersChanged (event) {
-    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', data.id)
+    const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game.id)
     if (timestampError) { return handleError(timestampError) }
   }
 
   async function updateRecruitment () {
-    const newData = { recruitment: data.recruitment, characters_changed_at: new Date() }
-    const { error } = await supabase.from('games').update(newData).eq('id', data.id)
+    const newData = { recruitment: game.recruitment, characters_changed_at: new Date() }
+    const { error } = await supabase.from('games').update(newData).eq('id', game.id)
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
   }
 
   async function signExisting () {
-    const { error } = await supabase.from('characters').update({ game: data.id, accepted: false }).eq('id', myOpenSelected)
+    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false }).eq('id', myOpenSelected)
     if (error) { return handleError(error) }
     await charactersChanged()
     window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přihlášena do hry')
   }
 
   function seen () {
-    setRead(user.id, 'game-characters-' + data.id)
-    const game = $bookmarks.games.find((game) => { return game.id === data.id })
-    if (game) { game.unread = 0 }
+    setRead(user.id, 'game-characters-' + game.id)
+    const bookmark = $bookmarks.games.find((g) => { return g.id === game.id })
+    if (bookmark) { bookmark.unread = 0 }
     $bookmarks = $bookmarks
-    delete data.unread.gameCharacters
+    delete game.unread.gameCharacters
   }
 
   $: if ($bookmarks.games.length) { seen() }
@@ -79,7 +79,7 @@
     {#if isFilledArray(characters.storytellers)}
       <CharacterHeader {isStoryteller} />
       {#each characters.storytellers as character}
-        <Character {user} {character} {isStoryteller} game={data} />
+        <Character {user} {character} {isStoryteller} {game} />
       {/each}
     {:else}
       <td class='none'>Žádní vypravěči</td>
@@ -91,7 +91,7 @@
     {#if isFilledArray(characters.playing)}
       <CharacterHeader {isStoryteller} />
       {#each characters.playing as character}
-        <Character {user} {character} {isStoryteller} game={data} />
+        <Character {user} {character} {isStoryteller} {game} />
       {/each}
     {:else}
       <tr><td class='none'>Žádné postavy</td></tr>
@@ -102,16 +102,16 @@
   <hr>
 
   <h1>Nábor</h1>
-  <EditableLong userId={user.id} bind:value={data.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
+  <EditableLong userId={user.id} bind:value={game.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
   <br>
-  {#if data.recruitment_open}
+  {#if game.recruitment_open}
     {#if isStoryteller || isFilledArray(characters.waiting)}
       <h2>Hlásí se</h2>
       <table class='characters'>
         {#if isFilledArray(characters.waiting)}
           <CharacterHeader {isStoryteller} />
           {#each characters.waiting as character}
-            <Character {user} {character} {isStoryteller} game={data} />
+            <Character {user} {character} {isStoryteller} {game} />
           {/each}
         {:else}
           <tr><td class='none'>Žádné postavy</td></tr>
@@ -124,7 +124,7 @@
       {#if isFilledArray(characters.open)}
         <CharacterHeader {isStoryteller} />
         {#each characters.open as character}
-          <Character {user} {character} {isStoryteller} game={data} />
+          <Character {user} {character} {isStoryteller} {game} />
         {/each}
       {:else}
         <tr><td class='none'>Žádné postavy</td></tr>
@@ -143,7 +143,7 @@
           </select>
           <button on:click={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
         </div>
-        <a href={window.location.origin + '/game/character-form?game=' + data.id} class='button large'>Vytvořit novou postavu</a>
+        <a href={window.location.origin + '/game/character-form?game=' + game.id} class='button large'>Vytvořit novou postavu</a>
       </div>
     {/if}
   {:else}

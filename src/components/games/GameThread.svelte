@@ -12,7 +12,7 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
-  export let data = {}
+  export let game = {}
   export let gameStore
   export let isStoryteller
   export let unread = 0
@@ -33,13 +33,13 @@
   const activeAudienceIds = writable()
   const posts = writable([])
   const limit = 50
-  const myCharacters = data.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
+  const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
   let otherCharacters = []
 
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },
-      ...data.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId)
+      ...game.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId)
     ]
   }
 
@@ -47,7 +47,7 @@
   $activeAudienceIds = getActiveAudience()
 
   onMount(() => {
-    if (user.id) { delete data.unread.gameThread }
+    if (user.id) { delete game.unread.gameThread }
     loadPosts()
     window.addEventListener('pagehide', saveUnsent)
   })
@@ -67,7 +67,7 @@
   async function loadPosts () {
     let res
     if (searchTerms) {
-      res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&search=${searchTerms}`, { method: 'GET' })
+      res = await fetch(`/api/post?thread=${game.game_thread}&game=${game.id}&offset=${page * limit}&limit=${limit}&search=${searchTerms}`, { method: 'GET' })
     } else {
       // filter posts based on current audience selection
       let ownersToFilter = []
@@ -78,7 +78,7 @@
       } else {
         filterActive = false
       }
-      res = await fetch(`/api/post?thread=${data.game_thread}&game=${data.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
+      res = await fetch(`/api/post?thread=${game.game_thread}&game=${game.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
     }
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
@@ -91,9 +91,9 @@
     saving = true
     const audience = $activeAudienceIds.includes('*') ? null : $activeAudienceIds // clean '*' from audience
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
+      await sendPost('PATCH', { id: editing, thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     } else {
-      await sendPost('POST', { thread: data.game_thread, content: textareaValue, openAiThread: data.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
+      await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     }
     textareaValue = ''
     $gameStore.unsent = ''
@@ -104,7 +104,7 @@
 
   async function deletePost (id) {
     if (!window.confirm('Opravdu smazat příspěvek?')) { return }
-    const res = await fetch(`/api/post?id=${id}&thread=${data.openai_thread}`, { method: 'DELETE' })
+    const res = await fetch(`/api/post?id=${id}&thread=${game.openai_thread}`, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek smazán')
@@ -146,7 +146,7 @@
   async function generatePost () {
     if (textareaValue) { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
     generatingPost = true
-    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: data.id, annotation: data.annotation, owner: data.owner.id, system: data.system, thread: data.openai_thread }) })
+    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: game.id, annotation: game.annotation, owner: game.owner.id, system: game.system, thread: game.openai_thread }) })
     if (res.error) { return showError(res.error) }
     const json = await res.json()
     textareaValue = json.post
@@ -154,7 +154,7 @@
   }
   */
 
-  $: diceMode = activeTool === 'dice' ? 'post' : (data.context_dice ? 'icon' : 'none')
+  $: diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
 </script>
 
 <main>
@@ -167,9 +167,9 @@
 
   <div class='toolWrapper'>
     {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
-      <DiceBox threadId={data.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+      <DiceBox threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
     {:else if activeTool === 'maps'}
-      <Maps {user} game={data} {isStoryteller} />
+      <Maps {user} {game} {isStoryteller} />
     {:else if activeTool === 'find'}
       <div class='searchBox'>
         <!-- svelte-ignore a11y-autofocus -->
@@ -193,7 +193,7 @@
 
 {#if activeTool !== 'maps' && $posts?.length}
   {#key $posts}
-    <Thread {posts} {user} {unread} id={data.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={data.id} />
+    <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
   {/key}
 {/if}
 

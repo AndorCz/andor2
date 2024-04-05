@@ -41,7 +41,7 @@
   {#if isEditing}
     <TextareaExpandable {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
   {:else}
-    <content class='editableLong'><Render html={value} /></content>
+    <main class='editableLong'><Render html={value} /></main>
     {#if canEdit}
       <button on:click={() => { isEditing = true }} title='Upravit'><span class='material'>edit</span></button>
     {/if}
@@ -52,7 +52,7 @@
   .wrapper {
     position: relative;
   }
-    content {
+    main {
       width: 100%;
       height: auto;
       min-height: 100px;
