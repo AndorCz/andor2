@@ -18,7 +18,6 @@
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
     const section = new URLSearchParams(window.location.search).get('codex_section')
     if (section) { activeSection = sections.find((s) => { return s.slug === section }) || sections[0] }
-    console.log('activeSection', activeSection)
   })
 
   function activate (section) {
