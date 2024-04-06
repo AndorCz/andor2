@@ -20,7 +20,8 @@
     pages = pagesData
 
     const page = new URLSearchParams(window.location.search).get('codex_page')
-    activePage = page ? pages.find((p) => { return p.slug === page }) || pages[0] : pages[0]
+    const firstVisiblePage = isStoryteller ? pages[0] : pages.find((p) => { return !p.hidden }) || pages[0]
+    activePage = page ? pages.find((p) => { return p.slug === page }) || firstVisiblePage : firstVisiblePage
   }
 
   async function updatePage () {
@@ -38,26 +39,28 @@
 
 <div class='wrapper'>
   <aside>
-    <CodexSideMenu {game} {pages} {activeSection} bind:activePage />
+    <CodexSideMenu {game} {pages} {activeSection} {isStoryteller} bind:activePage />
   </aside>
   <main>
-    <div class='content'>
-      {#if activePage}
-        <EditableLong userId={user.id} bind:value={activePage.content} onSave={updatePage} canEdit={isStoryteller} allowHtml />
-      {:else}
-        <p class='info'>V této sekci není žádný obsah</p>
-      {/if}
-    </div>
     {#if activePage}
-      <footer>
-        <div class='meta'>
-          <table>
-            <tr><td>Vytvořeno</td><td>{formatDate(activePage.created_at)}</td></tr>
-            <tr><td>Aktualizováno</td><td>{formatDate(activePage.updated_at)}</td></tr>
-          </table>
+      {#if (!activePage.hidden || isStoryteller)}
+        <div class='content'>
+          <EditableLong userId={user.id} bind:value={activePage.content} onSave={updatePage} canEdit={isStoryteller} allowHtml />
         </div>
-        <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
-      </footer>
+        <footer>
+          <div class='meta'>
+            <table>
+              <tr><td>Vytvořeno</td><td>{formatDate(activePage.created_at)}</td></tr>
+              <tr><td>Aktualizováno</td><td>{formatDate(activePage.updated_at)}</td></tr>
+            </table>
+          </div>
+          <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
+        </footer>
+      {:else}
+        <div class='content'><p class='info'>Tato stránka je skrytá</p></div>
+      {/if}
+    {:else}
+      <div class='content'><p class='info'>V této sekci není žádný obsah</p></div>
     {/if}
   </main>
 </div>
@@ -79,7 +82,7 @@
         margin: 0px;
       }
     aside {
-      width: 220px;
+      width: 300px;
     }
     .info {
       padding: 20px;

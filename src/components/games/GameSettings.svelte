@@ -83,8 +83,8 @@
   }
 
   async function renameCodexSection (section) {
-    const newName = prompt('Zadejte nový název sekce', section.name)
-    if (!newName || newName.trim() === '') { return }
+    const newName = window.prompt('Zadejte nový název sekce', section.name).trim()
+    if (!newName) { return }
     const { error } = await supabase.from('codex_sections').update({ name: newName }).eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.map((s) => { return s.slug === section.slug ? { ...s, name: newName } : s })
