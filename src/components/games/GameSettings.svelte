@@ -178,7 +178,7 @@
     </div>
 
     <h2>Sekce kodexu</h2>
-    {#if game.codexSections.length}
+    {#if game.codexSections && game.codexSections.length}
       <ul>
         {#each game.codexSections as section}
           <li>
