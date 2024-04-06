@@ -87,6 +87,7 @@ create table codex_sections (
   slug text not null,
   hidden boolean not null default false,
   index smallint null default 0,
+  content text,
   created_at timestamp with time zone default current_timestamp,
   constraint codex_game_fkey foreign key (game) references games (id) on delete cascade
 );

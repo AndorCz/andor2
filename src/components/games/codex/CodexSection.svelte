@@ -1,10 +1,9 @@
 <script>
   import { supabase, handleError } from '@lib/database'
-  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { formatDate } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSideMenu from '@components/games/codex/CodexSideMenu.svelte'
+  import CodexPage from '@components/games/codex/CodexPage.svelte'
 
   export let game
   export let user
@@ -13,6 +12,7 @@
 
   let pages = []
   let activePage
+  let visiblePageCount = 0
 
   async function loadData () {
     const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id })
@@ -20,47 +20,38 @@
     pages = pagesData
 
     const page = new URLSearchParams(window.location.search).get('codex_page')
-    const firstVisiblePage = isStoryteller ? pages[0] : pages.find((p) => { return !p.hidden }) || pages[0]
-    activePage = page ? pages.find((p) => { return p.slug === page }) || firstVisiblePage : firstVisiblePage
+    activePage = page ? pages.find((p) => { return p.slug === page }) || null : null
   }
 
-  async function updatePage () {
-    const { error } = await supabase.from('codex_pages').update({ content: activePage.content }).eq('id', activePage.id)
+  async function updateSection () {
+    const { error } = await supabase.from('codex_sections').update({ content: activeSection.content }).eq('id', activeSection.id)
     if (error) { return handleError(error) }
+    showSuccess('Sekce byla aktualizována')
   }
 
-  function copyUrl () {
-    navigator.clipboard.writeText(window.location)
-    showSuccess('Cesta k této stránce byla vložena do schránky, můžeš jí vložit jinam')
+  async function onPageChange () {
+    await loadData()
   }
 
   $: if (activeSection) { loadData() }
 </script>
 
-<div class='wrapper'>
+<div class='wrapper' class:empty={visiblePageCount === 0}>
   <aside>
-    <CodexSideMenu {game} {pages} {activeSection} {isStoryteller} bind:activePage />
+    <CodexSideMenu {game} {pages} {activeSection} {isStoryteller} bind:activePage bind:visiblePageCount />
   </aside>
   <main>
     {#if activePage}
       {#if (!activePage.hidden || isStoryteller)}
-        <div class='content'>
-          <EditableLong userId={user.id} bind:value={activePage.content} onSave={updatePage} canEdit={isStoryteller} allowHtml />
-        </div>
-        <footer>
-          <div class='meta'>
-            <table>
-              <tr><td>Vytvořeno</td><td>{formatDate(activePage.created_at)}</td></tr>
-              <tr><td>Aktualizováno</td><td>{formatDate(activePage.updated_at)}</td></tr>
-            </table>
-          </div>
-          <div class='url'>{#key activePage.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
-        </footer>
+        <CodexPage {user} {isStoryteller} page={activePage} {onPageChange} />
       {:else}
         <div class='content'><p class='info'>Tato stránka je skrytá</p></div>
       {/if}
     {:else}
-      <div class='content'><p class='info'>V této sekci není žádný obsah</p></div>
+      <!-- Base section content -->
+      <div class='content'>
+        <EditableLong userId={user.id} bind:value={activeSection.content} onSave={updateSection} canEdit={isStoryteller} allowHtml />
+      </div>
     {/if}
   </main>
 </div>
@@ -70,11 +61,18 @@
     display: flex;
     gap: 10px;
   }
+    .wrapper.empty {
+      flex-direction: column-reverse;
+      gap: 40px;
+    }
+      .wrapper.empty aside {
+        width: 100%;
+      }
     main {
       flex: 1;
       line-height: 150%;
     }
-      .content, .meta, .url {
+      .content {
         background-color: var(--block);
       }
       main p {
@@ -87,39 +85,6 @@
     .info {
       padding: 20px;
     }
-  footer {
-    margin-top: 40px;
-    opacity: 0.5;
-  }
-    footer:hover {
-      opacity: 1;
-    }
-    .meta {
-      padding: 20px 0px;
-    }
-      footer table {
-        border-spacing: 20px 0px;
-      }
-    .url {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: var(--block);
-      font-family: monospace;
-      font-size: 14px;
-      padding: 10px;
-      margin-top: 10px;
-      position: relative;
-      border-radius: 10px;
-      overflow-wrap: break-word;
-      word-break: break-word;
-      width: auto;
-    }
-      .copy {
-        position: absolute;
-        right: 0px;
-        top: 0px;
-      }
 
   @media (max-width: 700px) {
     .wrapper {

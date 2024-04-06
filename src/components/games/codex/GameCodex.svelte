@@ -1,11 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, setRead } from '@lib/database'
-  import { bookmarks } from '@lib/stores'
+  import { supabase, handleError } from '@lib/database'
   import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'
-  import { tooltip } from '@lib/tooltip'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSection from '@components/games/codex/CodexSection.svelte'
 
@@ -91,6 +89,7 @@
       <br><br>
       Správce hry: {game.owner.name}
     {:else if activeSection.slug === 'search'}
+      <!-- search -->
       <div class='searchBox'>
         <!-- svelte-ignore a11y-autofocus -->
         <input type='text' size='30' placeholder='vyhledat' autofocus bind:value={searchPhrase} bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />

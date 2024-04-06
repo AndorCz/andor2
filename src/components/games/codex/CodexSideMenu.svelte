@@ -1,6 +1,6 @@
 <script>
   import { supabase, handleError } from '@lib/database'
-  import { createSlug, updateURLParam } from '@lib/utils'
+  import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { showError, showSuccess } from '@lib/toasts'
 
@@ -9,9 +9,7 @@
   export let activeSection
   export let activePage
   export let isStoryteller
-
-  let activeOptionsPage
-  let visiblePageCount = 0
+  export let visiblePageCount = 0
 
   async function addPage () {
     const name = window.prompt('Název nové stránky').trim()
@@ -22,58 +20,12 @@
     pages = [...pages, data[0]]
     activePage = data[0]
     updateURLParam('codex_page', activePage.slug)
-  }
-
-  async function renamePage () {
-    const name = window.prompt('Nový název stránky', activeOptionsPage.name).trim()
-    if (!name) { return showError('Název nesmí být prázdný') }
-    const slug = createSlug(name)
-    const { error } = await supabase.from('codex_pages').update({ name, slug }).eq('id', activeOptionsPage.id)
-    if (error) { return handleError(error) }
-    activeOptionsPage.name = name
-    activeOptionsPage.slug = slug
-    pages = pages // update svelte
-    if (activeOptionsPage.id === activePage.id) {
-      activePage = activeOptionsPage
-      updateURLParam('codex_page', activePage.slug)
-    }
-    activeOptionsPage = null
-    showSuccess('Název byl změněn')
-  }
-
-  async function deletePage () {
-    if (!confirm(`Opravdu chceš smazat stránku "${activeOptionsPage.name}"?`)) { return }
-    const { error } = await supabase.from('codex_pages').delete().eq('id', activeOptionsPage.id)
-    if (error) { return handleError(error) }
-    pages = pages.filter((p) => { return p.id !== activeOptionsPage.id })
-    activePage = pages[0]
-    updateURLParam('codex_page', activePage.slug)
-    showSuccess('Stránka byla smazána')
-    activeOptionsPage = null
-  }
-
-  async function togglePage () {
-    const { error } = await supabase.from('codex_pages').update({ hidden: !activeOptionsPage.hidden }).eq('id', activeOptionsPage.id)
-    if (error) { return handleError(error) }
-    activeOptionsPage.hidden = !activeOptionsPage.hidden
-    pages = pages // update svelte
-    showSuccess('Stránka byla ' + (activeOptionsPage.hidden ? 'skryta' : 'zobrazena'))
-    activeOptionsPage = null
+    showSuccess('Stránka byla přidána')
   }
 
   function activatePage (page) {
     activePage = page
-    updateURLParam('codex_page', page.slug)
-  }
-
-  function toggleOptions (page) {
-    activeOptionsPage = activeOptionsPage && activeOptionsPage.id === page.id ? null : page
-  }
-
-  function hideOptions (event) {
-    if (activeOptionsPage && !event.target.closest('.options') && !event.target.closest('.edit')) {
-      activeOptionsPage = null
-    }
+    page ? updateURLParam('codex_page', page.slug) : removeURLParam('codex_page')
   }
 
   $: if (Array.isArray(pages)) {
@@ -81,42 +33,36 @@
   }
 </script>
 
-<svelte:window on:click={hideOptions} />
-
-<div class='menu'>
-  {#if activePage && visiblePageCount}
+<div class='menu' class:empty={visiblePageCount === 0}>
+  {#if visiblePageCount > 0}
     <ul>
+      <li class:active={!activePage}>
+        <button on:click={() => { activatePage(null) }} class='name plain'>Obecné</button>
+      </li>
       {#each pages as item}
         {#if !item.hidden || isStoryteller}
-          <li class:active={item.id === activePage.id}>
+          <li class:active={item.id === activePage?.id}>
             <button on:click={() => { activatePage(item) }} class='name plain'>
               {#if item.hidden}<span class='material square' title='Hráčům skryté' use:tooltip>visibility_off</span>{/if}
               <span>{item.name}</span>
             </button>
-            {#if isStoryteller}
-              {#if activeOptionsPage && activeOptionsPage.id === item.id}
-                <div class='options'>
-                  <button on:click={renamePage} class='material square rename' title='Přejmenovat' use:tooltip>edit</button>
-                  <button on:click={togglePage} class='material square toggle' title={activeOptionsPage.hidden ? 'Zobrazit' : ' Skrýt'} use:tooltip>{activeOptionsPage.hidden ? 'visibility' : ' visibility_off'}</button>
-                  <button on:click={deletePage} class='material square delete' title='Smazat' use:tooltip>delete</button>
-                </div>
-              {/if}
-              <span class='edit'>
-                <button on:click={() => { toggleOptions(item) }} class:active={activeOptionsPage && activeOptionsPage.id === item.id} class='material square edit'>edit</button>
-              </span>
-            {/if}
           </li>
         {/if}
       {/each}
     </ul>
   {/if}
-  <div class='add'><button on:click={addPage}>Přidat stránku</button></div>
+  {#if isStoryteller}
+    <div class='add'><button on:click={addPage}>Přidat podstránku</button></div>
+  {/if}
 </div>
 
 <style>
   .menu {
     background-color: var(--block);
   }
+    .menu.empty {
+      background-color: transparent;
+    }
     ul {
       list-style-type: none;
       margin: 0px;
@@ -147,32 +93,6 @@
         }
         li .material {
           font-size: 18px;
-        }
-        .edit {
-          position: absolute;
-          top: 0px;
-          right: 0px;
-        }
-          .edit button {
-            display: none;
-            padding: 10px;
-          }
-            .edit button.active {
-              display: inline-flex;
-            }
-          li:hover .edit {
-            display: block;
-          }
-        .options {
-          position: absolute;
-          top: 0px;
-          right: 50px;
-          z-index: 999;
-          width: max-content;
-          background-color: var(--panel);
-          padding: 5px;
-          border-radius: 10px;
-          box-shadow: 2px 2px 5px #0005;
         }
       .add {
         padding: 20px;
