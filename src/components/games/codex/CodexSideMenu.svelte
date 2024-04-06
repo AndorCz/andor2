@@ -21,6 +21,7 @@
     if (error) { return handleError(error) }
     pages = [...pages, data[0]]
     activePage = data[0]
+    updateURLParam('codex_page', activePage.slug)
   }
 
   async function renamePage () {
@@ -32,6 +33,10 @@
     activeOptionsPage.name = name
     activeOptionsPage.slug = slug
     pages = pages // update svelte
+    if (activeOptionsPage.id === activePage.id) {
+      activePage = activeOptionsPage
+      updateURLParam('codex_page', activePage.slug)
+    }
     activeOptionsPage = null
     showSuccess('Název byl změněn')
   }
@@ -42,6 +47,7 @@
     if (error) { return handleError(error) }
     pages = pages.filter((p) => { return p.id !== activeOptionsPage.id })
     activePage = pages[0]
+    updateURLParam('codex_page', activePage.slug)
     showSuccess('Stránka byla smazána')
     activeOptionsPage = null
   }
@@ -87,16 +93,18 @@
               {#if item.hidden}<span class='material square' title='Hráčům skryté' use:tooltip>visibility_off</span>{/if}
               <span>{item.name}</span>
             </button>
-            {#if activeOptionsPage && activeOptionsPage.id === item.id}
-              <div class='options'>
-                <button on:click={renamePage} class='material square rename' title='Přejmenovat' use:tooltip>edit</button>
-                <button on:click={togglePage} class='material square toggle' title={activeOptionsPage.hidden ? 'Zobrazit' : ' Skrýt'} use:tooltip>{activeOptionsPage.hidden ? 'visibility' : ' visibility_off'}</button>
-                <button on:click={deletePage} class='material square delete' title='Smazat' use:tooltip>delete</button>
-              </div>
+            {#if isStoryteller}
+              {#if activeOptionsPage && activeOptionsPage.id === item.id}
+                <div class='options'>
+                  <button on:click={renamePage} class='material square rename' title='Přejmenovat' use:tooltip>edit</button>
+                  <button on:click={togglePage} class='material square toggle' title={activeOptionsPage.hidden ? 'Zobrazit' : ' Skrýt'} use:tooltip>{activeOptionsPage.hidden ? 'visibility' : ' visibility_off'}</button>
+                  <button on:click={deletePage} class='material square delete' title='Smazat' use:tooltip>delete</button>
+                </div>
+              {/if}
+              <span class='edit'>
+                <button on:click={() => { toggleOptions(item) }} class:active={activeOptionsPage && activeOptionsPage.id === item.id} class='material square edit'>edit</button>
+              </span>
             {/if}
-            <span class='edit'>
-              <button on:click={() => { toggleOptions(item) }} class:active={activeOptionsPage && activeOptionsPage.id === item.id} class='material square edit'>edit</button>
-            </span>
           </li>
         {/if}
       {/each}
@@ -160,6 +168,11 @@
           top: 0px;
           right: 50px;
           z-index: 999;
+          width: max-content;
+          background-color: var(--panel);
+          padding: 5px;
+          border-radius: 10px;
+          box-shadow: 2px 2px 5px #0005;
         }
       .add {
         padding: 20px;

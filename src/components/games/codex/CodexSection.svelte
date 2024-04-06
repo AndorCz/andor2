@@ -54,7 +54,7 @@
               <tr><td>Aktualizováno</td><td>{formatDate(activePage.updated_at)}</td></tr>
             </table>
           </div>
-          <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
+          <div class='url'>{#key activePage.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
         </footer>
       {:else}
         <div class='content'><p class='info'>Tato stránka je skrytá</p></div>
@@ -111,6 +111,9 @@
       margin-top: 10px;
       position: relative;
       border-radius: 10px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      width: auto;
     }
       .copy {
         position: absolute;

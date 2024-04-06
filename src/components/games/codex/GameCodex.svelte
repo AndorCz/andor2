@@ -2,17 +2,23 @@
   import { onMount } from 'svelte'
   import { supabase, handleError, setRead } from '@lib/database'
   import { bookmarks } from '@lib/stores'
+  import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSection from '@components/games/codex/CodexSection.svelte'
 
   export let user
   export let game
   export let isStoryteller
+  export let isPlayer
 
   let sections = [{ slug: 'general', name: 'Obecné' }]
   let activeSection = sections[0]
+  let searchEl
+  let searchPhrase = ''
+  let searchResults = []
 
   onMount(() => {
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
@@ -38,6 +44,14 @@
     // seen()
   }
 
+  async function handleSearch () {
+    if (searchPhrase) {
+      const { data, error } = await supabase.from('codex_pages').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
+      if (error) { return handleError(error) }
+      searchResults = data
+    }
+  }
+
   /*
   function seen () {
     delete game.unread.gameInfo
@@ -52,14 +66,23 @@
 </script>
 
 <main>
-  {#if game.open_codex || isStoryteller}
+  {#if game.open_codex || isPlayer}
     {#if sections.length > 1}
-      <div class='tabs tertiary codex'>
-        {#each sections as section}
-          <button on:click={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
-            {section.name}
-          </button>
-        {/each}
+      <div class='row'>
+        <div class='tabs tertiary codex'>
+          {#each sections as section}
+            <button class='section' on:click={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
+              {section.name}
+            </button>
+          {/each}
+          <button on:click={() => { activeSection = { slug: 'search' } }} class='search section' class:active={activeSection.slug === 'search'}><span class='material'>search</span>Hledat</button>
+        </div>
+        <!--
+        <span class='search'>
+          <input type='text' bind:value={searchPhrase} placeholder='Vyhledat' bind:this={searchEl} />
+          <button on:click={openSearch} class='material square' title='Vyhledat' use:tooltip>search</button>
+        </span>
+        -->
       </div>
     {/if}
     {#if activeSection.slug === 'general'}
@@ -67,6 +90,22 @@
       <EditableLong userId={user.id} bind:value={game.info} onSave={updateGeneral} canEdit={isStoryteller} allowHtml />
       <br><br>
       Správce hry: {game.owner.name}
+    {:else if activeSection.slug === 'search'}
+      <div class='searchBox'>
+        <!-- svelte-ignore a11y-autofocus -->
+        <input type='text' size='30' placeholder='vyhledat' autofocus bind:value={searchPhrase} bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+        <button class='material' on:click={handleSearch}>search</button>
+      </div>
+      {#if searchResults.length}
+        {#each searchResults as page}
+          <div class='page'>
+            <a href={`/games/${game.slug}/codex/${page.slug}`}>{page.name}</a>
+            <Render html={page.content} />
+          </div>
+        {/each}
+      {:else}
+        <p class='info'>Žádné výsledky</p>
+      {/if}
     {:else}
       <CodexSection {user} {game} {activeSection} {isStoryteller} />
     {/if}
@@ -79,19 +118,41 @@
   main {
     padding: 40px 0px;
   }
+  .row {
+    display: flex;
+    align-items: baseline;
+  }
   .codex {
     display: flex;
     justify-content: center;
+    flex: 1;
     margin-top: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
-    .codex button {
+    .section {
       display: inline-flex;
       gap: 10px;
       align-items: center;
     }
-    .codex .active {
+    .section.active {
       color: var(--text);
+    }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .searchBox {
+      margin: auto;
+      display: flex;
+      width: fit-content;
+      gap: 10px;
+      padding: 20px;
+    }
+    .page {
+      background-color: var(--block);
+      padding: 20px;
+      margin-bottom: 20px;
     }
 
   @media (max-width: 1000px) {

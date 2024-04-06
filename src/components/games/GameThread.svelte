@@ -135,12 +135,10 @@
   }
 
   function handleSearch () {
-    if (searchEl?.value) { onSearch(searchEl.value) }
-  }
-
-  function onSearch (terms) {
-    searchTerms = terms
-    loadPosts()
+    if (searchEl?.value) {
+      searchTerms = searchEl.value
+      loadPosts()
+    }
   }
 
   /* waiting for option to delete posts in openai api

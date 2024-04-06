@@ -80,7 +80,7 @@
 
   <div class='content'>
     {#if $gameStore.activeTab === 'codex'}
-      <GameCodex {game} {user} {isStoryteller} />
+      <GameCodex {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'chat'}
       <h2>{#if game.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
       <Discussion data={game} {user} isOwner={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection={'games'} />
