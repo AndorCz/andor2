@@ -2,6 +2,7 @@
   import { supabase, handleError } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
+  import { formatDate } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSideMenu from '@components/games/codex/CodexSideMenu.svelte'
 
@@ -51,8 +52,8 @@
       <footer>
         <div class='meta'>
           <table>
-            <tr><td>Vytvořeno</td><td>{new Date(activePage.created_at).toLocaleDateString('cs')}</td></tr>
-            <tr><td>Aktualizováno</td><td>{new Date(activePage.updated_at).toLocaleDateString('cs')}</td></tr>
+            <tr><td>Vytvořeno</td><td>{formatDate(activePage.created_at)}</td></tr>
+            <tr><td>Aktualizováno</td><td>{formatDate(activePage.updated_at)}</td></tr>
           </table>
         </div>
         <div class='url'>{window.location}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>

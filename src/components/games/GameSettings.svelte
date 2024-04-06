@@ -65,8 +65,10 @@
 
   async function addCodexSection () {
     const slug = createSlug(newCodexSection)
-    const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index: game.codexSections.length + 1 }).select()
+    const index = game.codexSections ? game.codexSections.length + 1 : 1
+    const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index }).select()
     if (error) { return handleError(error) }
+    game.codexSections = game.codexSections || []
     game.codexSections.push({ id: newSection.id, slug, name: newCodexSection })
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')

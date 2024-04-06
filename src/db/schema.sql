@@ -748,6 +748,8 @@ create or replace trigger delete_board_thread after delete on boards for each ro
 create or replace trigger add_work_thread before insert on works for each row execute function add_thread ();
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
 create or replace trigger update_map_updated_at before update on maps for each row execute procedure update_updated_at();
+create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
+
 
 -- SEED
 
