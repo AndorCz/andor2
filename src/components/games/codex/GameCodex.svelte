@@ -75,12 +75,6 @@
           {/each}
           <button on:click={() => { activeSection = { slug: 'search' } }} class='search section' class:active={activeSection.slug === 'search'}><span class='material'>search</span>Hledat</button>
         </div>
-        <!--
-        <span class='search'>
-          <input type='text' bind:value={searchPhrase} placeholder='Vyhledat' bind:this={searchEl} />
-          <button on:click={openSearch} class='material square' title='Vyhledat' use:tooltip>search</button>
-        </span>
-        -->
       </div>
     {/if}
     {#if activeSection.slug === 'general'}

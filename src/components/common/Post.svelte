@@ -1,9 +1,10 @@
 <script>
+  import { supabase, handleError, getPortrait } from '@lib/database'
   import { writable } from 'svelte/store'
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
   import { lightboxImage } from '@lib/stores'
-  import { getPortrait } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
   import Reactions from '@components/common/Reactions.svelte'
 
   export let post
@@ -36,9 +37,16 @@
   function onImageClick (event) {
     if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
   }
+
+  async function toggleImportant () {
+    const important = !$postStore.important
+    $postStore.important = important
+    const { error } = await supabase.from('posts').update({ important }).eq('id', $postStore.id)
+    if (error) { return handleError(error) }
+  }
 </script>
 
-<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names}>
+<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
   {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
       {#await getPortrait($postStore.owner, $postStore.owner_portrait) then url}<img src={url} class='portrait' alt={$postStore.owner_name} />{/await}
@@ -63,19 +71,22 @@
       </span>
       <span class='toolbar'>
         <span class='time'>{formatDate($postStore.created_at)}</span>
+        {#if canModerate}
+          <button on:click={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
+        {/if}
         {#if canDeleteAll || isMyPost}
           {#if onEdit}
-            <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit'>edit</button>
+            <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit' use:tooltip>edit</button>
           {/if}
           {#if onDelete && canDelete}
-            <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat'>delete</button>
+            <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat' use:tooltip>delete</button>
           {/if}
         {:else if canModerate && !$postStore.moderated}
-          <button on:click={triggerModerate} class='material moderate' title='Skrýt všem'>visibility_off</button>
+          <button on:click={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>
         {/if}
         {#if onReply}
           <span class='sep'></span>
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply' title='Reagovat'>reply</button>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply square' title='Reagovat' use:tooltip>reply</button>
         {/if}
       </span>
     </div>
@@ -185,7 +196,7 @@
         align-items: center;
         gap: 10px;
       }
-        .delete, .edit, .moderate {
+        .delete, .edit, .moderate, .label {
           padding: 5px;
           font-size: 19px;
           cursor: pointer;
@@ -196,9 +207,14 @@
         }
           .time:hover, .delete:hover, .edit:hover, .moderate:hover, .reply:hover {
             opacity: 1;
+            color: var(--text);
           }
     .clear {
       clear: both;
+    }
+    .important .content, .important .header {
+      background-color: var(--prominent);
+      border-left: 5px solid var(--linkVisited);
     }
 
   @media (max-width: 860px) {

@@ -180,6 +180,7 @@ create table posts (
   shocks uuid[] null default '{}'::uuid[],
   hearts uuid[] null default '{}'::uuid[],
   laughs uuid[] null default '{}'::uuid[],
+  important boolean default false,
   audience uuid[] null,
   openai_post text null,
   moderated boolean default false,
