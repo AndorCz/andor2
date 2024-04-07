@@ -55,8 +55,8 @@
       {:else}
         <button type='button' on:click={toggleActive} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
       {/if}
-      <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit'>edit</a>
-      <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat'>delete</button>
+      <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
+      <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
     </td>
   {/if}
 {/if}
