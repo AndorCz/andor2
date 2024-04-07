@@ -59,6 +59,7 @@
 
 {#if !$boardStore.hideHeader}
   <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
+  <p>Správce diskuze: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a></p>
 {/if}
 
 <Discussion {data} {user} isOwner={isBoardOwner} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection={'boards'} />
@@ -69,6 +70,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    gap: 10px;
   }
     h1 {
       margin: 0px;
