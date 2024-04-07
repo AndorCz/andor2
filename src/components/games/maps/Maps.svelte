@@ -1,4 +1,5 @@
 <script>
+  import { isFilledArray } from '@lib/utils'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
   import Map from '@components/games/maps/Map.svelte'
@@ -20,14 +21,14 @@
 </script>
 
 <div class='maps'>
-  {#if game.maps.length === 0}
-    <center>Žádné mapy nenalezeny</center>
-  {:else}
+  {#if isFilledArray(game.maps)}
     {#each game.maps as map}
       {#if !map.hidden || isStoryteller}
         <Map {user} {game} {map} {isStoryteller} isActive={map.id === game.active_map?.id} onDeleteMap={deleteMap} />
       {/if}
     {/each}
+  {:else}
+    <center>Žádné mapy nenalezeny</center>
   {/if}
 </div>
 {#if isStoryteller}
