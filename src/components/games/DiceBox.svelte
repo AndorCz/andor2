@@ -71,7 +71,9 @@
 </script>
 
 <div class='wrapper'>
-  <div id='diceBox'></div>
+  <div class='playground'>
+    <div id='diceBox'></div>
+  </div>
   <div class='tools'>
     <div class='die'>
       <button on:click={() => { clearDice('k4') }} class='clear material'>delete</button>
@@ -136,9 +138,18 @@
 </div>
 
 <style>
-  .wrapper {
+  .playground {
     position: relative;
+    height: 400px;
   }
+    #diceBox {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: url('/feld.jpg');
+    }
     .tools {
       display: flex;
       align-items: center;
@@ -172,6 +183,7 @@
           font-size: 2rem;
           transform: translateX(-50%);
           transform-origin: 50% 50%;
+          z-index: 999;
         }
           .addLarge:hover {
             transform: translateX(-50%) scale(1.1);
@@ -235,11 +247,6 @@
         button.k20 {
           background-image: url('/dice/k20.png');
         }
-    #diceBox {
-      width: 100%;
-      height: 400px;
-      background: url('/feld.jpg');
-    }
     .row {
       padding: 20px 0px;
       display: flex;
@@ -260,6 +267,26 @@
   @media (max-width: 860px) {
     .tools {
       flex-wrap: wrap;
+    }
+    .die {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 5px;
+      background: none;
+    }
+    .addLarge {
+      height: 60px;
+      width: 60px;
+    }
+    .count {
+      width: 100%;
+    }
+    .sub, .clear {
+      position: relative;
+      border-radius: 10px;
+    }
+    .add {
+      display: none;
     }
   }
 </style>

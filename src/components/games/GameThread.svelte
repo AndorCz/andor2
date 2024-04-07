@@ -234,4 +234,19 @@
     font-size: 19px;
     margin-left: 10px;
   }
+
+  @media (max-width: 400px) {
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-top: 0px;
+    }
+    .tools button {
+      gap: 5px;
+    }
+    .tools .material {
+      font-size: 18px;
+    }
+  }
 </style>

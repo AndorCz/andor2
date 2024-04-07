@@ -38,9 +38,16 @@
 <h2>
   <button on:click={() => { isOpen = !isOpen }} class='plain'>
     <span class='material arrow' class:isOpen>arrow_drop_down</span>
-    <span class='name'>{map.name}{#if map.hidden} (skrytá){/if}</span>
+    <span class='name'>{#if map.hidden}<span class='material'>visibility_off</span>{/if}{map.name}</span>
   </button>
+</h2>
 
+{#if isOpen}
+  <div id='map'>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+    <img class='mapImage' src={mapUrl} alt={map.name} on:click={() => { $lightboxImage = mapUrl }} />
+  </div>
+  <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
   {#if isStoryteller}
     <td class='tools row'>
       {#if isActive}
@@ -52,14 +59,6 @@
       <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat'>delete</button>
     </td>
   {/if}
-</h2>
-
-{#if isOpen}
-  <div id='map'>
-    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
-    <img class='mapImage' src={mapUrl} alt={map.name} on:click={() => { $lightboxImage = mapUrl }} />
-  </div>
-  <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
 {/if}
 
 <style>
@@ -71,6 +70,9 @@
     .name {
       font-variation-settings: 'wght' 600;
       font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     h2 button {
       display: flex;
@@ -89,7 +91,8 @@
   .tools {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
+    margin-top: 40px;
     gap: 10px;
   }
 

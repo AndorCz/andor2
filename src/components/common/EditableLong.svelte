@@ -73,7 +73,7 @@
       border-radius: 10px 0px 10px 0px;
     }
   @media (max-width: 500px) {
-    content {
+    main {
       padding: 20px;
     }
   }
