@@ -45,9 +45,9 @@
 
   $gameStore.activeCharacterId = getActiveCharacterId() // set default value
   $activeAudienceIds = getActiveAudience()
+  activeTool = new URLSearchParams(window.location.search).get('tool') || 'post'
 
   onMount(() => {
-    activeTool = new URLSearchParams(window.location.search).get('tool') || 'post'
     if (user.id) { delete game.unread.gameThread }
     loadPosts()
     window.addEventListener('pagehide', saveUnsent)

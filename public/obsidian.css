@@ -218,10 +218,6 @@ input[type=text], input[type=email], input[type=password], textarea, input[type=
   font-size: 20px;
   border: none;
   color: var(--text);
-  border-bottom: 3px var(--buttonBg) solid;
-  background-color: var(--inputBg);
-  box-shadow: inset 1px 1px 6px #0006;
-  border-radius: 10px;
   appearance: none;
   min-width: 40px;
   min-height: 40px;
@@ -232,8 +228,11 @@ textarea, .ProseMirror {
   font-size: 20px;
 }
 
-  input[type=text]:focus, textarea:focus, select:focus, .ProseMirror-focused {
+  input[type=text]:focus, textarea:focus, select:focus {
     outline: 2px var(--buttonBg) solid;
+  }
+  .ProseMirror-focused {
+    outline: none;
   }
   input[type=checkbox] {
     cursor: pointer;
@@ -461,6 +460,9 @@ select {
 
 /* MISC */
 
+.clear {
+  clear: both;
+}
 .sep {
   width: 1px;
   height: 22px;

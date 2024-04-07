@@ -32,7 +32,8 @@
   let bubbleElImage
   let currentStyle
   let currentAlign
-  let showToolbelt = false
+  let isFocused = false
+  let wasFocused = false
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -86,7 +87,7 @@
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
             uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
               const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-              const node = view.state.schema.nodes.customImage.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.image.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(coordinates.pos, node)
               view.dispatch(transaction)
             })
@@ -98,7 +99,7 @@
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
-              const node = view.state.schema.nodes.customImage.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.image.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(from, node)
               view.dispatch(transaction)
             })
@@ -130,7 +131,7 @@
           },
           shouldShow: ({ editor, view }) => { // don't show for images
             const { selection } = editor.state
-            const isImage = selection.node && selection.node.type.name === 'customImage'
+            const isImage = selection.node && selection.node.type.name === 'image'
             return !selection.empty && !isImage
           }
         }),
@@ -143,7 +144,7 @@
           },
           shouldShow: ({ editor, view }) => { // only show for images
             const { selection } = editor.state
-            const isImage = selection.node && selection.node.type.name === 'customImage'
+            const isImage = selection.node && selection.node.type.name === 'image'
             return isImage
           }
         }),
@@ -157,7 +158,11 @@
         // check for text alignment based on https://github.com/ueberdosis/tiptap/issues/4240#issuecomment-1673411677
         currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
       },
-      onFocus () { showToolbelt = true },
+      onFocus () {
+        isFocused = true
+        wasFocused = true
+      },
+      onBlur () { isFocused = false },
       onUpdate () {
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
@@ -249,7 +254,7 @@
 {/if}
 -->
 
-<div class='wrapper'>
+<div class='wrapper' class:isFocused>
   <Colors />
   <!-- Main bubble menu -->
   <div class='bubble' bind:this={bubbleEl}>
@@ -275,17 +280,19 @@
   <!-- Image bubble menu -->
   <div class='bubble' bind:this={bubbleElImage}>
     {#if editor}
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('customImage', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('customImage', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('image', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('center').run()} class:active={editor.isActive('image', { alignment: 'center' })} title='Vycentrovat' class='material'>picture_in_picture_center</button>
+      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('image', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
       <span class='sep'></span>
-      <button type='button' on:click={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('customImage').size <= 20} title='Zmenšit' class='material'>photo_size_select_small</button>
-      <button type='button' on:click={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('customImage').size >= 200} title='Zvětšit' class='material'>photo_size_select_large</button>
+      <button type='button' on:click={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('image').size <= 20} title='Zmenšit' class='material'>photo_size_select_small</button>
+      <button type='button' on:click={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('image').size >= 200} title='Zvětšit' class='material'>photo_size_select_large</button>
       <span class='sep'></span>
       <button type='button' on:click={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
     {/if}
   </div>
   <div class='editor' bind:this={editorEl}></div>
-  {#if showToolbelt}
+  <div class='clear'></div>
+  {#if wasFocused}
     <div class='toolbelt'>
       <label for='addImage' class='material button' title='Obrázek'>image</label>
       <input on:change={addImage} accept='image/*' type='file' id='addImage'>
@@ -298,7 +305,14 @@
 <style>
   .wrapper {
     position: relative;
+    border-bottom: 3px var(--buttonBg) solid;
+    background-color: var(--inputBg);
+    box-shadow: inset 1px 1px 6px #0006;
+    border-radius: 10px;
   }
+    .isFocused {
+      outline: 2px var(--buttonBg) solid;
+    }
   .wrapper, .editor {
     height: 100%;
   }

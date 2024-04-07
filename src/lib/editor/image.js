@@ -2,7 +2,7 @@
 import { Image } from '@tiptap/extension-image'
 
 export const CustomImage = Image.extend({
-  name: 'customImage',
+  name: 'image',
 
   addAttributes () {
     return {
@@ -15,7 +15,15 @@ export const CustomImage = Image.extend({
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    const alignmentStyle = node.attrs.alignment !== 'none' ? `float: ${node.attrs.alignment};` : ''
+    function getAlignmentStyle (alignment) {
+      switch (alignment) {
+        case 'left': return 'float: left;'
+        case 'right': return 'float: right;'
+        case 'center': return 'display: block; margin-left: auto; margin-right: auto;'
+        default: return ''
+      }
+    }
+    const alignmentStyle = getAlignmentStyle(node.attrs.alignment)
     const sizeStyle = `width: ${node.attrs.width * node.attrs.size / 100}px; height: ${node.attrs.height * node.attrs.size / 100}px;`
     const style = `${alignmentStyle} ${sizeStyle}`
     return ['img', { ...HTMLAttributes, style }]
@@ -25,10 +33,10 @@ export const CustomImage = Image.extend({
     return {
       ...this.parent(),
       setImageAlignment: (alignment) => ({ commands }) => {
-        return commands.updateAttributes('customImage', { alignment })
+        return commands.updateAttributes('image', { alignment })
       },
       resetStyle: () => ({ commands }) => {
-        return commands.updateAttributes('customImage', {
+        return commands.updateAttributes('image', {
           alignment: 'none',
           size: 100
         })
@@ -37,13 +45,13 @@ export const CustomImage = Image.extend({
         const { selection } = state
         const { node, pos } = selection
         const newSize = Math.min(200, (node.attrs.size || 100) + 20)
-        return commands.updateAttributes('customImage', { size: newSize }, pos)
+        return commands.updateAttributes('image', { size: newSize }, pos)
       },
       decreaseImageSize: () => ({ state, commands }) => {
         const { selection } = state
         const { node, pos } = selection
         const newSize = Math.max(20, (node.attrs.size || 100) - 20)
-        return commands.updateAttributes('customImage', { size: newSize }, pos)
+        return commands.updateAttributes('image', { size: newSize }, pos)
       }
     }
   }
