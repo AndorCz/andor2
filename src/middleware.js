@@ -39,7 +39,7 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
         if (profileError) { return handleError(profileError) }
       } else if (url.pathname !== '/onboarding') {
         // go finish profile first
-        return redirect('/onboarding')
+        return redirect(`/onboarding${url.search}`)
       }
     }
   } else {

@@ -23,11 +23,12 @@
     const response = await fetch(`/api/auth/verify?token=${captchaToken}`, { method: 'GET' })
     if (!response.ok) { showError('Chyba při ověření reCAPTCHA') }
     const data = await response.json()
+    console.log('data', data)
     return response.ok && data.success
   }
 
   async function signUpNewUser () {
-    if (!await verifyCaptcha()) { return }
+    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
@@ -38,7 +39,7 @@
   }
 
   async function validateUser () {
-    if (!await verifyCaptcha()) { return }
+    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
     const response = await fetch('/api/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

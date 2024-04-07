@@ -2,7 +2,6 @@
 	import Layout from '@layouts/layout.astro'
 
   const { supabase, user } = Astro.locals
-  let toast:any = false
 
   if (Astro.request.method === 'POST') {
     const data = await Astro.request.formData()
@@ -10,12 +9,13 @@
     if (userName) {
       const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
       if (error) {
-        toast = 'Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'
+        console.error(error)
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'))
       } else {
         return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
       }
     } else {
-      toast = 'Přezdívka nesmí být prázdná'
+      return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být prázdná'))
     }
   }
 ---
@@ -46,10 +46,6 @@
       )}
     </>
   )}
-
-  <script type='module' define:vars={{ toast }}>
-    if (toast) { window.showError(toast) }
-  </script>
 </Layout>
 
 <style>

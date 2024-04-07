@@ -529,7 +529,8 @@ select {
   font-weight: 375;
 }
 .post .content p {
-  margin: 5px 0px;
+  margin: 0px;
+  line-height: 150%;
 }
 .post .content img {
   max-width: 100%;

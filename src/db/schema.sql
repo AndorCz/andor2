@@ -740,6 +740,15 @@ end;
 $$ language plpgsql;
 
 
+create or replace function add_default_bookmarks () returns trigger as $$
+begin
+  insert into bookmarks (user_id, board_id) values (new.id, 1);
+  insert into bookmarks (user_id, board_id) values (new.id, 2);
+  return new;
+end;
+$$ language plpgsql;
+
+
 -- TRIGGERS
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
@@ -751,6 +760,7 @@ create or replace trigger add_work_thread before insert on works for each row ex
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
 create or replace trigger update_map_updated_at before update on maps for each row execute procedure update_updated_at();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
+create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
 
 -- CRON
