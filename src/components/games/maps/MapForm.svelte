@@ -82,16 +82,6 @@
     </div>
   </div>
 
-  <div class='row'>
-    <div class='labels'>
-      <label for='mapDescription'>Popis mapy</label>
-    </div>
-    <div class='inputs'>
-      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} allowHtml />
-      <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
-    </div>
-  </div>
-
   <div class='row' id='addImage'>
     <label id='fileSelect' class='button' for='mapImage'>
       <span class='material'>upload</span>
@@ -101,6 +91,16 @@
     <ButtonLoading label='Generovat z popisu mapy' handleClick={generateMap} loading={generatingMap} disabled={map.description?.length < 20} />
     <input type='file' accept='image/*' bind:this={imageInputEl} bind:files on:change={showImageFromFile} id='mapImage' name='mapImage' />
     <input type='hidden' name='mapGeneratedUrl' bind:value={imageGeneratedUrl} />
+  </div>
+
+  <div class='row'>
+    <div class='labels'>
+      <label for='mapDescription'>Popis mapy</label>
+    </div>
+    <div class='inputs'>
+      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} allowHtml />
+      <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
+    </div>
   </div>
 
   {#if img}

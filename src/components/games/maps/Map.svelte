@@ -1,24 +1,50 @@
 <script>
-  import { onMount } from 'svelte'
-  import { lightboxImage } from '@lib/stores'
+  import { onMount, onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
+  import { Application, Sprite, Assets } from 'pixi.js'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let map
   export let game
   export let user
   export let onDeleteMap
-  export let isActive = false // open to all players by default
   export let isStoryteller = false
 
-  let isOpen = isActive
+  let mapEl
+  let mapWrapperEl
   let mapUrl = ''
 
-  onMount(() => {
+  let app
+  let mapSprite
+
+  onMount(async () => {
     mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
+    app = new Application()
+    await app.init({ backgroundAlpha: 0, resizeTo: mapEl })
+    mapEl.appendChild(app.canvas)
+    const mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
+    mapSprite = new Sprite(mapTexture)
+    mapSprite.anchor.set(0.5, 0.5)
+    app.stage.pivot.x = -app.screen.width / 2
+    app.stage.pivot.y = -app.screen.height / 2
+    app.stage.addChild(mapSprite)
+    window.addEventListener('resize', resize)
+    resize()
   })
+
+  onDestroy(() => { window.removeEventListener('resize', resize) })
+
+  function resize () {
+    if (!mapEl) return
+    const scale = Math.min(mapEl.offsetWidth / mapSprite.width, 1)
+    mapWrapperEl.style.height = `${mapSprite.height * scale}px`
+    app.renderer.resize(mapEl.offsetWidth, mapEl.offsetHeight)
+    app.stage.scale.set(scale, scale) // or app.renderer.resize(mapEl.offsetWidth, mapEl.offsetHeight)
+    app.stage.pivot.x = (-app.screen.width / scale) / 2
+    app.stage.pivot.y = (-app.screen.height / scale) / 2
+  }
 
   async function updateMapDescription (description) {
     const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
@@ -27,66 +53,42 @@
   }
 
   async function toggleActive () {
-    const { error } = await supabase.from('games').update({ active_map: isActive ? null : map.id }).eq('id', game.id)
+    const { error } = await supabase.from('games').update({ active_map: map.isActive ? null : map.id }).eq('id', game.id)
     if (error) { return handleError(error) }
-    isActive = !isActive
-    isOpen = !isOpen
-    return showSuccess(isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
+    map.isActive = !map.isActive
+    return showSuccess(map.isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
   }
 </script>
 
-<h2>
-  <button on:click={() => { isOpen = !isOpen }} class='plain'>
-    <span class='material arrow' class:isOpen>arrow_drop_down</span>
-    <span class='name'>{#if map.hidden}<span class='material'>visibility_off</span>{/if}{map.name}</span>
-  </button>
-</h2>
-
-{#if isOpen}
-  <div id='map'>
-    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
-    <img class='mapImage' src={mapUrl} alt={map.name} on:click={() => { $lightboxImage = mapUrl }} />
-  </div>
-  <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
-  {#if isStoryteller}
-    <td class='tools row'>
-      {#if isActive}
-        <button type='button' on:click={toggleActive}>Deaktivovat</button>
-      {:else}
-        <button type='button' on:click={toggleActive} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
-      {/if}
-      <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
-      <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
-    </td>
-  {/if}
+<div class='wrapper' bind:this={mapWrapperEl}>
+  <div id='map' bind:this={mapEl}></div>
+</div>
+<br><br>
+<EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
+{#if isStoryteller}
+  <td class='tools row'>
+    {#if map.isActive}
+      <button type='button' on:click={toggleActive}>Deaktivovat</button>
+    {:else}
+      <button type='button' on:click={toggleActive} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
+    {/if}
+    <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
+    <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
+  </td>
 {/if}
 
 <style>
-  h2 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .wrapper {
+    position: relative;
+    height: 600px;
   }
-    .name {
-      font-variation-settings: 'wght' 600;
-      font-size: 1.5em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    #map {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
     }
-    h2 button {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      gap: 10px;
-    }
-    .arrow {
-      transform: rotate(0deg);
-      transition: transform 0.3s;
-    }
-      .arrow.isOpen {
-        transform: rotate(180deg);
-      }
 
   .tools {
     display: flex;
@@ -95,13 +97,4 @@
     margin-top: 40px;
     gap: 10px;
   }
-
-  #map {
-    margin: auto;
-    width: fit-content;
-  }
-    .mapImage {
-      max-width: 100%;
-      cursor: pointer;
-    }
 </style>

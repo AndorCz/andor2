@@ -8,6 +8,11 @@
   export let game
   export let isStoryteller
 
+  game.maps.forEach(map => {
+    map.isActive = map.id === game.active_map?.id
+    map.isOpen = map.isActive
+  })
+
   async function deleteMap (mapId) {
     if (confirm('Opravdu chcete smazat tuto mapu?')) {
       const { error } = await supabase.from('maps').delete().eq('id', mapId)
@@ -23,8 +28,16 @@
 <div class='maps'>
   {#if isFilledArray(game.maps)}
     {#each game.maps as map}
-      {#if !map.hidden || isStoryteller}
-        <Map {user} {game} {map} {isStoryteller} isActive={map.id === game.active_map?.id} onDeleteMap={deleteMap} />
+      {#if (!map.hidden || isStoryteller)}
+        <h2>
+          <button on:click={() => { map.isOpen = !map.isOpen }} class='plain'>
+            <span class='material arrow' class:isOpen={map.isOpen}>arrow_drop_down</span>
+            <span class='name'>{#if map.hidden}<span class='material'>visibility_off</span>{/if}{map.name}</span>
+          </button>
+        </h2>
+        {#if map.isOpen}
+          <Map {user} {game} {map} {isStoryteller} onDeleteMap={deleteMap} />
+        {/if}
       {/if}
     {/each}
   {:else}
@@ -37,4 +50,29 @@
 
 <style>
   center { padding: 40px }
+  h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+    .name {
+      font-variation-settings: 'wght' 600;
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 button {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 10px;
+    }
+    .arrow {
+      transform: rotate(0deg);
+      transition: transform 0.3s;
+    }
+      .arrow.isOpen {
+        transform: rotate(180deg);
+      }
 </style>

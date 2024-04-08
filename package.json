@@ -30,6 +30,7 @@
     "luxon": "3.4.4",
     "notyf": "3.10.0",
     "openai": "4.20.1",
+    "pixi.js": "^8.0.5",
     "svelte": "4.0.0",
     "svelte-easy-crop": "2.0.3",
     "svelte-select": "5.8.3",
