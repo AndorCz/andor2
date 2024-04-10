@@ -89,11 +89,8 @@
     .content {
       background-color: var(--block);
     }
-    .appearance {
+    .appearance, .bio {
       padding: 20px;
-    }
-    .bio {
-      padding: 1px 20px;
     }
   center {
     padding-top: 40px;
