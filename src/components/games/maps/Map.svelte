@@ -4,7 +4,7 @@
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { MaskContainer } from '@lib/pixi'
-  import { Application, Sprite, Assets, Graphics, Text } from 'pixi.js'
+  import { Application, Circle, Sprite, Assets, Graphics, Text } from 'pixi.js'
   import { DropShadowFilter } from 'pixi-filters'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -83,6 +83,7 @@
     token.filters = [new DropShadowFilter()]
     token.x = 50
     token.y = 50
+    token.hitArea = new Circle(portrait.x, portrait.y + halfSize, halfSize)
     app.stage.addChild(token)
 
     // add name
@@ -92,9 +93,9 @@
     token.addChild(name)
 
     // interaction
-    portrait.eventMode = 'static'
-    portrait.cursor = 'pointer'
-    portrait.on('pointerdown', onDragStart, token)
+    token.eventMode = 'static'
+    token.cursor = 'pointer'
+    token.on('pointerdown', onDragStart, token)
   }
 
   function onDragMove (event) {
