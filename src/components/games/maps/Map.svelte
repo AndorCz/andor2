@@ -4,7 +4,7 @@
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { MaskContainer } from '@lib/pixi'
-  import { Application, Circle, Sprite, Assets, Graphics, Text } from 'pixi.js'
+  import { Application, Container, Circle, Sprite, Assets, Graphics, Text } from 'pixi.js'
   import { DropShadowFilter } from 'pixi-filters'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -15,7 +15,7 @@
   export let isStoryteller = false
 
   let mapUrl = ''
-  let mapEl, mapWrapperEl, app, mapSprite, mapTexture, dragTarget
+  let mapEl, mapWrapperEl, app, scene, scaledWidth, scaledHeight, mapSprite, mapTexture, dragTarget
   const tokenSize = 50
   const halfSize = tokenSize / 2
   const quarterSize = tokenSize / 4
@@ -24,43 +24,53 @@
     mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
     app = new Application()
     globalThis.__PIXI_APP__ = app // for debugging
-    await app.init({ backgroundAlpha: 0 })
+    await app.init() // { backgroundAlpha: 0, resizeTo: mapEl }
     mapEl.appendChild(app.canvas)
 
     // add background image
     mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     mapSprite = new Sprite(mapTexture)
     mapSprite.label = 'map'
-    app.stage.addChild(mapSprite)
     app.stage.eventMode = 'static'
     app.stage.hitArea = app.screen
     app.stage.on('pointerup', onDragEnd)
     app.stage.on('pointerupoutside', onDragEnd)
 
+    scene = new Container({ x: 0, y: 0, width: app.screen.width, height: app.screen.height })
+    app.stage.addChild(scene)
+    scene.addChild(mapSprite)
+
     // add character tokens
     for (const character of game.characters) {
       await addCharacter(character)
     }
-
-    window.addEventListener('resize', resize)
     resize()
+    window.addEventListener('resize', resize)
   })
 
   onDestroy(() => { window.removeEventListener('resize', resize) })
 
   function resize () {
     if (!mapEl) return
-    const scale = Math.min(mapEl.offsetWidth / mapSprite.width, 1)
-    mapWrapperEl.style.height = `${mapSprite.height * scale + 100}px`
-    app.stage.scale.set(scale, scale)
-    app.renderer.resize(mapTexture.width * scale, mapEl.offsetHeight)
+    const scale = Math.min(mapEl.offsetWidth / mapTexture.width, 1)
+
+    scaledWidth = mapTexture.width * scale
+    scaledHeight = mapTexture.height * scale
+
+    // scene.scale.set(scale, scale) // not needed?
+    scene.width = scaledWidth
+    scene.height = scaledHeight
+
+    app.renderer.resize(scaledWidth, scaledHeight)
+    mapWrapperEl.style.height = `${scaledHeight}px`
 
     // position objects
-    app.stage.children.forEach((child, index) => {
-      if (child.label === 'map') { return }
-      child.x = tokenSize * (index - 1) + (index * quarterSize) + quarterSize
-      child.y = mapSprite.height + tokenSize
-    })
+    // scene.children.forEach((child, index) => {
+    //   if (child.label === 'character') {
+    //     child.x = tokenSize * (index - 1) + (index * quarterSize) + quarterSize
+    //     child.y = scaledHeight + tokenSize
+    //   }
+    // })
   }
 
   async function addCharacter (character) {
@@ -77,14 +87,14 @@
     portrait.mask = mask
     mask.pivot.y = -halfSize // show head of the character
     token.pivot.y = halfSize // counteract the mask pivot
-    token.label = character.name
+    token.label = 'character'
     token.addChild(mask)
     token.addChild(portrait)
     token.filters = [new DropShadowFilter()]
-    token.x = 50
-    token.y = 50
+    token.x = tokenSize
+    token.y = tokenSize
     token.hitArea = new Circle(portrait.x, portrait.y + halfSize, halfSize)
-    app.stage.addChild(token)
+    scene.addChild(token)
 
     // add name
     const name = new Text({ text: character.name, style: { fill: 0xFFFFFF, fontSize: 14 } })
