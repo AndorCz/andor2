@@ -55,7 +55,7 @@ export function getHeaderUrl (type, id) {
   return getImageUrl(`${type}-${id}.jpg`, 'headers')
 }
 
-export async function getPortrait (identityId, hash) {
+export function getPortraitUrl (identityId, hash) {
   const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
   return getImageUrl(path, 'portraits')
 }

@@ -1,5 +1,5 @@
 <script>
-  import { getPortrait } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
 
   export let characters = { allGrouped: [], myStranded: [] }
@@ -26,7 +26,7 @@
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
           <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
             {#if character.portrait}
-              {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+              <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
             {:else}
               <span class='portrait gap'></span>
             {/if}
@@ -52,7 +52,7 @@
               <li class='mine'>
                 <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
                   {#if character.portrait}
-                    {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                    <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
                   {:else}
                     <span class='portrait gap'></span>
                   {/if}
@@ -78,7 +78,7 @@
           <li class='mine'>
             <button on:click={openProfile(character)}>
               {#if character.portrait}
-                {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
               {:else}
                 <span class='portrait gap'></span>
               {/if}

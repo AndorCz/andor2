@@ -4,7 +4,7 @@
   import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
   import { activeConversation, lightboxImage } from '@lib/stores'
-  import { supabase, handleError, getPortrait } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
@@ -105,7 +105,7 @@
       {:then}
         <h2>
           {#if them.portrait}
-            {#await getPortrait(them.id, them.portrait) then url}<img src={url} class='portrait' alt={them.name} />{/await}
+            <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
           {/if}
           <div class='label'>
             {#if $activeConversation.type === 'character'}

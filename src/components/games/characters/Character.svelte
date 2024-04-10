@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortrait } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
 
   export let user
@@ -71,7 +71,7 @@
 <tr class='char'>
   <td class='portrait'>
     {#if character.portrait}
-      {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt='portrét postavy' />{/await}
+      <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt='portrét postavy' />
     {/if}
   </td>
   <td class='name'>

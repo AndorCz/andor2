@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, getImageUrl, getPortrait } from '@lib/database'
+  import { supabase, handleError, getImageUrl, getPortraitUrl } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { MaskContainer } from '@lib/pixi'
@@ -15,19 +15,23 @@
   export let isStoryteller = false
 
   let mapUrl = ''
-  let mapEl, mapWrapperEl, app, scene, scaledWidth, scaledHeight, mapSprite, mapTexture, dragTarget
-  const tokenSize = 50
-  const halfSize = tokenSize / 2
-  const quarterSize = tokenSize / 4
+  let mapEl, mapWrapperEl
+  let app, scene, mapSprite, mapTexture
+  let scaledWidth, scaledHeight, dragTarget
+  let availableCharacters = []
+  let tokenDiameter = 50
 
   onMount(async () => {
+    // prepare map data
     mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
-    app = new Application()
-    globalThis.__PIXI_APP__ = app // for debugging
-    await app.init() // { backgroundAlpha: 0, resizeTo: mapEl }
-    mapEl.appendChild(app.canvas)
+    game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
 
-    // add background image
+    app = new Application()
+    await app.init({ resolution: window.devicePixelRatio }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true }
+    mapEl.appendChild(app.canvas)
+    // globalThis.__PIXI_APP__ = app // for chrome plugin
+
+    // add map background image
     mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     mapSprite = new Sprite(mapTexture)
     mapSprite.label = 'map'
@@ -41,8 +45,8 @@
     scene.addChild(mapSprite)
 
     // add character tokens
-    for (const character of game.characters) {
-      await addCharacter(character)
+    for (const id of Object.keys(map.characters)) {
+      await addCharacter(id, map.characters[id])
     }
     resize()
     window.addEventListener('resize', resize)
@@ -53,60 +57,54 @@
   function resize () {
     if (!mapEl) return
     const scale = Math.min(mapEl.offsetWidth / mapTexture.width, 1)
-
     scaledWidth = mapTexture.width * scale
     scaledHeight = mapTexture.height * scale
-
     // scene.scale.set(scale, scale) // not needed?
     scene.width = scaledWidth
     scene.height = scaledHeight
-
     app.renderer.resize(scaledWidth, scaledHeight)
     mapWrapperEl.style.height = `${scaledHeight}px`
-
-    // position objects
-    // scene.children.forEach((child, index) => {
-    //   if (child.label === 'character') {
-    //     child.x = tokenSize * (index - 1) + (index * quarterSize) + quarterSize
-    //     child.y = scaledHeight + tokenSize
-    //   }
-    // })
   }
 
-  async function addCharacter (character) {
-    const portraitUrl = await getPortrait(character.id, character.portrait)
-    const texture = await Assets.load({ src: portraitUrl, loadParser: 'loadTextures' })
+  async function addCharacter (id, transform) {
+    availableCharacters = availableCharacters.filter(c => c.id !== id)
+    const characterData = game.characters.find(c => c.id === id)
+    const texture = await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' })
     const portrait = new Sprite(texture)
-    const scale = Math.max(tokenSize / portrait.width, tokenSize / portrait.height)
+    const scale = Math.max(tokenDiameter / portrait.width, tokenDiameter / portrait.height)
     portrait.scale.set(scale)
     portrait.anchor.set(0.5, 0)
 
-    // circular mask
+    // circle mask
+    const tokenRadius = tokenDiameter / 2
     const token = new MaskContainer() // workaround for missing pixi.js feature (interaction on masked sprites)
-    const mask = new Graphics().circle(portrait.x, portrait.y, halfSize).fill(0xFFFFFF)
+    const mask = new Graphics().circle(portrait.x, portrait.y, tokenRadius).fill('#fff')
     portrait.mask = mask
-    mask.pivot.y = -halfSize // show head of the character
-    token.pivot.y = halfSize // counteract the mask pivot
+    mask.pivot.y = -tokenRadius // show head of the character
+    token.pivot.y = tokenRadius // counteract the mask pivot
     token.label = 'character'
+    token.character = characterData
     token.addChild(mask)
     token.addChild(portrait)
     token.filters = [new DropShadowFilter()]
-    token.x = tokenSize
-    token.y = tokenSize
-    token.hitArea = new Circle(portrait.x, portrait.y + halfSize, halfSize)
+    token.x = transform.x
+    token.y = transform.y
+    token.hitArea = new Circle(portrait.x, portrait.y + tokenRadius, tokenRadius)
     scene.addChild(token)
 
     // add name
-    const name = new Text({ text: character.name, style: { fill: 0xFFFFFF, fontSize: 14 } })
-    name.anchor.set(0.5, 0)
-    name.y = tokenSize
+    const name = new Text({ text: characterData.name, style: { fontSize: 14, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
+    name.anchor.set(0.5, 0.5)
+    name.y = tokenDiameter
     token.addChild(name)
 
-    // interaction
+    // add interaction
     token.eventMode = 'static'
     token.cursor = 'pointer'
     token.on('pointerdown', onDragStart, token)
   }
+
+  // interactions
 
   function onDragMove (event) {
     if (dragTarget) { dragTarget.parent.toLocal(event.global, null, dragTarget.position) }
@@ -122,9 +120,27 @@
     if (dragTarget) {
       app.stage.off('pointermove', onDragMove)
       dragTarget.alpha = 1
-      console.log(dragTarget.x, dragTarget.y)
+      if (isStoryteller) {
+        savePosition(dragTarget.character, dragTarget.x, dragTarget.y)
+      } else {
+        saveProposition(dragTarget.character, dragTarget.x, dragTarget.y)
+      }
       dragTarget = null
     }
+  }
+
+  // database operations
+
+  async function savePosition (character, x, y) {
+    const newPositions = { ...map.characters, [character.id]: { x, y } }
+    const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
+    if (error) { handleError(error) }
+  }
+
+  async function saveProposition (character, x, y) {
+    const newPropositions = { ...map.propositions, [character.id]: { x, y } }
+    const { error } = await supabase.from('maps').update({ propositions: newPropositions }).eq('id', map.id)
+    if (error) { handleError(error) }
   }
 
   async function updateMapDescription (description) {
@@ -144,10 +160,21 @@
 <div class='wrapper' bind:this={mapWrapperEl}>
   <div id='map' bind:this={mapEl}></div>
 </div>
+<div id='tools'>
+  <h3>Přidat postavu</h3>
+  <div class='characters'>
+    {#each availableCharacters as character}
+      <button class='plain character' on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
+        <img src={getPortraitUrl(character.id, character.portrait)} alt={character.name} />
+        <span class='name'>{character.name}</span>
+      </button>
+    {/each}
+  </div>
+</div>
 <br><br>
 <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
 {#if isStoryteller}
-  <td class='tools row'>
+  <td class='options row'>
     {#if map.isActive}
       <button type='button' on:click={toggleActive}>Deaktivovat</button>
     {:else}
@@ -173,7 +200,37 @@
       justify-content: center;
     }
 
-  .tools {
+  .characters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+    .character {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+      .character:hover {
+        transform: scale(1.1);
+      }
+      .character img {
+        display: block;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: center 20%;
+      }
+      .character .name {
+        margin-top: -10px;
+        font-size: 14px;
+        color: white;
+        -webkit-text-stroke: 3px black;
+        paint-order: stroke fill;
+      }
+
+  .options {
     display: flex;
     align-items: center;
     justify-content: center;

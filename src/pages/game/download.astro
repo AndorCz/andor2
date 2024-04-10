@@ -34,7 +34,7 @@
       }
     }
 
-    async function getPortrait (identityId, hash) {
+    async function getBase64Portrait (identityId, hash) {
       const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
       const imageUrl = await getImageUrl(path, 'portraits')
       if (!portraits[identityId]) {
@@ -47,7 +47,7 @@
     // go through all characters and get their portraits, to save into base64 (to have them embedded in the html)
     for (const character of characterData) {
       if (character.portrait) {
-        portraits[character.id] = await getPortrait(character.id, character.portrait)
+        portraits[character.id] = await getBase64Portrait(character.id, character.portrait)
       }
     }
   } catch (e) {

@@ -2,7 +2,7 @@
   import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
-  import { getPortrait } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database'
   import { Render } from '@jill64/svelte-sanitize'
   import Reactions from '@components/common/Reactions.svelte'
   import ReactionInput from '@components/common/ReactionInput.svelte'
@@ -30,11 +30,11 @@
       <div class='content'><Render html={post.content} /></div>
     </div>
     {#if post.owner_portrait}
-      {#await getPortrait(post.owner, post.owner_portrait) then url}<img src={url} class='portrait' alt={post.owner_name} />{/await}
+      <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
     {/if}
   {:else}
     {#if post.owner_portrait}
-      {#await getPortrait(post.owner, post.owner_portrait) then url}<img src={url} class='portrait' alt={post.owner_name} />{/await}
+      <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
     {/if}
     <div class='toolbar' bind:this={toolbarRef}>
       {formatDate(post.created_at)}

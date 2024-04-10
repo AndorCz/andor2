@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortrait } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import { Render } from '@jill64/svelte-sanitize'
   import { tooltip } from '@lib/tooltip'
@@ -30,7 +30,7 @@
   <main>
     <aside>
       {#if character.portrait}
-        {#await getPortrait(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+        <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
       {/if}
     </aside>
 

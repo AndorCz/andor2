@@ -1,6 +1,6 @@
 <script>
   import { activeConversation } from '@lib/stores'
-  import { getPortrait } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database'
   import GameList from '@components/games/GameList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
@@ -16,7 +16,7 @@
 <main>
   {#if data.portrait}
     <aside>
-      {#await getPortrait(data.id, data.portrait) then url}<img src={url} class='portrait' alt={data.name} />{/await}
+      <img src={getPortraitUrl(data.id, data.portrait)} class='portrait' alt={data.name} />
     </aside>
   {/if}
   <div class='wide'>

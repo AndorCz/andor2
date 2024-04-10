@@ -1,5 +1,5 @@
 <script>
-  import { getPortrait } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database'
 
   export let users = []
   export let openConversation
@@ -33,7 +33,7 @@
       <li>
         <button on:click={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
-            {#await getPortrait(user.id, user.portrait) then url}<img src={url} class='portrait' alt={user.name} />{/await}
+            <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
           {:else}
             <span class='gap'></span>
           {/if}
@@ -58,7 +58,7 @@
         <li>
           <button on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
-              {#await getPortrait(user.id, user.portrait) then url}<img src={url} class='portrait' alt={user.name} />{/await}
+              <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
               <span class='gap'></span>
             {/if}
@@ -78,7 +78,7 @@
         <li>
           <button on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
-              {#await getPortrait(user.id, user.portrait) then url}<img src={url} class='portrait' alt={user.name} />{/await}
+              <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
               <span class='gap'></span>
             {/if}

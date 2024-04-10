@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortrait } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { writable } from 'svelte/store'
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
@@ -49,7 +49,7 @@
 <div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
   {#if $postStore.owner_portrait}
     <div class='icon' style='--iconSize: {iconSize}px'>
-      {#await getPortrait($postStore.owner, $postStore.owner_portrait) then url}<img src={url} class='portrait' alt={$postStore.owner_name} />{/await}
+      <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
     </div>
   {/if}
   {#if unread}

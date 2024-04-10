@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, getPortrait } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
 
   let users = []
   let page = 0
@@ -49,7 +49,7 @@
     {#each users as user}
       <div class='user'>
         {#if user.portrait}
-          {#await getPortrait(user.id, user.portrait) then url}<img src={url} class='portrait' alt={user.name} />{/await}
+          <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
         {:else}
           <span class='gap'></span>
         {/if}

@@ -1,7 +1,7 @@
 <script>
   import { isFilledArray } from '@lib/utils'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import Map from '@components/games/maps/Map.svelte'
 
   export let user
@@ -11,6 +11,10 @@
   game.maps.forEach(map => {
     map.isActive = map.id === game.active_map?.id
     map.isOpen = map.isActive
+  })
+
+  game.characters.forEach(character => {
+    character.portraitUrl = getPortraitUrl(character.id, character.portrait)
   })
 
   async function deleteMap (mapId) {

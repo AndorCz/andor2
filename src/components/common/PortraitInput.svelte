@@ -1,7 +1,7 @@
 <script>
   import { showError } from '@lib/toasts'
   import { resizePortrait } from '@lib/utils'
-  import { supabase, handleError, getPortrait, getHash } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl, getHash } from '@lib/database'
 
   export let table
   export let identity = { portrait: null }
@@ -71,7 +71,7 @@
     {#if newPortraitBase64}
       <img src={newPortraitBase64} class='portrait' alt='portrét' />
     {:else if identity.portrait}
-      {#await getPortrait(identity.id, identity.portrait) then url}<img src={url} class='portrait' alt='portrét' />{/await}
+      <img src={getPortraitUrl(identity.id, identity.portrait)} class='portrait' alt='portrét' />
     {:else}
       <div class='portrait blank' title={`Obrázek bude zmenšený na šířku ${saveWidth} px`}>Nahrát<br>portrét</div>
     {/if}

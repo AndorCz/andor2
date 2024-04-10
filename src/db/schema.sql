@@ -113,7 +113,8 @@ create table maps (
   image text not null,
   description text,
   hidden boolean null,
-  character_positions json not null default '{}',
+  characters json not null default '{}',
+  propositions json not null default '{}',
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
   constraint maps_game_fkey foreign key (game) references games (id) on delete cascade
