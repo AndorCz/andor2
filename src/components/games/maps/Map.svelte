@@ -16,38 +16,43 @@
 
   let mapUrl = ''
   let mapEl, mapWrapperEl
-  let app, scene, mapSprite, mapTexture
-  let scaledWidth, scaledHeight, dragTarget
+  let app, scene, mapSprite, mapTexture, tokenButtons
+  let scaledWidth, scaledHeight, dragTarget, selectedToken
   let availableCharacters = []
   let tokenDiameter = 50
 
   onMount(async () => {
-    // prepare map data
-    mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
-    game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
-
     app = new Application()
-    await app.init({ resolution: window.devicePixelRatio }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true }
+    await app.init({ resolution: window.devicePixelRatio }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true }
     mapEl.appendChild(app.canvas)
     // globalThis.__PIXI_APP__ = app // for chrome plugin
 
     // add map background image
+    mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
     mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     mapSprite = new Sprite(mapTexture)
     mapSprite.label = 'map'
     app.stage.eventMode = 'static'
     app.stage.hitArea = app.screen
-    app.stage.on('pointerup', onDragEnd)
-    app.stage.on('pointerupoutside', onDragEnd)
+    app.stage
+      .on('pointerup', onDragEnd)
+      .on('pointerupoutside', onDragEnd)
+      // .on('click', deselect)
 
     scene = new Container({ x: 0, y: 0, width: app.screen.width, height: app.screen.height })
     app.stage.addChild(scene)
     scene.addChild(mapSprite)
 
+    // token buttons
+    await Assets.load(['/maps/button-close.png'])
+    addTokenButtons()
+
     // add character tokens
+    game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
     for (const id of Object.keys(map.characters)) {
       await addCharacter(id, map.characters[id])
     }
+
     resize()
     window.addEventListener('resize', resize)
   })
@@ -92,6 +97,13 @@
     token.hitArea = new Circle(portrait.x, portrait.y + tokenRadius, tokenRadius)
     scene.addChild(token)
 
+    // selected circle
+    const selectedCircle = new Graphics().circle(portrait.x, portrait.y, tokenRadius + 2).stroke({ width: 3, color: 0xffffff })
+    selectedCircle.pivot.y = -tokenRadius
+    selectedCircle.visible = false
+    token.selectedCircle = selectedCircle
+    token.addChild(selectedCircle)
+
     // add name
     const name = new Text({ text: characterData.name, style: { fontSize: 14, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
     name.anchor.set(0.5, 0.5)
@@ -101,38 +113,95 @@
     // add interaction
     token.eventMode = 'static'
     token.cursor = 'pointer'
-    token.on('pointerdown', onDragStart, token)
+    token.on('pointerdown', onTokenDown, token)
+  }
+
+  function addTokenButtons () {
+    tokenButtons = new Container()
+    app.stage.addChild(tokenButtons)
+
+    // remove token button
+    const close = Sprite.from('/maps/button-close.png')
+    close.anchor.set(0.5, 0.5)
+    close.eventMode = 'static'
+    close.buttonMode = true
+    close.interactive = true
+    close.cursor = 'pointer'
+    close.on('pointerdown', () => { removeCharacter(selectedToken) })
+
+    tokenButtons.visible = false
+    tokenButtons.addChild(close)
+  }
+
+  function removeCharacter (token) {
+    availableCharacters = [...availableCharacters, token.character]
+    scene.removeChild(token)
+    removePosition(token.character)
+    tokenButtons.visible = false
   }
 
   // interactions
+
+  function onTokenDown (event) {
+    event.data.originalEvent.preventDefault()
+    if (selectedToken) { selectedToken.selectedCircle.visible = false } // deselect previous token
+    dragTarget = this
+    dragTarget.alpha = 0.5
+    dragTarget.data = event.data
+    dragTarget.start = { x: event.data.global.x, y: event.data.global.y }
+    app.stage.on('pointermove', onDragMove)
+  }
 
   function onDragMove (event) {
     if (dragTarget) { dragTarget.parent.toLocal(event.global, null, dragTarget.position) }
   }
 
-  function onDragStart () {
-    dragTarget = this
-    dragTarget.alpha = 0.5
-    app.stage.on('pointermove', onDragMove)
-  }
-
-  function onDragEnd () {
+  function onDragEnd (event) {
     if (dragTarget) {
       app.stage.off('pointermove', onDragMove)
       dragTarget.alpha = 1
-      if (isStoryteller) {
-        savePosition(dragTarget.character, dragTarget.x, dragTarget.y)
-      } else {
-        saveProposition(dragTarget.character, dragTarget.x, dragTarget.y)
+      const moveX = Math.abs(dragTarget.start.x - event.data.global.x)
+      const moveY = Math.abs(dragTarget.start.y - event.data.global.y)
+
+      if (moveX <= 2 && moveY <= 2) { // token clicked
+        console.log('token clicked')
+        selectedToken = dragTarget
+        dragTarget.selectedCircle.visible = true
+        tokenButtons.visible = true
+        tokenButtons.position.set(dragTarget.x, dragTarget.y - tokenDiameter)
+      } else { // drag ended
+        console.log('drag ended')
+        if (isStoryteller) {
+          savePosition(dragTarget.character, dragTarget.x, dragTarget.y)
+        } else {
+          saveProposition(dragTarget.character, dragTarget.x, dragTarget.y)
+        }
       }
       dragTarget = null
     }
+  }
+
+  function deselect (event) {
+    event.data.originalEvent.preventDefault()
+    console.log('deselect')
+    if (dragTarget) {
+      dragTarget.selectedCircle = false
+      dragTarget = null
+    }
+    tokenButtons.visible = false
   }
 
   // database operations
 
   async function savePosition (character, x, y) {
     const newPositions = { ...map.characters, [character.id]: { x, y } }
+    const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
+    if (error) { handleError(error) }
+  }
+
+  async function removePosition (character) {
+    const newPositions = { ...map.characters }
+    delete newPositions[character.id]
     const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
     if (error) { handleError(error) }
   }
