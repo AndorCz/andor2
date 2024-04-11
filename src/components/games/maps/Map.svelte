@@ -1,10 +1,10 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, getImageUrl, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getImageUrl } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { MaskContainer } from '@lib/pixi'
-  import { Application, Container, Circle, Sprite, Assets, Graphics, Text } from 'pixi.js'
+  import { Application, Container, Circle, Sprite, Assets, Graphics, Text, Texture } from 'pixi.js'
   import { DropShadowFilter } from 'pixi-filters'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -50,7 +50,7 @@
     // add character tokens
     game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
     for (const id of Object.keys(map.characters)) {
-      await addCharacter(id, map.characters[id])
+      await addCharacterToken(id, map.characters[id])
     }
 
     resize()
@@ -71,11 +71,12 @@
     mapWrapperEl.style.height = `${scaledHeight}px`
   }
 
-  async function addCharacter (id, transform) {
+  async function addCharacterToken (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
-    const texture = await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' })
+    const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
     const portrait = new Sprite(texture)
+    if (!characterData.portraitUrl) { portrait.tint = characterData.color }
     const scale = Math.max(tokenDiameter / portrait.width, tokenDiameter / portrait.height)
     portrait.scale.set(scale)
     portrait.anchor.set(0.5, 0)
@@ -127,16 +128,16 @@
     close.buttonMode = true
     close.interactive = true
     close.cursor = 'pointer'
-    close.on('pointerdown', () => { removeCharacter(selectedToken) })
+    close.on('pointerdown', () => { removeCharacterToken(selectedToken) })
 
     tokenButtons.visible = false
     tokenButtons.addChild(close)
   }
 
-  function removeCharacter (token) {
+  function removeCharacterToken (token) {
     availableCharacters = [...availableCharacters, token.character]
     scene.removeChild(token)
-    removePosition(token.character)
+    removeCharacter(token.character)
     tokenButtons.visible = false
   }
 
@@ -199,10 +200,12 @@
     if (error) { handleError(error) }
   }
 
-  async function removePosition (character) {
+  async function removeCharacter (character) {
     const newPositions = { ...map.characters }
     delete newPositions[character.id]
-    const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
+    const newPropositions = { ...map.propositions }
+    delete newPropositions[character.id]
+    const { error } = await supabase.from('maps').update({ characters: newPositions, propositions: newPropositions }).eq('id', map.id)
     if (error) { handleError(error) }
   }
 
@@ -233,8 +236,12 @@
   <h3>Přidat postavu</h3>
   <div class='characters'>
     {#each availableCharacters as character}
-      <button class='plain character' on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
-        <img src={getPortraitUrl(character.id, character.portrait)} alt={character.name} />
+      <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacterToken(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
+        {#if character.portraitUrl}
+          <img class='portrait' src={character.portraitUrl} alt={character.name} />
+        {:else}
+          <span class='empty'></span>
+        {/if}
         <span class='name'>{character.name}</span>
       </button>
     {/each}
@@ -283,15 +290,16 @@
       .character:hover {
         transform: scale(1.1);
       }
-      .character img {
+      .portrait, .empty {
         display: block;
         width: 50px;
         height: 50px;
         border-radius: 50%;
         object-fit: cover;
         object-position: center 20%;
+        background-color: var(--color);
       }
-      .character .name {
+      .name {
         margin-top: -10px;
         font-size: 14px;
         color: white;

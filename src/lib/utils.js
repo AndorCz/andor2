@@ -142,3 +142,15 @@ export function updateURLParam (key, value) {
   url.searchParams.set(key, value)
   window.history.pushState({}, '', url)
 }
+
+function hashCode (str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return hash
+}
+
+export function stringToColor (str) {
+  return `hsl(${hashCode(str) % 360}, 50%, 80%)`
+}
