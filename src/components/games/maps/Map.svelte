@@ -1,11 +1,10 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, getImageUrl } from '@lib/database'
-  import { showSuccess } from '@lib/toasts'
+  import { getImageUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
-  import { MaskContainer } from '@lib/pixi'
-  import { Application, Container, Circle, Sprite, Assets, Graphics, Text, Texture } from 'pixi.js'
-  import { DropShadowFilter } from 'pixi-filters'
+  import { Application, Container, Sprite, Assets, Graphics, Texture } from 'pixi.js'
+  import { removeCharacter, toggleActive, updateMapDescription, savePosition, saveProposition } from '@lib/map/db'
+  import { Character } from '@lib/map/character'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let map
@@ -15,21 +14,21 @@
   export let isStoryteller = false
 
   let mapUrl = ''
-  let mapEl, mapWrapperEl
-  let app, scene, mapSprite, mapTexture, tokenButtons, propositions, currentProposition
-  let scaledWidth, scaledHeight, dragTarget, selectedToken
+  let mapEl, mapWrapperEl, scaledWidth, scaledHeight
+  let app, scene, mapSprite, mapTexture, tokenButtons
   let availableCharacters = []
   // let fps = 0
   const tokenDiameter = 50
-  const optimized = true
 
   onMount(async () => {
     app = new Application()
-    await app.init({ resolution: window.devicePixelRatio, autoDensity: true, antialias: true, autoStart: !optimized }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
-    mapEl.appendChild(app.canvas)
+
+    // to render every frame, set autoStart to true. other options: { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
+    await app.init({ autoStart: false, resolution: window.devicePixelRatio, autoDensity: true, antialias: true })
     // globalThis.__PIXI_APP__ = app // for chrome plugin
 
     // add map background image
+    mapEl.appendChild(app.canvas)
     mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
     mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     mapSprite = new Sprite(mapTexture)
@@ -48,10 +47,10 @@
     app.stage.addChild(scene)
     scene.addChild(mapSprite)
 
-    propositions = new Graphics({ label: 'proposition lines' })
-    currentProposition = new Graphics({ label: 'current proposition line' })
-    scene.addChild(propositions)
-    scene.addChild(currentProposition)
+    app.propositions = new Graphics({ label: 'propositionLines' })
+    app.currentProposition = new Graphics({ label: 'currentProposition' })
+    scene.addChild(app.propositions)
+    scene.addChild(app.currentProposition)
 
     // token buttons
     const buttonTextures = [
@@ -69,12 +68,31 @@
     resize()
     window.addEventListener('resize', resize)
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
-    if (optimized) { app.renderer.render(app.stage) }
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   })
 
-  onDestroy(() => {
-    window.removeEventListener('resize', resize)
-  })
+  onDestroy(() => { window.removeEventListener('resize', resize) })
+
+  function onDragEnd (event) {
+    if (!app.ticker.started) { setTimeout(() => { app.ticker.stop() }, 100) }
+    if (app.dragging) {
+      app.stage.off('pointermove', this.onDragMove)
+      app.dragging.token.alpha = 1
+      const moveX = Math.abs(app.dragging.token.startGlobal.x - event.data.global.x)
+      const moveY = Math.abs(app.dragging.token.startGlobal.y - event.data.global.y)
+
+      if (moveX <= 2 && moveY <= 2) { // token clicked
+        app.dragging.select()
+      } else { // drag ended
+        if (isStoryteller) {
+          savePosition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
+        } else {
+          saveProposition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
+        }
+      }
+      delete app.dragging
+    }
+  }
 
   function resize () {
     if (!mapEl) return
@@ -86,54 +104,23 @@
     scene.height = scaledHeight
     app.renderer.resize(scaledWidth, scaledHeight)
     mapWrapperEl.style.height = `${scaledHeight}px`
-    if (optimized) { app.renderer.render(app.stage) }
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
   async function addCharacterToken (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
     const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
-    const portrait = new Sprite(texture)
-    if (!characterData.portraitUrl) { portrait.tint = characterData.color }
-    const scale = Math.max(tokenDiameter / portrait.width, tokenDiameter / portrait.height)
-    portrait.scale.set(scale)
-    portrait.anchor.set(0.5, 0)
+    const character = new Character({ app, scene, transform, tokenButtons, characterData, texture, tokenDiameter })
+    scene.addChild(character.token)
+  }
 
-    // circle mask
-    const tokenRadius = tokenDiameter / 2
-    const token = new MaskContainer() // workaround for missing pixi.js feature (interaction on masked sprites)
-    const mask = new Graphics().circle(portrait.x, portrait.y, tokenRadius).fill('#fff')
-    portrait.mask = mask
-    mask.pivot.y = -tokenRadius // show head of the character
-    token.pivot.y = tokenRadius // counteract the mask pivot
-    token.label = 'character'
-    token.character = characterData
-    token.addChild(mask)
-    token.addChild(portrait)
-    token.filters = [new DropShadowFilter()]
-    token.x = transform.x
-    token.y = transform.y
-    token.hitArea = new Circle(portrait.x, portrait.y + tokenRadius, tokenRadius)
-    scene.addChild(token)
-
-    // selected circle
-    const selectedCircle = new Graphics().circle(portrait.x, portrait.y, tokenRadius + 1).stroke({ width: 3, color: 0xffffff })
-    selectedCircle.pivot.y = -tokenRadius
-    selectedCircle.visible = false
-    token.selectedCircle = selectedCircle
-    token.addChild(selectedCircle)
-
-    // add name
-    const name = new Text({ text: characterData.name, style: { fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
-    name.anchor.set(0.5, 0.7)
-    name.y = tokenDiameter
-    token.addChild(name)
-
-    // add interaction
-    token.eventMode = 'static'
-    token.cursor = 'pointer'
-    token.on('pointerdown', onTokenPointerDown, token)
-    if (optimized) { app.renderer.render(app.stage) }
+  function removeCharacterToken (token) {
+    availableCharacters = [...availableCharacters, token.character.characterData]
+    scene.removeChild(token)
+    removeCharacter(map, token.character.characterData)
+    tokenButtons.visible = false
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
   function addTokenButtons () {
@@ -148,122 +135,20 @@
     close.buttonMode = true
     close.interactive = true
     close.cursor = 'pointer'
-    close.on('pointerdown', () => { removeCharacterToken(selectedToken) })
+    close.on('pointerdown', () => { removeCharacterToken(app.selectedToken) })
 
     tokenButtons.visible = false
     tokenButtons.addChild(close)
   }
 
-  function removeCharacterToken (token) {
-    availableCharacters = [...availableCharacters, token.character]
-    scene.removeChild(token)
-    removeCharacter(token.character)
-    tokenButtons.visible = false
-    if (optimized) { app.renderer.render(app.stage) }
-  }
-
-  // interactions
-
-  function onTokenPointerDown (event) {
-    if (optimized) { app.ticker.start() }
-    event.stopPropagation()
-    event.data.originalEvent.preventDefault()
-    if (selectedToken) { selectedToken.selectedCircle.visible = false } // deselect previous token
-    dragTarget = this
-    dragTarget.alpha = 0.5
-    dragTarget.data = event.data
-    dragTarget.start = { x: dragTarget.x, y: dragTarget.y }
-    dragTarget.startGlobal = { x: event.data.global.x, y: event.data.global.y }
-    app.stage.on('pointermove', onDragMove)
-  }
-
-  function onDragMove (event) {
-    if (dragTarget) { dragTarget.parent.toLocal(event.global, null, dragTarget.position) }
-    drawProposition(dragTarget.start.x, dragTarget.start.y, dragTarget.x, dragTarget.y)
-  }
-
-  function onDragEnd (event) {
-    if (optimized) { setTimeout(() => { app.ticker.stop() }, 100) }
-    if (dragTarget) {
-      app.stage.off('pointermove', onDragMove)
-      dragTarget.alpha = 1
-      const moveX = Math.abs(dragTarget.startGlobal.x - event.data.global.x)
-      const moveY = Math.abs(dragTarget.startGlobal.y - event.data.global.y)
-
-      if (moveX <= 2 && moveY <= 2) { // token clicked
-        selectToken(dragTarget)
-      } else { // drag ended
-        if (isStoryteller) {
-          savePosition(dragTarget.character, dragTarget.x, dragTarget.y)
-        } else {
-          saveProposition(dragTarget.character, dragTarget.x, dragTarget.y)
-        }
-      }
-      dragTarget = null
-    }
-  }
-
-  function drawProposition (fromX, fromY, toX, toY) {
-    currentProposition.clear()
-    currentProposition.moveTo(fromX, fromY)
-    currentProposition.lineTo(toX, toY)
-    currentProposition.stroke({ width: 4, color: 0xffffff })
-  }
-
-  function selectToken (token) {
-    if (selectedToken) { selectedToken.selectedCircle.visible = false }
-    selectedToken = token
-    token.selectedCircle.visible = true
-    tokenButtons.visible = true
-    const { x, y } = token.getGlobalPosition()
-    tokenButtons.position.set(x, y - tokenDiameter)
-    if (optimized) { app.renderer.render(app.stage) }
-  }
-
   function deselectAll (event) {
     event.data.originalEvent.preventDefault()
-    if (selectedToken) {
-      selectedToken.selectedCircle.visible = false
-      selectedToken = null
+    if (app.selectedToken) {
+      app.selectedToken.selectedCircle.visible = false
+      app.selectedToken = null
     }
     tokenButtons.visible = false
-    if (optimized) { app.renderer.render(app.stage) }
-  }
-
-  // database operations
-
-  async function savePosition (character, x, y) {
-    const newPositions = { ...map.characters, [character.id]: { x, y } }
-    const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
-    if (error) { handleError(error) }
-  }
-
-  async function removeCharacter (character) {
-    const newPositions = { ...map.characters }
-    delete newPositions[character.id]
-    const newPropositions = { ...map.propositions }
-    delete newPropositions[character.id]
-    const { error } = await supabase.from('maps').update({ characters: newPositions, propositions: newPropositions }).eq('id', map.id)
-    if (error) { handleError(error) }
-  }
-
-  async function saveProposition (character, x, y) {
-    const newPropositions = { ...map.propositions, [character.id]: { x, y } }
-    const { error } = await supabase.from('maps').update({ propositions: newPropositions }).eq('id', map.id)
-    if (error) { handleError(error) }
-  }
-
-  async function updateMapDescription (description) {
-    const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
-    if (error) { handleError(error) }
-    showSuccess('Popis mapy byl upraven')
-  }
-
-  async function toggleActive () {
-    const { error } = await supabase.from('games').update({ active_map: map.isActive ? null : map.id }).eq('id', game.id)
-    if (error) { return handleError(error) }
-    map.isActive = !map.isActive
-    return showSuccess(map.isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 </script>
 
@@ -291,9 +176,9 @@
 {#if isStoryteller}
   <td class='options row'>
     {#if map.isActive}
-      <button type='button' on:click={toggleActive}>Deaktivovat</button>
+      <button type='button' on:click={() => { toggleActive(map, game) }}>Deaktivovat</button>
     {:else}
-      <button type='button' on:click={toggleActive} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
+      <button type='button' on:click={() => { toggleActive(map, game) }} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
     {/if}
     <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
     <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
@@ -305,14 +190,6 @@
     position: relative;
     height: 600px;
   }
-    /*
-    #fps {
-      position: absolute;
-      top: -40px;
-      right: 0px;
-      text-align: right;
-    }
-    */
     #map {
       position: absolute;
       left: 0;
@@ -361,4 +238,10 @@
     margin-top: 40px;
     gap: 10px;
   }
+  /* #fps {
+    position: absolute;
+    top: -40px;
+    right: 0px;
+    text-align: right;
+  }*/
 </style>
