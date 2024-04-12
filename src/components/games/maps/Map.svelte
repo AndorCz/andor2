@@ -3,25 +3,28 @@
   import { getImageUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
   import { Application, Container, Sprite, Assets, Graphics, Texture } from 'pixi.js'
-  import { removeCharacter, toggleActive, updateMapDescription, savePosition, saveProposition } from '@lib/map/db'
+  import { clearCharacter, toggleActive, updateMapDescription, savePosition, saveProposition, clearProposition } from '@lib/map/db'
   import { Character } from '@lib/map/character'
+  import { Buttons } from '@lib/map/buttons'
   import EditableLong from '@components/common/EditableLong.svelte'
 
+  export let user
   export let map
   export let game
-  export let user
   export let onDeleteMap
   export let isStoryteller = false
 
   let mapUrl = ''
   let mapEl, mapWrapperEl, scaledWidth, scaledHeight
-  let app, scene, mapSprite, mapTexture, tokenButtons
+  let app, scene, mapSprite, mapTexture
   let availableCharacters = []
   // let fps = 0
   const tokenDiameter = 50
 
   onMount(async () => {
     app = new Application()
+    app.user = user
+    app.isStoryteller = isStoryteller
 
     // to render every frame, set autoStart to true. other options: { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
     await app.init({ autoStart: false, resolution: window.devicePixelRatio, autoDensity: true, antialias: true })
@@ -47,22 +50,21 @@
     app.stage.addChild(scene)
     scene.addChild(mapSprite)
 
+    // draw propositions
     app.propositions = new Graphics({ label: 'propositionLines' })
     app.currentProposition = new Graphics({ label: 'currentProposition' })
     scene.addChild(app.propositions)
     scene.addChild(app.currentProposition)
 
+    renderPropositions()
+
     // token buttons
-    const buttonTextures = [
-      { alias: 'close', src: '/maps/button-close.png' }
-    ]
-    await Assets.load(buttonTextures)
-    addTokenButtons()
+    addButtons()
 
     // add character tokens
     game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
     for (const id of Object.keys(map.characters)) {
-      await addCharacterToken(id, map.characters[id])
+      await addCharacter(id, map.characters[id])
     }
 
     resize()
@@ -88,6 +90,8 @@
           savePosition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
         } else {
           saveProposition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
+          app.dragging.token.x = app.dragging.token.start.x
+          app.dragging.token.y = app.dragging.token.start.y
         }
       }
       delete app.dragging
@@ -107,38 +111,48 @@
     if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
-  async function addCharacterToken (id, transform) {
+  function renderPropositions () {
+    app.propositions.clear()
+    for (const id of Object.keys(map.propositions)) {
+      const proposition = map.propositions[id]
+      const from = map.characters[id]
+      if (from) {
+        app.propositions.moveTo(from.x, from.y)
+        app.propositions.lineTo(proposition.x, proposition.y)
+        app.propositions.stroke({ width: 4, color: 0xffffff })
+      }
+    }
+  }
+
+  async function addCharacter (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
     const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
-    const character = new Character({ app, scene, transform, tokenButtons, characterData, texture, tokenDiameter })
+    const character = new Character({ app, map, scene, transform, characterData, texture, tokenDiameter })
     scene.addChild(character.token)
-  }
-
-  function removeCharacterToken (token) {
-    availableCharacters = [...availableCharacters, token.character.characterData]
-    scene.removeChild(token)
-    removeCharacter(map, token.character.characterData)
-    tokenButtons.visible = false
     if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
-  function addTokenButtons () {
-    tokenButtons = new Container()
-    tokenButtons.label = 'tokenButtons'
-    app.stage.addChild(tokenButtons)
+  async function addButtons () {
+    await Assets.load(['/maps/button-done.png', '/maps/button-close.png'])
+    app.tokenButtons = new Buttons({ app, removeCharacter, removeProposition })
+  }
 
-    // button: remove token
-    const close = Sprite.from('close')
-    close.anchor.set(0.5, 0.5)
-    close.eventMode = 'static'
-    close.buttonMode = true
-    close.interactive = true
-    close.cursor = 'pointer'
-    close.on('pointerdown', () => { removeCharacterToken(app.selectedToken) })
+  function removeCharacter (token) {
+    availableCharacters = [...availableCharacters, token.character.characterData]
+    scene.removeChild(token)
+    clearCharacter(map, token.character.characterData)
+    removeProposition(token)
+    renderPropositions()
+    app.tokenButtons.view.visible = false
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
+  }
 
-    tokenButtons.visible = false
-    tokenButtons.addChild(close)
+  function removeProposition (token) {
+    delete map.propositions[token.character.characterData.id]
+    clearProposition(map, token.character.characterData.id)
+    renderPropositions()
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
   function deselectAll (event) {
@@ -147,7 +161,7 @@
       app.selectedToken.selectedCircle.visible = false
       app.selectedToken = null
     }
-    tokenButtons.visible = false
+    app.tokenButtons.view.visible = false
     if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 </script>
@@ -156,23 +170,28 @@
   <!--{#if app && app.renderer}<div id='fps'>{optimized ? fps : 0} fps</div>{/if}-->
   <div id='map' bind:this={mapEl}></div>
 </div>
-<div id='tools'>
-  <h3>Přidat postavu</h3>
-  <div class='characters'>
-    {#each availableCharacters as character}
-      <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacterToken(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
-        {#if character.portraitUrl}
-          <img class='portrait' src={character.portraitUrl} alt={character.name} />
-        {:else}
-          <span class='empty'></span>
-        {/if}
-        <span class='name'>{character.name}</span>
-      </button>
-    {/each}
+
+{#if isStoryteller}
+  <div id='tools'>
+    <h3>Přidat postavu</h3>
+    <div class='characters'>
+      {#each availableCharacters as character}
+        <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
+          {#if character.portraitUrl}
+            <img class='portrait' src={character.portraitUrl} alt={character.name} />
+          {:else}
+            <span class='empty'></span>
+          {/if}
+          <span class='name'>{character.name}</span>
+        </button>
+      {/each}
+    </div>
   </div>
-</div>
+{/if}
+
 <br><br>
 <EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
+
 {#if isStoryteller}
   <td class='options row'>
     {#if map.isActive}

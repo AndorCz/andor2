@@ -11,6 +11,7 @@ export class Character {
     Object.assign(this, options)
     app = options.app
 
+    this.texture.source.resolution = 2
     const portrait = new Sprite(this.texture)
     if (!this.characterData.portraitUrl) { portrait.tint = this.characterData.color }
     const scale = Math.max(this.tokenDiameter / portrait.width, this.tokenDiameter / portrait.height)
@@ -55,32 +56,38 @@ export class Character {
   }
 
   onTokenPointerDown (event) { // 'this' points to the clicked token sprite
-    if (!app.ticker.started) { app.ticker.start() }
     event.stopPropagation()
     event.data.originalEvent.preventDefault()
-    app.dragging = this.character
-    if (app.selectedToken) { app.selectedToken.selectedCircle.visible = false } // deselect previous token
-    this.alpha = 0.5
-    // this.data = event.data
-    this.start = { x: this.x, y: this.y }
-    this.startGlobal = { x: event.data.global.x, y: event.data.global.y }
-    app.stage.on('pointermove', this.character.onDragMove)
+    if (app.user.id === this.character.characterData.player.id || app.isStoryteller) {
+      if (!app.ticker.started) { app.ticker.start() }
+      app.dragging = this.character
+      if (app.selectedToken) { app.selectedToken.selectedCircle.visible = false } // deselect previous token
+      this.alpha = 0.5
+      this.start = { x: this.x, y: this.y }
+      this.startGlobal = { x: event.data.global.x, y: event.data.global.y }
+      app.stage.on('pointermove', this.character.onDragMove)
+    }
   }
 
   onDragMove (event) { // 'this' points to the stage
     const token = app.dragging.token
     token.parent.toLocal(event.global, null, token.position)
-    app.dragging.drawProposition(token.start.x, token.start.y, token.x, token.y)
+    if (!app.isStoryteller) {
+      app.dragging.drawProposition(token.start.x, token.start.y, token.x, token.y)
+    }
   }
 
   select () {
     if (this.app.selectedToken) { this.app.selectedToken.selectedCircle.visible = false }
     this.app.selectedToken = this.token
     this.token.selectedCircle.visible = true
-    this.tokenButtons.visible = true
-    const { x, y } = this.token.getGlobalPosition()
-    this.tokenButtons.position.set(x, y - this.tokenDiameter)
-    if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
+    if (app.isStoryteller) {
+      const { x, y } = this.token.getGlobalPosition()
+      this.app.tokenButtons.view.visible = true
+      this.app.tokenButtons.done.visible = !!this.map.propositions[this.characterData.id]
+      this.app.tokenButtons.view.position.set(x, y - this.tokenDiameter)
+      if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
+    }
   }
 
   drawProposition (fromX, fromY, toX, toY) {

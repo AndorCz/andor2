@@ -9,7 +9,7 @@ export async function savePosition (map, character, x, y) {
   if (error) { handleError(error) }
 }
 
-export async function removeCharacter (map, character) {
+export async function clearCharacter (map, character) {
   const newPositions = { ...map.characters }
   delete newPositions[character.id]
   const newPropositions = { ...map.propositions }
@@ -28,6 +28,13 @@ export async function updateMapDescription (map, description) {
   const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
   if (error) { handleError(error) }
   showSuccess('Popis mapy byl upraven')
+}
+
+export async function clearProposition (map, id) {
+  const newPropositions = { ...map.propositions }
+  delete newPropositions[id]
+  const { error } = await supabase.from('maps').update({ propositions: newPropositions }).eq('id', map.id)
+  if (error) { handleError(error) }
 }
 
 export async function toggleActive (map, game) {
