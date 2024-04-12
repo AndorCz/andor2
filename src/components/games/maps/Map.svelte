@@ -16,14 +16,16 @@
 
   let mapUrl = ''
   let mapEl, mapWrapperEl
-  let app, scene, mapSprite, mapTexture, tokenButtons
+  let app, scene, mapSprite, mapTexture, tokenButtons, propositions, currentProposition
   let scaledWidth, scaledHeight, dragTarget, selectedToken
   let availableCharacters = []
-  let tokenDiameter = 50
+  // let fps = 0
+  const tokenDiameter = 50
+  const optimized = true
 
   onMount(async () => {
     app = new Application()
-    await app.init({ resolution: window.devicePixelRatio }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true }
+    await app.init({ resolution: window.devicePixelRatio, autoDensity: true, antialias: true, autoStart: !optimized }) // { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
     mapEl.appendChild(app.canvas)
     // globalThis.__PIXI_APP__ = app // for chrome plugin
 
@@ -31,20 +33,31 @@
     mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
     mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     mapSprite = new Sprite(mapTexture)
+    mapSprite.eventMode = 'none'
     mapSprite.label = 'map'
+
     app.stage.eventMode = 'static'
     app.stage.hitArea = app.screen
     app.stage
       .on('pointerup', onDragEnd)
       .on('pointerupoutside', onDragEnd)
-      // .on('click', deselect)
+      .on('pointerdown', deselectAll)
 
     scene = new Container({ x: 0, y: 0, width: app.screen.width, height: app.screen.height })
+    scene.label = 'scene'
     app.stage.addChild(scene)
     scene.addChild(mapSprite)
 
+    propositions = new Graphics({ label: 'proposition lines' })
+    currentProposition = new Graphics({ label: 'current proposition line' })
+    scene.addChild(propositions)
+    scene.addChild(currentProposition)
+
     // token buttons
-    await Assets.load(['/maps/button-close.png'])
+    const buttonTextures = [
+      { alias: 'close', src: '/maps/button-close.png' }
+    ]
+    await Assets.load(buttonTextures)
     addTokenButtons()
 
     // add character tokens
@@ -55,9 +68,13 @@
 
     resize()
     window.addEventListener('resize', resize)
+    // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
+    if (optimized) { app.renderer.render(app.stage) }
   })
 
-  onDestroy(() => { window.removeEventListener('resize', resize) })
+  onDestroy(() => {
+    window.removeEventListener('resize', resize)
+  })
 
   function resize () {
     if (!mapEl) return
@@ -69,6 +86,7 @@
     scene.height = scaledHeight
     app.renderer.resize(scaledWidth, scaledHeight)
     mapWrapperEl.style.height = `${scaledHeight}px`
+    if (optimized) { app.renderer.render(app.stage) }
   }
 
   async function addCharacterToken (id, transform) {
@@ -99,30 +117,32 @@
     scene.addChild(token)
 
     // selected circle
-    const selectedCircle = new Graphics().circle(portrait.x, portrait.y, tokenRadius + 2).stroke({ width: 3, color: 0xffffff })
+    const selectedCircle = new Graphics().circle(portrait.x, portrait.y, tokenRadius + 1).stroke({ width: 3, color: 0xffffff })
     selectedCircle.pivot.y = -tokenRadius
     selectedCircle.visible = false
     token.selectedCircle = selectedCircle
     token.addChild(selectedCircle)
 
     // add name
-    const name = new Text({ text: characterData.name, style: { fontSize: 14, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
-    name.anchor.set(0.5, 0.5)
+    const name = new Text({ text: characterData.name, style: { fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
+    name.anchor.set(0.5, 0.7)
     name.y = tokenDiameter
     token.addChild(name)
 
     // add interaction
     token.eventMode = 'static'
     token.cursor = 'pointer'
-    token.on('pointerdown', onTokenDown, token)
+    token.on('pointerdown', onTokenPointerDown, token)
+    if (optimized) { app.renderer.render(app.stage) }
   }
 
   function addTokenButtons () {
     tokenButtons = new Container()
+    tokenButtons.label = 'tokenButtons'
     app.stage.addChild(tokenButtons)
 
-    // remove token button
-    const close = Sprite.from('/maps/button-close.png')
+    // button: remove token
+    const close = Sprite.from('close')
     close.anchor.set(0.5, 0.5)
     close.eventMode = 'static'
     close.buttonMode = true
@@ -139,39 +159,40 @@
     scene.removeChild(token)
     removeCharacter(token.character)
     tokenButtons.visible = false
+    if (optimized) { app.renderer.render(app.stage) }
   }
 
   // interactions
 
-  function onTokenDown (event) {
+  function onTokenPointerDown (event) {
+    if (optimized) { app.ticker.start() }
+    event.stopPropagation()
     event.data.originalEvent.preventDefault()
     if (selectedToken) { selectedToken.selectedCircle.visible = false } // deselect previous token
     dragTarget = this
     dragTarget.alpha = 0.5
     dragTarget.data = event.data
-    dragTarget.start = { x: event.data.global.x, y: event.data.global.y }
+    dragTarget.start = { x: dragTarget.x, y: dragTarget.y }
+    dragTarget.startGlobal = { x: event.data.global.x, y: event.data.global.y }
     app.stage.on('pointermove', onDragMove)
   }
 
   function onDragMove (event) {
     if (dragTarget) { dragTarget.parent.toLocal(event.global, null, dragTarget.position) }
+    drawProposition(dragTarget.start.x, dragTarget.start.y, dragTarget.x, dragTarget.y)
   }
 
   function onDragEnd (event) {
+    if (optimized) { setTimeout(() => { app.ticker.stop() }, 100) }
     if (dragTarget) {
       app.stage.off('pointermove', onDragMove)
       dragTarget.alpha = 1
-      const moveX = Math.abs(dragTarget.start.x - event.data.global.x)
-      const moveY = Math.abs(dragTarget.start.y - event.data.global.y)
+      const moveX = Math.abs(dragTarget.startGlobal.x - event.data.global.x)
+      const moveY = Math.abs(dragTarget.startGlobal.y - event.data.global.y)
 
       if (moveX <= 2 && moveY <= 2) { // token clicked
-        console.log('token clicked')
-        selectedToken = dragTarget
-        dragTarget.selectedCircle.visible = true
-        tokenButtons.visible = true
-        tokenButtons.position.set(dragTarget.x, dragTarget.y - tokenDiameter)
+        selectToken(dragTarget)
       } else { // drag ended
-        console.log('drag ended')
         if (isStoryteller) {
           savePosition(dragTarget.character, dragTarget.x, dragTarget.y)
         } else {
@@ -182,14 +203,31 @@
     }
   }
 
-  function deselect (event) {
+  function drawProposition (fromX, fromY, toX, toY) {
+    currentProposition.clear()
+    currentProposition.moveTo(fromX, fromY)
+    currentProposition.lineTo(toX, toY)
+    currentProposition.stroke({ width: 4, color: 0xffffff })
+  }
+
+  function selectToken (token) {
+    if (selectedToken) { selectedToken.selectedCircle.visible = false }
+    selectedToken = token
+    token.selectedCircle.visible = true
+    tokenButtons.visible = true
+    const { x, y } = token.getGlobalPosition()
+    tokenButtons.position.set(x, y - tokenDiameter)
+    if (optimized) { app.renderer.render(app.stage) }
+  }
+
+  function deselectAll (event) {
     event.data.originalEvent.preventDefault()
-    console.log('deselect')
-    if (dragTarget) {
-      dragTarget.selectedCircle = false
-      dragTarget = null
+    if (selectedToken) {
+      selectedToken.selectedCircle.visible = false
+      selectedToken = null
     }
     tokenButtons.visible = false
+    if (optimized) { app.renderer.render(app.stage) }
   }
 
   // database operations
@@ -230,6 +268,7 @@
 </script>
 
 <div class='wrapper' bind:this={mapWrapperEl}>
+  <!--{#if app && app.renderer}<div id='fps'>{optimized ? fps : 0} fps</div>{/if}-->
   <div id='map' bind:this={mapEl}></div>
 </div>
 <div id='tools'>
@@ -266,6 +305,14 @@
     position: relative;
     height: 600px;
   }
+    /*
+    #fps {
+      position: absolute;
+      top: -40px;
+      right: 0px;
+      text-align: right;
+    }
+    */
     #map {
       position: absolute;
       left: 0;
@@ -300,8 +347,8 @@
         background-color: var(--color);
       }
       .name {
-        margin-top: -10px;
-        font-size: 14px;
+        margin-top: -15px;
+        font-size: 15px;
         color: white;
         -webkit-text-stroke: 3px black;
         paint-order: stroke fill;
