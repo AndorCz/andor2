@@ -8,12 +8,12 @@
   export let game
   export let isStoryteller
 
-  game.maps.forEach(map => {
+  game.maps?.forEach(map => {
     map.isActive = map.id === game.active_map?.id
     map.isOpen = map.isActive
   })
 
-  game.characters.forEach(character => {
+  game.characters?.forEach(character => {
     character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
     character.color = stringToColor(character.name)
   })
