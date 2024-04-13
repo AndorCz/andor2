@@ -42,7 +42,7 @@
       {#each pages as item}
         {#if !item.hidden || isStoryteller}
           <li class:active={item.id === activePage?.id}>
-            <button on:click={() => { activatePage(item) }} class='name plain'>
+            <button on:click={() => { activatePage(item) }} class='name plain' class:hidden={item.hidden}>
               {#if item.hidden}<span class='material square' title='Hráčům skryté' use:tooltip>visibility_off</span>{/if}
               <span>{item.name}</span>
             </button>
@@ -97,6 +97,9 @@
       .add {
         padding: 20px;
         text-align: center;
+      }
+      .hidden {
+        color: var(--dim);
       }
 
   @media (max-width: 700px) {
