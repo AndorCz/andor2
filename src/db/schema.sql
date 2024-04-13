@@ -8,13 +8,14 @@ drop table if exists messages cascade;
 drop table if exists boards cascade;
 drop table if exists bookmarks cascade;
 drop table if exists user_reads cascade;
+drop table if exists maps cascade;
 
 drop type if exists character_state;
 drop type if exists game_system;
 drop type if exists game_category;
-drop type if exists work_type;
-drop type if exists work_tag;
-drop type if exists work_category;
+drop type if exists work_type cascade;
+drop type if exists work_tag cascade;
+drop type if exists work_category cascade;
 
 drop view if exists posts_owner;
 drop view if exists board_list;
@@ -77,7 +78,7 @@ create table games (
   characters_changed_at timestamp with time zone default current_timestamp,
   constraint games_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint games_discussion_thread_fkey foreign key (discussion_thread) references threads(id),
-  constraint games_game_thread_fkey foreign key (game_thread) references threads (id),
+  constraint games_game_thread_fkey foreign key (game_thread) references threads (id)
 );
 
 create table codex_sections (
@@ -771,6 +772,7 @@ SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);
 
 
 -- SEED (run as a user session, or replace auth.uid() with a user id)
+-- Disable the trigger "add_default_bookmarks" to create a user manually in the profiles table.
 
 insert into threads (name) values ('Chat'); -- has to be ID 1
 insert into public.boards (name, owner) values ('Nápověda', auth.uid())
