@@ -20,6 +20,7 @@
   export let disableEmpty = false
   export let maxlength = null
   export let loading = false
+  export let singleLine = false
 
   let isEmpty = value === ''
   let editorRef
@@ -39,7 +40,12 @@
   function setHeight (node) { // textarea only
     const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
-    textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
+    if (singleLine) {
+      textareaRef.style.height = '60px'
+      console.log(textareaRef.scrollHeight)
+    } else {
+      textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
+    }
   }
 
   async function cancelEdit () {
@@ -103,7 +109,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class='wrapper'>
+<div class='wrapper' class:singleLine>
   {#if allowHtml}
     <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} />
   {:else}
@@ -138,6 +144,10 @@
       min-height: 110px;
       display: block;
     }
+    .singleLine textarea {
+      min-height: 30px !important;
+      overflow: hidden;
+    }
     .withButton {
       padding-right: 80px;
     }
@@ -156,6 +166,18 @@
         top: 0px;
         border-radius: 0px 10px 0px 10px;
       }
+      .singleLine .save, .singleLine .cancel {
+        right: 5px;
+        bottom: 5px;
+        background: none;
+        border: none;
+        border-radius: 10px;
+        box-shadow: none;
+      }
+        .singleLine .cancel {
+          top: unset;
+          right: 50px;
+        }
     .counter {
       position: absolute;
       right: 15px;
