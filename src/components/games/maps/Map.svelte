@@ -62,7 +62,7 @@
     addButtons()
 
     // add character tokens
-    game.characters.forEach(character => { if (!map.characters[character.id]) { availableCharacters.push(character) } })
+    game.characters.forEach(character => { if (!character.storyteller && character.accepted && !map.characters[character.id]) { availableCharacters.push(character) } })
     for (const id of Object.keys(map.characters)) {
       await addCharacter(id, map.characters[id])
     }
@@ -100,9 +100,9 @@
 
   function resize () {
     if (!mapEl) return
-    const scale = Math.min(mapEl.offsetWidth / mapTexture.width, 1)
-    scaledWidth = mapTexture.width * scale
-    scaledHeight = mapTexture.height * scale
+    const scale = Math.min((mapEl.offsetWidth / window.devicePixelRatio) / mapTexture.width, 1)
+    scaledWidth = mapTexture.width * scale * window.devicePixelRatio
+    scaledHeight = mapTexture.height * scale * window.devicePixelRatio
     // scene.scale.set(scale, scale) // not needed?
     scene.width = scaledWidth
     scene.height = scaledHeight
@@ -248,6 +248,8 @@
         color: white;
         -webkit-text-stroke: 3px black;
         paint-order: stroke fill;
+        width: 60px;
+        line-height: 80%;
       }
 
   .options {

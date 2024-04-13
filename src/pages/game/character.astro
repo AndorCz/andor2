@@ -9,13 +9,13 @@
   let isStoryteller = false
 
   if (id) {
-    const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
+    const { data: charData, error: charError } = await supabase.from('characters').select('id, game(id, name), player, portrait, name, bio, appearance, storyteller, storyteller, open, accepted').eq('id', id).single()
     if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení postavy: ' + charError.message)}`) }
     character = charData
 
     if (user.id) {
       if (charData.game) {
-        const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: charData.game }).single()
+        const { data: storytellerData, error: storytellerError } = await supabase.rpc('is_storyteller', { game_id: charData.game.id }).single()
         if (storytellerError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení vypravěče: ' + storytellerError.message)}`) }
         isStoryteller = storytellerData
       }
@@ -26,6 +26,10 @@
 ---
 
 <Layout title={character.name}>
-  <a href='javascript:history.back()'>zpět</a>
+  {character.game ? (
+    <a href={`/game/${character.game.id}`}>{character.game.name}</a>
+  ) : (
+    <a href='javascript:history.back()'>zpět</a>
+  )}
   <CharacterProfile {character} {isStoryteller} {user} client:only />
 </Layout>

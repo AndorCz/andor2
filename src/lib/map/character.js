@@ -43,7 +43,7 @@ export class Character {
     this.token.addChild(selectedCircle)
 
     // add name
-    const name = new Text({ text: this.characterData.name, style: { fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
+    const name = new Text({ text: this.characterData.name, style: { lineHeight: 15, wordWrap: true, wordWrapWidth: 80, align: 'center', fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
     name.anchor.set(0.5, 0.7)
     name.y = this.tokenDiameter
     this.token.addChild(name)
