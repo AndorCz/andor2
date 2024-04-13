@@ -3,9 +3,9 @@ import { showSuccess } from '@lib/toasts'
 
 // database operations for map
 
-export async function savePosition (map, character, x, y) {
-  const newPositions = { ...map.characters, [character.id]: { x, y } }
-  const { error } = await supabase.from('maps').update({ characters: newPositions }).eq('id', map.id)
+export async function saveTransfrom (map, character, x, y, scale = 1) {
+  const newTransforms = { ...map.characters, [character.id]: { x, y, scale } }
+  const { error } = await supabase.from('maps').update({ characters: newTransforms }).eq('id', map.id)
   if (error) { handleError(error) }
 }
 

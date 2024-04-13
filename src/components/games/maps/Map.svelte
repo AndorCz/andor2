@@ -3,7 +3,7 @@
   import { getImageUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
   import { Application, Container, Sprite, Assets, Graphics, Texture } from 'pixi.js'
-  import { clearCharacter, toggleActive, updateMapDescription, savePosition, saveProposition, clearProposition } from '@lib/map/db'
+  import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom, saveProposition, clearProposition } from '@lib/map/db'
   import { Character } from '@lib/map/character'
   import { Buttons } from '@lib/map/buttons'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -87,7 +87,7 @@
         app.dragging.select()
       } else { // drag ended
         if (isStoryteller) {
-          savePosition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
+          saveTransfrom(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y, app.dragging.token.transform.scale)
         } else {
           saveProposition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
           app.dragging.token.x = app.dragging.token.start.x
@@ -134,8 +134,8 @@
   }
 
   async function addButtons () {
-    await Assets.load(['/maps/button-done.png', '/maps/button-close.png'])
-    app.tokenButtons = new Buttons({ app, removeCharacter, removeProposition })
+    await Assets.load(['/maps/button-done.png', '/maps/button-close.png', '/maps/button-plus.png', '/maps/button-minus.png'])
+    app.buttons = new Buttons({ app, removeCharacter, removeProposition, tokenDiameter, changeTokenScale, changeAllTokenScale })
   }
 
   function removeCharacter (token) {
@@ -144,7 +144,7 @@
     clearCharacter(map, token.character.characterData)
     removeProposition(token)
     renderPropositions()
-    app.tokenButtons.view.visible = false
+    app.buttons.contextual.visible = false
     if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 
@@ -161,8 +161,25 @@
       app.selectedToken.selectedCircle.visible = false
       app.selectedToken = null
     }
-    app.tokenButtons.view.visible = false
+    app.buttons.contextual.visible = false
     if (!app.ticker.started) { app.renderer.render(app.stage) }
+  }
+
+  function changeTokenScale (token, delta) {
+    token.transform.scale += delta
+    if (token.transform.scale < 0.1) { return }
+    token.scale.x = token.scaleBackup.x * token.transform.scale
+    token.scale.y = token.scaleBackup.y * token.transform.scale
+    saveTransfrom(map, token.character.characterData, token.x, token.y, token.transform.scale)
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
+  }
+
+  function changeAllTokenScale (delta) {
+    scene.children.forEach(child => {
+      if (child.label === 'character') {
+        changeTokenScale(child, delta)
+      }
+    })
   }
 </script>
 

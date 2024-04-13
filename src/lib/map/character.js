@@ -30,6 +30,10 @@ export class Character {
     this.token.addChild(mask)
     this.token.addChild(portrait)
     this.token.filters = [new DropShadowFilter()]
+    this.token.transform = this.transform
+    this.token.scaleBackup = { x: this.token.scale.x, y: this.token.scale.y } // save scale
+    this.token.scale.x = this.token.scale.x * (this.transform.scale || 1)
+    this.token.scale.y = this.token.scale.y * (this.transform.scale || 1)
     this.token.x = this.transform.x
     this.token.y = this.transform.y
     this.token.hitArea = new Circle(portrait.x, portrait.y + tokenRadius, tokenRadius)
@@ -52,6 +56,8 @@ export class Character {
     this.token.eventMode = 'static'
     this.token.cursor = 'pointer'
     this.token.on('pointerdown', this.onTokenPointerDown, this.token)
+    this.token.on('pointerover', this.hover)
+    this.token.on('pointerout', this.clear)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
@@ -83,9 +89,9 @@ export class Character {
     this.token.selectedCircle.visible = true
     if (app.isStoryteller) {
       const { x, y } = this.token.getGlobalPosition()
-      this.app.tokenButtons.view.visible = true
-      this.app.tokenButtons.done.visible = !!this.map.propositions[this.characterData.id]
-      this.app.tokenButtons.view.position.set(x, y - this.tokenDiameter)
+      this.app.buttons.contextual.visible = true
+      this.app.buttons.done.visible = !!this.map.propositions[this.characterData.id]
+      this.app.buttons.contextual.position.set(x, y - this.tokenDiameter)
       if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
     }
   }
@@ -95,5 +101,17 @@ export class Character {
     this.app.currentProposition.moveTo(fromX, fromY)
     this.app.currentProposition.lineTo(toX, toY)
     this.app.currentProposition.stroke({ width: 4, color: 0xffffff })
+  }
+
+  hover () { // 'this' is token
+    this.scale.x += 0.1
+    this.scale.y += 0.1
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
+  }
+
+  clear () {
+    this.scale.x -= 0.1
+    this.scale.y -= 0.1
+    if (!app.ticker.started) { app.renderer.render(app.stage) }
   }
 }
