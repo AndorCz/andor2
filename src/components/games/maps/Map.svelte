@@ -6,6 +6,7 @@
   import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom, saveProposition, clearProposition } from '@lib/map/db'
   import { Character } from '@lib/map/character'
   import { Buttons } from '@lib/map/buttons'
+  // import { FoW } from '@lib/map/fow'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
@@ -49,14 +50,17 @@
     scene.label = 'scene'
     app.stage.addChild(scene)
     scene.addChild(mapSprite)
+    resize()
 
     // draw propositions
     app.propositions = new Graphics({ label: 'propositionLines' })
     app.currentProposition = new Graphics({ label: 'currentProposition' })
     scene.addChild(app.propositions)
     scene.addChild(app.currentProposition)
-
     renderPropositions()
+
+    // fog of war
+    // app.fow = new FoW({ map, scene, app })
 
     // token buttons
     addButtons()
@@ -67,7 +71,6 @@
       await addCharacter(id, map.characters[id])
     }
 
-    resize()
     window.addEventListener('resize', resize)
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
     if (!app.ticker.started) { app.renderer.render(app.stage) }
@@ -76,7 +79,7 @@
   onDestroy(() => { window.removeEventListener('resize', resize) })
 
   function onDragEnd (event) {
-    if (!app.ticker.started) { setTimeout(() => { app.ticker.stop() }, 100) }
+    setTimeout(() => { app.ticker.stop() }, 100)
     if (app.dragging) {
       app.stage.off('pointermove', this.onDragMove)
       app.dragging.token.alpha = 1
@@ -103,7 +106,7 @@
     const scale = Math.min((mapEl.offsetWidth / window.devicePixelRatio) / mapTexture.width, 1)
     scaledWidth = mapTexture.width * scale * window.devicePixelRatio
     scaledHeight = mapTexture.height * scale * window.devicePixelRatio
-    // scene.scale.set(scale, scale) // not needed?
+    // scene.scale.set(scale, scale) // not needed
     scene.width = scaledWidth
     scene.height = scaledHeight
     app.renderer.resize(scaledWidth, scaledHeight)
@@ -190,19 +193,21 @@
 
 {#if isStoryteller}
   <div id='tools'>
-    <h3>Přidat postavu</h3>
-    <div class='characters'>
-      {#each availableCharacters as character}
-        <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
-          {#if character.portraitUrl}
-            <img class='portrait' src={character.portraitUrl} alt={character.name} />
-          {:else}
-            <span class='empty'></span>
-          {/if}
-          <span class='name'>{character.name}</span>
-        </button>
-      {/each}
-    </div>
+    {#if availableCharacters.length}
+      <h3>Přidat postavu</h3>
+      <div class='characters'>
+        {#each availableCharacters as character}
+          <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
+            {#if character.portraitUrl}
+              <img class='portrait' src={character.portraitUrl} alt={character.name} />
+            {:else}
+              <span class='empty'></span>
+            {/if}
+            <span class='name'>{character.name}</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
   </div>
 {/if}
 

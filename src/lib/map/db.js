@@ -3,8 +3,8 @@ import { showSuccess } from '@lib/toasts'
 
 // database operations for map
 
-export async function saveTransfrom (map, character, x, y, scale = 1) {
-  const newTransforms = { ...map.characters, [character.id]: { x, y, scale } }
+export async function saveTransfrom (map, character, x, y, scale) {
+  const newTransforms = { ...map.characters, [character.id]: { x, y, scale: scale || 1 } }
   const { error } = await supabase.from('maps').update({ characters: newTransforms }).eq('id', map.id)
   if (error) { handleError(error) }
 }

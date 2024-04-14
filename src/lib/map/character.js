@@ -65,7 +65,7 @@ export class Character {
     event.stopPropagation()
     event.data.originalEvent.preventDefault()
     if (app.user.id === this.character.characterData.player.id || app.isStoryteller) {
-      if (!app.ticker.started) { app.ticker.start() }
+      app.ticker.start()
       app.dragging = this.character
       if (app.selectedToken) { app.selectedToken.selectedCircle.visible = false } // deselect previous token
       this.alpha = 0.5
