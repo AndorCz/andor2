@@ -41,6 +41,7 @@ export class FoW {
       setTimeout(() => { app.ticker.stop() }, 100)
     })
     this.fogSprite.on('pointerdown', (event) => {
+      if (event.button !== 0) { return } // only left click
       drawing = true
       app.ticker.start()
       this.drawLight(event.global)

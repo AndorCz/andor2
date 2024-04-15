@@ -114,6 +114,8 @@ create table maps (
   image text not null,
   description text,
   hidden boolean null,
+  fow boolean not null default false,
+  fow_image text null,
   characters json not null default '{}',
   propositions json not null default '{}',
   created_at timestamp with time zone default current_timestamp,

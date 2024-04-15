@@ -1,5 +1,6 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { onMount } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray, stringToColor } from '@lib/utils'
   import Map from '@components/games/maps/Map.svelte'
@@ -8,14 +9,16 @@
   export let game
   export let isStoryteller
 
-  game.maps?.forEach(map => {
-    map.isActive = map.id === game.active_map?.id
-    map.isOpen = map.isActive
-  })
+  onMount(() => {
+    game.maps?.forEach(map => {
+      map.isActive = map.id === game.active_map?.id
+      map.isOpen = map.isActive
+    })
 
-  game.characters?.forEach(character => {
-    character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
-    character.color = stringToColor(character.name)
+    game.characters?.forEach(character => {
+      character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
+      character.color = stringToColor(character.name)
+    })
   })
 
   async function deleteMap (mapId) {

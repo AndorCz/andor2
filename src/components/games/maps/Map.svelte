@@ -16,6 +16,7 @@
 
   let mapEl, mapWrapperEl, vtt
   let availableCharacters = []
+  let tool = 'select'
   // let fps = 0
   const tokenDiameter = 50
 
@@ -78,6 +79,21 @@
 </script>
 
 <div class='wrapper' bind:this={mapWrapperEl}>
+  {#if vtt}
+    <div class='fow'>
+      {#key vtt.fogEnabled}
+        {#if vtt.fogEnabled}
+          <button type='button' on:click={() => { tool = 'select' }} class:active={tool === 'select'} class='material square' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
+          <button type='button' on:click={() => { tool = 'paintLight' }} class:active={tool === 'paintLight'} class='material square' title='Kreslit světlo' use:tooltip>light_mode</button>
+          <button type='button' on:click={() => { tool = 'paintDark' }} class:active={tool === 'paintDark'} class='material square' title='Kreslit tmu' use:tooltip>mode_night</button>
+
+          <button type='button' on:click={() => { vtt.fogEnabled = false; vtt.clearFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
+        {:else}
+          <button type='button' on:click={() => { vtt.fogEnabled = true; vtt.addFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
+        {/if}
+      {/key}
+    </div>
+  {/if}
   <!--{#if app && app.renderer}<div id='fps'>{optimized ? fps : 0} fps</div>{/if}-->
   <div id='map' bind:this={mapEl}></div>
 </div>
@@ -131,6 +147,13 @@
       display: flex;
       justify-content: center;
     }
+
+  .fow {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+  }
 
   .characters {
     display: flex;

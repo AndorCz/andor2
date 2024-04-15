@@ -2,7 +2,7 @@ import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
 import { saveTransfrom, saveProposition, clearProposition } from '@lib/map/db'
 import { getImageUrl } from '@lib/database'
 import { Buttons } from '@lib/map/buttons'
-// import { FoW } from '@lib/map/fow'
+import { FoW } from '@lib/map/fow'
 
 export class Vtt {
   constructor (options) {
@@ -47,7 +47,7 @@ export class Vtt {
     this.renderPropositions()
 
     // fog of war
-    // this.app.fow = new FoW({ this.map, this.scene, this.app })
+    // this.app.fow = new FoW({ map: this.map, scene: this.scene, app: this.app })
 
     // token buttons
     if (this.isStoryteller) {
@@ -94,7 +94,7 @@ export class Vtt {
     }
   }
 
-  resize (mapEl) {
+  resize () {
     if (!this.mapEl) return
     const scale = Math.min((this.mapEl.offsetWidth / window.devicePixelRatio) / this.mapTexture.width, 1)
     this.scaledWidth = this.mapTexture.width * scale * window.devicePixelRatio
@@ -128,12 +128,13 @@ export class Vtt {
   }
 
   deselectAll (event) {
+    if (event.button !== 0) { return } // only left click
     event.data.originalEvent.preventDefault()
     if (this.app.selectedToken) {
       this.app.selectedToken.selectedCircle.visible = false
       this.app.selectedToken = null
     }
-    this.app.buttons.contextual.visible = false
+    if (this.app.buttons) { this.app.buttons.contextual.visible = false }
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
@@ -152,5 +153,13 @@ export class Vtt {
         this.changeTokenScale(child, delta)
       }
     })
+  }
+
+  addFog () {
+    this.fogEnabled = true
+  }
+
+  clearFog () {
+    this.fogEnabled = false
   }
 }
