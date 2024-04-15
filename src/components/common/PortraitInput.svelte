@@ -2,6 +2,7 @@
   import { showError } from '@lib/toasts'
   import { resizePortrait } from '@lib/utils'
   import { supabase, handleError, getPortraitUrl, getHash } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
 
   export let table
   export let identity = { portrait: null }
@@ -67,7 +68,7 @@
 </script>
 
 <div class='wrapper' style={`--portrait-width: ${displayWidth}px; --portrait-height: ${displayHeight}px`}>
-  <label>
+  <label title='Nahrát portrét' use:tooltip>
     {#if newPortraitBase64}
       <img src={newPortraitBase64} class='portrait' alt='portrét' />
     {:else if identity.portrait}
@@ -78,7 +79,7 @@
     <input type='file' accept='image/*' bind:this={fileInputEl} bind:files on:change={processPortrait} disabled={uploading} />
   </label>
   {#if identity.portrait}
-    <button class='clear material clean' on:click={clearPortrait} title='smazat'>close</button>
+    <button class='clear material clean' on:click={clearPortrait} title='Smazat' use:tooltip>close</button>
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
 </div>

@@ -1,4 +1,4 @@
-import { Circle, Text, Sprite, Graphics } from 'pixi.js'
+import { Circle, Text, Sprite, Graphics, Assets, Texture } from 'pixi.js'
 import { MaskContainer } from '@lib/pixi'
 import { DropShadowFilter } from 'pixi-filters'
 
@@ -10,9 +10,13 @@ export class Character {
   constructor (options) {
     Object.assign(this, options)
     app = options.app
+  }
 
-    this.texture.source.resolution = 2
-    const portrait = new Sprite(this.texture)
+  async init () {
+    // const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
+    this.portraitTexture = this.characterData.portraitUrl ? await Assets.load(this.characterData.portraitUrl) : Texture.WHITE
+    // this.portraitTexture.source.resolution = window.devicePixelRatio
+    const portrait = Sprite.from(this.portraitTexture)
     if (!this.characterData.portraitUrl) { portrait.tint = this.characterData.color }
     const scale = Math.max(this.tokenDiameter / portrait.width, this.tokenDiameter / portrait.height)
     portrait.scale.set(scale)

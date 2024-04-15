@@ -1,7 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { Assets, Texture } from 'pixi.js'
   import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom } from '@lib/map/db'
   import { Vtt } from '@lib/map/vtt'
   import { Character } from '@lib/map/character'
@@ -39,8 +38,8 @@
   async function renderCharacter (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
-    const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
-    const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, texture, tokenDiameter })
+    const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, tokenDiameter })
+    await character.init()
     vtt.scene.addChild(character.token)
     if (!vtt.app.ticker.started) { vtt.app.renderer.render(vtt.app.stage) }
   }

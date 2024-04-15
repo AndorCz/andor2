@@ -2,6 +2,7 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import { supabase, uploadPortrait } from '@lib/database'
   import { activeConversation } from '@lib/stores'
+  import { tooltip } from '@lib/tooltip'
 
   export let user = {}
 
@@ -25,8 +26,8 @@
       <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>
     </div>
     <div id='buttons'>
-      <a href='/settings' id='settings' class='button material' title='nastavení'>settings</a>
-      <button on:click={logout} id='logout' class='material' title='odhlásit'>logout</button>
+      <a href='/settings' id='settings' class='button material' title='Nastavení' use:tooltip>settings</a>
+      <button on:click={logout} id='logout' class='material' title='Odhlásit' use:tooltip>logout</button>
     </div>
   </div>
 </div>
