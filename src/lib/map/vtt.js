@@ -60,7 +60,7 @@ export class Vtt {
       await this.renderCharacter(id, this.map.characters[id])
     }
 
-    window.addEventListener('resize', this.resize)
+    window.addEventListener('resize', () => { this.resize() })
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
 
@@ -94,7 +94,7 @@ export class Vtt {
     }
   }
 
-  resize () {
+  resize (mapEl) {
     if (!this.mapEl) return
     const scale = Math.min((this.mapEl.offsetWidth / window.devicePixelRatio) / this.mapTexture.width, 1)
     this.scaledWidth = this.mapTexture.width * scale * window.devicePixelRatio

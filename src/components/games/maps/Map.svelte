@@ -23,9 +23,6 @@
     mapEl.addEventListener('dragover', (event) => event.preventDefault())
     mapEl.addEventListener('drop', handleDrop)
 
-    console.log('map.characters', map.characters)
-    console.log('print map.characters names from game.characters', game.characters.filter(c => map.characters[c.id]).map(c => c.name))
-    console.log('availableCharacters', game.characters)
     game.characters.forEach(character => {
       if (!character.storyteller && character.accepted && !map.characters[character.id]) {
         availableCharacters.push(character)
@@ -41,7 +38,6 @@
   async function renderCharacter (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
-    console.log('adding character:', id, characterData.name)
     const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
     const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, texture, tokenDiameter })
     vtt.scene.addChild(character.token)
