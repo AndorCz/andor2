@@ -6,11 +6,11 @@
 
   const { supabase, user } = Astro.locals
   const id = Astro.url.searchParams.get('id') || ''
+  let gameId = Astro.url.searchParams.get('game')
 
   let character:any = {}
   let isGameOwner = false
   let isStoryteller = false
-  let gameId
 
   if (id) { // edit
     const { data: charData, error: charError } = await supabase.from('characters').select('*').eq('id', id).single()
@@ -58,7 +58,11 @@
       }
 
       const confirmationText = id ? 'Postava byla upravena' : 'Postava byla vytvořena'
-      return Astro.redirect('/game/character?id=' + character.id + '&toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      if (gameId) {
+        return Astro.redirect('/game/' + gameId + '/?tab=chars&toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      } else {
+        return Astro.redirect('/game/character?id=' + character.id + '&toastType=success&toastText=' + encodeURIComponent(confirmationText))
+      }
     } catch (error) {
       return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`)
     }

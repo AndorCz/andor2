@@ -1,12 +1,11 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { getImageUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
-  import { Application, Container, Sprite, Assets, Graphics, Texture } from 'pixi.js'
-  import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom, saveProposition, clearProposition } from '@lib/map/db'
+  import { Assets, Texture } from 'pixi.js'
+  import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom } from '@lib/map/db'
+  import { Vtt } from '@lib/map/vtt'
   import { Character } from '@lib/map/character'
-  import { Buttons } from '@lib/map/buttons'
-  // import { FoW } from '@lib/map/fow'
+  import { getCanvasCoordinates } from '@lib/map/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
@@ -15,174 +14,70 @@
   export let onDeleteMap
   export let isStoryteller = false
 
-  let mapUrl = ''
-  let mapEl, mapWrapperEl, scaledWidth, scaledHeight
-  let app, scene, mapSprite, mapTexture
+  let mapEl, mapWrapperEl, vtt
   let availableCharacters = []
   // let fps = 0
   const tokenDiameter = 50
 
   onMount(async () => {
-    app = new Application()
-    app.user = user
-    app.isStoryteller = isStoryteller
+    mapEl.addEventListener('dragover', (event) => event.preventDefault())
+    mapEl.addEventListener('drop', handleDrop)
 
-    // to render every frame, set autoStart to true. other options: { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
-    await app.init({ autoStart: false, resolution: window.devicePixelRatio, autoDensity: true, antialias: true })
-    // globalThis.__PIXI_APP__ = app // for chrome plugin
+    console.log('map.characters', map.characters)
+    console.log('print map.characters names from game.characters', game.characters.filter(c => map.characters[c.id]).map(c => c.name))
+    console.log('availableCharacters', game.characters)
+    game.characters.forEach(character => {
+      if (!character.storyteller && character.accepted && !map.characters[character.id]) {
+        availableCharacters.push(character)
+      }
+    })
 
-    // add map background image
-    mapEl.appendChild(app.canvas)
-    mapUrl = getImageUrl(`${game.id}/${map.id}?${map.image}`, 'maps')
-    mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
-    mapSprite = new Sprite(mapTexture)
-    mapSprite.eventMode = 'none'
-    mapSprite.label = 'map'
-
-    app.stage.eventMode = 'static'
-    app.stage.hitArea = app.screen
-    app.stage
-      .on('pointerup', onDragEnd)
-      .on('pointerupoutside', onDragEnd)
-      .on('pointerdown', deselectAll)
-
-    scene = new Container({ x: 0, y: 0, width: app.screen.width, height: app.screen.height })
-    scene.label = 'scene'
-    app.stage.addChild(scene)
-    scene.addChild(mapSprite)
-    resize()
-
-    // draw propositions
-    app.propositions = new Graphics({ label: 'propositionLines' })
-    app.currentProposition = new Graphics({ label: 'currentProposition' })
-    scene.addChild(app.propositions)
-    scene.addChild(app.currentProposition)
-    renderPropositions()
-
-    // fog of war
-    // app.fow = new FoW({ map, scene, app })
-
-    // token buttons
-    addButtons()
-
-    // add character tokens
-    game.characters.forEach(character => { if (!character.storyteller && character.accepted && !map.characters[character.id]) { availableCharacters.push(character) } })
-    for (const id of Object.keys(map.characters)) {
-      await addCharacter(id, map.characters[id])
-    }
-
-    window.addEventListener('resize', resize)
-    // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
+    vtt = new Vtt({ map, game, user, isStoryteller, mapEl, mapWrapperEl, renderCharacter, removeCharacter, tokenDiameter })
+    await vtt.init()
   })
 
-  onDestroy(() => { window.removeEventListener('resize', resize) })
+  onDestroy(() => { vtt.destroy() })
 
-  function onDragEnd (event) {
-    setTimeout(() => { app.ticker.stop() }, 100)
-    if (app.dragging) {
-      app.stage.off('pointermove', this.onDragMove)
-      app.dragging.token.alpha = 1
-      const moveX = Math.abs(app.dragging.token.startGlobal.x - event.data.global.x)
-      const moveY = Math.abs(app.dragging.token.startGlobal.y - event.data.global.y)
-
-      if (moveX <= 2 && moveY <= 2) { // token clicked
-        app.dragging.select()
-      } else { // drag ended
-        if (isStoryteller) {
-          saveTransfrom(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y, app.dragging.token.transform.scale)
-        } else {
-          saveProposition(map, app.dragging.characterData, app.dragging.token.x, app.dragging.token.y)
-          app.dragging.token.x = app.dragging.token.start.x
-          app.dragging.token.y = app.dragging.token.start.y
-        }
-      }
-      delete app.dragging
-    }
-  }
-
-  function resize () {
-    if (!mapEl) return
-    const scale = Math.min((mapEl.offsetWidth / window.devicePixelRatio) / mapTexture.width, 1)
-    scaledWidth = mapTexture.width * scale * window.devicePixelRatio
-    scaledHeight = mapTexture.height * scale * window.devicePixelRatio
-    // scene.scale.set(scale, scale) // not needed
-    scene.width = scaledWidth
-    scene.height = scaledHeight
-    app.renderer.resize(scaledWidth, scaledHeight)
-    mapWrapperEl.style.height = `${scaledHeight}px`
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
-  }
-
-  function renderPropositions () {
-    app.propositions.clear()
-    for (const id of Object.keys(map.propositions)) {
-      const proposition = map.propositions[id]
-      const from = map.characters[id]
-      if (from) {
-        app.propositions.moveTo(from.x, from.y)
-        app.propositions.lineTo(proposition.x, proposition.y)
-        app.propositions.stroke({ width: 4, color: 0xffffff })
-      }
-    }
-  }
-
-  async function addCharacter (id, transform) {
+  async function renderCharacter (id, transform) {
     availableCharacters = availableCharacters.filter(c => c.id !== id)
     const characterData = game.characters.find(c => c.id === id)
+    console.log('adding character:', id, characterData.name)
     const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
-    const character = new Character({ app, map, scene, transform, characterData, texture, tokenDiameter })
-    scene.addChild(character.token)
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
-  }
-
-  async function addButtons () {
-    await Assets.load(['/maps/button-done.png', '/maps/button-close.png', '/maps/button-plus.png', '/maps/button-minus.png'])
-    app.buttons = new Buttons({ app, removeCharacter, removeProposition, tokenDiameter, changeTokenScale, changeAllTokenScale })
+    const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, texture, tokenDiameter })
+    vtt.scene.addChild(character.token)
+    if (!vtt.app.ticker.started) { vtt.app.renderer.render(vtt.app.stage) }
   }
 
   function removeCharacter (token) {
     availableCharacters = [...availableCharacters, token.character.characterData]
-    scene.removeChild(token)
+    vtt.scene.removeChild(token)
     clearCharacter(map, token.character.characterData)
-    removeProposition(token)
-    renderPropositions()
-    app.buttons.contextual.visible = false
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
+    vtt.removeProposition(token)
+    vtt.renderPropositions()
+    vtt.app.buttons.contextual.visible = false
+    if (!vtt.app.ticker.started) { vtt.app.renderer.render(vtt.app.stage) }
   }
 
-  function removeProposition (token) {
-    delete map.propositions[token.character.characterData.id]
-    clearProposition(map, token.character.characterData.id)
-    renderPropositions()
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
-  }
+  function handleDragStart (event, character) {
+    const target = event.currentTarget
+    if (event.dataTransfer.setDragImage) { event.dataTransfer.setDragImage(target, target.offsetWidth / 2, target.offsetHeight / 2) }
 
-  function deselectAll (event) {
-    event.data.originalEvent.preventDefault()
-    if (app.selectedToken) {
-      app.selectedToken.selectedCircle.visible = false
-      app.selectedToken = null
-    }
-    app.buttons.contextual.visible = false
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
-  }
-
-  function changeTokenScale (token, delta) {
-    token.transform.scale += delta
-    if (token.transform.scale < 0.1) { return }
-    token.scale.x = token.scaleBackup.x * token.transform.scale
-    token.scale.y = token.scaleBackup.y * token.transform.scale
-    saveTransfrom(map, token.character.characterData, token.x, token.y, token.transform.scale)
-    if (!app.ticker.started) { app.renderer.render(app.stage) }
-  }
-
-  function changeAllTokenScale (delta) {
-    scene.children.forEach(child => {
-      if (child.label === 'character') {
-        changeTokenScale(child, delta)
-      }
+    const characterData = JSON.stringify({
+      id: character.id,
+      portraitUrl: character.portraitUrl,
+      name: character.name
     })
+    event.dataTransfer.setData('application/json', characterData)
+  }
+
+  function handleDrop (event) {
+    event.preventDefault()
+    const characterData = JSON.parse(event.dataTransfer.getData('application/json'))
+    const position = getCanvasCoordinates(event, vtt, mapEl)
+    const transform = { x: position.x, y: position.y, scale: 1 }
+    renderCharacter(characterData.id, transform)
+    map.characters[characterData.id] = transform
+    saveTransfrom(map, characterData, position.x, position.y, 1)
   }
 </script>
 
@@ -197,7 +92,7 @@
       <h3>Přidat postavu</h3>
       <div class='characters'>
         {#each availableCharacters as character}
-          <button class='plain character' style="--color: {character.color}" on:click={() => { addCharacter(character.id, { x: scaledWidth / 2, y: scaledHeight / 2 }) }}>
+          <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}"><!-- on:click={() => { addCharacter(character.id, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }) }} -->
             {#if character.portraitUrl}
               <img class='portrait' src={character.portraitUrl} alt={character.name} />
             {:else}
