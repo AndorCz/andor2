@@ -1,7 +1,9 @@
 <script>
+  import { clearCharacter, updateMapDescription, saveTransfrom } from '@lib/map/db'
+  import { supabase, handleError } from '@lib/database'
   import { onMount, onDestroy } from 'svelte'
+  import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
-  import { clearCharacter, toggleActive, updateMapDescription, saveTransfrom } from '@lib/map/db'
   import { Vtt } from '@lib/map/vtt'
   import { Character } from '@lib/map/character'
   import { getCanvasCoordinates } from '@lib/map/utils'
@@ -16,6 +18,7 @@
   let mapEl, mapWrapperEl, vtt
   let availableCharacters = []
   let tool = 'select'
+  let fow = map.fow
   // let fps = 0
   const tokenDiameter = 50
 
@@ -75,22 +78,37 @@
     map.characters[characterData.id] = transform
     saveTransfrom(map, characterData, position.x, position.y, 1)
   }
+
+  async function toggleActive (map, game) {
+    const { error } = await supabase.from('games').update({ active_map: map.isActive ? null : map.id }).eq('id', game.id)
+    if (error) { return handleError(error) }
+    map.isActive = !map.isActive
+    return showSuccess(map.isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
+  }
+
+  function changeTool (newTool) {
+    tool = newTool
+    vtt.fow.changeTool(newTool)
+  }
 </script>
 
 <div class='wrapper' bind:this={mapWrapperEl}>
-  {#if vtt}
+  {#if vtt && isStoryteller}
     <div class='fow'>
-      {#key vtt.fogEnabled}
-        {#if vtt.fogEnabled}
-          <button type='button' on:click={() => { tool = 'select' }} class:active={tool === 'select'} class='material square' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
-          <button type='button' on:click={() => { tool = 'paintLight' }} class:active={tool === 'paintLight'} class='material square' title='Kreslit světlo' use:tooltip>light_mode</button>
-          <button type='button' on:click={() => { tool = 'paintDark' }} class:active={tool === 'paintDark'} class='material square' title='Kreslit tmu' use:tooltip>mode_night</button>
-
-          <button type='button' on:click={() => { vtt.fogEnabled = false; vtt.clearFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
-        {:else}
-          <button type='button' on:click={() => { vtt.fogEnabled = true; vtt.addFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
-        {/if}
-      {/key}
+      {#if fow}
+        <span>
+          <button type='button' on:click={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
+          <button type='button' on:click={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
+          <button type='button' on:click={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
+        </span>
+        <button type='button' on:click={() => { fow = false; vtt.disableFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
+      {:else}
+        <button type='button' on:click={() => { fow = true; vtt.enableFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
+      {/if}
+    </div>
+    <div class='scale'>
+      <button type='button' on:click={() => { vtt.changeAllTokenScale(-0.2) }} class='material round' title='Zmenšit všechny postavy' use:tooltip>remove</button>
+      <button type='button' on:click={() => { vtt.changeAllTokenScale(0.2) }} class='material round' title='Zvětšit všechny postavy' use:tooltip>add</button>
     </div>
   {/if}
   <!--{#if app && app.renderer}<div id='fps'>{optimized ? fps : 0} fps</div>{/if}-->
@@ -147,11 +165,25 @@
       justify-content: center;
     }
 
-  .fow {
+  .scale, .fow {
     position: absolute;
-    top: 10px;
-    right: 10px;
     z-index: 100;
+    top: 10px;
+  }
+  .scale {
+    left: 10px;
+  }
+    .scale button {
+      margin-right: 5px;
+    }
+  .fow {
+    right: 10px;
+  }
+    .fow button {
+      margin-left: 5px;
+    }
+  .round:hover {
+    transform: scale(1.1);
   }
 
   .characters {

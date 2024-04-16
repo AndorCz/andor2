@@ -76,37 +76,9 @@ export class Buttons {
 
     // GLOBAL BUTTONS
 
-    this.global = new Container()
-    this.global.label = 'globalButtons'
-    app.stage.addChild(this.global)
-
-    this.minusAll = Sprite.from('/maps/button-minus.png')
-    this.minusAll.width = 40
-    this.minusAll.height = 40
-    this.minusAll.anchor.set(0.5, 0.5)
-    this.minusAll.eventMode = 'static'
-    this.minusAll.interactive = true
-    this.minusAll.cursor = 'pointer'
-    this.minusAll.y = 20
-    this.minusAll.x = 20
-    this.minusAll.on('pointerdown', () => { this.changeAllTokenScale(-0.2) })
-    this.minusAll.on('pointerover', () => { this.minusAll.scale = scaleHover; this.render() })
-    this.minusAll.on('pointerout', () => { this.minusAll.scale = scaleBackup; this.render() })
-    this.global.addChild(this.minusAll)
-
-    this.plusAll = Sprite.from('/maps/button-plus.png')
-    this.plusAll.width = 40
-    this.plusAll.height = 40
-    this.plusAll.anchor.set(0.5, 0.5)
-    this.plusAll.eventMode = 'static'
-    this.plusAll.interactive = true
-    this.plusAll.cursor = 'pointer'
-    this.plusAll.y = 20
-    this.plusAll.x = 60
-    this.plusAll.on('pointerdown', () => { this.changeAllTokenScale(0.2) })
-    this.plusAll.on('pointerover', () => { this.plusAll.scale = scaleHover; this.render() })
-    this.plusAll.on('pointerout', () => { this.plusAll.scale = scaleBackup; this.render() })
-    this.global.addChild(this.plusAll)
+    // this.global = new Container()
+    // this.global.label = 'globalButtons'
+    // app.stage.addChild(this.global)
   }
 
   render () {

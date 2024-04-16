@@ -37,9 +37,7 @@ export async function clearProposition (map, id) {
   if (error) { handleError(error) }
 }
 
-export async function toggleActive (map, game) {
-  const { error } = await supabase.from('games').update({ active_map: map.isActive ? null : map.id }).eq('id', game.id)
-  if (error) { return handleError(error) }
-  map.isActive = !map.isActive
-  return showSuccess(map.isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
+export async function toggleFoW (map, fow) {
+  const { error } = await supabase.from('maps').update({ fow }).eq('id', map.id)
+  if (error) { handleError(error) }
 }

@@ -1,6 +1,5 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
-  import { onMount } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray, stringToColor } from '@lib/utils'
   import Map from '@components/games/maps/Map.svelte'
@@ -9,20 +8,23 @@
   export let game
   export let isStoryteller
 
-  onMount(() => {
-    game.maps?.forEach(map => {
-      map.isActive = map.id === game.active_map?.id
-      map.isOpen = map.isActive
-    })
+  game.maps?.forEach(map => {
+    map.isActive = map.id === game.active_map?.id
+    map.isOpen = map.isActive
+  })
 
-    game.characters?.forEach(character => {
-      character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
-      character.color = stringToColor(character.name)
-    })
+  game.characters?.forEach(character => {
+    character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
+    character.color = stringToColor(character.name)
   })
 
   async function deleteMap (mapId) {
     if (confirm('Opravdu chcete smazat tuto mapu?')) {
+      if (game.active_map?.id === mapId) {
+        const { error } = await supabase.from('games').update({ active_map_id: null }).eq('id', game.id)
+        if (error) { handleError(error) }
+        game.active_map = null
+      }
       const { error } = await supabase.from('maps').delete().eq('id', mapId)
       if (error) { handleError(error) }
       const { error: storageError } = await supabase.storage.from('maps').remove([`${game.id}/${mapId}`])
@@ -32,7 +34,6 @@
     }
   }
 </script>
-
 <div class='maps'>
   {#if isFilledArray(game.maps)}
     {#each game.maps as map}

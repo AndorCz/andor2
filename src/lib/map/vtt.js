@@ -1,8 +1,9 @@
 import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
-import { saveTransfrom, saveProposition, clearProposition } from '@lib/map/db'
+import { saveTransfrom, saveProposition, clearProposition, toggleFoW } from '@lib/map/db'
 import { getImageUrl } from '@lib/database'
 import { Buttons } from '@lib/map/buttons'
-// import { FoW } from '@lib/map/fow'
+import { FoW } from '@lib/map/fow'
+import { showError } from '@lib/toasts'
 
 export class Vtt {
   constructor (options) {
@@ -21,9 +22,9 @@ export class Vtt {
     this.mapEl.appendChild(this.app.canvas)
     const mapUrl = getImageUrl(`${this.game.id}/${this.map.id}?${this.map.image}`, 'maps')
     this.mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
-    const mapSprite = new Sprite(this.mapTexture)
-    mapSprite.eventMode = 'none'
-    mapSprite.label = 'map'
+    const map = new Sprite(this.mapTexture)
+    map.eventMode = 'none'
+    map.label = 'map'
 
     this.app.stage.eventMode = 'static'
     this.app.stage.hitArea = this.app.screen
@@ -32,11 +33,12 @@ export class Vtt {
       .on('pointerupoutside', this.onDragEnd, this)
       .on('pointerdown', this.deselectAll, this)
 
+    // all objects are placed in scene container, as stage shouldn't be scaled. the true size is set in resize()
     this.scene = new Container({ x: 0, y: 0, width: this.app.screen.width, height: this.app.screen.height })
     this.scene.label = 'scene'
     this.app.scene = this.scene
     this.app.stage.addChild(this.scene)
-    this.scene.addChild(mapSprite)
+    this.scene.addChild(map)
     this.resize()
 
     // draw propositions
@@ -47,7 +49,9 @@ export class Vtt {
     this.renderPropositions()
 
     // fog of war
-    // this.app.fow = new FoW({ map: this.map, scene: this.scene, app: this.app })
+    if (this.map.fow) {
+      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller })
+    }
 
     // token buttons
     if (this.isStoryteller) {
@@ -71,6 +75,19 @@ export class Vtt {
     window.removeEventListener('resize', this.resize)
   }
 
+  resize () {
+    if (!this.mapEl) return
+    const scale = Math.min((this.mapEl.offsetWidth / window.devicePixelRatio) / this.mapTexture.width, 1)
+    this.scaledWidth = this.mapTexture.width * scale * window.devicePixelRatio
+    this.scaledHeight = this.mapTexture.height * scale * window.devicePixelRatio
+    // might get scaled down
+    this.scene.width = this.scaledWidth
+    this.scene.height = this.scaledHeight
+    this.app.renderer.resize(this.scaledWidth, this.scaledHeight)
+    this.mapWrapperEl.style.height = `${this.scaledHeight}px`
+    if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
+  }
+
   onDragEnd (event) {
     setTimeout(() => { this.app.ticker.stop() }, 100)
     if (this.app.dragging) {
@@ -92,19 +109,6 @@ export class Vtt {
       }
       delete this.app.dragging
     }
-  }
-
-  resize () {
-    if (!this.mapEl) return
-    const scale = Math.min((this.mapEl.offsetWidth / window.devicePixelRatio) / this.mapTexture.width, 1)
-    this.scaledWidth = this.mapTexture.width * scale * window.devicePixelRatio
-    this.scaledHeight = this.mapTexture.height * scale * window.devicePixelRatio
-    // scene.scale.set(scale, scale) // not needed
-    this.scene.width = this.scaledWidth
-    this.scene.height = this.scaledHeight
-    this.app.renderer.resize(this.scaledWidth, this.scaledHeight)
-    this.mapWrapperEl.style.height = `${this.scaledHeight}px`
-    if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
   renderPropositions () {
@@ -148,6 +152,7 @@ export class Vtt {
   }
 
   changeAllTokenScale (delta) { // buttons context
+    if (!delta) { return showError('Chybná hodnota změny velikosti') }
     this.app.scene.children.forEach(child => {
       if (child.label === 'character') {
         this.changeTokenScale(child, delta)
@@ -155,11 +160,20 @@ export class Vtt {
     })
   }
 
-  addFog () {
-    this.fogEnabled = true
+  enableFog () {
+    this.map.fow = true
+    this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene })
+    this.fow.changeTool('light')
+    toggleFoW(this.map, true)
+    // create mask image
+    if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
-  clearFog () {
-    this.fogEnabled = false
+  disableFog () {
+    this.map.fow = true
+    this.fow.destroy()
+    toggleFoW(this.map, false)
+    // save fow bool to db
+    if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 }

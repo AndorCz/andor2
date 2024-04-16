@@ -158,6 +158,10 @@ button, .button {
   button.square, .button.square {
     padding: 10px;
   }
+  button.round, .button.round {
+    padding: 5px;
+    border-radius: 50%;
+  }
   button.plain, .button.plain {
     background: none;
     border: none;
