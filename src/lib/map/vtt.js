@@ -71,7 +71,7 @@ export class Vtt {
     window.addEventListener('resize', () => {
       this.calculateSize()
       this.resize()
-      // this.fow?.resize(this.scaledWidth, this.scaledHeight)
+      this.fow?.resize(this.scaledWidth, this.scaledHeight)
     })
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
