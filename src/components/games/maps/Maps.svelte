@@ -27,8 +27,13 @@
       }
       const { error } = await supabase.from('maps').delete().eq('id', mapId)
       if (error) { handleError(error) }
-      const { error: storageError } = await supabase.storage.from('maps').remove([`${game.id}/${mapId}`])
+
+      const { error: storageError } = await supabase.storage.from('maps').remove([`${game.id}/${mapId}_fow`])
       if (storageError) { handleError(storageError) }
+
+      const { error: storageError2 } = await supabase.storage.from('maps').remove([`${game.id}/${mapId}`])
+      if (storageError2) { handleError(storageError2) }
+
       game.maps = game.maps.filter(map => map.id !== mapId)
       showSuccess('Mapa byla smazána')
     }

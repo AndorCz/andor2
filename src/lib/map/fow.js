@@ -1,6 +1,5 @@
 import { RenderTexture, Sprite, Graphics, Rectangle, BlurFilter } from 'pixi.js'
 import { showError } from '@lib/toasts'
-import { previewCanvas } from '@lib/utils'
 import { saveFow } from '@lib/map/db'
 
 let app
@@ -149,7 +148,6 @@ export class FoW {
 
   async save () {
     const canvas = await app.renderer.extract.canvas({ target: this.maskTexture, resolution: 1 })
-    previewCanvas(canvas)
     const blob = await new Promise(resolve => canvas.toBlob(blob => resolve(blob)))
     await saveFow(this.map, blob)
   }
