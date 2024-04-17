@@ -23,7 +23,7 @@ drop view if exists game_list;
 drop view if exists work_list;
 drop view if exists last_posts;
 
--- ENUMS
+-- ENUMS --------------------------------------------
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
@@ -32,7 +32,7 @@ create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poem', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
 create type work_category as enum ('prose', 'poetry', 'game', 'other');
 
--- TABLES
+-- TABLES --------------------------------------------
 
 create table profiles (
   id uuid not null primary key,
@@ -233,7 +233,7 @@ create table user_reads (
   primary key (user_id, slug)
 );
 
--- VIEWS
+-- VIEWS --------------------------------------------
 
 create view posts_owner as
   select
@@ -319,7 +319,7 @@ create or replace view last_posts as
   limit 10;
 
 
--- FUNCTIONS
+-- FUNCTIONS --------------------------------------------
 
 
 create or replace function add_storyteller() returns trigger as $$
@@ -753,7 +753,7 @@ end;
 $$ language plpgsql;
 
 
--- TRIGGERS
+-- TRIGGERS --------------------------------------------
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads ();
@@ -767,13 +767,15 @@ create or replace trigger update_codex_updated_at before update on codex_pages f
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
 
--- CRON
+-- CRON --------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);
 
 
--- SEED (run as a user session, or replace auth.uid() with a user id)
+-- SEED  --------------------------------------------
+
+-- Run as a user session, or replace auth.uid() with a user id
 -- Disable the trigger "add_default_bookmarks" to create a user manually in the profiles table.
 
 insert into threads (name) values ('Chat'); -- has to be ID 1

@@ -1,6 +1,6 @@
 <script>
   import { clearCharacter, updateMapDescription, saveTransfrom } from '@lib/map/db'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getHash } from '@lib/database'
   import { onMount, onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
@@ -17,7 +17,7 @@
 
   let mapEl, mapWrapperEl, vtt
   let availableCharacters = []
-  let fow = map.fow
+  let fowEnabled = map.fow
   let fowChanged = false
   let tool = 'select'
   let npcTokenName = ''
@@ -95,8 +95,20 @@
 
   function onFowChange () { fowChanged = true }
 
+  function enableFow () {
+    map.fow = fowEnabled = true
+    tool = 'light'
+    vtt.enableFog()
+  }
+
+  function disableFow () {
+    map.fow = fowEnabled = false
+    vtt.disableFog()
+  }
+
   function saveFog () {
     vtt.fow.save()
+    map.fow_image = getHash()
     fowChanged = false
   }
 </script>
@@ -105,13 +117,13 @@
   {#if vtt && isStoryteller}
     <div class='controls'>
       <div class='fow'>
-        {#if fow}
+        {#if fowEnabled}
           <span>
             <button type='button' on:click={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
             <button type='button' on:click={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
             <button type='button' on:click={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
           </span>
-          <button type='button' on:click={() => { fow = false; vtt.disableFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
+          <button type='button' on:click={disableFow} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
           {#if fowChanged}
             <button type='button' on:click={() => { saveFog() }} class='material square save' title='Uložit viditelnost' use:tooltip>check</button>
           {/if}
@@ -122,7 +134,7 @@
             </div>
           {/if}
         {:else}
-          <button type='button' on:click={() => { fow = true; tool = 'light'; vtt.enableFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
+          <button type='button' on:click={enableFow} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
         {/if}
       </div>
       <div class='scale'>

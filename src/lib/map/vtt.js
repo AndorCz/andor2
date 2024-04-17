@@ -1,9 +1,9 @@
 import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
 import { saveTransfrom, saveProposition, clearProposition, toggleFoW } from '@lib/map/db'
 import { getImageUrl } from '@lib/database'
+import { showError } from '@lib/toasts'
 import { Buttons } from '@lib/map/buttons'
 import { FoW } from '@lib/map/fow'
-import { showError } from '@lib/toasts'
 
 export class Vtt {
   constructor (options) {
