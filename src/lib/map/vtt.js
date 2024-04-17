@@ -16,13 +16,13 @@ export class Vtt {
   async init () {
     // to render every frame, set autoStart to true. other options: { backgroundAlpha: 0, resizeTo: mapEl, autoDensity: true, antialias: true, width: mapEl.clientWidth, height: mapEl.clientHeight }
     await this.app.init({ autoStart: false, resolution: window.devicePixelRatio, autoDensity: true, antialias: true })
-    // globalThis.__PIXI_APP__ = app // for chrome plugin
+    // globalThis.__PIXI_APP__ = this.app // for chrome plugin
 
     // add map background image
     this.mapEl.appendChild(this.app.canvas)
     const mapUrl = getImageUrl(`${this.game.id}/${this.map.id}?${this.map.image}`, 'maps')
     this.mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
-    const map = new Sprite(this.mapTexture)
+    const map = new Sprite({ texture: this.mapTexture, roundPixels: true })
     map.eventMode = 'none'
     map.label = 'map'
 
@@ -44,7 +44,7 @@ export class Vtt {
     if (this.map.fow) {
       const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
       this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
-      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange, size: { width: this.scaledWidth, height: this.scaledHeight } })
+      this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange, size: { width: this.scaledWidth, height: this.scaledHeight } })
     }
 
     this.scene.addChild(map)
@@ -71,6 +71,7 @@ export class Vtt {
     window.addEventListener('resize', () => {
       this.calculateSize()
       this.resize()
+      // this.fow?.resize(this.scaledWidth, this.scaledHeight)
     })
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
@@ -90,11 +91,10 @@ export class Vtt {
   }
 
   resize () { // might get scaled down
-    this.scene.width = this.scaledWidth
-    this.scene.height = this.scaledHeight
+    this.scene.setSize(this.scaledWidth, this.scaledHeight)
     this.app.renderer.resize(this.scaledWidth, this.scaledHeight)
     this.mapWrapperEl.style.height = `${this.scaledHeight}px`
-    this.fow?.resize(this.scaledWidth, this.scaledHeight)
+    this.fow?.resize()
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 

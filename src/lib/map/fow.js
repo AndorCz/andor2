@@ -19,25 +19,30 @@ export class FoW {
     this.radius = 100
     this.blurSize = Math.max(this.radius / 2, 10)
 
+    const width = this.map.fowImage ? this.map.fowImage.width : options.size.width
+    const height = this.map.fowImage ? this.map.fowImage.height : options.size.height
+
     // draw the black fog to be masked
-    this.fogTexture = RenderTexture.create({ width: app.screen.width, height: app.screen.height })
-    const background = new Graphics().rect(0, 0, app.screen.width, app.screen.height).fill(0x000000)
+    this.fogTexture = RenderTexture.create({ width, height, resolution: 1 })
+    const background = new Graphics().rect(0, 0, width, height).fill(0x000000)
     app.renderer.render({ container: background, target: this.fogTexture })
 
     this.fog = new Sprite(this.fogTexture)
+    this.fog.label = 'fogBlack'
     this.fog.interactive = true
     this.fog.eventMode = 'none'
-    this.fog.alpha = hiddenFogAlpha
+    this.fog.alpha = this.isStoryteller ? hiddenFogAlpha : 1
     app.stage.addChild(this.fog)
 
     this.createBrush()
 
     // prepare mask
-    this.maskTexture = RenderTexture.create({ width: options.size.width, height: options.size.height, resolution: 1 })
-    const mask = this.map.fowImage ? new Sprite(this.map.fowImage) : new Graphics().rect(0, 0, options.size.width, options.size.height).fill(0xffffff)
+    this.maskTexture = RenderTexture.create({ width, height, resolution: 1 })
+    const mask = this.map.fowImage ? new Sprite({ texture: this.map.fowImage, roundPixels: true, resolution: 1 }) : new Graphics().rect(0, 0, options.size.width, options.size.height).fill(0xffffff)
     app.renderer.render({ container: mask, target: this.maskTexture }) // draw white rectangle onto the texture
 
-    this.maskSprite = new Sprite(this.maskTexture)
+    this.maskSprite = new Sprite({ texture: this.maskTexture, roundPixels: true, resolution: 1 })
+    this.maskSprite.label = 'fogMask'
     app.stage.addChild(this.maskSprite)
     this.fog.mask = this.maskSprite
 
@@ -55,7 +60,7 @@ export class FoW {
     const circle = new Graphics().circle(this.radius + this.blurSize, this.radius + this.blurSize, this.radius).fill({ color: 0xffffff }) // colors in mask are inversed
     circle.filters = [new BlurFilter({ strength: this.blurSize, quality: 6 })]
     this.brushTexture = app.renderer.generateTexture({ target: circle, frame: bounds })
-    this.brush = new Sprite(this.brushTexture)
+    this.brush = new Sprite({ texture: this.brushTexture, roundPixels: true })
   }
 
   destroy () {
@@ -63,9 +68,9 @@ export class FoW {
     window.removeEventListener('resize', () => { this.resize() })
   }
 
-  resize (width, height) { // might get scaled down
-    this.fog.width = width || this.size.width
-    this.fog.height = height || this.size.height
+  resize () { // might get scaled down
+    this.maskSprite.setSize(this.vtt.scaledWidth, this.vtt.scaledHeight)
+    this.fog.setSize(this.vtt.scaledWidth, this.vtt.scaledHeight)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
@@ -136,7 +141,8 @@ export class FoW {
   draw (pos) {
     if (this.activeTool === 'light') { this.brush.tint = 0x000000 }
     if (this.activeTool === 'dark') { this.brush.tint = 0xffffff }
-    this.brush.position.set(pos.x - (this.radius + this.blurSize), pos.y - (this.radius + this.blurSize))
+    const coords = this.maskSprite.toLocal(pos)
+    this.brush.position.set(coords.x - (this.radius + this.blurSize), coords.y - (this.radius + this.blurSize))
     app.renderer.render({ container: this.brush, target: this.maskTexture, clear: false })
     this.onFowChange()
   }
