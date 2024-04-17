@@ -22,7 +22,8 @@ export class FoW {
     // draw the black fog to be masked
     this.fogTexture = RenderTexture.create({ width: app.screen.width, height: app.screen.height })
     const background = new Graphics().rect(0, 0, app.screen.width, app.screen.height).fill(0x000000)
-    app.renderer.render({ container: background, target: this.fogTexture }) // draw the black rectangle onto the texture
+    app.renderer.render({ container: background, target: this.fogTexture })
+
     this.fog = new Sprite(this.fogTexture)
     this.fog.interactive = true
     this.fog.eventMode = 'none'
@@ -32,9 +33,10 @@ export class FoW {
     this.createBrush()
 
     // prepare mask
-    this.maskTexture = RenderTexture.create({ width: app.screen.width, height: app.screen.height, resolution: 1 })
-    const white = new Graphics().rect(0, 0, app.screen.width, app.screen.height).fill(0xffffff)
-    app.renderer.render({ container: white, target: this.maskTexture }) // draw white rectangle onto the texture
+    this.maskTexture = RenderTexture.create({ width: options.size.width, height: options.size.height, resolution: 1 })
+    const mask = this.map.fowImage ? new Sprite(this.map.fowImage) : new Graphics().rect(0, 0, options.size.width, options.size.height).fill(0xffffff)
+    app.renderer.render({ container: mask, target: this.maskTexture }) // draw white rectangle onto the texture
+
     this.maskSprite = new Sprite(this.maskTexture)
     app.stage.addChild(this.maskSprite)
     this.fog.mask = this.maskSprite
@@ -45,9 +47,7 @@ export class FoW {
     app.stage.addChild(this.brushPreview)
 
     this.fog.on('pointermove', this.pointerMove, this)
-
     this.resize()
-    window.addEventListener('resize', () => { this.resize() })
   }
 
   createBrush () {
@@ -63,10 +63,9 @@ export class FoW {
     window.removeEventListener('resize', () => { this.resize() })
   }
 
-  resize () {
-    // might get scaled down
-    this.fog.width = this.scene.width
-    this.fog.height = this.scene.height
+  resize (width, height) { // might get scaled down
+    this.fog.width = width || this.size.width
+    this.fog.height = height || this.size.height
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 

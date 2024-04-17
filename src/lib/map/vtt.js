@@ -38,6 +38,15 @@ export class Vtt {
     this.scene.label = 'scene'
     this.app.scene = this.scene
     this.app.stage.addChild(this.scene)
+
+    this.calculateSize()
+    // fog of war
+    if (this.map.fow) {
+      const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
+      this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
+      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange, size: { width: this.scaledWidth, height: this.scaledHeight } })
+    }
+
     this.scene.addChild(map)
     this.resize()
 
@@ -47,11 +56,6 @@ export class Vtt {
     this.scene.addChild(this.app.propositions)
     this.scene.addChild(this.app.currentProposition)
     this.renderPropositions()
-
-    // fog of war
-    if (this.map.fow) {
-      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange })
-    }
 
     // token buttons
     if (this.isStoryteller) {
@@ -64,7 +68,10 @@ export class Vtt {
       await this.renderCharacter(id, this.map.characters[id])
     }
 
-    window.addEventListener('resize', () => { this.resize() })
+    window.addEventListener('resize', () => {
+      this.calculateSize()
+      this.resize()
+    })
     // app.ticker.add((time) => { fps = Math.round(app.ticker.FPS) })
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
 
@@ -75,16 +82,19 @@ export class Vtt {
     window.removeEventListener('resize', this.resize)
   }
 
-  resize () {
+  calculateSize () {
     if (!this.mapEl) return
     const scale = Math.min((this.mapEl.offsetWidth / window.devicePixelRatio) / this.mapTexture.width, 1)
     this.scaledWidth = this.mapTexture.width * scale * window.devicePixelRatio
     this.scaledHeight = this.mapTexture.height * scale * window.devicePixelRatio
-    // might get scaled down
+  }
+
+  resize () { // might get scaled down
     this.scene.width = this.scaledWidth
     this.scene.height = this.scaledHeight
     this.app.renderer.resize(this.scaledWidth, this.scaledHeight)
     this.mapWrapperEl.style.height = `${this.scaledHeight}px`
+    this.fow?.resize(this.scaledWidth, this.scaledHeight)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
