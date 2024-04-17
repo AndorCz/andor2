@@ -144,7 +144,7 @@ export class FoW {
     const coords = this.maskSprite.toLocal(pos)
     this.brush.position.set(coords.x - (this.radius + this.blurSize), coords.y - (this.radius + this.blurSize))
     app.renderer.render({ container: this.brush, target: this.maskTexture, clear: false })
-    this.onFowChange()
+    this.vtt.onFowChange()
   }
 
   async save () {

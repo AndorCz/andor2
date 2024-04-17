@@ -38,7 +38,8 @@ export async function clearProposition (map, id) {
 }
 
 export async function toggleFoW (map, fow) {
-  const { error } = await supabase.from('maps').update({ fow }).eq('id', map.id)
+  const fowImage = fow ? map.fow_image : null // keep the image hash only if the fow is enabled
+  const { error } = await supabase.from('maps').update({ fow, fow_image: fowImage }).eq('id', map.id)
   if (error) { handleError(error) }
 }
 

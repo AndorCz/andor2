@@ -42,9 +42,11 @@ export class Vtt {
     this.calculateSize()
     // fog of war
     if (this.map.fow) {
-      const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
-      this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
-      this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange })
+      if (this.map.fow_image) {
+        const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
+        this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
+      }
+      this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller })
     }
 
     this.scene.addChild(map)
@@ -179,6 +181,7 @@ export class Vtt {
   }
 
   disableFog () {
+    this.fow.brushPreview.visible = false
     this.map.fow = true
     this.fow.destroy()
     toggleFoW(this.map, false)
