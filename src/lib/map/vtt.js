@@ -44,7 +44,7 @@ export class Vtt {
     if (this.map.fow) {
       const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
       this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
-      this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange, size: { width: this.scaledWidth, height: this.scaledHeight } })
+      this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange })
     }
 
     this.scene.addChild(map)
@@ -172,7 +172,7 @@ export class Vtt {
 
   enableFog () {
     this.map.fow = true
-    this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene })
+    this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene })
     this.fow.changeTool('light')
     toggleFoW(this.map, true)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }

@@ -19,8 +19,8 @@ export class FoW {
     this.radius = 100
     this.blurSize = Math.max(this.radius / 2, 10)
 
-    const width = this.map.fowImage ? this.map.fowImage.width : options.size.width
-    const height = this.map.fowImage ? this.map.fowImage.height : options.size.height
+    const width = this.map.fowImage ? this.map.fowImage.width : this.vtt.scaledWidth
+    const height = this.map.fowImage ? this.map.fowImage.height : this.vtt.scaledHeight
 
     // draw the black fog to be masked
     this.fogTexture = RenderTexture.create({ width, height, resolution: 1 })
@@ -38,7 +38,7 @@ export class FoW {
 
     // prepare mask
     this.maskTexture = RenderTexture.create({ width, height, resolution: 1 })
-    const mask = this.map.fowImage ? new Sprite({ texture: this.map.fowImage, roundPixels: true, resolution: 1 }) : new Graphics().rect(0, 0, options.size.width, options.size.height).fill(0xffffff)
+    const mask = this.map.fowImage ? new Sprite({ texture: this.map.fowImage, roundPixels: true, resolution: 1 }) : new Graphics().rect(0, 0, width, height).fill(0xffffff)
     app.renderer.render({ container: mask, target: this.maskTexture }) // draw white rectangle onto the texture
 
     this.maskSprite = new Sprite({ texture: this.maskTexture, roundPixels: true, resolution: 1 })
