@@ -17,9 +17,11 @@
 
   let mapEl, mapWrapperEl, vtt
   let availableCharacters = []
-  let tool = 'select'
   let fow = map.fow
   let fowChanged = false
+  let tool = 'select'
+  let npcTokenName = ''
+
   const tokenDiameter = 50
 
   onMount(async () => {
@@ -135,18 +137,27 @@
 {#if isStoryteller}
   <div id='tools'>
     {#if availableCharacters.length}
-      <h3>Přidat postavu</h3>
       <div class='characters'>
-        {#each availableCharacters as character}
-          <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}"><!-- on:click={() => { addCharacter(character.id, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }) }} -->
-            {#if character.portraitUrl}
-              <img class='portrait' src={character.portraitUrl} alt={character.name} />
-            {:else}
-              <span class='empty'></span>
-            {/if}
-            <span class='name'>{character.name}</span>
-          </button>
-        {/each}
+        <h3>Přidat postavu</h3>
+        <div class='characterList'>
+          {#each availableCharacters as character}
+            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}"><!-- on:click={() => { addCharacter(character.id, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }) }} -->
+              {#if character.portraitUrl}
+                <img class='portrait' src={character.portraitUrl} alt={character.name} />
+              {:else}
+                <span class='empty'></span>
+              {/if}
+              <span class='name'>{character.name}</span>
+            </button>
+          {/each}
+        </div>
+      </div>
+      <div class='npcs'>
+        <h3>Přidat dočasný žeton</h3>
+        <div class='row'>
+          <input type='text' placeholder='Název' bind:value={npcTokenName}>
+          <button type='button' on:click={() => { vtt.addNpcToken(npcTokenName) }} class='material square'>add</button>
+        </div>
       </div>
     {/if}
   </div>
@@ -223,50 +234,60 @@
     transform: scale(1.1);
   }
 
-  .characters {
+  #tools {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin-top: 20px;
   }
-    .character {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .characters {
+      flex: 1;
     }
-      .character:hover {
-        transform: scale(1.1);
+      .characterList {
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        margin-top: 20px;
       }
-      .portrait, .empty {
-        display: block;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-        object-position: center 20%;
-        background-color: var(--color);
-      }
-      .name {
-        margin-top: -15px;
-        font-size: 15px;
-        color: white;
-        -webkit-text-stroke: 3px black;
-        paint-order: stroke fill;
-        width: 60px;
-        line-height: 80%;
-      }
+        .character {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+          .character:hover {
+            transform: scale(1.1);
+          }
+          .portrait, .empty {
+            display: block;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center 20%;
+            background-color: var(--color);
+          }
+          .name {
+            margin-top: -15px;
+            font-size: 15px;
+            color: white;
+            -webkit-text-stroke: 3px black;
+            paint-order: stroke fill;
+            width: 60px;
+            line-height: 80%;
+          }
 
-  .options {
+  .row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 40px;
     gap: 10px;
   }
-  /* #fps {
-    position: absolute;
-    top: -40px;
-    right: 0px;
-    text-align: right;
-  }*/
+
+  .options {
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    #tools {
+      display: block;
+    }
+  }
 </style>

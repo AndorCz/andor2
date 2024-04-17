@@ -6,7 +6,7 @@ let app
 let drawing = false
 
 const visibleFogAlpha = 0.9
-const hiddenFogAlpha = 0.5
+const hiddenFogAlpha = 0.7
 
 // Class for drawing fog of war
 
