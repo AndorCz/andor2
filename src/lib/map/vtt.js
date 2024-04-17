@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
 import { saveTransfrom, saveProposition, clearProposition, toggleFoW } from '@lib/map/db'
-import { getImageUrl } from '@lib/database'
+import { getImageUrl, getHash } from '@lib/database'
 import { showError } from '@lib/toasts'
 import { Buttons } from '@lib/map/buttons'
 import { FoW } from '@lib/map/fow'
@@ -172,19 +172,24 @@ export class Vtt {
     })
   }
 
-  enableFog () {
+  async enableFog () {
     this.map.fow = true
+    if (this.map.fow_image) {
+      const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
+      this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
+    }
     this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene })
     this.fow.changeTool('light')
-    toggleFoW(this.map, true)
+    await toggleFoW(this.map, true)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
-  disableFog () {
+  async disableFog () {
     this.fow.brushPreview.visible = false
     this.map.fow = true
+    this.map.fow_image = getHash()
     this.fow.destroy()
-    toggleFoW(this.map, false)
+    await toggleFoW(this.map, false)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 }
