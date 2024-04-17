@@ -19,7 +19,7 @@
   let availableCharacters = []
   let tool = 'select'
   let fow = map.fow
-  // let fps = 0
+  let fowChanged = false
   const tokenDiameter = 50
 
   onMount(async () => {
@@ -32,7 +32,7 @@
       }
     })
 
-    vtt = new Vtt({ map, game, user, isStoryteller, mapEl, mapWrapperEl, renderCharacter, removeCharacter, tokenDiameter })
+    vtt = new Vtt({ map, game, user, isStoryteller, mapEl, mapWrapperEl, renderCharacter, removeCharacter, tokenDiameter, onFowChange })
     await vtt.init()
   })
 
@@ -90,28 +90,45 @@
     tool = newTool
     vtt.fow.changeTool(newTool)
   }
+
+  function onFowChange () { fowChanged = true }
+
+  function saveFog () {
+    vtt.fow.save()
+    fowChanged = false
+  }
 </script>
 
 <div class='wrapper' bind:this={mapWrapperEl}>
   {#if vtt && isStoryteller}
-    <div class='fow'>
-      {#if fow}
-        <span>
-          <button type='button' on:click={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
-          <button type='button' on:click={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
-          <button type='button' on:click={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
-        </span>
-        <button type='button' on:click={() => { fow = false; vtt.disableFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
-      {:else}
-        <button type='button' on:click={() => { fow = true; vtt.enableFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
-      {/if}
-    </div>
-    <div class='scale'>
-      <button type='button' on:click={() => { vtt.changeAllTokenScale(-0.2) }} class='material round' title='Zmenšit všechny postavy' use:tooltip>remove</button>
-      <button type='button' on:click={() => { vtt.changeAllTokenScale(0.2) }} class='material round' title='Zvětšit všechny postavy' use:tooltip>add</button>
+    <div class='controls'>
+      <div class='fow'>
+        {#if fow}
+          <span>
+            <button type='button' on:click={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
+            <button type='button' on:click={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
+            <button type='button' on:click={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
+          </span>
+          <button type='button' on:click={() => { fow = false; vtt.disableFog() }} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
+          {#if fowChanged}
+            <button type='button' on:click={() => { saveFog() }} class='material square save' title='Uložit viditelnost' use:tooltip>check</button>
+          {/if}
+          {#if tool === 'light' || tool === 'dark'}
+            <div class='brush'>
+              <button type='button' on:click={() => { vtt.fow.changeBrushSize(0.5) }} class='material round' title='Zmenšit okruh' use:tooltip>fiber_manual_record</button>
+              <button type='button' on:click={() => { vtt.fow.changeBrushSize(2) }} class='material round' title='Zvětšit okruh' use:tooltip>circle</button>
+            </div>
+          {/if}
+        {:else}
+          <button type='button' on:click={() => { fow = true; tool = 'light'; vtt.enableFog() }} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
+        {/if}
+      </div>
+      <div class='scale'>
+        <button type='button' on:click={() => { vtt.changeAllTokenScale(-0.2) }} class='material round' title='Zmenšit všechny postavy' use:tooltip>remove</button>
+        <button type='button' on:click={() => { vtt.changeAllTokenScale(0.2) }} class='material round' title='Zvětšit všechny postavy' use:tooltip>add</button>
+      </div>
     </div>
   {/if}
-  <!--{#if app && app.renderer}<div id='fps'>{optimized ? fps : 0} fps</div>{/if}-->
   <div id='map' bind:this={mapEl}></div>
 </div>
 
@@ -165,24 +182,44 @@
       justify-content: center;
     }
 
-  .scale, .fow {
+    .controls {
+      position: sticky;
+      z-index: 100;
+      top: 0px;
+    }
+      .scale, .fow {
+        position: absolute;
+        top: 5px;
+      }
+        .scale {
+          left: 5px;
+        }
+          .scale button {
+            margin-right: 5px;
+          }
+
+      .fow {
+        right: 5px;
+      }
+        .fow button {
+          margin-left: 5px;
+        }
+        .save {
+          background-color: var(--accent);
+          color: var(--maximum);
+          border: 1px color-mix(in srgb, var(--accent), var(--maximum) 15%) solid;
+        }
+
+  .brush {
     position: absolute;
-    z-index: 100;
-    top: 10px;
+    top: 60px;
+    right: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
-  .scale {
-    left: 10px;
-  }
-    .scale button {
-      margin-right: 5px;
-    }
-  .fow {
-    right: 10px;
-  }
-    .fow button {
-      margin-left: 5px;
-    }
-  .round:hover {
+
+  button:hover {
     transform: scale(1.1);
   }
 

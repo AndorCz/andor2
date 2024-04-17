@@ -50,7 +50,7 @@ export class Vtt {
 
     // fog of war
     if (this.map.fow) {
-      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller })
+      this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller, onFowChange: this.onFowChange })
     }
 
     // token buttons
@@ -165,7 +165,6 @@ export class Vtt {
     this.fow = new FoW({ map: this.map, app: this.app, scene: this.scene })
     this.fow.changeTool('light')
     toggleFoW(this.map, true)
-    // create mask image
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 
@@ -173,7 +172,6 @@ export class Vtt {
     this.map.fow = true
     this.fow.destroy()
     toggleFoW(this.map, false)
-    // save fow bool to db
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }
   }
 }

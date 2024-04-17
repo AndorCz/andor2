@@ -54,6 +54,10 @@ export function previewCanvas (canvas) {
   document.body.appendChild(canvas)
 }
 
+export function previewImage (image) {
+  document.body.appendChild(image)
+}
+
 export function formatDate (time) {
   const dt = DateTime.fromISO(time)
   // return dt.setLocale('cs').toRelativeCalendar() + ', ' + dt.toLocaleString(DateTime.TIME_SIMPLE)

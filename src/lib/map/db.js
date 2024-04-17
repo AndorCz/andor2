@@ -1,4 +1,4 @@
-import { supabase, handleError } from '@lib/database'
+import { supabase, handleError, getHash } from '@lib/database'
 import { showSuccess } from '@lib/toasts'
 
 // database operations for map
@@ -40,4 +40,13 @@ export async function clearProposition (map, id) {
 export async function toggleFoW (map, fow) {
   const { error } = await supabase.from('maps').update({ fow }).eq('id', map.id)
   if (error) { handleError(error) }
+}
+
+export async function saveFow (map, blob) {
+  if (blob) {
+    const { error: uploadError } = await supabase.storage.from('maps').upload(`${map.game}/${map.id}_fow`, blob, { upsert: true })
+    if (uploadError) { handleError(uploadError) }
+    const { error: hashError } = await supabase.from('maps').update({ fow_image: getHash() }).eq('id', map.id)
+    if (hashError) { handleError(hashError) }
+  }
 }
