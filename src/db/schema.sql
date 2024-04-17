@@ -29,7 +29,7 @@ create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');
-create type work_tag as enum ('story', 'fantasy', 'steampunk', 'scifi', 'horror', 'detective', 'thriller', 'romance', 'dystopia', 'poem', 'epos', 'drama', 'haiku', 'sonnet', 'freeverse', 'tragedy', 'comedy', 'tragicomedy', 'monodrama', 'experimental', 'screenplay', 'fromlife', 'biography', 'essay', 'history', 'motivational', 'fairytale', 'educational', 'comics', 'superhero', 'manga', 'travel', 'religion', 'science', 'technology', 'futurism', 'philosophy', 'rpg', 'larp', 'fanfiction', 'erotica', 'parody', 'city', 'countryside', 'space', 'vampires', 'werewolves', 'zombies', 'magic', 'warhammer', 'dnd', 'drd', 'cyberpunk', 'shadowrun', 'cthulhu', 'lotr', 'harrypotter', 'starwars', 'startrek', 'andor');
+create type work_tag as enum ('story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'erotica', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project');
 create type work_category as enum ('prose', 'poetry', 'game', 'other');
 
 -- TABLES --------------------------------------------
