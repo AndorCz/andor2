@@ -6,7 +6,7 @@
   const activeTab = Astro.url.searchParams.get('tab') || 'articles'
 
   const { data: works, error } = await supabase.from('work_list').select('*')
-  if (error) { console.log(error) }
+  if (error) { console.error(error) }
 ---
 
 <Layout title='Tvorba'>

@@ -14,7 +14,6 @@ export const initToasts = () => {
     ]
   })
   window.showSuccess = (text) => {
-    console.log(text)
     window.notyf.success(text)
   }
   window.showError = (text) => {

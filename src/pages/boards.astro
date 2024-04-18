@@ -5,7 +5,7 @@
   const { supabase, user } = Astro.locals
 
   const { data: boards, error } = await supabase.from('board_list').select('*')
-  if (error) { console.log(error) }
+  if (error) { console.error(error) }
 ---
 
 <Layout title='Diskuze'>

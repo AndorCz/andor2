@@ -23,7 +23,6 @@
     const response = await fetch(`/api/auth/verify?token=${captchaToken}`, { method: 'GET' })
     if (!response.ok) { showError('Chyba při ověření reCAPTCHA') }
     const data = await response.json()
-    console.log('data', data)
     return response.ok && data.success
   }
 
