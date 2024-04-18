@@ -57,6 +57,7 @@
   function removeCharacter (token) {
     if (token.character.characterData.player !== 'npc') { availableCharacters = [...availableCharacters, token.character.characterData] }
     vtt.scene.removeChild(token)
+    delete map.characters[token.character.characterData.id]
     clearCharacter(map, token.character.characterData)
     vtt.removeProposition(token)
     vtt.renderPropositions()

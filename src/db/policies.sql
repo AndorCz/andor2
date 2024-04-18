@@ -8,7 +8,7 @@
 ALTER TABLE public.bookmarks ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow users to add their own bookmarks + game joining" ON public.bookmarks FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) OR (game_id IN ( SELECT games.id FROM public.games WHERE (games.owner = auth.uid())))));
-
+-- Allow users to delete their own bookmarks
 
 -- BOARDS --------------------------------------------
 

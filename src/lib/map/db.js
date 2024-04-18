@@ -10,11 +10,11 @@ export async function saveTransfrom (map, character, x, y, scale) {
 }
 
 export async function clearCharacter (map, character) {
-  const newPositions = { ...map.characters }
-  delete newPositions[character.id]
+  const newCharacters = { ...map.characters }
+  delete newCharacters[character.id]
   const newPropositions = { ...map.propositions }
   delete newPropositions[character.id]
-  const { error } = await supabase.from('maps').update({ characters: newPositions, propositions: newPropositions }).eq('id', map.id)
+  const { error } = await supabase.from('maps').update({ characters: newCharacters, propositions: newPropositions }).eq('id', map.id)
   if (error) { handleError(error) }
 }
 
