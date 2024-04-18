@@ -52,9 +52,15 @@
       // search codex_sections.content
       const { data: sections, error: sectionError } = await supabase.from('codex_sections').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
       if (sectionError) { return handleError(sectionError) }
-      if (sections) { searchResults = [...searchResults, ...sections] }
+      if (sections) { // move section slug to section object
+        sections.forEach((section) => {
+          section.section = { slug: section.slug }
+          delete section.slug
+        })
+        searchResults = [...searchResults, ...sections]
+      }
       // search codex_pages
-      const { data: pages, error: pageError } = await supabase.from('codex_pages').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
+      const { data: pages, error: pageError } = await supabase.from('codex_pages').select('id, name, content, section(slug), slug').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
       if (pageError) { return handleError(pageError) }
       if (pages) { searchResults = [...searchResults, ...pages] }
     }
@@ -102,7 +108,7 @@
       {#if searchResults.length}
         {#each searchResults as page}
           <div class='page'>
-            <a href={`/games/${game.slug}/codex/${page.slug}`}>{page.name}</a>
+            <a href={`/game/${game.id}?codex_section=${page.section?.slug || ''}&codex_page=${page.slug || ''}`}>{page.name}</a>
             <Render html={page.content} />
           </div>
         {/each}
