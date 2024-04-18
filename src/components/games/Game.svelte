@@ -140,7 +140,7 @@
 
   @media (max-width: 860px) {
     .content {
-      padding: 40px 10px;
+      padding: 10px;
     }
   }
 </style>

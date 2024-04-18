@@ -43,10 +43,20 @@
   }
 
   async function handleSearch () {
+    searchResults = []
     if (searchPhrase) {
-      const { data, error } = await supabase.from('codex_pages').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
-      if (error) { return handleError(error) }
-      searchResults = data
+      // search general game.info
+      if (game.info.toLowerCase().includes(searchPhrase.toLowerCase())) {
+        searchResults = [{ name: 'Obecné', content: game.info }]
+      }
+      // search codex_sections.content
+      const { data: sections, error: sectionError } = await supabase.from('codex_sections').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
+      if (sectionError) { return handleError(sectionError) }
+      if (sections) { searchResults = [...searchResults, ...sections] }
+      // search codex_pages
+      const { data: pages, error: pageError } = await supabase.from('codex_pages').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
+      if (pageError) { return handleError(pageError) }
+      if (pages) { searchResults = [...searchResults, ...pages] }
     }
   }
 
