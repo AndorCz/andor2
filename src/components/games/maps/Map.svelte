@@ -40,17 +40,22 @@
 
   onDestroy(() => { vtt.destroy() })
 
-  async function renderCharacter (id, transform) {
-    availableCharacters = availableCharacters.filter(c => c.id !== id)
-    const characterData = game.characters.find(c => c.id === id)
+  async function renderCharacter (characterData, transform) {
     const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, tokenDiameter })
     await character.init()
     vtt.scene.addChild(character.token)
     if (!vtt.app.ticker.started) { vtt.app.renderer.render(vtt.app.stage) }
   }
 
-  function removeCharacter (token) {
-    availableCharacters = [...availableCharacters, token.character.characterData]
+  function addCharacter (characterData, transform, player = true) {
+    if (player) { availableCharacters = availableCharacters.filter(c => c.id !== characterData.id) }
+    renderCharacter(characterData, transform)
+    map.characters[characterData.id] = transform
+    saveTransfrom(map, characterData, transform.x, transform.y, 1)
+  }
+
+  function removeCharacter (token, player = true) {
+    if (player) { availableCharacters = [...availableCharacters, token.character.characterData] }
     vtt.scene.removeChild(token)
     clearCharacter(map, token.character.characterData)
     vtt.removeProposition(token)
@@ -62,12 +67,7 @@
   function handleDragStart (event, character) {
     const target = event.currentTarget
     if (event.dataTransfer.setDragImage) { event.dataTransfer.setDragImage(target, target.offsetWidth / 2, target.offsetHeight / 2) }
-
-    const characterData = JSON.stringify({
-      id: character.id,
-      portraitUrl: character.portraitUrl,
-      name: character.name
-    })
+    const characterData = JSON.stringify({ id: character.id, portraitUrl: character.portraitUrl, name: character.name })
     event.dataTransfer.setData('application/json', characterData)
   }
 
@@ -76,9 +76,12 @@
     const characterData = JSON.parse(event.dataTransfer.getData('application/json'))
     const position = getCanvasCoordinates(event, vtt, mapEl)
     const transform = { x: position.x, y: position.y, scale: 1 }
-    renderCharacter(characterData.id, transform)
-    map.characters[characterData.id] = transform
-    saveTransfrom(map, characterData, position.x, position.y, 1)
+    addCharacter(characterData, transform, true)
+  }
+
+  function addNpc () {
+    const name = npcTokenName.trim().replace(/["\\]/g, '')
+    addCharacter({ id: name, name, player: 'npc' }, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }, false)
   }
 
   async function toggleActive (map, game) {
@@ -153,7 +156,7 @@
         <h3>Přidat postavu</h3>
         <div class='characterList'>
           {#each availableCharacters as character}
-            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}"><!-- on:click={() => { addCharacter(character.id, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }) }} -->
+            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}">
               {#if character.portraitUrl}
                 <img class='portrait' src={character.portraitUrl} alt={character.name} />
               {:else}
@@ -165,10 +168,10 @@
         </div>
       </div>
       <div class='npcs'>
-        <h3>Přidat dočasný žeton</h3>
+        <h3>Přidat žeton</h3>
         <div class='row'>
           <input type='text' placeholder='Název' bind:value={npcTokenName}>
-          <button type='button' on:click={() => { vtt.addNpcToken(npcTokenName) }} class='material square'>add</button>
+          <button type='button' on:click={addNpc} class='material square'>add</button>
         </div>
       </div>
     {/if}

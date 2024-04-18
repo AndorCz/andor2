@@ -1,6 +1,7 @@
 import { Circle, Text, Sprite, Graphics, Assets, Texture } from 'pixi.js'
 import { MaskContainer } from '@lib/pixi'
 import { DropShadowFilter } from 'pixi-filters'
+import { stringToColor } from '@lib/utils'
 
 let app
 
@@ -17,7 +18,9 @@ export class Character {
     this.portraitTexture = this.characterData.portraitUrl ? await Assets.load(this.characterData.portraitUrl) : Texture.WHITE
     // this.portraitTexture.source.resolution = window.devicePixelRatio
     const portrait = Sprite.from(this.portraitTexture)
-    if (!this.characterData.portraitUrl) { portrait.tint = this.characterData.color }
+    if (!this.characterData.portraitUrl) {
+      portrait.tint = this.characterData.color ? this.characterData.color : stringToColor(this.characterData.name)
+    }
     const scale = Math.max(this.tokenDiameter / portrait.width, this.tokenDiameter / portrait.height)
     portrait.scale.set(scale)
     portrait.anchor.set(0.5, 0)
@@ -51,7 +54,8 @@ export class Character {
     this.token.addChild(selectedCircle)
 
     // add name
-    const name = new Text({ text: this.characterData.name, style: { lineHeight: 15, wordWrap: true, wordWrapWidth: 80, align: 'center', fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: '#000', width: 5 } } })
+    const strokeColor = this.characterData.player === 'npc' ? '#634b41' : '#000'
+    const name = new Text({ text: this.characterData.name, style: { lineHeight: 15, wordWrap: true, wordWrapWidth: 80, align: 'center', fontSize: 15, fontFamily: 'Alegreya Sans', fill: '#fff', fontWeight: 'bold', stroke: { color: strokeColor, width: 5 } } })
     name.anchor.set(0.5, 0.7)
     name.y = this.tokenDiameter
     this.token.addChild(name)
@@ -69,7 +73,7 @@ export class Character {
     if (event.button !== 0) { return } // only left click
     event.stopPropagation()
     event.data.originalEvent.preventDefault()
-    if (app.user.id === this.character.characterData.player.id || app.isStoryteller) {
+    if (app.isStoryteller || app.user.id === this.character.characterData.player.id) {
       app.ticker.start()
       app.dragging = this.character
       if (app.selectedToken) { app.selectedToken.selectedCircle.visible = false } // deselect previous token

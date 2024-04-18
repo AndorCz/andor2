@@ -67,7 +67,9 @@ export class Vtt {
 
     // add character tokens
     for (const id of Object.keys(this.map.characters)) {
-      await this.renderCharacter(id, this.map.characters[id])
+      let characterData = this.game.characters.find(character => character.id === id)
+      if (!characterData) { characterData = { player: 'npc', id, name: id } }
+      await this.renderCharacter(characterData, this.map.characters[id])
     }
 
     window.addEventListener('resize', () => {
