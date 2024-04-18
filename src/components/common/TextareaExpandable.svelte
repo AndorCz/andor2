@@ -40,12 +40,7 @@
   function setHeight (node) { // textarea only
     const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
-    if (singleLine) {
-      textareaRef.style.height = '60px'
-      console.log(textareaRef.scrollHeight)
-    } else {
-      textareaRef.style.height = `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
-    }
+    textareaRef.style.height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
   }
 
   async function cancelEdit () {

@@ -54,8 +54,8 @@
     saveTransfrom(map, characterData, transform.x, transform.y, 1)
   }
 
-  function removeCharacter (token, player = true) {
-    if (player) { availableCharacters = [...availableCharacters, token.character.characterData] }
+  function removeCharacter (token) {
+    if (token.character.characterData.player !== 'npc') { availableCharacters = [...availableCharacters, token.character.characterData] }
     vtt.scene.removeChild(token)
     clearCharacter(map, token.character.characterData)
     vtt.removeProposition(token)
@@ -81,7 +81,9 @@
 
   function addNpc () {
     const name = npcTokenName.trim().replace(/["\\]/g, '')
+    if (!name) { return }
     addCharacter({ id: name, name, player: 'npc' }, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2, scale: 1 }, false)
+    npcTokenName = ''
   }
 
   async function toggleActive (map, game) {
@@ -170,7 +172,7 @@
       <div class='npcs'>
         <h3>Přidat žeton</h3>
         <div class='row'>
-          <input type='text' placeholder='Název' bind:value={npcTokenName}>
+          <input type='text' placeholder='Název' bind:value={npcTokenName} on:keydown={(e) => { if (e.key === 'Enter') { addNpc() } }}>
           <button type='button' on:click={addNpc} class='material square'>add</button>
         </div>
       </div>

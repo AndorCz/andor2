@@ -14,9 +14,7 @@ export class Character {
   }
 
   async init () {
-    // const texture = characterData.portraitUrl ? await Assets.load({ src: characterData.portraitUrl, loadParser: 'loadTextures' }) : Texture.WHITE
     this.portraitTexture = this.characterData.portraitUrl ? await Assets.load(this.characterData.portraitUrl) : Texture.WHITE
-    // this.portraitTexture.source.resolution = window.devicePixelRatio
     const portrait = Sprite.from(this.portraitTexture)
     if (!this.characterData.portraitUrl) {
       portrait.tint = this.characterData.color ? this.characterData.color : stringToColor(this.characterData.name)
