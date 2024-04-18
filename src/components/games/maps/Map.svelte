@@ -81,7 +81,7 @@
 
   function addNpc () {
     const name = npcTokenName.trim().replace(/["\\]/g, '')
-    addCharacter({ id: name, name, player: 'npc' }, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2 }, false)
+    addCharacter({ id: name, name, player: 'npc' }, { x: vtt.scaledWidth / 2, y: vtt.scaledHeight / 2, scale: 1 }, false)
   }
 
   async function toggleActive (map, game) {
