@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { writable } from 'svelte/store'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
@@ -53,6 +53,11 @@
     }
     if (showDiscussion) { loadPosts() }
     window.addEventListener('pagehide', saveUnsent)
+  })
+
+  onDestroy(() => {
+    saveUnsent()
+    window.removeEventListener('pagehide', saveUnsent)
   })
 
   async function loadPosts () {

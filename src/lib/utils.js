@@ -135,6 +135,12 @@ export function createSlug (name) {
   return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
 }
 
+export function addURLParam (param, value) {
+  const urlParams = new URLSearchParams(window.location.search)
+  urlParams.set(param, value)
+  window.history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`)
+}
+
 export function removeURLParam (param) {
   const urlParams = new URLSearchParams(window.location.search)
   urlParams.delete(param)

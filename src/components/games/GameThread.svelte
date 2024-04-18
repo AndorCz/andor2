@@ -1,7 +1,7 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { writable } from 'svelte/store'
-  import { clone } from '@lib/utils'
+  import { clone, addURLParam } from '@lib/utils'
   import { sendPost } from '@lib/database'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -53,6 +53,17 @@
     window.addEventListener('pagehide', saveUnsent)
   })
 
+  onDestroy(() => {
+    saveUnsent()
+    window.removeEventListener('pagehide', saveUnsent)
+  })
+
+  function changeTool (tool) {
+    if (activeTool === 'post') { saveUnsent() }
+    activeTool = tool
+    addURLParam('tool', tool)
+  }
+
   function getActiveCharacterId () {
     if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId })) {
       return $gameStore.activeCharacterId // set character from localStorage
@@ -62,7 +73,10 @@
   }
 
   async function saveUnsent () {
-    if (textareaRef) { $gameStore.unsent = await textareaRef.getContent() }
+    if (textareaRef) {
+      const content = await textareaRef.getContent()
+      $gameStore.unsent = textareaValue = content || ''
+    }
   }
 
   async function loadPosts () {
@@ -158,10 +172,10 @@
 
 <main>
   <div class='tabs tertiary tools'>
-    <button on:click={() => { activeTool = 'post' }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
-    <button on:click={() => { activeTool = 'maps' }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
-    <button on:click={() => { activeTool = 'dice' }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
-    <button on:click={() => { activeTool = 'find' }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
+    <button on:click={() => { changeTool('post') }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+    <button on:click={() => { changeTool('maps') }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
+    <button on:click={() => { changeTool('dice') }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
+    <button on:click={() => { changeTool('find') }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
   </div>
 
   <div class='toolWrapper'>

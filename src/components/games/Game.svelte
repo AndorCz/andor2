@@ -20,6 +20,7 @@
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
 
   onMount(() => {
+    // tabs are persisted for the purpose of saving with redirect (to astro)
     $gameStore.activeTab = new URLSearchParams(window.location.search).get('tab') || $gameStore.activeTab || 'codex'
     removeURLParam('tab')
   })
@@ -44,6 +45,11 @@
     showSuccess('Záložka odebrána')
   }
 
+  function changeTab (tab) {
+    $gameStore.activeTab = tab
+    history.pushState({}, '', `?tab=${tab}`)
+  }
+
   $: bookmarkId = $bookmarks.games.find(b => b.id === game.id)?.bookmark_id
 </script>
 
@@ -59,20 +65,20 @@
   </div>
 
   <nav class='tabs secondary'>
-    <button on:click={() => { $gameStore.activeTab = 'codex' }} class={$gameStore.activeTab === 'codex' ? 'active' : ''}>
+    <button on:click={() => { changeTab('codex') }} class={$gameStore.activeTab === 'codex' ? 'active' : ''}>
       Kodex
     </button>
-    <button on:click={() => { $gameStore.activeTab = 'game' }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={game.unread.gameThread}>
+    <button on:click={() => { changeTab('game') }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={game.unread.gameThread}>
       Hra{#if game.unread.gameThread && $gameStore.activeTab !== 'game'}<span class='unread count'>{game.unread.gameThread}</span>{/if}
     </button>
-    <button on:click={() => { $gameStore.activeTab = 'chat' }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={game.unread.gameChat}>
+    <button on:click={() => { changeTab('chat') }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={game.unread.gameChat}>
       Diskuze{#if game.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{game.unread.gameChat}</span>{/if}
     </button>
-    <button on:click={() => { $gameStore.activeTab = 'chars' }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
+    <button on:click={() => { changeTab('chars') }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
       Postavy{#if game.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}
     </button>
     {#if isStoryteller}
-      <button on:click={() => { $gameStore.activeTab = 'story' }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
+      <button on:click={() => { changeTab('story') }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
         Vypravěč
       </button>
     {/if}
