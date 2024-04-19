@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { getHeaderUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
   import { gameCategories, gameSystems } from '@lib/constants'
@@ -11,14 +12,29 @@
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
+  onMount(() => { // get sort parameter from url
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
+  })
+
+  function setSort (type) {
+    sort = type
+    window.location.search = new URLSearchParams({ sort: type }).toString()
+  }
+
   let listView = false
+  let sort = 'new'
 </script>
 
 {#if showHeadline}
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <div class='toggle'>
+      <div class='toggle sort'>
+        <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
+        <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
+      </div>
+      <div class='toggle compact'>
         <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
@@ -180,7 +196,7 @@
     .block .name {
       flex-basis: 100%;
     }
-    .toggle {
+    .compact {
       display: none;
     }
   }

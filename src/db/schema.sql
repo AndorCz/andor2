@@ -265,7 +265,7 @@ create view board_list as
   order by b.created_at desc;
 
 create view game_list as
-  select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
+  select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count, max(p.created_at) as last_post
   from games g
     left join threads t on g.game_thread = t.id
     left join profiles pr on g.owner = pr.id
@@ -314,7 +314,7 @@ create or replace view last_posts as
     left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
     left join characters ch on p.owner = ch.id and p.owner_type = 'character'
   where
-    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE
+    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE and g.open_game = true
   order by
     p.created_at desc
   limit 10;

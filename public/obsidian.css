@@ -209,7 +209,7 @@ button, .button {
   }
 
   button.active {
-    background-color: var(--panel);
+    background-color: color-mix(in srgb, var(--panel), var(--background) 30%) ;
     border: 1px var(--panel) solid;
     box-shadow: inset 2px 2px 2px #0003;
   }
