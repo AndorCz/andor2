@@ -162,7 +162,7 @@
       {/key}
     {/if}
   {:else}
-    <p>Tato diskuze není veřejná.</p>
+    <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
 </main>
 
@@ -187,6 +187,14 @@
     .headlines .sender {
       width: 200px;
     }
+
+  .info {
+    margin: 60px 0px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
   @media (max-width: 860px) {
     select {
       width: 100%;

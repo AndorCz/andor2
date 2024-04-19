@@ -119,7 +119,7 @@
       <CodexSection {user} {game} {activeSection} {isStoryteller} />
     {/if}
   {:else}
-    <p class='info'>Informace o hře nejsou veřejné</p>
+    <div class='info'><span class='material'>info</span>Kodex této hry není veřejný</div>
   {/if}
 </main>
 
@@ -163,6 +163,12 @@
       padding: 20px;
       margin-bottom: 20px;
     }
+  .info {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
 
   @media (max-width: 1000px) {
     main {

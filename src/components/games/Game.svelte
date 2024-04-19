@@ -88,12 +88,12 @@
     {#if $gameStore.activeTab === 'codex'}
       <GameCodex {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'chat'}
-      <h2>{#if game.open_discussion}Veřejná diskuze{:else}Soukromá diskuze{/if}</h2>
+      {#if game.open_discussion}<h2>Veřejná diskuze</h2>{/if}
       <Discussion data={game} {user} isOwner={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection={'games'} />
     {:else if $gameStore.activeTab === 'game'}
-      <GameThread {game} {user} {isStoryteller} unread={game.unread.gameThread} {gameStore} />
+      <GameThread {game} {user} {isStoryteller} {isPlayer} unread={game.unread.gameThread} {gameStore} />
     {:else if $gameStore.activeTab === 'chars'}
-      <GameCharacters {game} {user} {isStoryteller} />
+      <GameCharacters {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}
       <GameStoryteller {game} {user} {isStoryteller} />
     {/if}

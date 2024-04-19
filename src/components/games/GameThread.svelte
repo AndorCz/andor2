@@ -15,6 +15,7 @@
   export let game = {}
   export let gameStore
   export let isStoryteller
+  export let isPlayer
   export let unread = 0
 
   let activeTool = 'post'
@@ -170,44 +171,48 @@
   $: diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
 </script>
 
-<main>
-  <div class='tabs tertiary tools'>
-    <button on:click={() => { changeTool('post') }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
-    <button on:click={() => { changeTool('maps') }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
-    <button on:click={() => { changeTool('dice') }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
-    <button on:click={() => { changeTool('find') }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
-  </div>
+{#if game.open_game || isStoryteller || isPlayer}
+  <main>
+    <div class='tabs tertiary tools'>
+      <button on:click={() => { changeTool('post') }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+      <button on:click={() => { changeTool('maps') }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
+      <button on:click={() => { changeTool('dice') }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
+      <button on:click={() => { changeTool('find') }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
+    </div>
 
-  <div class='toolWrapper'>
-    {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
-      <DiceBox threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
-    {:else if activeTool === 'maps'}
-      <Maps {user} {game} {isStoryteller} />
-    {:else if activeTool === 'find'}
-      <div class='searchBox'>
-        <!-- svelte-ignore a11y-autofocus -->
-        <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-        <button class='material' on:click={handleSearch}>search</button>
-      </div>
-    {:else if activeTool === 'post' && user.id && $gameStore.activeCharacterId}
-      <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-      <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
-      <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
-    {/if}
-  </div>
-</main>
+    <div class='toolWrapper'>
+      {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
+        <DiceBox threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+      {:else if activeTool === 'maps'}
+        <Maps {user} {game} {isStoryteller} />
+      {:else if activeTool === 'find'}
+        <div class='searchBox'>
+          <!-- svelte-ignore a11y-autofocus -->
+          <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+          <button class='material' on:click={handleSearch}>search</button>
+        </div>
+      {:else if activeTool === 'post' && user.id && $gameStore.activeCharacterId}
+        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+        <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
+      {/if}
+    </div>
+  </main>
 
-{#if searchTerms}
-  <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
-{:else if filterActive}
-  <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeAudienceIds = ['*']; loadPosts() }}>close</button></h2>
-{/if}
-<!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
+  {#if searchTerms}
+    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
+  {:else if filterActive}
+    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeAudienceIds = ['*']; loadPosts() }}>close</button></h2>
+  {/if}
+  <!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
-{#if activeTool !== 'maps'}
-  {#key $posts}
-    <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
-  {/key}
+  {#if activeTool !== 'maps'}
+    {#key $posts}
+      <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
+    {/key}
+  {/if}
+{:else}
+  <div class='info'><span class='material'>info</span>Hra je soukromá</div>
 {/if}
 
 <style>
@@ -247,6 +252,13 @@
     padding: 5px;
     font-size: 19px;
     margin-left: 10px;
+  }
+
+  .info {
+    margin: 60px 0px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
   }
 
   @media (max-width: 400px) {

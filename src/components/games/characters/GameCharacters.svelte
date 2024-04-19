@@ -11,6 +11,7 @@
   export let user = {}
   export let game = {}
   export let isStoryteller
+  export let isPlayer
 
   // sort character categories
   const isCharPlayer = (char) => { return char.player?.id === user.id }
@@ -74,32 +75,35 @@
 </script>
 
 <main>
-  <h2>Vypravěči</h2>
-  <table class='characters'>
-    {#if isFilledArray(characters.storytellers)}
-      <CharacterHeader {isStoryteller} />
-      {#each characters.storytellers as character}
-        <Character {user} {character} {isStoryteller} {game} />
-      {/each}
-    {:else}
-      <td class='none'>Žádní vypravěči</td>
-    {/if}
-  </table>
+  {#if game.open_game || isStoryteller || isPlayer}
+    <h2>Vypravěči</h2>
+    <table class='characters'>
+      {#if isFilledArray(characters.storytellers)}
+        <CharacterHeader {isStoryteller} />
+        {#each characters.storytellers as character}
+          <Character {user} {character} {isStoryteller} {game} />
+        {/each}
+      {:else}
+        <td class='none'>Žádní vypravěči</td>
+      {/if}
+    </table>
 
-  <h2>Ve hře</h2>
-  <table class='characters'>
-    {#if isFilledArray(characters.playing)}
-      <CharacterHeader {isStoryteller} />
-      {#each characters.playing as character}
-        <Character {user} {character} {isStoryteller} {game} />
-      {/each}
-    {:else}
-      <tr><td class='none'>Žádné postavy</td></tr>
-    {/if}
-  </table>
-  <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
-
-  <hr>
+    <h2>Ve hře</h2>
+    <table class='characters'>
+      {#if isFilledArray(characters.playing)}
+        <CharacterHeader {isStoryteller} />
+        {#each characters.playing as character}
+          <Character {user} {character} {isStoryteller} {game} />
+        {/each}
+      {:else}
+        <tr><td class='none'>Žádné postavy</td></tr>
+      {/if}
+    </table>
+    <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
+    <hr>
+  {:else}
+    <center><div class='note'><span class='material'>info</span>Hra je soukromá, nemůžeš vidět její postavy</div></center>
+  {/if}
 
   <h1>Nábor</h1>
   <EditableLong userId={user.id} bind:value={game.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
@@ -147,7 +151,7 @@
       </div>
     {/if}
   {:else}
-    <center><div class='note'><span class='material'>info</span>Nábor je uzavřený</div></center>
+    <div class='info'><span class='material'>info</span>Nábor je uzavřený</div>
   {/if}
 </main>
 

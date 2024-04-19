@@ -17,6 +17,7 @@
   let originalCategory
   let originalOpenDiscussion
   let originalRecruitmentOpen
+  let originalOpenGame
   let originalOpenCodex
   let originalAnnotation
   let originalContextDice
@@ -33,6 +34,7 @@
     originalOpenDiscussion = game.open_discussion
     originalRecruitmentOpen = game.recruitment_open
     originalAnnotation = game.annotation
+    originalOpenGame = game.open_game
     originalOpenCodex = game.open_codex
     originalContextDice = game.context_dice
   }
@@ -40,7 +42,7 @@
   async function updateGame () {
     saving = true
     const welcomeMessage = await welcomeMessageRef.getContent()
-    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage }).eq('id', game.id)
+    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game }).eq('id', game.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -158,6 +160,15 @@
         <option value={true}>Otevřený</option>
       </select>
       <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === game.recruitment_open)} class='material'>check</button>
+    </div>
+
+    <h2>Viditelnost hry <span class='material' title='Skryje herní příspěvky, postavy a mapy' use:tooltip>info</span></h2>
+    <div class='row'>
+      <select id='gameOpen' name='gameOpen' bind:value={game.open_game}>
+        <option value={false}>Soukromá</option>
+        <option value={true}>Veřejná</option>
+      </select>
+      <button on:click={updateGame} disabled={saving || (originalOpenGame === game.open_game)} class='material'>check</button>
     </div>
 
     <h2>Viditelnost diskuze</h2>
