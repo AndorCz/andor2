@@ -41,7 +41,8 @@
     return myCharacters
   }
   const userIdentity = { name: user.name, id: user.id, type: 'user' }
-  const identities = [userIdentity, ...getMyCharacters()]
+  const identities = getMyCharacters()
+  identities.push(userIdentity)
 
   onMount(() => {
     if (user.id) {
