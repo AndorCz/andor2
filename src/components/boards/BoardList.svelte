@@ -1,5 +1,7 @@
 <script>
+  import { onMount } from 'svelte'
   import { getHeaderUrl } from '@lib/database'
+  import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
@@ -9,6 +11,16 @@
   export let compactOnly = false
 
   let listView = false
+  let boardListStore
+
+  onMount(() => {
+    boardListStore = getSavedStore('boards', { listView: false })
+    listView = $boardListStore.listView
+  })
+
+  function setListView (val) {
+    listView = $boardListStore.listView = val
+  }
 </script>
 
 {#if showHeadline}
@@ -16,8 +28,8 @@
     <h1>Diskuze</h1>
     <div class='buttons'>
       <div class='toggle'>
-        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
         <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>

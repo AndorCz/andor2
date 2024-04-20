@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
@@ -57,7 +57,10 @@
   <EditableLong userId={user.id} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
-    <div class='author'>Autor: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a></div>
+    <div class='author'>
+      Autor: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a>
+      <img src={getPortraitUrl(data.owner.id, data.owner.portrait)} class='portrait' alt={data.owner.name} />
+    </div>
   </div>
 
   <br><br>
@@ -85,4 +88,18 @@
     align-items: center;
     margin-top: 20px;
   }
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+    .portrait {
+      display: block;
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background-color: var(--background);
+    }
 </style>

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { getHeaderUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
+  import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
   import { tooltip } from '@lib/tooltip'
 
@@ -9,12 +10,19 @@
   export let games = []
   export let showHeadline = false
 
+  let sort = 'new'
+  let listView = false
+  let gameListStore
+
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
   onMount(() => { // get sort parameter from url
     const sortParam = new URL(window.location).searchParams.get('sort')
     if (sortParam) { sort = sortParam }
+
+    gameListStore = getSavedStore('boards', { listView: false })
+    listView = $gameListStore.listView
   })
 
   function setSort (type) {
@@ -22,8 +30,9 @@
     window.location.search = new URLSearchParams({ sort: type }).toString()
   }
 
-  let listView = false
-  let sort = 'new'
+  function setListView (val) {
+    listView = $gameListStore.listView = val
+  }
 </script>
 
 {#if showHeadline}
@@ -35,8 +44,8 @@
         <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
       </div>
       <div class='toggle compact'>
-        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
         <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>

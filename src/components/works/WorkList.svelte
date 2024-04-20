@@ -1,7 +1,9 @@
 <script>
-  import { getHeaderUrl } from '@lib/database'
-  import { isFilledArray } from '@lib/utils'
+  import { onMount } from 'svelte'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database'
   import { workTags, workCategoriesText } from '@lib/constants'
+  import { getSavedStore } from '@lib/stores'
+  import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
   export let user = {}
@@ -11,6 +13,12 @@
   export let showTabs = false
 
   let listView = false
+  let workListStore
+
+  onMount(() => {
+    workListStore = getSavedStore('works', { listView: false })
+    listView = $workListStore.listView
+  })
 
   function getTags (value) {
     return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
@@ -21,6 +29,10 @@
     const category = workCategoriesText.find(c => c.value === work.category)
     return category.value !== 'other' ? category.label : ''
   }
+
+  function setListView (val) {
+    listView = $workListStore.listView = val
+  }
 </script>
 
 {#if showHeadline}
@@ -28,8 +40,8 @@
     <h1>Tvorba</h1>
     <div class='buttons'>
       <div class='toggle'>
-        <button on:click={() => { listView = false }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { listView = true }} class:active={listView} class='material'>table_rows_narrow</button>
+        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
         <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
@@ -69,7 +81,7 @@
           <td><div class='category'>{getCategory(work)}</div></td>
           <td><div class='tags'>{getTags(work.tags)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
-          <td><div class='owner user'>{work.owner_name}</div></td>
+          <td><div class='owner user'>{work.owner_name}<img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} /></div></td>
         </tr>
       {/each}
     </table>
@@ -82,7 +94,7 @@
             <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner user' title='autor'>{work.owner_name}</div>
+            <div class='owner user' title='autor'>{work.owner_name}<img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} /></div>
           </div>
           <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation}</div>
         </div>
@@ -109,6 +121,7 @@
     display: flex;
     gap: 20px;
   }
+
   .name a:first-letter {
     text-transform: uppercase;
   }
@@ -117,6 +130,9 @@
   }
   .editorial {
     background-color: var(--prominent) !important;
+  }
+  center {
+    padding: 50px;
   }
 
   /* blocks */
@@ -205,8 +221,25 @@
         padding: 20px;
       }
 
-  center {
-    padding: 50px;
+  /* common */
+
+  .owner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+    .portrait {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background-color: var(--background);
+    }
+  .list .owner {
+    padding-right: 20px;
   }
 
   @media (max-width: 1200px) {
@@ -233,6 +266,9 @@
     }
     .block .image {
       width: 100%;
+    }
+    .portrait {
+      display: none;
     }
   }
 </style>
