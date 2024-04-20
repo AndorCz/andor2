@@ -81,7 +81,7 @@
           <td><div class='category'>{getCategory(work)}</div></td>
           <td><div class='tags'>{getTags(work.tags)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
-          <td><div class='owner user'>{work.owner_name}<img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} /></div></td>
+          <td><div class='owner user'>{work.owner_name}{#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={user.name} />{/if}</div></td>
         </tr>
       {/each}
     </table>
@@ -94,7 +94,7 @@
             <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner user' title='autor'>{work.owner_name}<img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} /></div>
+            <div class='owner user' title='autor'>{work.owner_name}{#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={user.name} />{/if}</div>
           </div>
           <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation}</div>
         </div>

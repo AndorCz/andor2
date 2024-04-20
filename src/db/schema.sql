@@ -240,7 +240,7 @@ create table user_reads (
 
 -- VIEWS --------------------------------------------
 
-create view posts_owner as
+create or replace posts_owner as
   select
     p.*,
     case
@@ -259,7 +259,7 @@ create view posts_owner as
   order by
     p.created_at desc;
 
-create view board_list as
+create or replace board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
   from boards b
     left join threads t on b.thread = t.id
@@ -268,7 +268,7 @@ create view board_list as
   group by b.id, pr.id, pr.name
   order by b.created_at desc;
 
-create view game_list as
+create or replace game_list as
   select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count, max(p.created_at) as last_post
   from games g
     left join threads t on g.game_thread = t.id
@@ -277,8 +277,8 @@ create view game_list as
   group by g.id, pr.id, pr.name
   order by g.created_at desc;
 
-create view work_list as
-  select w.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
+create or replace work_list as
+  select w.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
   from works w
     left join threads t on w.thread = t.id
     left join profiles pr on w.owner = pr.id
