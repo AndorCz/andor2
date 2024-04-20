@@ -144,7 +144,7 @@
   <h2 class='separator'><div class='lines'></div><span class='material owner'>star</span>Pouze pro vlastníka<div class='lines'></div></h2>
 
   {#if data.owner.id === user.id}
-    <h2>Moderátoři</h2>
+    <h2>Správci</h2>
     {#if data.mods && data.mods.length}
       {#await getNames(data.mods) then list}
         <ul>
@@ -159,9 +159,9 @@
         </ul>
       {/await}
     {:else}
-      <p class='info'>Žádní moderátoři</p>
+      <p class='info'>Žádní správci</p>
     {/if}
-    <h3><label for='boardAddMod'>Přidat moderátora</label></h3>
+    <h3><label for='boardAddMod'>Přidat správce</label></h3>
     <div class='row select'>
       <Select bind:value={newMod} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
         <div slot='empty'>Uživatel nenalezen</div>
