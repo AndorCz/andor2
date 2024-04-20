@@ -292,6 +292,10 @@ select {
   background-size: 14px 14px;
 }
 
+::placeholder {
+  color: var(--dim) !important;
+}
+
 .highlight {
   color: var(--new);
   font-weight: bold;
@@ -342,7 +346,7 @@ select {
   --border-hover: none;
   --background: var(--inputBg);
   --color: var(--text);
-  --padding: 15px;
+  --padding: 3px 15px;
   --min-width: 40px;
   --min-height: 40px;
   --border-focused: 2px var(--buttonBg) solid;
@@ -365,6 +369,9 @@ select {
   }
   .svelte-select .multi-item-clear {
     cursor: pointer;
+  }
+  .svelte-select .value-container {
+    height: 50px;
   }
 
 /* TABS */

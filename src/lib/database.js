@@ -107,3 +107,9 @@ export async function getReply (posts, postId) {
   if (error) { return handleError(error) }
   return data
 }
+
+export async function userAutocomplete (name) {
+  const { data, error } = await supabase.from('profiles').select('id, name').ilike('name', name + '%').limit(5)
+  if (error) { return handleError(error) }
+  return data
+}

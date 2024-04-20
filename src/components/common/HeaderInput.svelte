@@ -96,7 +96,7 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <input id='headerImage' type='file' accept='image' bind:this={headerInputEl} bind:files on:change={processImage} disabled={uploading} />
-<button class='material clear' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+<button class='material clear square' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
 
 <style>
   #veil {

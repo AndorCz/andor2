@@ -53,12 +53,12 @@
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
-<main>
-  <div class='headline'>
-    <h1>Nastavení díla "{data.name}"</h1>
-    <button on:click={showWork} class='material square' title='Zpět do díla'>check</button>
-  </div>
+<div class='headline'>
+  <h1>Nastavení díla "{data.name}"</h1>
+  <button on:click={showWork} class='material square' title='Zpět do díla'>check</button>
+</div>
 
+<main>
   {#if data.owner.id === user.id}
     <h2 class='first'>Vlastní hlavička</h2>
     Obrázek musí mít velikost alespoň 1100×226 px<br><br>
@@ -70,13 +70,13 @@
     <h2>Název</h2>
     <div class='row'>
       <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save'>check</button>
+      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save square'>check</button>
     </div>
 
     <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
-      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save'>check</button>
+      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square'>check</button>
     </div>
 
     <h2>Kategorie</h2>
@@ -86,7 +86,7 @@
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>
-      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save'>check</button>
+      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square'>check</button>
     </div>
 
     <h2>Tagy</h2>
@@ -94,7 +94,7 @@
       <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
         <div slot='empty'>Více tagů nelze přidat</div>
       </Select>
-      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save'>check</button>
+      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square'>check</button>
     </div>
 
     <h2>Smazání díla</h2>
@@ -121,23 +121,21 @@
       margin-left: 10px;
     }
 
+  main {
+    max-width: 600px;
+    margin: auto;
+  }
+
   h2 {
     margin-top: 50px;
   }
   .row {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 10px;
   }
-    #workName {
+    input[type=text], select {
       width: 100%;
-    }
-    button.save {
-      height: 60px;
-    }
-    select {
-      width: 100%;
-      max-width: 400px;
     }
   .delete {
     display: flex;

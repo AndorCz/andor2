@@ -11,7 +11,7 @@
 
   export let user = {}
   export let data = {}
-  export let isOwner
+  export let canModerate
   export let slug
   export let contentSection
   export let isPermitted = true
@@ -158,7 +158,7 @@
 
     {#if $posts.length}
       {#key $posts}
-        <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} canModerate={isOwner} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+        <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
       {/key}
     {/if}
   {:else}

@@ -6,6 +6,7 @@
   export let user = {}
   export let boards = []
   export let showHeadline = false
+  export let compactOnly = false
 
   let listView = false
 </script>
@@ -27,12 +28,12 @@
 {/if}
 
 {#if isFilledArray(boards)}
-  {#if listView}
+  {#if listView || compactOnly}
     <table class='list'>
       <tr>
         <th>název</th>
         <th>příspěvků</th>
-        <th>správce</th>
+        <th>vlastník</th>
       </tr>
       {#each boards as board}
         <tr class='board'>

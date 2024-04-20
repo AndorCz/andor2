@@ -8,8 +8,19 @@
 
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header').eq('id', boardId).single()
+  const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header, open, mods, members, bans').eq('id', boardId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+
+  let hasAccess = boardData.open
+  let isMod = boardData.owner.id === user.id || boardData.mods.includes(user.id)
+
+  if (user) {
+    if (boardData.open) { // open board, allow everyone except banned users
+      hasAccess = !boardData.bans.includes(user.id)
+    } else { // private board, allow owner, mods and members
+      hasAccess = isMod || boardData.members.includes(user.id)
+    }
+  }
 
   const { data: unreadData, error: error2 } = await supabase.rpc('get_thread_unread', { thread: boardData.thread })
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
@@ -17,9 +28,13 @@
 ---
 
 <Layout title={boardData?.name} headerStorage={boardData?.custom_header ? `board-${boardData.id}.jpg?hash=${boardData.custom_header}` : null}>
-  {(showSettings ? (
-    <BoardSettings data={boardData} {user} client:only />
+  {(hasAccess ? (
+    showSettings ? (
+      <BoardSettings data={boardData} {user} {isMod} client:only />
+    ) : (
+      <Board data={boardData} {user} {isMod} client:only />
+    )
   ) : (
-    <Board data={boardData} {user} client:only />
+    <p>Do této diskuze nemáš přístup</p>
   ))}
 </Layout>

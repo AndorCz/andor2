@@ -2,7 +2,6 @@
   import { supabase, handleError } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
-  // import { workTags } from '@lib/constants'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -62,7 +61,7 @@
   </div>
 
   <br><br>
-  <Discussion {data} {user} thread={data.thread} isOwner={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection={'works'} />
+  <Discussion {data} {user} thread={data.thread} canModerate={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection={'works'} />
 </main>
 
 <style>

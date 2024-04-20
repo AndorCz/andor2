@@ -54,7 +54,7 @@
         <th>kategorie</th>
         <th>systém</th>
         <th>příspěvků</th>
-        <th>správce</th>
+        <th>vlastník</th>
       </tr>
       {#each games as game}
         <tr class='gameLine'>

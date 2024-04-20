@@ -1,7 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
+  import { showSuccess, showError } from '@lib/toasts'
+  import { supabase, handleError, userAutocomplete } from '@lib/database'
+  import Select from 'svelte-select'
   import HeaderInput from '@components/common/HeaderInput.svelte'
 
   export let data = {}
@@ -9,62 +11,178 @@
 
   let saving = false
   let originalName
+  let originalOpen
+  let newMod
+  let newBan
+  let newMember
 
   onMount(setOriginal)
 
   function setOriginal () {
     originalName = data.name
+    originalOpen = data.open
   }
 
   async function updateBoard () {
     saving = true
-    const { error } = await supabase.from('boards').update({ name: data.name }).eq('id', data.id)
+    const { error } = await supabase.from('boards').update({ name: data.name, open: data.open }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     showSuccess('Změna diskuze uložena')
     saving = false
-    // await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
   }
 
   async function deleteBoard () {
     const { error } = await supabase.from('boards').delete().eq('id', data.id)
     if (error) { return handleError(error) }
-    // await fetch('/api/cache?type=boards', { method: 'GET' }) // clear cache
     window.location.href = '/boards?toastType=success&toastText=' + encodeURIComponent('Diskuze byla smazána')
   }
 
   function showBoard () {
     window.location.href = `/board/${data.id}`
   }
+
+  async function addPerson (type, person) {
+    if (data[type].find(p => p.id === person.id)) { showError('Tento uživatel už je v této skupině') }
+    const newPeople = [...data[type], person.id]
+    const { error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).single()
+    if (error) { return handleError(error) }
+    data[type] = newPeople
+  }
+
+  async function removePerson (type, person) {
+    const newPeople = data[type].filter(p => p !== person.id)
+    const { data: updatedData, error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).select()
+    if (error) { return handleError(error) }
+    data[type] = updatedData[type]
+  }
+
+  async function loadUsers (name) {
+    if (name.length < 3) { return [] }
+    const results = await userAutocomplete(name)
+    return results
+  }
+
+  async function getNames (ids) {
+    const { data, error } = await supabase.rpc('get_user_names', { ids }).single()
+    if (error) { return handleError(error) }
+    return data
+  }
 </script>
 
+<div class='headline'>
+  <h1>Nastavení diskuze "{data.name}"</h1>
+  <button on:click={showBoard} class='material square' title='Zpět do diskuze'>check</button>
+</div>
+
 <main>
-  <div class='headline'>
-    <h1>Nastavení diskuze "{data.name}"</h1>
-    <button on:click={showBoard} class='material square' title='Zpět do diskuze'>check</button>
+  <h2>Název</h2>
+  <div class='row'>
+    <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
+    <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material square'>check</button>
   </div>
 
+  <h2 class='first'>Vlastní hlavička</h2>
+  Obrázek musí mít velikost alespoň 1100×226 px<br><br>
+  <div class='row'>
+    <label class='button' for='headerImage'>Nahrát obrázek</label>
+    <HeaderInput {data} section='boards' unit='board' />
+  </div>
+
+  {#if data.open}
+    <h2>Bany</h2>
+    {#if data.bans && data.bans.length}
+      {#await getNames(data.bans) then list}
+        <ul>
+          {#each list as ban}
+            <li>
+              <div class='ban list'>
+                <h3>{ban.name}</h3>
+                <button class='square material square' on:click={() => { removePerson('bans', ban) }} title='odebrat' use:tooltip>delete</button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/await}
+    {:else}
+      <p class='info'>Žádné bany</p>
+    {/if}
+    <h3><label for='boardAddBan'>Zakázat přístup</label></h3>
+    <div class='row select'>
+      <Select bind:value={newBan} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
+        <div slot='empty'>Uživatel nenalezen</div>
+      </Select>
+      <button class='material square' on:click={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id}>add</button>
+    </div>
+  {:else}
+    <h2>Členové</h2>
+    {#if data.members && data.members.length}
+      {#await getNames(data.members) then list}
+        <ul>
+          {#each list as member}
+            <li>
+              <div class='member list'>
+                <h3>{member.name}</h3>
+                <button class='square material square' on:click={() => { removePerson('members', member) }} title='odebrat' use:tooltip>delete</button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/await}
+    {:else}
+      <p class='info'>Žádní členové</p>
+    {/if}
+    <h3><label for='boardAddMember'>Přidat člena</label></h3>
+    <div class='row select'>
+      <Select bind:value={newMember} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
+        <div slot='empty'>Uživatel nenalezen</div>
+      </Select>
+      <button class='material square' on:click={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id}>add</button>
+    </div>
+  {/if}
+
+  <h2 class='separator'><div class='lines'></div><span class='material owner'>star</span>Pouze pro vlastníka<div class='lines'></div></h2>
+
   {#if data.owner.id === user.id}
-    <h2 class='first'>Vlastní hlavička</h2>
-    Obrázek musí mít velikost alespoň 1100×226 px<br><br>
-    <div class='row'>
-      <label class='button' for='headerImage'>Nahrát obrázek</label>
-      <HeaderInput {data} section='boards' unit='board' />
+    <h2>Moderátoři</h2>
+    {#if data.mods && data.mods.length}
+      {#await getNames(data.mods) then list}
+        <ul>
+          {#each list as mod}
+            <li>
+              <div class='mod list'>
+                <h3>{mod.name}</h3>
+                <button class='square material' on:click={() => { removePerson('mods', mod) }} title='odebrat square' use:tooltip>delete</button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/await}
+    {:else}
+      <p class='info'>Žádní moderátoři</p>
+    {/if}
+    <h3><label for='boardAddMod'>Přidat moderátora</label></h3>
+    <div class='row select'>
+      <Select bind:value={newMod} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
+        <div slot='empty'>Uživatel nenalezen</div>
+      </Select>
+      <button class='material square' on:click={() => { addPerson('mods', newMod) }} disabled={saving || !newMod?.id}>add</button>
     </div>
 
-    <h2>Název</h2>
+    <h2>Přístupnost diskuze</h2>
     <div class='row'>
-      <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material'>check</button>
+      <select id='boardOpen' name='boardOpen' bind:value={data.open}>
+        <option value={true}>Veřejná</option>
+        <option value={false}>Soukromá</option>
+      </select>
+      <button on:click={updateBoard} disabled={saving || (originalOpen === data.open)} class='material square'>check</button>
     </div>
 
     <h2>Smazání diskuze</h2>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
-      <span class='material'>warning</span><span>Smazat diskuzi</span>
+      <span class='material square'>warning</span><span>Smazat diskuzi</span>
     </button>
-  {:else}
-    Tato sekce je jen pro vlastníka diskuze.
   {/if}
 </main>
 
@@ -82,19 +200,49 @@
       margin-left: 10px;
     }
 
+  main {
+    max-width: 600px;
+    margin: auto;
+  }
+
   h2 {
     margin-top: 50px;
   }
   .row {
     display: flex;
+    align-items: center;
     gap: 10px;
   }
-    #boardName {
-      width: 100%;
-    }
   .delete {
     display: flex;
     gap: 10px;
+  }
+  input[type=text], select, .select {
+    width: 100%;
+  }
+
+  .list {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+    .list h3 {
+      width: 100%;
+    }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 80px;
+    gap: 20px;
+  }
+    .separator .lines {
+      flex: 1;
+      border-top: 1px solid var(--text);
+    }
+  .owner {
+    font-size: 18px;
   }
 
   @media (max-width: 860px) {

@@ -5,7 +5,7 @@
   const { supabase, user } = Astro.locals
   const sort = Astro.url.searchParams.get('sort')
 
-  let games
+  let games = []
 
   if (sort === 'active') {
     const { data: gamesActivity, error } = await supabase.from('game_list').select('*').order('last_post')
@@ -16,9 +16,6 @@
     if (error) { console.error(error) }
     games = gamesAll
   }
-
-  // const { data: games, error } = await supabase.from('game_list').select('*')
-  // if (error) { console.error(error) }
 ---
 
 <Layout title='Hry'>

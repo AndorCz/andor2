@@ -1,15 +1,16 @@
 <script>
-  import { getSavedStore, bookmarks } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
+  import { supabase, handleError } from '@lib/database'
+  import { getSavedStore, bookmarks } from '@lib/stores'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user = {}
   export let data = {}
+  export let isMod = false
 
   const boardStore = getSavedStore('board-' + data.id)
-  const isBoardOwner = data.owner.id === user.id
 
   let bookmarkId
 
@@ -51,18 +52,26 @@
   <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
   {#if user.id}
     <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
-    {#if isBoardOwner}
+    {#if isMod}
       <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
     {/if}
   {/if}
 </div>
 
 {#if !$boardStore.hideHeader}
-  <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isBoardOwner} />
-  <p>Správce diskuze: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a></p>
+  <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isMod} />
+  <p class='mods'>
+    {#if data.mods.length}Správci:{:else}Správce:{/if}&nbsp;
+    <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
+    {#if data.mods.length}
+      {#await supabase.rpc('get_user_names', { ids: data.mods }).single() then mods}
+        {#each mods.data as mod}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
+      {/await}
+    {/if}
+  </p>
 {/if}
 
-<Discussion {data} {user} isOwner={isBoardOwner} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection={'boards'} />
+<Discussion {data} {user} canModerate={isMod} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection={'boards'} />
 
 <style>
   .headline {
@@ -76,4 +85,10 @@
       margin: 0px;
       flex: 1;
     }
+  .mods {
+    text-align: right;
+  }
+  .owner {
+    font-size: 17px;
+  }
 </style>
