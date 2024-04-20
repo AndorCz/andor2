@@ -5,11 +5,12 @@
 
 -- Profiles --
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY; -- (Written 0/3, Tested+Published 0/3)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY; -- (Written 3/3, Tested+Published 0/3)
 
--- Allow everyone to read profiles
--- Allow users to change their profiles
--- Allow users to delete their profiles
+CREATE POLICY "Allow everyone to read profiles" ON "public"."profiles" AS PERMISSIVE FOR SELECT TO public USING (TRUE)
+CREATE POLICY "Allow users to change their profiles" ON "public"."profiles" AS PERMISSIVE FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid())
+CREATE POLICY "Allow users to delete their profiles" ON "public"."profiles" AS PERMISSIVE FOR DELETE TO authenticated USING (id = auth.uid())
+
 
 -- Bookmarks --
 
@@ -34,21 +35,23 @@ CREATE POLICY "Allow delete for owner" ON public.boards FOR DELETE TO authentica
 
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY; -- (4/4, 0/4)
 
--- Allow everyone to read list of games
--- Allow authenticated users to create games
--- Allow users to delete their own games
--- Allow users to update their own games
+CREATE POLICY "Allow everyone to read list of games" ON "public"."games" AS PERMISSIVE FOR SELECT TO public USING (TRUE)
+CREATE POLICY "Allow users to create games" ON "public"."games" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (owner = auth.uid())
+CREATE POLICY "Allow users to delete their own games" ON "public"."games" AS PERMISSIVE FOR DELETE TO authenticated USING (owner = auth.uid())
+CREATE POLICY "Allow users to update their own games" ON "public"."games" AS PERMISSIVE FOR UPDATE TO authenticated USING (owner = auth.uid()) WITH CHECK (owner = auth.uid())
 
 -- Characters --
 
-ALTER TABLE public.characters ENABLE ROW LEVEL SECURITY; -- (0/6, 0/6)
+ALTER TABLE public.characters ENABLE ROW LEVEL SECURITY; -- (5/6, 0/6)
 
--- Allow everyone to read characters in game.open_game
+CREATE POLICY "Allow everyone to read characters in game.open_game" ON "public"."characters" AS PERMISSIVE FOR SELECT TO public USING (game in (select id from games where open_game = true))
 -- Allow players to read characters
+-- CREATE POLICY "Allow players to read characters" ON "public"."characters" AS PERMISSIVE FOR SELECT TO authenticated USING (game in (select id from games where id in (select game from characters where player = auth.uid())))
+-- Zakomentováno, docházelo k rekurzi.
 CREATE POLICY "Allow players to create characters" ON public.characters FOR INSERT TO authenticated WITH CHECK ((player = auth.uid()));
 CREATE POLICY "Allow players to delete their own characters" ON public.characters FOR DELETE TO authenticated USING ((player = auth.uid()));
 CREATE POLICY "Allow users to update their own characters" ON public.characters FOR UPDATE TO authenticated USING ((player = auth.uid())) WITH CHECK ((player = auth.uid()));
--- Allow storytellers to update all characters
+CREATE POLICY "Allow storytellers to update all characters" ON "public"."characters" AS PERMISSIVE FOR UPDATE TO authenticated USING (game in (select id from games where owner = auth.uid())) WITH CHECK (game in (select id from games where owner = auth.uid()))
 
             ------- archive
             ------- CREATE POLICY "Allow everyone to see characters" ON public.characters FOR SELECT TO anon USING (true);
@@ -90,25 +93,26 @@ ALTER TABLE public.codex_pages ENABLE ROW LEVEL SECURITY; -- (0/6, 0/6)
 
 -- Maps --
 
-ALTER TABLE public.maps ENABLE ROW LEVEL SECURITY; -- (0/6, 0/6)
+ALTER TABLE public.maps ENABLE ROW LEVEL SECURITY; -- (5/6, 0/6)
 
--- Allow everyone to read maps in game.open_game
--- Allow players to read maps
+CREATE POLICY "Allow everyone to read maps in game.open_game" ON "public"."maps" AS PERMISSIVE FOR SELECT TO public USING (game in (select id from games where open_game = true))
+CREATE POLICY "Allow players to read maps" ON "public"."maps" AS PERMISSIVE FOR SELECT TO authenticated USING (game in (select game from characters where player = auth.uid()))
+-- U update je otazka, jestli hlidat zda uzivatel nemeni vlastnosti, ktere by nemel.
 -- Allow players to update maps
--- Allow storytellers to create maps
--- Allow storytellers to update maps
--- Allow storytellers to delete maps
+CREATE POLICY "Allow storytellers to create maps" ON "public"."maps" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (game in (select id from games where owner = auth.uid()))
+CREATE POLICY "Allow storytellers to update maps" ON "public"."maps" AS PERMISSIVE FOR UPDATE TO authenticated USING (game in (select id from games where owner = auth.uid())) WITH CHECK (game in (select id from games where owner = auth.uid()))
+CREATE POLICY "Allow storytellers to delete maps" ON "public"."maps" AS PERMISSIVE FOR DELETE TO authenticated USING (game in (select id from games where owner = auth.uid()))
 
 
 -- WORKS --------------------------------------------
 
 
-ALTER TABLE public.works ENABLE ROW LEVEL SECURITY; -- (0/4, 0/4)
+ALTER TABLE public.works ENABLE ROW LEVEL SECURITY; -- (4/4, 0/4)
 
--- Allow everyone to read works
--- Allow authenticated users to create works
--- Allow users to delete their own works
--- Allow users to update their own works
+CREATE POLICY "Allow everyone to read works" ON "public"."works" AS PERMISSIVE FOR SELECT TO public USING (TRUE)
+CREATE POLICY "Allow users to create works" ON "public"."works" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (owner = auth.uid())
+CREATE POLICY "Allow users to delete their own works" ON "public"."works" AS PERMISSIVE FOR DELETE TO authenticated USING (owner = auth.uid())
+CREATE POLICY "Allow users to update their own works" ON "public"."works" AS PERMISSIVE FOR UPDATE TO authenticated USING (owner = auth.uid()) WITH CHECK (owner = auth.uid())
 
 
 -- GENERAL --------------------------------------------
@@ -116,37 +120,71 @@ ALTER TABLE public.works ENABLE ROW LEVEL SECURITY; -- (0/4, 0/4)
 
 -- Threads --
 
-ALTER TABLE public.threads ENABLE ROW LEVEL SECURITY; -- (0/2, 0/2)
+ALTER TABLE public.threads ENABLE ROW LEVEL SECURITY; -- (3/3, 0/2)
 
--- Allow authenticated users to create threads
--- Allow users to delete their own threads
+-- Bez tohoto pravidla nelze vytvaret zadne diskuze
+CREATE POLICY "Allow everyone to read threads" ON "public"."threads" AS PERMISSIVE FOR SELECT TO public USING (TRUE)
+
+CREATE POLICY "Allow authenticated users to create threads" ON "public"."threads" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (TRUE)
+CREATE POLICY "Allow users to delete their own threads" ON "public"."threads" AS PERMISSIVE FOR DELETE TO authenticated
+USING ((id in (select thread from boards where owner = auth.uid())) 
+            or (id in (select discussion_thread from games where owner = auth.uid())) 
+            or (id in (select game_thread from games where owner = auth.uid())) 
+            or (id in (select thread from works where owner = auth.uid())))
 
 -- Posts --
 
-ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY; -- (0/9, 0/9)
+ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY; -- (7/9, 0/9)
 
--- Allow everyone to read posts in game.open_game and game.open_discussion
--- Allow everyone to read posts in boards and works
--- Allow players to read "public" posts
--- Allow players to read their "private" posts
--- Allow players to create posts
--- Allow players to delete their own posts
--- Allow players to update their own posts
--- Allow storytellers to delete all posts
--- Allow storytellers to update all posts
+CREATE POLICY "Allow everyone to read posts in open_game and open_discussion" ON "public"."posts" AS PERMISSIVE FOR SELECT TO public
+USING ((thread in (select discussion_thread from games where open_discussion = true)) 
+            or (thread in (select game_thread from games where open_game = true)))
+CREATE POLICY "Allow everyone to read posts in boards and works" ON "public"."posts" AS PERMISSIVE FOR SELECT TO public 
+USING ((thread in (select thread from boards)) 
+            or (thread in (select thread from works)))
+-- Allow players to read "public" posts            -- toto pravidlo se mi zda duplicitni s predchozima dvema
+-- Allow players to read their "private" posts     -- zde jsem narazil problem s parsovanim UID z pole audience
+CREATE POLICY "Allow players to create posts" ON "public"."posts" AS PERMISSIVE FOR INSERT TO authenticated
+WITH CHECK ((owner = auth.uid())
+            AND thread in ( 
+            select thread from boards 
+            union
+            select thread from works 
+            union
+            select discussion_thread as thread from games where games.id in (select game from characters where player = auth.uid()) 
+            union
+            select game_thread as thread from games where games.id in (select game from characters where player = auth.uid())
+            ))
+CREATE POLICY "Allow players to delete their own posts" ON "public"."posts" AS PERMISSIVE FOR DELETE TO authenticated USING (owner = auth.uid())
+-- U update je otazka, jestli hlidat zda uzivatel nemeni thread do ktereho postuje. Aby neposilal prispevky kam nema.
+CREATE POLICY "Allow players to update their own posts" ON "public"."posts" AS PERMISSIVE FOR UPDATE TO authenticated USING (owner = auth.uid()) WITH CHECK (owner = auth.uid())
+CREATE POLICY "Allow storytellers to delete all posts" ON "public"."posts" AS PERMISSIVE FOR DELETE TO authenticated
+            USING ((owner = auth.uid())
+            OR (thread in (
+            select discussion_thread as thread from games where owner = auth.uid() 
+            union
+            select game_thread as thread from games where owner = auth.uid()
+            )))
+CREATE POLICY "Allow storytellers to update all posts" ON "public"."posts" AS PERMISSIVE FOR UPDATE TO authenticated
+USING (((owner = auth.uid()) OR (thread IN ( SELECT games.discussion_thread AS thread FROM games WHERE (games.owner = auth.uid()) UNION SELECT games.game_thread AS thread FROM games WHERE (games.owner = auth.uid())))))
+WITH CHECK (((owner = auth.uid()) OR (thread IN ( SELECT games.discussion_thread AS thread FROM games WHERE (games.owner = auth.uid()) UNION SELECT games.game_thread AS thread FROM games WHERE (games.owner = auth.uid())))))
 
 -- Messages --
 
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY; -- (0/4, 0/4)
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY; -- (5/5, 0/4)
 
--- Allow author and recipient to read their messages
--- Allow author to delete their messages
--- Allow author to update their messages
--- Allow recipient to update their messages (read)
+CREATE POLICY "Allow author and recipient to read their messages" ON "public"."messages" AS PERMISSIVE FOR SELECT TO authenticated USING ((sender_user = auth.uid()) or (recipient_user = auth.uid()))
+CREATE POLICY "Allow author to delete their messages" ON "public"."messages" AS PERMISSIVE FOR DELETE TO authenticated USING (sender_user = auth.uid())
+-- U update bych se bal toho, ze uzivatel zmeni recipienta na nekoho jineho. Toto budeme muset nejak vyresit.
+CREATE POLICY "Allow author to update their messages" ON "public"."messages" AS PERMISSIVE FOR UPDATE TO authenticated USING (sender_user = auth.uid()) WITH CHECK (sender_user = auth.uid())
+CREATE POLICY "Allow recipient to update their messages (read)" ON "public"."messages" AS PERMISSIVE FOR UPDATE TO authenticated USING (recipient_user = auth.uid()) WITH CHECK (recipient_user = auth.uid())
+-- Pridan insert, bez insertu neni mozne zpravy odeslat.
+CREATE POLICY "Allow author to create messages" ON "public"."messages" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (sender_user = auth.uid())
 
 -- User reads --
 
-ALTER TABLE public.user_reads ENABLE ROW LEVEL SECURITY; -- (0/2, 0/2)
+ALTER TABLE public.user_reads ENABLE ROW LEVEL SECURITY; -- (3/3, 0/2)
 
--- Allow authenticated users to read their own user_reads
--- Allow authenticated users to create user_reads
+CREATE POLICY "Allow authenticated users to read their own user_reads" ON "public"."user_reads" AS PERMISSIVE FOR SELECT TO authenticated USING (user_id = auth.uid())
+CREATE POLICY "Allow authenticated users to create user_reads" ON "public"."user_reads" AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid())
+CREATE POLICY "Allow authenticated users to update their user_reads" ON "public"."user_reads" AS PERMISSIVE FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid())
