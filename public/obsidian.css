@@ -302,7 +302,8 @@ select {
 }
 
 .user {
-  color: var(--user);
+  color: var(--user) !important;
+  text-decoration: none !important;
 }
   .user:hover {
     color: var(--userHover);
@@ -559,7 +560,12 @@ select {
   color: var(--accent);
   font-style: normal;
   font-variation-settings: 'wght' 600;
+  cursor: pointer;
 }
+  .post .content .nestedReply {
+    box-shadow: 0px 0px 6px #0006;
+    margin-bottom: 20px;
+  }
 
 #lastPosts .content {
   max-height: 300px;

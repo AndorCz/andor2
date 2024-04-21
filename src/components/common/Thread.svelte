@@ -23,7 +23,7 @@
   export let onPaging = null
   export let page = 0
   export let pages = null
-  export let iconSize = 140
+  export let iconSize = 70
   export let diceMode = 'none' // 'post', 'icon', 'none'
 
   let threadEl
@@ -36,29 +36,40 @@
 
   if (user.autorefresh && !autorefreshRunning) { refresh() }
 
-  onMount(async () => {
-    // handle replies
-    if (posts) { // pre-requisite for replies
-      // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
-      const cites = document.querySelectorAll('cite[data-id]')
-      for (const citeEl of cites) {
-        const id = parseInt(citeEl.getAttribute('data-id'))
-        // for each cite, load the post from supabase and save it's data
-        replies[id] = await getReply($posts, id)
-        citeEl.addEventListener('mouseenter', showReply)
-        citeEl.addEventListener('mouseleave', hideReply)
-      }
-    }
-  })
+  onMount(async () => { if (posts) { setupReplyListeners() } })
 
-  // autorefresh every 10 seconds, if enabled in user settings
-  function refresh () {
-    autorefreshRunning = true
-    if (Date.now() - lastRefresh > 10000) {
-      lastRefresh = Date.now()
-      onPaging(page)
+  async function setupReplyListeners () { // pre-requisite for replies
+    // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
+    const cites = document.querySelectorAll('cite[data-id]')
+    for (const citeEl of cites) {
+      const id = parseInt(citeEl.getAttribute('data-id'))
+      // for each cite, load the post from supabase and save it's data
+      replies[id] = await getReply($posts, id)
+      citeEl.addEventListener('pointerdown', addReply)
+      citeEl.addEventListener('mouseenter', showReply)
+      citeEl.addEventListener('mouseleave', hideReply)
     }
-    requestAnimationFrame(refresh)
+  }
+
+  function addReply (event) {
+    const postId = parseInt(event.target.getAttribute('data-id'))
+    const replyData = replies[postId]
+    if (!replyData) return
+
+    // check if the container already exists
+    const existingContainer = event.target.nextElementSibling
+    const isReplyContainer = existingContainer && existingContainer.classList.contains('nestedReply')
+
+    if (isReplyContainer) { // if the container exists, remove it (toggle reply visibility)
+      event.target.parentNode.removeChild(existingContainer)
+    } else { // create a new container for the reply
+      const container = document.createElement('div')
+      container.classList.add('nestedReply')
+      event.target.parentNode.insertBefore(container, event.target.nextSibling)
+      // eslint-disable-next-line no-new
+      new Post({ target: container, props: { post: replyData, user, iconSize: 0 } })
+      setupReplyListeners()
+    }
   }
 
   function showReply (event) {
@@ -82,6 +93,16 @@
     page = newPage
     onPaging(page)
     threadEl.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // autorefresh every 10 seconds, if enabled in user settings
+  function refresh () {
+    autorefreshRunning = true
+    if (Date.now() - lastRefresh > 10000) {
+      lastRefresh = Date.now()
+      onPaging(page)
+    }
+    requestAnimationFrame(refresh)
   }
 
   function seen () {

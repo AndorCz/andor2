@@ -18,7 +18,7 @@
   export let onDelete = null
   export let onEdit = null
   export let onReply = null
-  export let iconSize = 140
+  export let iconSize = 70
 
   const canDelete = post.dice ? canDeleteAll : isMyPost
 
@@ -47,7 +47,7 @@
 </script>
 
 <div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
-  {#if $postStore.owner_portrait}
+  {#if $postStore.owner_portrait && iconSize}
     <div class='icon' style='--iconSize: {iconSize}px'>
       <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
     </div>
