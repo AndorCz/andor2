@@ -306,13 +306,15 @@ select {
   text-decoration: none !important;
 }
   .user:hover {
-    color: var(--userHover);
+    color: var(--userHover) !important;
+    text-decoration: none !important;
   }
 .character {
-  color: var(--character);
+  color: var(--character) !important;
 }
   .character:hover {
     color: var(--characterHover);
+    text-decoration: none !important;
   }
 
 .toggle {
@@ -557,7 +559,7 @@ select {
 .post .content .reply { /* reply */
   padding: 5px;
   padding-left: 0px;
-  color: var(--accent);
+  color: var(--user);
   font-style: normal;
   font-variation-settings: 'wght' 600;
   cursor: pointer;
@@ -565,6 +567,9 @@ select {
   .post .content .nestedReply {
     box-shadow: 0px 0px 6px #0006;
     margin-bottom: 20px;
+  }
+  .post .content .reply:hover {
+    color: var(--userHover);
   }
 
 #lastPosts .content {
