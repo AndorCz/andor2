@@ -47,9 +47,9 @@
   async function loadData () {
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { handleError(error) }
-    $bookmarks = data.bookmarks
+    $bookmarks = data.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
     users = data.users || []
-    characters = data.characters
+    characters = data.characters || { allGrouped: [], myStranded: [] }
     // get tab information
     activeUsers = users.filter(u => u.active).length
     unreadUsers = users.some(u => u.unread)

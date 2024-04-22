@@ -523,21 +523,21 @@ create or replace function is_storyteller (game_id int4) returns boolean as $$
 begin
   return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid() and storyteller);
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 create or replace function is_player (game_id int4) returns boolean as $$
 begin
   return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid());
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 create or replace function is_players_character (character_id uuid) returns boolean as $$
 begin
   return exists(select 1 from characters where id = character_id and player = auth.uid());
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 create or replace function is_thread_owner (thread_id int4) returns boolean as $$
@@ -786,7 +786,6 @@ begin
 end;
 $$ language plpgsql;
 
-
 -- TRIGGERS --------------------------------------------
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
@@ -800,12 +799,17 @@ create or replace trigger update_map_updated_at before update on maps for each r
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
-
 -- CRON --------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);
 
+-- STORAGE  --------------------------------------------
+
+insert into storage.buckets (id, name, public) values ('headers', 'headers', true);
+insert into storage.buckets (id, name, public) values ('portraits', 'portraits', true);
+insert into storage.buckets (id, name, public) values ('posts', 'posts', true);
+insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
 
 -- SEED  --------------------------------------------
 
