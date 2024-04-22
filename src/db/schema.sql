@@ -520,13 +520,35 @@ $$ language plpgsql;
 
 
 create or replace function is_storyteller (game_id int4) returns boolean as $$
-declare
-  is_storyteller boolean;
 begin
-  select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
-  return is_storyteller;
+  return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid() and storyteller);
 end;
 $$ language plpgsql;
+
+
+create or replace function is_player (game_id int4) returns boolean as $$
+begin
+  return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid());
+end;
+$$ language plpgsql;
+
+
+create or replace function is_players_character (character_id uuid) returns boolean as $$
+begin
+  return exists(select 1 from characters where id = character_id and player = auth.uid());
+end;
+$$ language plpgsql;
+
+
+create or replace function is_thread_owner (thread_id int4) returns boolean as $$
+select exists (
+  select 1 from boards where thread = thread_id and owner = auth.uid()
+  union all
+  select 1 from games where (discussion_thread = thread_id or game_thread = thread_id) and owner = auth.uid()
+  union all
+  select 1 from works where thread = thread_id and owner = auth.uid()
+);
+$$ language sql security definer;
 
 
 create or replace function get_characters() returns json as $$
