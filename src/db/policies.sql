@@ -4,22 +4,23 @@
 
 -- Profiles --
 
-alter table public.profiles enable row level security; -- (1/2)
+alter table public.profiles enable row level security;
 
 create policy "READ for everyone" on public.profiles for select to public using (true);
 create policy "ALL to user's profile" on public.profiles for all to authenticated using (id = auth.uid());
 
 -- Bookmarks --
 
-alter table public.bookmarks enable row level security; -- (0/1)
+alter table public.bookmarks enable row level security;
 
 create policy "ALL to user's bookmarks" on public.bookmarks for all to authenticated using (user_id = auth.uid());
+create policy "ALL for storytellers, game joining" on public.bookmarks for all to authenticated using (is_storyteller(game_id));
 
 
 -- BOARDS --------------------------------------------
 
 
-alter table public.boards enable row level security; -- (0/2)
+alter table public.boards enable row level security;
 
 create policy "READ for everyone" on public.boards for select using (true);
 create policy "ALL for owner" on public.boards for all to authenticated using (owner = auth.uid());
@@ -28,14 +29,14 @@ create policy "ALL for owner" on public.boards for all to authenticated using (o
 -- GAMES --------------------------------------------
 
 
-alter table public.games enable row level security; -- (0/2)
+alter table public.games enable row level security;
 
 create policy "READ for everyone" on public.games for select to public using (true);
 create policy "ALL for owner" on public.games for all to authenticated using (owner = auth.uid());
 
 -- Characters --
 
-alter table public.characters enable row level security; -- (0/4)
+alter table public.characters enable row level security; -- (1/4)
 
 create policy "READ for everyone in open game" on public.characters for select to public using (game in (select id from games where open_game = true));
 create policy "READ for players in closed game" on public.characters for select to authenticated using (is_player(game));
@@ -82,9 +83,10 @@ create policy "ALL for owners" on public.works for all to authenticated using (o
 
 -- Threads --
 
-alter table public.threads enable row level security; -- (0/2)
+alter table public.threads enable row level security;
 
 create policy "READ for everyone" on public.threads for select to public using (true);
+create policy "INSERT for authenticated" on public.threads for insert to authenticated with check (true); -- thread creation doesn't work otherwise
 create policy "ALL for owners" on public.threads for all to authenticated using (is_thread_owner(id));
 
 -- Posts --

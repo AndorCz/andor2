@@ -38,11 +38,11 @@
       <h1>{character.name}</h1>
 
       <h2>Vzhled</h2>
-      <p class='content appearance'>{character.appearance}</p>
+      <p class='content appearance'>{character.appearance || ''}</p>
 
       <h2>Životopis</h2>
       <p class='content bio'>
-        <Render html={character.bio} />
+        <Render html={character.bio || ''} />
       </p>
 
       {#if character.storyteller_notes || isStoryteller}
