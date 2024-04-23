@@ -1,5 +1,6 @@
 <script>
   import { showSuccess, showError } from '@lib/toasts'
+  import { activeConversation } from '@lib/stores'
   import { supabase } from '@lib/database'
 
   export let user
@@ -25,10 +26,12 @@
   }
 
   async function deleteUser () {
-    if (!confirm('Opravdu chcete smazat svůj účet?')) { return }
-    const { error } = await supabase.auth.delete()
-    if (error) { return showError(error.message) }
-    showSuccess('Účet byl úspěšně smazán')
+    if (!confirm('Opravdu chcete smazat svůj účet? Tato akce je nevratná.')) { return }
+    $activeConversation = null
+    document.cookie = 'sb-access-token=; Max-Age=-99999999;'
+    document.cookie = 'sb-refresh-token=; Max-Age=-99999999;'
+    await supabase.auth.signOut()
+    window.location.href = '/api/auth/delete'
   }
 </script>
 

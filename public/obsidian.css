@@ -302,19 +302,19 @@ select {
 }
 
 .user {
-  color: var(--user) !important;
-  text-decoration: none !important;
+  color: var(--user);
+  text-decoration: none;
 }
   .user:hover {
-    color: var(--userHover) !important;
-    text-decoration: none !important;
+    color: var(--userHover);
+    text-decoration: none;
   }
 .character {
-  color: var(--character) !important;
+  color: var(--character);
 }
   .character:hover {
     color: var(--characterHover);
-    text-decoration: none !important;
+    text-decoration: none;
   }
 
 .toggle {
@@ -555,6 +555,12 @@ select {
 }
   .post .content a:visited {
     color: var(--linkVisited);
+  }
+.post .content .user {
+  color: var(--user) !important;
+}
+  .post .content .user:hover {
+    color: var(--userHover) !important;
   }
 .post .content .reply { /* reply */
   padding: 5px;

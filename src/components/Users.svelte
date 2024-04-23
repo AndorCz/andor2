@@ -53,7 +53,7 @@
         {:else}
           <span class='gap'></span>
         {/if}
-        <a href={`user?id=${user.id}`} class='name'>{user.name}</a>
+        <a href={`user?id=${user.id}`} class='name user'>{user.name}</a>
       </div>
     {/each}
   </div>

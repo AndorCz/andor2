@@ -4,7 +4,7 @@
 
 -- Profiles --
 
-alter table public.profiles enable row level security; -- (0/2)
+alter table public.profiles enable row level security; -- (1/2)
 
 create policy "READ for everyone" on public.profiles for select to public using (true);
 create policy "ALL to user's profile" on public.profiles for all to authenticated using (id = auth.uid());

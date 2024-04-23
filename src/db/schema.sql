@@ -23,7 +23,9 @@ drop view if exists game_list;
 drop view if exists work_list;
 drop view if exists last_posts;
 
+
 -- ENUMS --------------------------------------------
+
 
 create type character_state as enum ('alive', 'unconscious', 'dead');
 create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
@@ -32,7 +34,9 @@ create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'erotica', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project');
 create type work_category as enum ('prose', 'poetry', 'game', 'other');
 
+
 -- TABLES --------------------------------------------
+
 
 create table profiles (
   id uuid not null primary key,
@@ -238,7 +242,9 @@ create table user_reads (
   primary key (user_id, slug)
 );
 
+
 -- VIEWS --------------------------------------------
+
 
 create or replace posts_owner as
   select
@@ -780,13 +786,20 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_user_names(ids uuid[]) returns jsonb as $$
+create or replace function get_user_names (ids uuid[]) returns jsonb as $$
 begin
   return (select jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name)) from profiles p where p.id = any(ids));
 end;
 $$ language plpgsql;
 
+
+create or replace function delete_user () returns void as $$
+  delete from auth.users where id = auth.uid();
+$$ language sql security definer;
+
+
 -- TRIGGERS --------------------------------------------
+
 
 create or replace trigger add_storyteller after insert on games for each row execute function add_storyteller ();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads ();
@@ -799,19 +812,25 @@ create or replace trigger update_map_updated_at before update on maps for each r
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
+
 -- CRON --------------------------------------------
+
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);
 
+
 -- STORAGE  --------------------------------------------
+
 
 insert into storage.buckets (id, name, public) values ('headers', 'headers', true);
 insert into storage.buckets (id, name, public) values ('portraits', 'portraits', true);
 insert into storage.buckets (id, name, public) values ('posts', 'posts', true);
 insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
 
+
 -- SEED  --------------------------------------------
+
 
 -- Run as a user session, or replace auth.uid() with a user id
 -- Disable the trigger "add_default_bookmarks" to create a user manually in the profiles table.
