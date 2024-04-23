@@ -51,7 +51,7 @@
         $discussionStore.activeIdentity = $discussionStore.activeIdentity || identities[0].id
         identitySelect.value = $discussionStore.activeIdentity
       }
-    }
+    } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
     window.addEventListener('pagehide', saveUnsent)
   })

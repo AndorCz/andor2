@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
+  import { supabase, handleError } from '@lib/database'
   import { workTags, workCategoriesText } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -34,13 +34,11 @@
     setOriginal()
     showSuccess('Změna díla uložena')
     saving = false
-    // await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
   }
 
   async function deleteWork () {
     const { error } = await supabase.from('works').delete().eq('id', data.id)
     if (error) { return handleError(error) }
-    // await fetch('/api/cache?type=works', { method: 'GET' }) // clear cache
     window.location.href = '/works?toastType=success&toastText=' + encodeURIComponent('Dílo bylo smazáno')
   }
 

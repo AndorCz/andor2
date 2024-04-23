@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { redirectWithToast } from '@lib/utils'
   import { supabase, handleError } from '@lib/database'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
@@ -70,7 +71,7 @@
     if (data.session?.access_token && data.session?.refresh_token) {
       document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=100*1000*60*60*24*365` // 100 years
       document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=100*1000*60*60*24*365`
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Přihlášení proběhlo úspěšně')
+      redirectWithToast({ toastType: 'success', toastText: 'Přihlášení proběhlo úspěšně' })
     }
   }
 

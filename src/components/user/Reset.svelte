@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
+  import { redirectWithToast } from '@lib/utils'
 
   let email = ''
   let resetConfirmed = false
@@ -13,7 +14,7 @@
     if (error) { handleError(error) }
     if (data) {
       email = ''
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím potvrď svůj e-mail pro dokončení obnovy hesla.')
+      redirectWithToast({ toastType: 'success', toastText: 'Prosím potvrď svůj e-mail pro dokončení obnovy hesla.' })
     }
   }
 
@@ -22,7 +23,7 @@
     const { data, error } = await supabase.auth.updateUser({ password })
     if (error) { handleError(error) }
     if (data.user) {
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Heslo bylo úspěšně změněno.')
+      redirectWithToast({ toastType: 'success', toastText: 'Heslo bylo úspěšně změněno.' })
     }
   }
 

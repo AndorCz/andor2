@@ -1,6 +1,6 @@
 <script>
   import { supabase, handleError } from '@lib/database'
-  import { cropPortrait, resizePortrait, getImage } from '@lib/utils'
+  import { cropPortrait, resizePortrait, getImage, redirectWithToast } from '@lib/utils'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -39,11 +39,11 @@
     if (character.game) {
       const { error: updateError } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
       if (updateError) { return handleError(updateError) }
-      window.location.href = `/game/${character.game}?toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
+      window.location.href = `/game/${character.game}?tab=chars&toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
     } else {
       const { error: deleteError } = await supabase.from('characters').delete().eq('id', character.id)
       if (deleteError) { return handleError(deleteError) }
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Postava byla smazána')
+      redirectWithToast({ toastType: 'success', toastText: 'Postava byla smazána' })
     }
   }
 

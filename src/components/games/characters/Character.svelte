@@ -1,6 +1,7 @@
 <script>
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
+  import { redirectWithToast } from '@lib/utils'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database'
 
   export let user
   export let game
@@ -17,7 +18,6 @@
   async function acceptCharacter () {
     const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', character.id)
     if (error) { return handleError(error) }
-    await charactersChanged()
 
     // add bookmark to the new player
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
@@ -27,36 +27,32 @@
     const { error: messageError } = await supabase.from('messages').insert({ content: game.welcome_message, sender_user: user.id, recipient_user: character.player.id })
     if (messageError) { return handleError(messageError) }
 
-    window.location.href = window.location.href + '/?toastType=success&toastText=' + encodeURIComponent('Postava byla přijata')
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla přijata' })
   }
 
   async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
     const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', character.id)
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent(own ? 'Přihláška byla zrušena' : 'Postava byla vyřazena ze hry')
+    redirectWithToast({ toastType: 'success', toastText: own ? 'Přihláška byla zrušena' : 'Postava byla odmítnuta' })
   }
 
   async function kickCharacter () {
     if (!window.confirm('Opravdu vyhodit postavu? Její příspěvky zůstanou.')) { return }
     // update the original character to remove the player
-    const { error } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
+    const { error } = await supabase.rpc('kick_character', { character_id: character.id })
     if (error) { return handleError(error) }
-    // create a new character with the same data for the player to keep
-    delete character.id
-    delete character.player
-    const newChar = { ...character, game: null, player: user.id }
-    const { error: newCharacterError } = await supabase.from('characters').insert(newChar)
-    if (newCharacterError) { return handleError(newCharacterError) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla vyřazena ze hry')
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla vyřazena ze hry' })
   }
 
   async function freeCharacter () {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
-    await charactersChanged()
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla uvolněna')
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla uvolněna' })
   }
 
   async function claimCharacter () {
@@ -64,7 +60,7 @@
     const { error } = await supabase.from('characters').update({ open: false, player: user.id }).eq('id', character.id)
     await charactersChanged()
     if (error) { return handleError(error) }
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla převzata')
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
   }
 </script>
 
@@ -88,7 +84,7 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td>
-    {#if isStoryteller || !character.accepted || character.open}
+    {#if user.id && (isStoryteller || !character.accepted || character.open)}
       <div class='options'>
         {#if character.open}
           <button on:click={() => claimCharacter()} class='square'>převzít</button>

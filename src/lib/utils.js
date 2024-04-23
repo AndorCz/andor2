@@ -153,6 +153,15 @@ export function updateURLParam (key, value) {
   window.history.pushState({}, '', url)
 }
 
+export function redirectWithToast ({ url, toastType, toastText }) {
+  const currentUrl = new URL(url || window.location.href)
+  const searchParams = currentUrl.searchParams
+  searchParams.set('toastType', toastType || 'success')
+  searchParams.set('toastText', toastText || 'Operace proběhla úspěšně')
+  currentUrl.search = searchParams.toString()
+  window.location.href = currentUrl.href
+}
+
 function hashCode (str) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {

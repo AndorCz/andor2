@@ -3,7 +3,7 @@
   import { supabase, handleError, setRead } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
-  import { isFilledArray } from '@lib/utils'
+  import { isFilledArray, redirectWithToast } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
@@ -60,7 +60,7 @@
     const { error } = await supabase.from('characters').update({ game: game.id, accepted: false }).eq('id', myOpenSelected)
     if (error) { return handleError(error) }
     await charactersChanged()
-    window.location.href = window.location.href + '?toastType=success&toastText=' + encodeURIComponent('Postava byla přihlášena do hry')
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla přihlášena do hry' })
   }
 
   function seen () {
@@ -99,7 +99,6 @@
         <tr><td class='none'>Žádné postavy</td></tr>
       {/if}
     </table>
-    <div class='note'><span class='material'>info</span>Novou postavu vidí jen vypravěči, dokud nenapíše veřejný příspěvek.</div>
     <hr>
   {:else}
     <center><div class='note'><span class='material'>info</span>Hra je soukromá, nemůžeš vidět její postavy</div></center>
@@ -190,6 +189,11 @@
   .none {
     padding-left: 20px;
     color: var(--dim);
+  }
+  .info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   .row {
     display: flex;

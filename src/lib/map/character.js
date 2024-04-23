@@ -85,7 +85,7 @@ export class Character {
   onDragMove (event) { // 'this' points to the stage
     const token = app.dragging.token
     token.parent.toLocal(event.global, null, token.position)
-    app.buttons.contextual.visible = false
+    if (app.buttons) { app.buttons.contextual.visible = false }
     if (!app.isStoryteller) {
       app.dragging.drawProposition(token.start.x, token.start.y, token.x, token.y)
     }

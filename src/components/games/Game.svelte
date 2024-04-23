@@ -12,6 +12,8 @@
 
   export let user = {}
   export let game = {}
+  game.characters = game.characters || []
+  game.unread = game.unread || {}
 
   let bookmarkId
   const gameStore = getSavedStore('game-' + game.id)

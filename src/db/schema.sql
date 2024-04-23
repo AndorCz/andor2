@@ -341,6 +341,23 @@ end;
 $$ language plpgsql;
 
 
+create or replace function kick_character (character_id uuid) returns void as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if is_storyteller(character_row.game) is false then raise exception 'Not a storyteller'; end if;
+  -- create a new character with the same data for the player to keep (except for the player and game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  insert into characters values (character_row.*);
+  -- update the original character to remove the player and game (to keep their game posts the same)
+  update characters set player = null, game = null where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
 create or replace function add_game_threads () returns trigger as $$
 begin
   insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
@@ -478,7 +495,6 @@ begin
         'unread', 
           calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text) +
           calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text) +
-          calculate_unread_count(user_uuid, 'game-info-' || g.id::text) +
           calculate_unread_count(user_uuid, 'game-characters-' || g.id::text)
       ))
       from bookmarks b
@@ -687,7 +703,6 @@ create or replace function get_game_unread(game int4, game_thread int4, discussi
   returns jsonb as $$
 begin
   return jsonb_build_object(
-    'gameInfo', calculate_unread_count(auth.uid(), 'game-info-' || game::text),
     'gameChat', calculate_unread_count(auth.uid(), 'thread-' || discussion_thread::text),
     'gameThread', calculate_unread_count(auth.uid(), 'thread-' || game_thread::text),
     'gameCharacters', calculate_unread_count(auth.uid(), 'game-characters-' || game::text)
@@ -746,7 +761,7 @@ begin
   select to_jsonb(t) into game_data from (select g.*, p as owner, m as active_map from games g left join profiles p on g.owner = p.id left join maps m on g.active_map = m.id where g.id = game_id) t;
   select jsonb_agg(t) into character_data from (select c.*, p as player from characters c left join profiles p on c.player = p.id where c.game = game_id) t;
   select jsonb_agg(t) into map_data from (select * from maps where game = game_id order by updated_at desc) t;
-  select to_jsonb(get_game_unread(game_id, (game_data->>'game_thread')::int, (game_data->>'discussion_thread')::int)) into unread_data;
+  select to_jsonb(get_game_unread(game_id, (game_data->>'game_thread')::int, (game_data->>'discussion_thread')::int)) into unread_data where auth.uid() is not null; -- only calculate unread if user is logged in
   select jsonb_agg(t) into codex_data from (select * from codex_sections where game = game_id order by index) t;
   return game_data || jsonb_build_object('characters', character_data, 'maps', map_data, 'unread', unread_data, 'codexSections', codex_data);
 end;
