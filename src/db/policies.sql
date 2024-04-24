@@ -125,6 +125,7 @@ create policy "INSERT for users" on public.reactions for insert to authenticated
 alter table public.messages enable row level security;
 
 create policy "READ for author and recipient" on public.messages for select to authenticated using ((sender_user = (select auth.uid())) or (recipient_user = (select auth.uid())) or is_players_character(recipient_character) or is_players_character(sender_character));
+create policy "UPDATE for recipient" on public.messages for update to authenticated using (recipient_user = (select auth.uid()) or is_players_character(recipient_character));
 create policy "ALL for author" on public.messages for all to authenticated using (sender_user = (select auth.uid()) or is_players_character(sender_character));
 
 -- User reads --
