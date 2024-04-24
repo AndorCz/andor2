@@ -95,13 +95,11 @@ create policy "ALL for owners" on public.threads for all to authenticated using 
 
 -- Posts --
 
-alter table public.posts enable row level security; -- (0/9)
+alter table public.posts enable row level security;
 
 create policy "UPDATE for owners" on public.posts for update to authenticated using (owner = (select auth.uid()));
 create policy "DELETE for owners" on public.posts for delete to authenticated using (owner = (select auth.uid()));
 create policy "INSERT for players or users" on public.posts for insert to authenticated with check (thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id)));
-create policy "UPDATE only reactions" on public.posts for update using (true) with check (is_valid_reaction_update(thumbs, excluded.thumbs) and is_valid_reaction_update(frowns, excluded.frowns) and is_valid_reaction_update(shocks, excluded.shocks) and is_valid_reaction_update(hearts, excluded.hearts) and is_valid_reaction_update(laughs, excluded.laughs));
-create policy "UPDATE only reactions for users" on public.posts 
 
   -- games
 create policy "READ to everyone in open game and open discussion" on public.posts for select to public using ((thread in (select discussion_thread from games where open_discussion = true)) or (thread in (select game_thread from games where open_game = true)));
@@ -110,6 +108,7 @@ create policy "ALL for storytellers" on public.posts for all to authenticated us
   -- boards
 create policy "READ for users in open boards, except banned" on public.posts for select using (exists (select 1 from boards where boards.open = true and boards.thread = posts.thread and not ((select auth.uid()) = any (boards.bans))));
 create policy "READ to members in closed boards" on public.posts for select using (exists (select 1 from boards where boards.open = false and boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.members) or (select auth.uid()) = any (boards.mods))));
+create policy "ALL for mods and owner in boards" on public.posts for all using (exists (select 1 from boards where boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.mods))));
   -- works
 create policy "READ to everyone in works" on public.posts for select to public using (thread in (select thread from works));
 
@@ -117,11 +116,13 @@ create policy "READ to everyone in works" on public.posts for select to public u
 
 alter table public.reactions enable row level security;
 
-create policy "ALL for users" on public.reactions for all to authenticated using (true);
+create policy "SELECT for users" on public.reactions for select to authenticated using (true);
+create policy "UPDATE for users" on public.reactions for update to authenticated using (true);
+create policy "INSERT for users" on public.reactions for insert to authenticated with check (true);
 
 -- Messages --
 
-alter table public.messages enable row level security; -- (0/4)
+alter table public.messages enable row level security;
 
 create policy "READ for author and recipient" on public.messages for select to authenticated using ((sender_user = (select auth.uid())) or (recipient_user = (select auth.uid())) or is_players_character(recipient_character) or is_players_character(sender_character));
 create policy "ALL for author" on public.messages for all to authenticated using (sender_user = (select auth.uid()) or is_players_character(sender_character));
