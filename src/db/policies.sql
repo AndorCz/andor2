@@ -100,6 +100,9 @@ alter table public.posts enable row level security; -- (0/9)
 create policy "UPDATE for owners" on public.posts for update to authenticated using (owner = (select auth.uid()));
 create policy "DELETE for owners" on public.posts for delete to authenticated using (owner = (select auth.uid()));
 create policy "INSERT for players or users" on public.posts for insert to authenticated with check (thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id)));
+create policy "UPDATE only reactions" on public.posts for update using (true) with check (is_valid_reaction_update(thumbs, excluded.thumbs) and is_valid_reaction_update(frowns, excluded.frowns) and is_valid_reaction_update(shocks, excluded.shocks) and is_valid_reaction_update(hearts, excluded.hearts) and is_valid_reaction_update(laughs, excluded.laughs));
+create policy "UPDATE only reactions for users" on public.posts 
+
   -- games
 create policy "READ to everyone in open game and open discussion" on public.posts for select to public using ((thread in (select discussion_thread from games where open_discussion = true)) or (thread in (select game_thread from games where open_game = true)));
 create policy "READ to players in closed game and closed discussion" on public.posts for select to authenticated using (thread in (select discussion_thread from games where open_discussion = false and is_player(id)) or thread in (select game_thread from games where open_game = false and is_player(id)));
@@ -109,6 +112,12 @@ create policy "READ for users in open boards, except banned" on public.posts for
 create policy "READ to members in closed boards" on public.posts for select using (exists (select 1 from boards where boards.open = false and boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.members) or (select auth.uid()) = any (boards.mods))));
   -- works
 create policy "READ to everyone in works" on public.posts for select to public using (thread in (select thread from works));
+
+-- Reactions --
+
+alter table public.reactions enable row level security;
+
+create policy "ALL for users" on public.reactions for all to authenticated using (true);
 
 -- Messages --
 

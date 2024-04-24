@@ -4,6 +4,7 @@ drop table if exists threads cascade;
 drop table if exists games cascade;
 drop table if exists characters cascade;
 drop table if exists posts cascade;
+drop table if exists reactions cascade;
 drop table if exists messages cascade;
 drop table if exists boards cascade;
 drop table if exists bookmarks cascade;
@@ -188,11 +189,6 @@ create table posts (
   owner uuid,
   owner_type text not null,
   content text,
-  thumbs uuid[] null default '{}'::uuid[],
-  frowns uuid[] null default '{}'::uuid[],
-  shocks uuid[] null default '{}'::uuid[],
-  hearts uuid[] null default '{}'::uuid[],
-  laughs uuid[] null default '{}'::uuid[],
   important boolean default false,
   audience uuid[] null,
   openai_post text null,
@@ -200,6 +196,17 @@ create table posts (
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
+);
+
+create table reactions (
+  post_id int4 not null,
+  thumbs uuid[] null default '{}'::uuid[],
+  frowns uuid[] null default '{}'::uuid[],
+  shocks uuid[] null default '{}'::uuid[],
+  hearts uuid[] null default '{}'::uuid[],
+  laughs uuid[] null default '{}'::uuid[],
+  constraint public_reactions_post_id_fkey foreign key (post_id) references posts (id) on delete cascade,
+  constraint unique_post_id unique (post_id)
 );
 
 create table messages (
@@ -246,7 +253,7 @@ create table user_reads (
 -- VIEWS --------------------------------------------
 
 
-create or replace posts_owner as
+create or replace view posts_owner as
   select
     p.*,
     case
@@ -257,15 +264,17 @@ create or replace posts_owner as
       when p.owner_type = 'user' then profiles.portrait
       when p.owner_type = 'character' then characters.portrait
     end as owner_portrait,
-    get_character_names (p.audience) as audience_names
+    get_character_names (p.audience) as audience_names,
+    reactions.*
   from
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
+    left join reactions on p.id = reactions.post_id
   order by
     p.created_at desc;
 
-create or replace board_list as
+create or replace view board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
   from boards b
     left join threads t on b.thread = t.id
@@ -274,7 +283,7 @@ create or replace board_list as
   group by b.id, pr.id, pr.name
   order by b.created_at desc;
 
-create or replace game_list as
+create or replace view game_list as
   select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count, max(p.created_at) as last_post
   from games g
     left join threads t on g.game_thread = t.id
@@ -283,7 +292,7 @@ create or replace game_list as
   group by g.id, pr.id, pr.name
   order by g.created_at desc;
 
-create or replace work_list as
+create or replace view work_list as
   select w.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
   from works w
     left join threads t on w.thread = t.id
@@ -292,42 +301,42 @@ create or replace work_list as
   group by w.id, pr.id, pr.name
   order by w.created_at desc;
 
-create or replace view last_posts as
-  select p.id, p.content, p.created_at,
-    case
-      when g.id is not null then 'game'
-      when b.id is not null then 'board'
-      when w.id is not null then 'work'
-    end as content_type,
-    coalesce(g.id::text, b.id::text, w.id::text) as content_id,
-    p.owner,
-    p.owner_type,
-    case
-      when p.owner_type = 'user' then pr.name
-      when p.owner_type = 'character' then ch.name
-    end as owner_name,
-    case
-      when p.owner_type = 'user' then pr.portrait
-      when p.owner_type = 'character' then ch.portrait
-    end as owner_portrait,
-    case
-      when g.id is not null then g.name
-      when b.id is not null then b.name
-      when w.id is not null then w.name
-    end as content_name,
-    p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
-  from
-    posts p
-    left join games g on p.thread = g.game_thread
-    left join boards b on p.thread = b.thread
-    left join works w on p.thread = w.thread
-    left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
-    left join characters ch on p.owner = ch.id and p.owner_type = 'character'
-  where
-    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE and g.open_game = true
-  order by
-    p.created_at desc
-  limit 10;
+--create or replace view last_posts as
+--  select p.id, p.content, p.created_at,
+--    case
+--      when g.id is not null then 'game'
+--      when b.id is not null then 'board'
+--      when w.id is not null then 'work'
+--    end as content_type,
+--    coalesce(g.id::text, b.id::text, w.id::text) as content_id,
+--    p.owner,
+--    p.owner_type,
+--    case
+--      when p.owner_type = 'user' then pr.name
+--      when p.owner_type = 'character' then ch.name
+--    end as owner_name,
+--    case
+--      when p.owner_type = 'user' then pr.portrait
+--      when p.owner_type = 'character' then ch.portrait
+--    end as owner_portrait,
+--    case
+--      when g.id is not null then g.name
+--      when b.id is not null then b.name
+--      when w.id is not null then w.name
+--    end as content_name,
+--    p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
+--  from
+--    posts p
+--    left join games g on p.thread = g.game_thread
+--    left join boards b on p.thread = b.thread
+--    left join works w on p.thread = w.thread
+--    left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
+--    left join characters ch on p.owner = ch.id and p.owner_type = 'character'
+--  where
+--    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE and g.open_game = true
+--  order by
+--    p.created_at desc
+--  limit 10;
 
 
 -- FUNCTIONS --------------------------------------------
@@ -448,34 +457,43 @@ end;
 $$ language plpgsql;
 
 
-create or replace function update_reaction(post_id int4, reaction_type text, action text)
-  returns setof posts as $$
+create or replace function update_reaction(post int4, reaction_type text, action text) returns setof reactions as $$
+declare
+  user_id uuid := auth.uid();
 begin
   if action = 'add' then
     return query
-    update posts
-    set
-      thumbs = case when reaction_type = 'thumbs' and not (auth.uid() = any(thumbs)) then array_append(thumbs, auth.uid()) else thumbs end,
-      frowns = case when reaction_type = 'frowns' and not (auth.uid() = any(frowns)) then array_append(frowns, auth.uid()) else frowns end,
-      shocks = case when reaction_type = 'shocks' and not (auth.uid() = any(shocks)) then array_append(shocks, auth.uid()) else shocks end,
-      hearts = case when reaction_type = 'hearts' and not (auth.uid() = any(hearts)) then array_append(hearts, auth.uid()) else hearts end,
-      laughs = case when reaction_type = 'laughs' and not (auth.uid() = any(laughs)) then array_append(laughs, auth.uid()) else laughs end
-    where id = post_id
+    insert into reactions (post_id, thumbs, frowns, shocks, hearts, laughs)
+    values (
+      post,
+      case when reaction_type = 'thumbs' then array[user_id] else '{}' end,
+      case when reaction_type = 'frowns' then array[user_id] else '{}' end,
+      case when reaction_type = 'shocks' then array[user_id] else '{}' end,
+      case when reaction_type = 'hearts' then array[user_id] else '{}' end,
+      case when reaction_type = 'laughs' then array[user_id] else '{}' end
+    )
+    on conflict (post_id) do update
+    set thumbs = case when reaction_type = 'thumbs' and not (user_id = any(reactions.thumbs)) then array_append(reactions.thumbs, user_id) else reactions.thumbs end,
+        frowns = case when reaction_type = 'frowns' and not (user_id = any(reactions.frowns)) then array_append(reactions.frowns, user_id) else reactions.frowns end,
+        shocks = case when reaction_type = 'shocks' and not (user_id = any(reactions.shocks)) then array_append(reactions.shocks, user_id) else reactions.shocks end,
+        hearts = case when reaction_type = 'hearts' and not (user_id = any(reactions.hearts)) then array_append(reactions.hearts, user_id) else reactions.hearts end,
+        laughs = case when reaction_type = 'laughs' and not (user_id = any(reactions.laughs)) then array_append(reactions.laughs, user_id) else reactions.laughs end
     returning *;
   elsif action = 'remove' then
     return query
-    update posts
-    set
-      thumbs = case when reaction_type = 'thumbs' then array_remove(thumbs, auth.uid()) else thumbs end,
-      frowns = case when reaction_type = 'frowns' then array_remove(frowns, auth.uid()) else frowns end,
-      shocks = case when reaction_type = 'shocks' then array_remove(shocks, auth.uid()) else shocks end,
-      hearts = case when reaction_type = 'hearts' then array_remove(hearts, auth.uid()) else hearts end,
-      laughs = case when reaction_type = 'laughs' then array_remove(laughs, auth.uid()) else laughs end
-    where id = post_id
+    insert into reactions (post_id, thumbs, frowns, shocks, hearts, laughs)
+    values (post, '{}', '{}', '{}', '{}', '{}')
+    on conflict (post_id) do update
+    set thumbs = case when reaction_type = 'thumbs' then array_remove(reactions.thumbs, user_id) else reactions.thumbs end,
+        frowns = case when reaction_type = 'frowns' then array_remove(reactions.frowns, user_id) else reactions.frowns end,
+        shocks = case when reaction_type = 'shocks' then array_remove(reactions.shocks, user_id) else reactions.shocks end,
+        hearts = case when reaction_type = 'hearts' then array_remove(reactions.hearts, user_id) else reactions.hearts end,
+        laughs = case when reaction_type = 'laughs' then array_remove(reactions.laughs, user_id) else reactions.laughs end
     returning *;
   end if;
 end;
 $$ language plpgsql;
+
 
 
 create or replace function get_bookmarks() returns jsonb as $$

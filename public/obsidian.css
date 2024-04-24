@@ -375,6 +375,7 @@ select {
   }
   .svelte-select .value-container {
     height: 50px;
+    padding: 0px !important;
   }
 
 /* TABS */

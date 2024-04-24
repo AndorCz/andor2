@@ -68,8 +68,8 @@
 
   /*
   function seen () {
-    delete game.unread.gameInfo
-    setRead(user.id, 'game-info-' + game.id)
+    delete game.unread.gameCodex
+    setRead(user.id, 'game-codex-' + game.id)
     const game = $bookmarks.games.find((game) => { return game.id === game.id })
     if (game) { game.unread = 0 }
     $bookmarks = $bookmarks
