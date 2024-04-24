@@ -29,6 +29,11 @@ const { title, headerStatic, headerStorage } = Astro.props
     <link href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap' rel="stylesheet">
 
     <script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>
+    <script src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js' defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || []
+      OneSignalDeferred.push(function (OneSignal) { OneSignal.init({ appId: '5189da9f-2c7f-4a69-a7ed-98aacba884d6' }) })
+    </script>
 
     <ViewTransitions />
     <title>Andor2.cz ― {title}</title>

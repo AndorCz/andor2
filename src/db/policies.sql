@@ -100,6 +100,7 @@ alter table public.posts enable row level security;
 create policy "UPDATE for owners" on public.posts for update to authenticated using (owner = (select auth.uid()));
 create policy "DELETE for owners" on public.posts for delete to authenticated using (owner = (select auth.uid()));
 create policy "INSERT for players or users" on public.posts for insert to authenticated with check (thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id)));
+create policy "INSERT for users to chat" on public.posts for insert to authenticated with check (thread = 1);
 
   -- games
 create policy "READ to everyone in open game and open discussion" on public.posts for select to public using ((thread in (select discussion_thread from games where open_discussion = true)) or (thread in (select game_thread from games where open_game = true)));
