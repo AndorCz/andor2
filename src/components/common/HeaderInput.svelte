@@ -3,6 +3,7 @@
   import { getImage, cropImageToBlob } from '@lib/utils'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
+  import { tooltip } from '@lib/tooltip'
   import Cropper from 'svelte-easy-crop'
 
   export let data = {}
@@ -84,10 +85,10 @@
   <div id='veil'></div>
   <div id='cropModal' bind:this={cropModalEl}>
     <Cropper image={newHeaderUrl} {aspect} crop={{ x: 0, y: 0 }} zoom={1} on:cropcomplete={e => { cropCoords = e.detail }} showGrid={false} />
-    <button on:click={endCrop} class='cancel' title='Zrušit'>
+    <button on:click={endCrop} class='cancel' title='Zrušit' use:tooltip>
       <span class='material'>close</span>
     </button>
-    <button on:click={applyCrop} class='save' title='Uložit'>
+    <button on:click={applyCrop} class='save' title='Uložit' use:tooltip>
       <span class='material'>check</span>
     </button>
   </div>
@@ -96,7 +97,7 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <input id='headerImage' type='file' accept='image' bind:this={headerInputEl} bind:files on:change={processImage} disabled={uploading} />
-<button class='material clear square' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku'>close</button>
+<button class='material clear square' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku' use:tooltip>close</button>
 
 <style>
   #veil {

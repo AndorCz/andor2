@@ -54,7 +54,7 @@
         <h2>Status vypravěče</h2>
         <div class='row'>
           <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' bind:checked={character.storyteller} /></div>
-          <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller}>check</button>
+          <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller} title='Uložit' use:tooltip>check</button>
         </div>
       {/if}
 

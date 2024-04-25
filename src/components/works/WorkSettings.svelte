@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
   import { workTags, workCategoriesText } from '@lib/constants'
@@ -68,13 +69,13 @@
     <h2>Název</h2>
     <div class='row'>
       <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save square'>check</button>
+      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
-      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square'>check</button>
+      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Kategorie</h2>
@@ -84,7 +85,7 @@
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>
-      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square'>check</button>
+      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Tagy</h2>
@@ -92,7 +93,7 @@
       <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
         <div slot='empty'>Více tagů nelze přidat</div>
       </Select>
-      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square'>check</button>
+      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazání díla</h2>

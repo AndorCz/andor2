@@ -62,7 +62,7 @@
       <tr><td>Aktualizováno</td><td>{formatDate(page.updated_at)}</td></tr>
     </table>
   </div>
-  <div class='url'>{#key page.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='zkopírovat' use:tooltip>content_copy</button></div>
+  <div class='url'>{#key page.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='Zkopírovat cestu' use:tooltip>content_copy</button></div>
   {#if isStoryteller}
     <div class='options'>
       <button on:click={renamePage} class='rename'><span class='material'>edit</span>Přejmenovat</button>

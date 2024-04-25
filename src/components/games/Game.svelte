@@ -1,6 +1,6 @@
 <script>
-  import { tooltip } from '@lib/tooltip'
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { removeURLParam } from '@lib/utils'
   import { getSavedStore, bookmarks } from '@lib/stores'

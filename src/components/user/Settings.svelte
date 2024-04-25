@@ -2,6 +2,7 @@
   import { showSuccess, showError } from '@lib/toasts'
   import { activeConversation } from '@lib/stores'
   import { supabase } from '@lib/database'
+  import { tooltip } from '@lib/tooltip'
 
   export let user
 
@@ -58,7 +59,7 @@
   <h2>Automatický refresh příspěvků</h2>
   <div class='row'>
     <div class='inputs'><input type='checkbox' id='autorefresh' name='autorefresh' bind:checked={user.autorefresh} /></div>
-    <button on:click={updateUser} class='material square' disabled={originalAutorefresh === user.autorefresh}>check</button>
+    <button on:click={updateUser} class='material square' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2>Smazat účet</h2>

@@ -79,7 +79,7 @@
   <h2>Název</h2>
   <div class='row'>
     <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
-    <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material square'>check</button>
+    <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2 class='first'>Vlastní hlavička</h2>
@@ -98,7 +98,7 @@
             <li>
               <div class='ban list'>
                 <h3>{ban.name}</h3>
-                <button class='square material square' on:click={() => { removePerson('bans', ban) }} title='odebrat' use:tooltip>delete</button>
+                <button class='square material square' on:click={() => { removePerson('bans', ban) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -112,7 +112,7 @@
       <Select bind:value={newBan} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
         <div slot='empty'>Uživatel nenalezen</div>
       </Select>
-      <button class='material square' on:click={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id}>add</button>
+      <button class='material square' on:click={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
   {:else}
     <h2>Členové</h2>
@@ -123,7 +123,7 @@
             <li>
               <div class='member list'>
                 <h3>{member.name}</h3>
-                <button class='square material square' on:click={() => { removePerson('members', member) }} title='odebrat' use:tooltip>delete</button>
+                <button class='square material square' on:click={() => { removePerson('members', member) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -137,7 +137,7 @@
       <Select bind:value={newMember} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
         <div slot='empty'>Uživatel nenalezen</div>
       </Select>
-      <button class='material square' on:click={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id}>add</button>
+      <button class='material square' on:click={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
   {/if}
 
@@ -152,7 +152,7 @@
             <li>
               <div class='mod list'>
                 <h3>{mod.name}</h3>
-                <button class='square material' on:click={() => { removePerson('mods', mod) }} title='odebrat square' use:tooltip>delete</button>
+                <button class='square material' on:click={() => { removePerson('mods', mod) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -175,13 +175,13 @@
         <option value={true}>Veřejná</option>
         <option value={false}>Soukromá</option>
       </select>
-      <button on:click={updateBoard} disabled={saving || (originalOpen === data.open)} class='material square'>check</button>
+      <button on:click={updateBoard} disabled={saving || (originalOpen === data.open)} class='material square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazání diskuze</h2>
     Pozor, toto je nevratná akce.<br><br>
     <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
-      <span class='material square'>warning</span><span>Smazat diskuzi</span>
+      <span class='material'>warning</span><span>Smazat diskuzi</span>
     </button>
   {/if}
 </main>
