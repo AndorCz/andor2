@@ -1,4 +1,5 @@
 <script>
+  import { tooltip } from '@lib/tooltip'
   import { onMount } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { removeURLParam } from '@lib/utils'
@@ -59,11 +60,13 @@
   <div class='headline'>
     <h1>{game.name}</h1>
     {#if user.id}
-      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
-      <button class='material square'>notifications</button>
-      <button class='material square'>email</button>
+      {#key bookmarkId}
+        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>bookmark</button>
+      {/key}
+      <button class='material square' title={'Dostávat notifikace'} use:tooltip>notifications</button>
+      <button class='material square' title={'Dostávat emaily'} use:tooltip>email</button>
       {#if isGameOwner}
-        <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
+        <button on:click={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
     {/if}
   </div>

@@ -49,11 +49,15 @@
 
 <div class='headline'>
   <h1>{data.name}</h1>
-  <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'}>assignment</button>
+  {#key $boardStore.hideHeader}
+    <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
+  {/key}
   {#if user.id}
-    <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+    {#key bookmarkId}
+      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>bookmark</button>
+    {/key}
     {#if isMod}
-      <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
+      <button on:click={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
     {/if}
   {/if}
 </div>

@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import Editor from '@components/common/Editor.svelte'
   import Loading from '@components/common/Loading.svelte'
 
@@ -114,7 +115,7 @@
     <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength}></textarea>
   {/if}
   {#if showButton}
-    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle}>
+    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle} use:tooltip>
       <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
     </button>
   {/if}

@@ -1,5 +1,6 @@
 <script>
   // Shows a long text that can be edited in place
+  import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -43,7 +44,7 @@
   {:else}
     <main class='editableLong'><Render html={value} /></main>
     {#if canEdit}
-      <button on:click={() => { isEditing = true }} title='Upravit'><span class='material'>edit</span></button>
+      <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
     {/if}
   {/if}
 </div>

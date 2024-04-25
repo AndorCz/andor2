@@ -1,4 +1,5 @@
 <script>
+  import { tooltip } from '@lib/tooltip'
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
@@ -47,9 +48,11 @@
   <div class='headline'>
     <h1>{data.name}</h1>
     {#if user.id}
-      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+      {#key bookmarkId}
+        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>bookmark</button>
+      {/key}
       {#if isOwner}
-        <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
+        <button on:click={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
       {/if}
     {/if}
   </div>
