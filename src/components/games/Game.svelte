@@ -60,6 +60,8 @@
     <h1>{game.name}</h1>
     {#if user.id}
       <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title='Sledovat'>bookmark</button>
+      <button class='material square'>notifications</button>
+      <button class='material square'>email</button>
       {#if isGameOwner}
         <button on:click={showSettings} class='material settings square' title='Nastavení'>settings</button>
       {/if}
@@ -117,9 +119,6 @@
     h2 {
       margin-top: 40px;
       margin-bottom: 0px;
-    }
-   .headline button {
-      margin-left: 10px;
     }
 
   main {

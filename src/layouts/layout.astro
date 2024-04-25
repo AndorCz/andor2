@@ -32,7 +32,9 @@ const { title, headerStatic, headerStorage } = Astro.props
     <script src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js' defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || []
-      OneSignalDeferred.push(function (OneSignal) { OneSignal.init({ appId: '5189da9f-2c7f-4a69-a7ed-98aacba884d6' }) })
+      if (import.meta.env.MODE === 'production') {
+        OneSignalDeferred.push(function (OneSignal) { OneSignal.init({ appId: '5189da9f-2c7f-4a69-a7ed-98aacba884d6' }) })
+      }
     </script>
 
     <ViewTransitions />
