@@ -168,7 +168,7 @@
     background-repeat: no-repeat;
     background-position: center;
     cursor: pointer;
-    opacity: 0.3;
+    opacity: 0.7;
   }
     .dicePost:hover {
       opacity: 1;

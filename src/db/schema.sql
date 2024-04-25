@@ -846,6 +846,15 @@ create or replace trigger update_codex_updated_at before update on codex_pages f
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
 
+-- WEBHOOKS --------------------------------------------
+
+
+create trigger notify after insert on public.posts for each row
+execute function supabase_functions.http_request (
+  'https://zwclrcefxleqmzhhfcte.supabase.co/functions/v1/notify', 'POST', '{ "Content-Type":"application/json" }', '{}', '1000'
+);
+
+
 -- CRON --------------------------------------------
 
 

@@ -16,17 +16,73 @@
   game.characters = game.characters || []
   game.unread = game.unread || {}
 
-  let bookmarkId
   const gameStore = getSavedStore('game-' + game.id)
   const isGameOwner = game.owner.id === user.id
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
+  let notificationEnabled = false
+  let emailEnabled = false
+  let bookmarkId
 
   onMount(() => {
     // tabs are persisted for the purpose of saving with redirect (to astro)
     $gameStore.activeTab = new URLSearchParams(window.location.search).get('tab') || $gameStore.activeTab || 'codex'
     removeURLParam('tab')
+    if (window.OneSignal?.initialized !== true) {
+      window.OneSignalDeferred = window.OneSignalDeferred || []
+      window.OneSignalDeferred.push(function (OneSignal) { initNotifications(OneSignal) })
+    }
   })
+
+  async function initNotifications (OneSignal) {
+    const isLocalhost = import.meta.env.MODE === 'development'
+    const oneSignalConfig = {
+      appId: isLocalhost ? '575ad6e0-0237-4802-b3cf-7325307b9364' : '5189da9f-2c7f-4a69-a7ed-98aacba884d6',
+      autoResubscribe: true,
+      persistNotification: true,
+      welcomeNotification: {
+        title: 'Andor: ' + game.name,
+        message: `Notifikace pro hru '${game.name}' byly povoleny`,
+        url: window.location + '/games/' + game.id + '?tab=game&tool=post'
+      },
+      promptOptions: {
+        slidedown: {
+          prompts: [
+            {
+              type: 'push',
+              autoPrompt: false,
+              enabled: true,
+              text: {
+                actionMessage: 'Chceš dostávat notifikace na nové příspěvky ve tvých hrách?',
+                unsubscribe: 'Chceš zrušit zasílání upozornění?',
+                acceptButton: 'Ano',
+                cancelButton: 'Později'
+              },
+              unsubscribeEnabled: true
+            }, {
+              type: 'email',
+              autoPrompt: false,
+              enabled: true,
+              text: {
+                message: 'Chceš dostávat emailem nové příspěvky ve tvých hrách?',
+                emailPlaceholder: 'Zadej svůj email',
+                submitButton: 'Odeslat',
+                cancelButton: 'Později'
+              }
+            }
+          ]
+        }
+      },
+      notificationClickHandlerMatch: 'origin',
+      notificationClickHandlerAction: 'focus'
+    }
+    if (isLocalhost) { oneSignalConfig.allowLocalhostAsSecureOrigin = true }
+
+    await OneSignal.init(oneSignalConfig)
+    notificationEnabled = OneSignal.User.PushSubscription?.optedIn
+    emailEnabled = OneSignal.User.EmailSubscription?.optedIn
+    OneSignal.User.PushSubscription.addEventListener('change', handleNotificationChange)
+  }
 
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
@@ -53,6 +109,32 @@
     history.pushState({}, '', `?tab=${tab}`)
   }
 
+  function toggleNotification () {
+    if (notificationEnabled) {
+      window.OneSignal.User.PushSubscription.optOut()
+      // notificationEnabled = false // probably not needed
+    } else {
+      // window.OneSignal.Slidedown.promptPush()
+      window.OneSignal.Notifications.requestPermission()
+      // window.OneSignal.showNativePrompt()
+    }
+  }
+
+  function toggleEmail () {
+    if (emailEnabled) {
+      // window.OneSignal.setEmail('') // ??
+      window.OneSignal.User.removeEmail(user.email) // ??
+      // emailEnabled = false
+    } else {
+      window.OneSignal.Slidedown.promptEmail()
+    }
+  }
+
+  function handleNotificationChange (event) {
+    if (event.current.optedIn) { window.OneSignal.login(user.id) }
+    notificationEnabled = event.current.optedIn
+  }
+
   $: bookmarkId = $bookmarks.games.find(b => b.id === game.id)?.bookmark_id
 </script>
 
@@ -61,10 +143,14 @@
     <h1>{game.name}</h1>
     {#if user.id}
       {#key bookmarkId}
-        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>bookmark</button>
+        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
       {/key}
-      <button class='material square' title={'Dostávat notifikace'} use:tooltip>notifications</button>
-      <button class='material square' title={'Dostávat emaily'} use:tooltip>email</button>
+      {#key notificationEnabled}
+        <button on:click={toggleNotification} class='material square' class:active={notificationEnabled} title={notificationEnabled ? 'Zrušit notifikace' : 'Dostávat notifikace'} use:tooltip>{notificationEnabled ? 'notifications_off' : 'notifications'}</button>
+      {/key}
+      {#key emailEnabled}
+        <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-maily'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
+      {/key}
       {#if isGameOwner}
         <button on:click={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}

@@ -212,6 +212,7 @@ button, .button {
     background-color: color-mix(in srgb, var(--panel), var(--background) 30%) ;
     border: 1px var(--panel) solid;
     box-shadow: inset 2px 2px 2px #0003;
+    color: var(--dim);
   }
 
 input[type=text], input[type=email], input[type=password], textarea, input[type=checkbox] {

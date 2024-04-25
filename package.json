@@ -1,10 +1,11 @@
 {
   "name": "andor2",
   "type": "module",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "scripts": {
     "build": "astro build",
     "db": "supabase start",
+    "functions": "supabase functions serve",
     "dev": "astro dev",
     "sync": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },

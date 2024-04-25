@@ -17,8 +17,8 @@ export const CustomImage = Image.extend({
   renderHTML ({ node, HTMLAttributes }) {
     function getAlignmentStyle (alignment) {
       switch (alignment) {
-        case 'left': return 'float: left;'
-        case 'right': return 'float: right;'
+        case 'left': return 'float: left; margin-right: 20px;'
+        case 'right': return 'float: right; margin-left: 20px;'
         case 'center': return 'display: block; margin-left: auto; margin-right: auto;'
         default: return ''
       }

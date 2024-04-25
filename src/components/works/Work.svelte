@@ -49,7 +49,7 @@
     <h1>{data.name}</h1>
     {#if user.id}
       {#key bookmarkId}
-        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>bookmark</button>
+        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
       {/key}
       {#if isOwner}
         <button on:click={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
