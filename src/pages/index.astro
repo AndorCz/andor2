@@ -1,8 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
-	import News from '@components/homepage/News.svelte'
-	import Feed from '@components/homepage/Feed.svelte'
 	import Editorial from '@components/homepage/Editorial.svelte'
+	import NewsSection from '@components/homepage/NewsSection.svelte'
 
   const { supabase, user } = Astro.locals
 
@@ -17,10 +16,11 @@
 	<main>
 		<section>
 			<Editorial {lastEditorial} client:only />
+			<NewsSection headline='Nové články' table='work_list' slug='work' client:load />
 			<!-- <Feed {user} {lastPosts} client:only /> -->
 		</section>
 		<aside>
-			<News client:load />
+			<NewsSection headline='Nové hry' table='game_list' slug='game' client:load />
 		</aside>
 	</main>
 </Layout>
@@ -32,10 +32,10 @@
 		gap: 40px;
 	}
 		aside {
-			width: 40%;
+			width: 50%;
 		}
 		section {
-			width: 60%;
+			width: 50%;
 		}
 
 	@media (max-width: 500px) {
