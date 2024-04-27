@@ -7,15 +7,14 @@
   const { gameId } = Astro.params
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data, error } = await supabase.rpc('get_game_data', { game_id: gameId });
+  const { data: game, error } = await supabase.rpc('get_game_data', { game_id: gameId });
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-  const gameData = data
 ---
 
-<Layout title={gameData?.name} headerStorage={gameData?.custom_header ? `game-${gameData.id}.jpg?hash=${gameData.custom_header}` : null}>
+<Layout title={game?.name} headerStorage={game?.custom_header ? `game-${game.id}.jpg?hash=${game.custom_header}` : null}>
   {(showSettings ? (
-    <GameSettings game={gameData} {user} client:only />
+    <GameSettings {game} {user} client:only />
   ) : (
-    <Game game={gameData} {user} client:only />
+    <Game {game} {user} client:only />
   ))}
 </Layout>

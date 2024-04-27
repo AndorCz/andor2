@@ -129,6 +129,12 @@ create policy "READ for author and recipient" on public.messages for select to a
 create policy "UPDATE for recipient" on public.messages for update to authenticated using (recipient_user = (select auth.uid()) or is_players_character(recipient_character));
 create policy "ALL for author" on public.messages for all to authenticated using (sender_user = (select auth.uid()) or is_players_character(sender_character));
 
+-- Subscriptions --
+
+alter table public.subscriptions enable row level security;
+
+create policy "ALL for owner" on public.subscriptions for all to authenticated using (user_id = (select auth.uid()));
+
 -- User reads --
 
 alter table public.user_reads enable row level security;
