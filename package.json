@@ -14,7 +14,7 @@
     "@astrojs/cloudflare": "9.0.0",
     "@astrojs/svelte": "5.0.3",
     "@jill64/svelte-sanitize": "1.2.4",
-    "@supabase/ssr": "0.0.10",
+    "@supabase/ssr": "0.3.0",
     "@supabase/supabase-js": "2.38.4",
     "@tiptap/core": "2.1.13",
     "@tiptap/extension-bubble-menu": "2.1.13",
