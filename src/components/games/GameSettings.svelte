@@ -24,8 +24,13 @@
   let welcomeMessageRef
   let newCodexSection = ''
   let isWelcomeMessageDirty = false
+  let headlineEl
 
-  onMount(setOriginal)
+  onMount(() => {
+    setOriginal()
+    const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
+    observer.observe(headlineEl)
+  })
 
   function setOriginal () {
     originalName = game.name
@@ -101,11 +106,12 @@
   }
 </script>
 
-<div class='headline'>
-  <h1>Nastavení hry "{game.name}"</h1>
-  <button on:click={showGame} class='material square' title='Zpět do hry'>check</button>
+<div class='headline' bind:this={headlineEl}>
+  <div class='wrapper'>
+    <h1>Nastavení: <a href='/game/{game.id}' class='backlink'>{game.name}</a></h1>
+    <button on:click={showGame} class='material square back' title='Zpět do hry' use:tooltip>check</button>
+  </div>
 </div>
-
 <main>
   {#if game.owner.id === user.id}
     <h2 class='first'>Vlastní hlavička</h2>
@@ -234,17 +240,33 @@
 
 <style>
   .headline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    position: sticky;
+    top: -1px; /* needed for observer */
+    background-color: var(--panel);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 0px -60px;
+    z-index: 10;
   }
-    h1 {
-      margin: 0px;
+    .wrapper {
+      max-width: 600px;
+      margin: auto;
     }
-    .headline button {
-      margin-left: 10px;
-    }
+      .headline .backlink {
+        font-family: var(--headlineFont);
+        display: inline-block;
+        font-size: inherit;
+      }
+      .headline h1 {
+        margin: 0px;
+        margin-top: -5px;
+        padding: 0px;
+      }
+      .back {
+        position: absolute;
+        top: 8px;
+        right: 20px;
+      }
 
   main {
     max-width: 600px;
@@ -278,9 +300,18 @@
     gap: 10px;
   }
 
+  @media (max-width: 1200px) {
+    .headline {
+      margin: 0px -30px;
+    }
+  }
+
   @media (max-width: 860px) {
     main {
       padding: 10px;
+    }
+    .headline {
+      margin: 0px -15px;
     }
   }
 </style>

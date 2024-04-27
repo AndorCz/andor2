@@ -82,9 +82,6 @@
       margin: 0px;
       flex: 1;
     }
-    .headline button {
-      margin-left: 10px;
-    }
   .details {
     display: flex;
     justify-content: space-between;

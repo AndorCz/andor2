@@ -698,6 +698,7 @@ select {
 
 /* Component overrides */
 
+/*
 #newsCategorySelect button {
   background: none;
   padding: 10px 30px 10px 0px;
@@ -713,6 +714,12 @@ select {
     position: absolute;
     right: 0px;
   }
+*/
+
+.headline.pinned {
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  clip-path: polygon(0 0, 100% 0, 100% 200%, 0 200%);
+}
 
 /* UTILS */
 
