@@ -22,6 +22,7 @@
   export let maxlength = null
   export let loading = false
   export let singleLine = false
+  export let placeholder
 
   let isEmpty = value === ''
   let editorRef
@@ -112,7 +113,7 @@
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
     {/if}
-    <textarea bind:value={value} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength}></textarea>
+    <textarea bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength}></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle} use:tooltip>

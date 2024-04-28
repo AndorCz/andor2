@@ -20,7 +20,7 @@
   export let onReply = null
   export let iconSize = 70
 
-  const canDelete = post.dice ? canDeleteAll : isMyPost
+  const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
 
   const postStore = writable(post)
   let expanded = false
