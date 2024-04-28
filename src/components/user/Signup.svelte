@@ -2,6 +2,8 @@
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
   import { showError } from '@lib/toasts'
+  import md5 from 'crypto-js/md5';
+
 
   let email = ''
   let oldLogin = ''
@@ -10,6 +12,7 @@
   let password2 = ''
   let isConfirming = false
   let captchaToken = ''
+  let newLogin = ''
 
   onMount(() => {
     try {
@@ -38,36 +41,92 @@
   }
 
   async function validateUser () {
+    // TODO: Comment/uncomment for testing, remove comment before launch
     if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
-    const response = await fetch('/api/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'validate', oldLogin, oldPassword })
-    })
-    if (response.ok) {
-      const data = await response.json()
-      email = data.userInfo.old_email
-      isConfirming = true
+
+    const hashedPassword = md5(oldPassword).toString();
+    const { data, error } = await supabase
+      .from("old_users")
+      .select("old_email")
+      .eq("old_login", oldLogin)
+      .eq("old_psw", hashedPassword)
+      .maybeSingle()
+
+    if (error) {
+      return showError("Chyba databáze!");
+    }
+
+    if (data) {
+      email = data.old_email;
+      newLogin = oldLogin
+      isConfirming = true;
     } else {
-      return showError('Uživatel nenalezen, nebo nesprávné heslo')
+      return showError("Uživatel nenalezen, nebo nesprávné heslo");
     }
   }
 
   async function signUpMigrate () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
+    if (newLogin.length < 1) { return showError('Login musí mít alespoň 1 znak') }
 
-    const response = await fetch('/api/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'signup', email, password, oldPassword, oldLogin })
-    })
+    // Get info about old user
+    const hashedPassword = md5(oldPassword).toString();
 
-    const data = await response.json()
-    if (response.ok) { // All good, redirect
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím zkontroluj svůj e-mail pro dokončení registrace.')
-    } else {
-      return showError(data.error)
+    const { data: userInfoMigrate, error :userError } = await supabase
+      .from("old_users")
+      .select("old_id")
+      .eq("old_login", oldLogin)
+      .eq("old_psw", hashedPassword)
+      .maybeSingle()
+
+    if (userError || !userInfoMigrate) {
+      return showError("Chyba databáze!");
+    }
+
+    // Check if user is already linked to some user
+    const oldId = userInfoMigrate.old_id
+    const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
+    if (idCheck) {
+      return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
+    }
+
+    // Check if new login is available
+    const { data: loginCheck, error: loginError } = await supabase.from('profiles').select('name').eq('name', newLogin).maybeSingle()
+    if (loginCheck) {
+      return showError('Login je už zabranej.')
+    }
+
+    // Check if user is trying to claim login that belonged to someone else
+    const { data: userExisted, error: userExistedError } = await supabase
+      .from("old_users")
+      .select("old_id")
+      .eq("old_login", newLogin)
+      .not("old_id","eq", oldId)
+      .maybeSingle()
+
+    if (userExisted) {
+      return showError("Snažíš se zabrat si cizí login")
+    }
+
+    // All is good - we can proceed with registration
+    // Create user
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password })
+    if (authError) { return handleError(authError) }
+
+    if (authError || !authData) {
+      return showError("Chyba registrace")
+    }
+
+    // Create user profile with old_id
+    if (authData && authData.user) {
+      const { data: profileData, error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: newLogin, old_id: oldId })
+      if (!profileError) {
+        window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím zkontroluj svůj e-mail pro dokončení registrace.')
+      }
+      else {
+        return showError("Chyba registrace")
+      }
     }
   }
 </script>
@@ -117,6 +176,10 @@
     <h1>Potvrzení importu</h1>
     <form on:submit|preventDefault={signUpMigrate}>
       <input type='hidden' id='oldLogin' value={oldLogin} />
+      <div class='row'>
+        <label for='email'>Login</label>
+        <input type='text' id='newLogin' bind:value={newLogin} />
+      </div>
       <div class='row'>
         <label for='email'>E-mail</label>
         <input type='email' id='email' bind:value={email} />

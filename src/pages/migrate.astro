@@ -1,161 +1,18 @@
 ---
-import { getOldUserLogin, getOldUserInfo } from "@mig/migrate.js";
 import Layout from "@layouts/layout.astro";
+import Migrate from "@components/user/Migrate.svelte";
 
 const { supabase, user } = Astro.locals;
-let toast: any = false;
-
-let old_id = null;
-let old_login = null;
-const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("old_id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-if (profileData) {
-    old_id = profileData.old_id;
-    const loginData = await getOldUserLogin(old_id);
-    if (loginData && loginData.old_login) {
-        old_login = loginData.old_login;
-    }
-    
-} else if (profileError) {
-    console.error("Error fetching profile:", profileError.message);
+let  oldUserData = {}
+if (user.old_id){
+    const { data, error } = await supabase.from('old_users').select('*').eq('old_id', user.old_id).maybeSingle();
+    oldUserData = data
 }
 
-if (Astro.request.method === "POST") {
-    const data = await Astro.request.formData();
-    const userName = data.get("userName");
-    const password = data.get("password");
 
-    const userInfoMigrate = await getOldUserInfo(userName, password);
-    if (userInfoMigrate) {
-        old_id = userInfoMigrate.old_id
-    }
-    
-    if (old_id) {
-        const { data: idCheck, error: idError } = await supabase
-                .from("profiles")
-                .select("old_id")
-                .eq("old_id", parseInt(old_id,10))
-                .maybeSingle();
 
-        if (idCheck) {
-            return Astro.redirect('/migrate/?toastType=success&toastText=' + encodeURIComponent(`Id původního uživatele ${userName} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`))
-            toast = `Id původního uživatele ${userName} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`
-        } else {
-            const { updateError } = await supabase
-            .from('profiles')
-            .update({old_id: old_id })
-            .eq('id', user.id);
-            
-            if (updateError) {
-            toast = 'Chyba u propojování účtu.';
-        } else {
-            return Astro.redirect('/migrate/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl propojen'))
-        }
-    }
-    } else {
-        return Astro.redirect('/migrate/?toastType=success&toastText=' + encodeURIComponent('Špatnej uživatel nebo heslo'))
-        // toast nefunguje eskeli pls fixni to :(
-        toast = "Špatnej uživatel nebo heslo";
-    }
-
-}
 ---
-<Layout title="Migrace">
-    <h1>Migrace</h1>
-    <!-- Conditional rendering based on old_id -->
-    {
-        old_login ? (
-            <>
-                <p>
-                    Tvůj starej login je: <b> {old_login} </b>
-                </p>
-                <p>
-                    Tohle okno slouží na migraci dat ze starého andoru. Pokud
-                    tvůj starej login nesouhlasí, kontaktuj nás prosím.
-                </p>
-                <p>List jeskyni:</p>
-            </>
-        ) : (
-            <>
-                <p>
-                    Tohle okno slouží na propojení účtů. Pokud zadáš login a heslo ze starého andoru, budeme moci tvé účty propojit.</p>
-                    Pokud tvůj starej login nesouhlasí nebo je zde jiný problém, kontaktuj podporu.
-                </p>
-                <form method="POST" autocomplete="off">
-                    <div class="flex">
-                        <div class="labels">
-                            <label for="userName">Login</label>
-                        </div>
-                        <div class="inputs">
-                            <input
-                                type="text"
-                                id="userName"
-                                name="userName"
-                                minlength="1"
-                                maxlength="30"
-                            />
-                        </div>
-                    </div>
-                    <div class="flex">
-                        <div class="labels">
-                            <label for="password">Heslo</label>
-                        </div>
-                        <div class="inputs">
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                minlength="1"
-                            />
-                        </div>
-                    </div>
-                    <center>
-                        <button type="submit" class="large">
-                            Dokončit
-                        </button>
-                    </center>
-                </form>
-            </>
-        )
-    }
-    
-    <script type='module' define:vars={{ toast }}>
-        if (toast) { window.showError(toast) }
-    </script>
-</Layout>
 
-<style>
-    form {
-        width: 50%;
-        margin: auto;
-    }
-    form div {
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .labels {
-        width: 20%;
-        padding-right: 10px;
-    }
-    .flex {
-        gap: 20px;
-    }
-    .inputs {
-        flex: 1;
-    }
-    input {
-        width: 100%;
-    }
-    center {
-        margin-top: 20px;
-    }
-    @media (max-width: 860px) {
-        form {
-            width: 100%;
-        }
-    }
-</style>
+<Layout title="Migrace">
+    <Migrate {user} {oldUserData} client:load />
+</Layout>

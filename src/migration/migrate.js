@@ -1,30 +1,19 @@
+import md5 from 'crypto-js/md5'
+import { supabase } from '@lib/database'
 
-import { createHash } from 'node:crypto'
-// import { open } from 'sqlite'
-// import sqlite3 from 'sqlite3'
+export async function getOldUserId(oldLogin, oldPassword) {
+  const hashedPassword = md5(oldPassword).toString();
 
-// const dbPath = import.meta.env.SQLITE_PATH
+  const { data: userInfoMigrate, error: userError } = await supabase
+    .from('old_users')
+    .select('old_id')
+    .eq('old_login', oldLogin)
+    .eq('old_psw', hashedPassword)
+    .maybeSingle()
 
-async function queryDatabase (sqlQuery) {
-  // sqlite
-  // const db = await open({ filename: dbPath, driver: sqlite3.Database })
-  // const row = await db.get(sqlQuery)
-  // await db.close()
-  // return row
+  if (userError || !userInfoMigrate) {
+    return ''
+  } else {
+    return userInfoMigrate.old_id
+  }
 }
-
-export async function getOldUserInfo (login, password) {
-  const hashedPassword = createHash('md5').update(password).digest('hex')
-  const sqlQuery = `SELECT old_id, old_login, old_email FROM old_users WHERE old_login = '${login}' AND old_psw = '${hashedPassword}'`
-  const results = await queryDatabase(sqlQuery)
-  return results
-}
-
-export async function getOldUserLogin (id) {
-  const sqlQuery = `SELECT old_login FROM old_users WHERE old_id = '${id}'`
-  const results = await queryDatabase(sqlQuery)
-  return results
-}
-
-// Testing
-// getOldUserInfo('Avium','123')
