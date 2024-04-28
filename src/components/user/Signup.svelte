@@ -33,9 +33,7 @@
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
     if (error) { return handleError(error) }
-    if (data.user) {
-      window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím potvrď svůj e-mail pro dokončení registrace.')
-    }
+    if (data.user) { redirectWithToast({ toastType: 'success', toastText: 'Prosím potvrď svůj e-mail pro dokončení registrace.' }) }
   }
 
   async function validateUser () {
@@ -45,7 +43,7 @@
     const hashedPassword = md5(oldPassword).toString()
     const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
 
-    if (error) { return showError('Chyba čtení starých uživatelů') }
+    if (error) { return showError('Chyba čtení starých uživatelů: ' + error.message) }
 
     if (data) {
       email = data.old_email
@@ -64,28 +62,28 @@
     // Get info about old user
     const hashedPassword = md5(oldPassword).toString()
     const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
-    if (userError || !userInfoMigrate) { return showError('Chyba čtení starých uživatelů') }
+    if (userError || !userInfoMigrate) { return showError('Chyba čtení starých uživatelů: ' + userError.message) }
 
     // Check if user is already linked to some user
     const oldId = userInfoMigrate.old_id
     const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
-    if (idError) { return showError('Chyba čtení uživatelů') }
+    if (idError) { return showError('Chyba čtení uživatelů: ' + idError.message) }
     if (idCheck) { return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`) }
 
     // Check if new login is available
     const { data: loginCheck, error: loginError } = await supabase.from('profiles').select('name').eq('name', newLogin).maybeSingle()
-    if (loginError) { return showError('Chyba čtení uživatelů') }
+    if (loginError) { return showError('Chyba čtení uživatelů: ' + loginError.message) }
     if (loginCheck) { return showError('Login je už zabraný') }
 
     // Check if user is trying to claim login that belonged to someone else
     const { data: userExisted, error: userExistedError } = await supabase.from('old_users').select('old_id').eq('old_login', newLogin).not('old_id', 'eq', oldId).maybeSingle()
-    if (userExistedError) { return showError('Chyba čtení uživatelů') }
+    if (userExistedError) { return showError('Chyba čtení uživatelů: ' + userExistedError.message) }
     if (userExisted) { return showError('Zdá se že se snažíš zabrat cizí login') }
 
     // Create user (All is good - we can proceed with registration)
     const { data: authData, error: authError } = await supabase.auth.signUp({ email, password })
     if (authError) { return handleError(authError) }
-    if (authError || !authData) { return showError('Chyba registrace') }
+    if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
 
     // Create user profile with old_id
     if (authData && authData.user) {
