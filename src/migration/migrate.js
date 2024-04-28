@@ -1,8 +1,8 @@
 import md5 from 'crypto-js/md5'
 import { supabase } from '@lib/database'
 
-export async function getOldUserId(oldLogin, oldPassword) {
-  const hashedPassword = md5(oldPassword).toString();
+export async function getOldUserId (oldLogin, oldPassword) {
+  const hashedPassword = md5(oldPassword).toString()
 
   const { data: userInfoMigrate, error: userError } = await supabase
     .from('old_users')

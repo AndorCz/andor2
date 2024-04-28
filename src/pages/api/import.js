@@ -1,5 +1,5 @@
 
-import { getOldUserInfo } from '@mig/migrate.js'
+import { getOldUserId } from '@mig/migrate.js'
 
 export const POST = async ({ request, locals }) => {
   try {
@@ -7,7 +7,7 @@ export const POST = async ({ request, locals }) => {
 
     switch (action) {
       case 'validate': {
-        const userInfo = await getOldUserInfo(oldLogin, oldPassword)
+        const userInfo = await getOldUserId(oldLogin, oldPassword)
         if (userInfo) { // User found
           return new Response(JSON.stringify({ userInfo }), { status: 200 })
         } else { // User not found
@@ -15,7 +15,7 @@ export const POST = async ({ request, locals }) => {
         }
       }
       case 'signup': {
-        const userInfoMigrate = await getOldUserInfo(oldLogin, oldPassword)
+        const userInfoMigrate = await getOldUserId(oldLogin, oldPassword)
         const oldId = userInfoMigrate.old_id
         const { data: idCheck, error: idError } = await locals.supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
         if (idError) { return new Response(JSON.stringify({ error: idError.message }), { status: 500 }) }
