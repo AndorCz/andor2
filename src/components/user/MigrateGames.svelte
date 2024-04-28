@@ -2,21 +2,44 @@
     import { supabase } from '@lib/database';
     import { showError } from '@lib/toasts';
     import { onMount } from 'svelte';
-    export let user
     export let oldUserData
 
     let games = [];
-    
-    function handleGameAction(game) {
-        console.log(`Button clicked for game ID: ${game.id_game}`);
-        showError(`Button clicked for game ID: ${game.id_game}`)
-        // Add your action handling logic here
+    const migratingGames = new Set();
+
+    async function handleGameAction(game_id) {
+        if (game_id) {
+            migratingGames.add(game_id);
+            games = games.slice();
+            try {
+                const response = await fetch('/api/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({action:'migrate_game', gameId: game_id})
+                });
+
+                const result = await response.json();
+                if (result.status == 202) {
+                    showSuccess("Probíha migrace - může chvíli trvat")
+                    migratingGames.add(game_id)
+                    games = games.slice();
+                } else {
+                    showError('API failed to migrate');
+                }
+            } catch (error) {
+                console.error('Error calling API:', error.toString());
+            }
+        } else {
+            showError('Chyba - hra nenalezenena');
+        }
     }
 
     async function getGamesByGmId(oldId) {
     const { data: gamesData, error: gamesError } = await supabase
         .from('old_games')
-        .select('game_name, id_game, migrated')
+        .select('game_name, id_game, migrated, migrating')
         .eq('gm_id', parseInt(oldId, 10));
     if (gamesError) {
         showError('Chyba migrace: ', gamesError.message);
@@ -44,16 +67,20 @@
     </thead>
     <tbody>
         {#each games as game}
-            {#if !game.migrated}
                 <tr>
                     <td>{game.game_name}</td>
                     <td>
-                        <button on:click={() => handleGameAction(game)}>
-                            Migrovat
-                        </button>
+                        {#if game.migrated}
+                            <button disabled>Hotovo!</button>
+                        {:else if game.migrating || migratingGames.has(game.id_game)}
+                            <button disabled>Probíha migrace</button>
+                        {:else}
+                            <button on:click={() => handleGameAction(game.id_game)}>
+                                Migrovat
+                            </button>
+                        {/if}
                     </td>
                 </tr>
-            {/if}
         {/each}
     </tbody>
 </table>

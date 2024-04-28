@@ -843,6 +843,19 @@ create or replace function delete_user () returns void as $$
   delete from auth.users where id = auth.uid();
 $$ language sql security definer;
 
+CREATE OR REPLACE FUNCTION get_old_chars_by_game(game_id_param bigint)
+RETURNS SETOF old_chars AS $$
+BEGIN
+    RETURN query
+    SELECT oc.*
+    FROM old_chars oc
+    JOIN (
+        SELECT DISTINCT id_from
+        FROM old_posts
+        WHERE game_id = game_id_param
+    ) op ON oc.id_char = op.id_from;
+END;
+$$ LANGUAGE plpgsql;
 
 -- TRIGGERS --------------------------------------------
 

@@ -2,7 +2,6 @@
     import { supabase } from '@lib/database';
     import { showSuccess, showError } from '@lib/toasts'
     import { onMount } from 'svelte';
-    export let user
     export let oldUserData
 
     let works = [];
