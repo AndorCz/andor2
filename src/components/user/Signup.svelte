@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database'
+  import { redirectWithToast } from '@lib/utils'
   import { showError } from '@lib/toasts'
-  import md5 from 'crypto-js/md5';
-
+  import md5 from 'crypto-js/md5'
 
   let email = ''
   let oldLogin = ''
@@ -16,9 +16,7 @@
 
   onMount(() => {
     try {
-      window.grecaptcha?.ready(async () => {
-        captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' })
-      })
+      window.grecaptcha?.ready(async () => { captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' }) })
     } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
   })
 
@@ -44,24 +42,17 @@
     // TODO: Comment/uncomment for testing, remove comment before launch
     if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
 
-    const hashedPassword = md5(oldPassword).toString();
-    const { data, error } = await supabase
-      .from("old_users")
-      .select("old_email")
-      .eq("old_login", oldLogin)
-      .eq("old_psw", hashedPassword)
-      .maybeSingle()
+    const hashedPassword = md5(oldPassword).toString()
+    const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
 
-    if (error) {
-      return showError("Chyba databáze!");
-    }
+    if (error) { return showError('Chyba čtení starých uživatelů') }
 
     if (data) {
-      email = data.old_email;
+      email = data.old_email
       newLogin = oldLogin
-      isConfirming = true;
+      isConfirming = true
     } else {
-      return showError("Uživatel nenalezen, nebo nesprávné heslo");
+      return showError('Uživatel nenalezen, nebo nesprávné heslo')
     }
   }
 
@@ -71,62 +62,37 @@
     if (newLogin.length < 1) { return showError('Login musí mít alespoň 1 znak') }
 
     // Get info about old user
-    const hashedPassword = md5(oldPassword).toString();
-
-    const { data: userInfoMigrate, error :userError } = await supabase
-      .from("old_users")
-      .select("old_id")
-      .eq("old_login", oldLogin)
-      .eq("old_psw", hashedPassword)
-      .maybeSingle()
-
-    if (userError || !userInfoMigrate) {
-      return showError("Chyba databáze!");
-    }
+    const hashedPassword = md5(oldPassword).toString()
+    const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
+    if (userError || !userInfoMigrate) { return showError('Chyba čtení starých uživatelů') }
 
     // Check if user is already linked to some user
     const oldId = userInfoMigrate.old_id
     const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
-    if (idCheck) {
-      return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
-    }
+    if (idError) { return showError('Chyba čtení uživatelů') }
+    if (idCheck) { return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`) }
 
     // Check if new login is available
     const { data: loginCheck, error: loginError } = await supabase.from('profiles').select('name').eq('name', newLogin).maybeSingle()
-    if (loginCheck) {
-      return showError('Login je už zabranej.')
-    }
+    if (loginError) { return showError('Chyba čtení uživatelů') }
+    if (loginCheck) { return showError('Login je už zabraný') }
 
     // Check if user is trying to claim login that belonged to someone else
-    const { data: userExisted, error: userExistedError } = await supabase
-      .from("old_users")
-      .select("old_id")
-      .eq("old_login", newLogin)
-      .not("old_id","eq", oldId)
-      .maybeSingle()
+    const { data: userExisted, error: userExistedError } = await supabase.from('old_users').select('old_id').eq('old_login', newLogin).not('old_id', 'eq', oldId).maybeSingle()
+    if (userExistedError) { return showError('Chyba čtení uživatelů') }
+    if (userExisted) { return showError('Zdá se že se snažíš zabrat cizí login') }
 
-    if (userExisted) {
-      return showError("Snažíš se zabrat si cizí login")
-    }
-
-    // All is good - we can proceed with registration
-    // Create user
+    // Create user (All is good - we can proceed with registration)
     const { data: authData, error: authError } = await supabase.auth.signUp({ email, password })
     if (authError) { return handleError(authError) }
-
-    if (authError || !authData) {
-      return showError("Chyba registrace")
-    }
+    if (authError || !authData) { return showError('Chyba registrace') }
 
     // Create user profile with old_id
     if (authData && authData.user) {
-      const { data: profileData, error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: newLogin, old_id: oldId })
+      const { error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: newLogin, old_id: oldId })
       if (!profileError) {
-        window.location.href = '/?toastType=success&toastText=' + encodeURIComponent('Prosím zkontroluj svůj e-mail pro dokončení registrace.')
-      }
-      else {
-        return showError("Chyba registrace")
-      }
+        redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
+      } else { return showError('Chyba registrace') }
     }
   }
 </script>
