@@ -63,7 +63,7 @@
 </div>
 
 {#if !$boardStore.hideHeader}
-  <EditableLong userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isMod} />
+  <EditableLong allowHtml userId={user.id} bind:value={data.header} onSave={updateBoardHeader} canEdit={isMod} />
   <p class='mods'>
     {#if data.mods.length}Správci:{:else}Správce:{/if}&nbsp;
     <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
