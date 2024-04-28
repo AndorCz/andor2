@@ -2,6 +2,8 @@
   import { supabase } from '@lib/database'
   import { showError } from '@lib/toasts'
   import { getOldUserId } from '@mig/migrate'
+  import MigrateGames from "@components/user/MigrateGames.svelte";
+  import MigrateWorks from "@components/user/MigrateWorks.svelte";
 
   export let user
   export let oldUserData
@@ -52,6 +54,9 @@
       Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí,
       kontaktuj prosím vývojáře - kontakty najdeš v hlavičce diskuze "Správa Andoru".
     </p>
+    <MigrateGames {user} {oldUserData} />
+    <br>
+    <MigrateWorks {user} {oldUserData} />
   {:else}
     <h1>Propojení účtu</h1>
     <p>
