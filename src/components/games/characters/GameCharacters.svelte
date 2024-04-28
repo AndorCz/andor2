@@ -107,21 +107,21 @@
   <h1>Nábor</h1>
   <EditableLong userId={user.id} bind:value={game.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
   <br>
-  {#if game.recruitment_open}
-    {#if isStoryteller || isFilledArray(characters.waiting)}
-      <h2>Hlásí se</h2>
-      <table class='characters'>
-        {#if isFilledArray(characters.waiting)}
-          <CharacterHeader {isStoryteller} />
-          {#each characters.waiting as character}
-            <Character {user} {character} {isStoryteller} {game} />
-          {/each}
-        {:else}
-          <tr><td class='none'>Žádné postavy</td></tr>
-        {/if}
-      </table>
-    {/if}
+  {#if isStoryteller || isFilledArray(characters.waiting)}
+    <h2>Hlásí se</h2>
+    <table class='characters'>
+      {#if isFilledArray(characters.waiting)}
+        <CharacterHeader {isStoryteller} />
+        {#each characters.waiting as character}
+          <Character {user} {character} {isStoryteller} {game} />
+        {/each}
+      {:else}
+        <tr><td class='none'>Žádné postavy</td></tr>
+      {/if}
+    </table>
+  {/if}
 
+  {#if game.recruitment_open}
     <h2>Volné postavy k převzetí</h2>
     <table class='characters'>
       {#if isFilledArray(characters.open)}
