@@ -353,7 +353,7 @@ create or replace view work_list as
 -- FUNCTIONS --------------------------------------------
 
 
-create or replace function add_storyteller() returns trigger as $$
+create or replace function add_storyteller () returns trigger as $$
 begin
   insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);
   return new;
@@ -387,7 +387,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function delete_game_threads() returns trigger as $$
+create or replace function delete_game_threads () returns trigger as $$
 begin
   delete from threads where id = old.discussion_thread;
   delete from threads where id = old.game_thread;
@@ -404,7 +404,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function delete_thread() returns trigger as $$
+create or replace function delete_thread () returns trigger as $$
 begin
   delete from threads where id = old.thread;
   return old;
@@ -412,7 +412,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_character_names(audience_ids uuid[]) returns text[] as $$
+create or replace function get_character_names (audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -422,7 +422,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_posts(thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
+create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
   returns json as $$
 declare
   is_storyteller boolean;
@@ -468,7 +468,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function update_reaction(post int4, reaction_type text, action text) returns setof reactions as $$
+create or replace function update_reaction (post int4, reaction_type text, action text) returns setof reactions as $$
 declare
   user_id uuid := auth.uid();
 begin
@@ -507,7 +507,7 @@ $$ language plpgsql;
 
 
 
-create or replace function get_bookmarks() returns jsonb as $$
+create or replace function get_bookmarks () returns jsonb as $$
 declare
   games_json jsonb;
   boards_json jsonb;
@@ -602,7 +602,7 @@ select exists (
 $$ language sql security definer;
 
 
-create or replace function get_characters() returns json as $$
+create or replace function get_characters () returns json as $$
 begin
   return (
     with user_games as (
@@ -676,7 +676,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_users() returns json as $$
+create or replace function get_users () returns json as $$
 begin
   return (
     with unread_users as (
@@ -714,7 +714,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_sidebar_data() returns json as $$
+create or replace function get_sidebar_data () returns json as $$
 declare
   bookmarks_data json;
   users_data json;
@@ -728,7 +728,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_unread(game int4, game_thread int4, discussion_thread int4)
+create or replace function get_game_unread (game int4, game_thread int4, discussion_thread int4)
   returns jsonb as $$
 begin
   return jsonb_build_object(
@@ -740,14 +740,14 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_thread_unread(thread int4) returns integer as $$
+create or replace function get_thread_unread (thread int4) returns integer as $$
 begin
   return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
 end;
 $$ language plpgsql;
 
 
-create or replace function calculate_unread_count(user_uuid uuid, slug_alias text) returns int as $$
+create or replace function calculate_unread_count (user_uuid uuid, slug_alias text) returns int as $$
 declare
   unread_count int;
   numeric_id int;
@@ -779,7 +779,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_data(game_id int) returns jsonb as $$
+create or replace function get_game_data (game_id int) returns jsonb as $$
 declare
   game_data jsonb;
   character_data jsonb;
@@ -799,14 +799,73 @@ end;
 $$ language plpgsql;
 
 
-create or replace function delete_old_chat_posts() returns void as $$
+create or replace function get_notification_data (post_id int) returns jsonb as $$
+declare
+  game_id int;
+  post_owner_user_id uuid;
+  is_public boolean;
+  audience uuid[];
+  user_ids uuid[];
+  user_data jsonb;
+begin
+  RAISE exception 'Fired';
+  -- Retrieve game ID, audience, and the owner's user ID based on the character who owns the post
+  select c.game, p.audience, c.player into game_id, audience, post_owner_user_id
+  from posts p
+  join characters c on c.id = p.owner
+  where p.id = post_id and p.owner_type = 'character';
+
+  RAISE exception 'Game ID: %, Audience: %, Post Owner User ID: %', game_id, audience, post_owner_user_id;
+
+  -- If no game_id was set, it means the post owner_type isn't 'character'
+  if game_id is null then
+    RAISE exception 'Exiting because game_id is null.';
+    return '[]'::jsonb;
+  end if;
+
+  -- Check if the post is public
+  is_public := (audience is null);
+  RAISE exception 'Is Public: %', is_public;
+
+  if is_public then
+    -- Fetch all player IDs for a public post
+    select array_agg(distinct c.player) into user_ids from characters c
+    where c.game = game_id;
+    RAISE exception 'User IDs for public post: %', user_ids;
+  else
+    -- Fetch player IDs based on specified character IDs in the audience
+    select array_agg(distinct c.player) into user_ids from characters c
+    where c.id = any(audience);
+    RAISE exception 'User IDs for specified audience: %', user_ids;
+  end if;
+
+  -- Fetch user notification preferences and contact details
+  select jsonb_agg(jsonb_build_object('user_id', pr.id, 'name', pr.name, 'notification', s.notification, 'email', s.email, 'email_address', au.email))
+  into user_data
+  from profiles pr
+  join auth.users au on pr.id = au.id
+  join subscriptions s on pr.id = s.user_id
+  where pr.id = any(user_ids) and pr.id != post_owner_user_id and
+        (pr.last_activity is null or pr.last_activity < now() - interval '5 minutes') and
+        s.game = game_id
+  group by pr.id, s.notification, s.email, au.email;
+
+  RAISE exception 'Final user data: %', user_data;
+
+  return coalesce(user_data, '[]'::jsonb);
+end;
+$$ language plpgsql;
+
+
+
+create or replace function delete_old_chat_posts () returns void as $$
 begin
   delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100);
 end;
 $$ language plpgsql;
 
 
-create or replace function upsert_user_read(p_user_id uuid, p_slug text) returns void as $$
+create or replace function upsert_user_read (p_user_id uuid, p_slug text) returns void as $$
 begin
   insert into user_reads (user_id, slug, read_at)
   values (p_user_id, p_slug, now())
