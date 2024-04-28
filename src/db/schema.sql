@@ -507,7 +507,6 @@ end;
 $$ language plpgsql;
 
 
-
 create or replace function get_bookmarks () returns jsonb as $$
 declare
   games_json jsonb;
