@@ -5,6 +5,7 @@
   import { supabase, handleError, userAutocomplete } from '@lib/database'
   import Select from 'svelte-select'
   import HeaderInput from '@components/common/HeaderInput.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let data = {}
   export let user = {}
@@ -12,6 +13,7 @@
   let saving = false
   let originalName
   let originalOpen
+  let originalAnnotation
   let newMod
   let newBan
   let newMember
@@ -26,11 +28,12 @@
   function setOriginal () {
     originalName = data.name
     originalOpen = data.open
+    originalAnnotation = data.annotation
   }
 
   async function updateBoard () {
     saving = true
-    const { error } = await supabase.from('boards').update({ name: data.name, open: data.open }).eq('id', data.id)
+    const { error } = await supabase.from('boards').update({ name: data.name, annotation: data.annotation, open: data.open }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
     showSuccess('Změna diskuze uložena')
@@ -86,6 +89,12 @@
   <div class='row'>
     <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
     <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material square' title='Uložit' use:tooltip>check</button>
+  </div>
+
+  <h2>Anotace</h2>
+  <div class='row'>
+    <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
+    <button on:click={updateBoard} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2 class='first'>Vlastní hlavička</h2>

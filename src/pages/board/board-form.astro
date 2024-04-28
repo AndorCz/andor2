@@ -1,5 +1,6 @@
 ---
 	import Layout from '@layouts/layout.astro'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   // import { updateCache } from '@lib/cache'
 
   const { supabase, user } = Astro.locals
@@ -7,10 +8,10 @@
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const boardName = formData.get('boardName')
+    const boardAnnotation = formData.get('boardAnnotation')
 
-    const { data, error } = await supabase.from('boards').insert({ name: boardName, owner: user.id }).select().single()
+    const { data, error } = await supabase.from('boards').insert({ name: boardName, annotation: boardAnnotation, owner: user.id }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
-    // updateCache('boards', data)
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true })
@@ -28,13 +29,15 @@
   {user.id ? (
     <form method='POST' autocomplete='off'>
       <div class='row'>
-        <div class='labels'>
-          <label for='boardName'>Název</label>
-        </div>
-        <div class='inputs'>
-          <input type='text' id='boardName' name='boardName' maxlength='80' />
-        </div>
+        <div class='labels'><label for='boardName'>Název</label></div>
+        <div class='inputs'><input type='text' id='boardName' name='boardName' maxlength='80' /></div>
       </div>
+
+      <div class='row'>
+        <div class='labels'><label for='boardAnnotation'>Anotace</label></div>
+        <div class='inputs'><TextareaExpandable userId={user.id} id='boardAnnotation' name='boardAnnotation' minHeight={80} maxlength={150} client:load /></div>
+      </div>
+
       <center>
         <button type='submit' class='large'>Vytvořit</button>
       </center>

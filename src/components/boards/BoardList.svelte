@@ -64,7 +64,7 @@
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
             <div class='owner user' title='správce'>{board.owner_name}</div>
           </div>
-          <div class='row annotation' title={board.header} use:tooltip>{board.header}</div>
+          <div class='row annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
         </div>
         {#if board.custom_header}
           <div class='col image'>
