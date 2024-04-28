@@ -8,10 +8,10 @@
   let query
   switch (tab) {
     case 'new':
-      query = supabase.from('game_list').select('*').eq('archived', false).order('created_at', { ascending: true })
+      query = supabase.from('game_list').select('*').eq('archived', false).order('created_at', { ascending: false })
       break
     case 'active':
-      query = supabase.from('game_list').select('*').eq('archived', false).order('last_post', { ascending: false })
+      query = supabase.from('game_list').select('*').eq('archived', false).not('last_post', 'is', null).order('last_post', { ascending: false })
       break
     case 'archive':
       query = supabase.from('game_list').select('*').eq('archived', true).order('last_post', { ascending: false })
