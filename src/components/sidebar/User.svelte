@@ -7,7 +7,7 @@
   export let user = {}
 
   async function onPortraitChange (file) {
-    uploadPortrait(user.id, 'profiles', file)
+    await uploadPortrait(user.id, 'profiles', file)
   }
 
   async function logout () {

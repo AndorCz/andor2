@@ -53,7 +53,7 @@
       const newPortrait = data.get('newPortrait')
       if (newPortrait) {
         const blob = base64ToBlob(newPortrait) // convert base64 to a blob
-        const error = await uploadPortrait(character.id, 'characters', blob)
+        const error = await uploadPortrait(character.id, 'characters', blob, supabase)
         if (error) { throw new Error(error)}
       }
 

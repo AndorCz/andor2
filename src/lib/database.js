@@ -38,10 +38,10 @@ export function handleError (error, astro) {
   } else { console.error(error) } // not so helpful, don't use this method on the back-end
 }
 
-export async function uploadPortrait (identityId, table, file) {
-  const { error: error1 } = await supabase.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
+export async function uploadPortrait (identityId, table, file, client = supabase) {
+  const { error: error1 } = await client.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
   if (error1) { return Promise.reject(error1) }
-  const { error: error2 } = await supabase.from(table).update({ portrait: getHash() }).eq('id', identityId)
+  const { error: error2 } = await client.from(table).update({ portrait: getHash() }).eq('id', identityId)
   if (error2) { return Promise.reject(error2) }
 }
 
