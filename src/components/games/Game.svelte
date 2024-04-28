@@ -79,11 +79,13 @@
       {#key bookmarkId}
         <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
       {/key}
+      <!--
       {#key notificationEnabled}
         <button on:click={toggleNotification} class='material square' class:active={notificationEnabled} title={notificationEnabled ? 'Zrušit notifikace' : 'Dostávat notifikace'} use:tooltip>{notificationEnabled ? 'notifications_off' : 'notifications'}</button>
       {/key}
+      -->
       {#key emailEnabled}
-        <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-maily'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
+        <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
       {/key}
       {#if isGameOwner}
         <button on:click={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>

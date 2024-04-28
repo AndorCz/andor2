@@ -62,7 +62,6 @@ export const workTags = [
   { value: 'humorous', label: 'Humor' },
   { value: 'fromlife', label: 'Ze života' },
   { value: 'motivational', label: 'Motivační' },
-  { value: 'erotica', label: 'Erotika' },
   { value: 'biography', label: 'Životopis' },
   { value: 'gameworld', label: 'Herní svět' },
   { value: 'gamematerial', label: 'Herní materiály' },

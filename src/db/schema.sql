@@ -808,35 +808,33 @@ declare
   user_ids uuid[];
   user_data jsonb;
 begin
-  RAISE exception 'Fired';
   -- Retrieve game ID, audience, and the owner's user ID based on the character who owns the post
   select c.game, p.audience, c.player into game_id, audience, post_owner_user_id
   from posts p
   join characters c on c.id = p.owner
   where p.id = post_id and p.owner_type = 'character';
 
-  RAISE exception 'Game ID: %, Audience: %, Post Owner User ID: %', game_id, audience, post_owner_user_id;
+  -- RAISE log 'Game ID: %, Audience: %, Post Owner User ID: %', game_id, audience, post_owner_user_id;
 
   -- If no game_id was set, it means the post owner_type isn't 'character'
   if game_id is null then
-    RAISE exception 'Exiting because game_id is null.';
+    -- RAISE log 'Exiting because game_id is null.';
     return '[]'::jsonb;
   end if;
 
   -- Check if the post is public
   is_public := (audience is null);
-  RAISE exception 'Is Public: %', is_public;
 
   if is_public then
     -- Fetch all player IDs for a public post
     select array_agg(distinct c.player) into user_ids from characters c
     where c.game = game_id;
-    RAISE exception 'User IDs for public post: %', user_ids;
+    -- RAISE log 'User IDs for public post: %', user_ids;
   else
     -- Fetch player IDs based on specified character IDs in the audience
     select array_agg(distinct c.player) into user_ids from characters c
     where c.id = any(audience);
-    RAISE exception 'User IDs for specified audience: %', user_ids;
+    -- RAISE log 'User IDs for specified audience: %', user_ids;
   end if;
 
   -- Fetch user notification preferences and contact details
@@ -850,7 +848,7 @@ begin
         s.game = game_id
   group by pr.id, s.notification, s.email, au.email;
 
-  RAISE exception 'Final user data: %', user_data;
+  -- RAISE log 'Final user data: %', user_data;
 
   return coalesce(user_data, '[]'::jsonb);
 end;
