@@ -22,7 +22,7 @@ export const POST = async ({ request, locals }) => {
 
         if (idCheck) {
           return new Response(
-            JSON.stringify({ error: `Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.` }), { status: 409 }
+            JSON.stringify({ error: `ID původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.` }), { status: 409 }
           )
         }
 
