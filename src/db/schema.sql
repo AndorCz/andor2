@@ -79,6 +79,7 @@ create table games (
   active_map integer null,
   welcome_message text null default 'Vítej v naší hře!'::text,
   context_dice boolean not null default true,
+  archived boolean default false,
   created_at timestamp with time zone default current_timestamp,
   info_changed_at timestamp with time zone default current_timestamp,
   characters_changed_at timestamp with time zone default current_timestamp,

@@ -20,7 +20,7 @@
   const isGameOwner = game.owner.id === user.id
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
-  let notificationEnabled = game.subscription?.notification || false
+  // let notificationEnabled = game.subscription?.notification || false
   let emailEnabled = game.subscription?.email || false
   let bookmarkId
 
@@ -55,12 +55,14 @@
     history.pushState({}, '', `?tab=${tab}`)
   }
 
+  /*
   async function toggleNotification () {
     notificationEnabled = !notificationEnabled
     const { error } = await supabase.from('subscriptions').upsert({ user_id: user.id, game: game.id, notification: notificationEnabled }, { onConflict: 'user_id, game', ignoreDuplicates: false })
     if (error) { return handleError(error) }
     showSuccess(notificationEnabled ? 'Notifikace zapnuty' : 'Notifikace vypnuty')
   }
+  */
 
   async function toggleEmail () {
     emailEnabled = !emailEnabled
@@ -74,7 +76,7 @@
 
 <main>
   <div class='headline'>
-    <h1>{game.name}</h1>
+    <h1>{game.name}{#if game.archived}&nbsp;(archiv){/if}</h1>
     {#if user.id}
       {#key bookmarkId}
         <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>

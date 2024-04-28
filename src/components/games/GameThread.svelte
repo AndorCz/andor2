@@ -182,7 +182,7 @@
 
     <div class='toolWrapper'>
       {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
-        <DiceBox threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+        <DiceBox {game} threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
       {:else if activeTool === 'maps'}
         <Maps {user} {game} {isStoryteller} />
       {:else if activeTool === 'find'}
@@ -192,9 +192,13 @@
           <button class='material' on:click={handleSearch}>search</button>
         </div>
       {:else if activeTool === 'post' && user.id && $gameStore.activeCharacterId}
-        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
-        <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
-        <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
+        {#if game.archived}
+          <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
+        {:else}
+          <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+          <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+          <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
+        {/if}
       {/if}
     </div>
   </main>

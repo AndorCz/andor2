@@ -10,25 +10,36 @@
   export let games = []
   export let showHeadline = false
 
-  let sort = 'new'
+  // let sort = 'new'
   let listView = false
   let gameListStore
+  let activeTab = 'new'
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
   onMount(() => { // get sort parameter from url
-    const sortParam = new URL(window.location).searchParams.get('sort')
-    if (sortParam) { sort = sortParam }
+    // const sortParam = new URL(window.location).searchParams.get('sort')
+    // if (sortParam) { sort = sortParam }
+
+    const tabParam = new URL(window.location).searchParams.get('tab')
+    if (tabParam) { activeTab = tabParam }
 
     gameListStore = getSavedStore('boards', { listView: false })
     listView = $gameListStore.listView
   })
 
+  function activateTab (tab) {
+    activeTab = tab
+    window.location.search = new URLSearchParams({ tab }).toString()
+  }
+
+  /*
   function setSort (type) {
     sort = type
     window.location.search = new URLSearchParams({ sort: type }).toString()
   }
+  */
 
   function setListView (val) {
     listView = $gameListStore.listView = val
@@ -39,10 +50,12 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
+      <!--
       <div class='toggle sort'>
         <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
         <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
       </div>
+      -->
       <div class='toggle compact'>
         <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
@@ -54,6 +67,12 @@
     </div>
   </div>
 {/if}
+
+<nav class='tabs secondary'>
+  <button on:click={() => { activateTab('new') }} class:active={activeTab === 'new'}>Nové</button>
+  <button on:click={() => { activateTab('active') }} class:active={activeTab === 'active'}>Aktivní</button>
+  <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
+</nav>
 
 {#if isFilledArray(games)}
   {#if listView}
@@ -113,6 +132,10 @@
   }
   .name a:first-letter {
     text-transform: uppercase;
+  }
+
+  .tabs {
+    margin-bottom: 20px;
   }
 
   /* blocks */

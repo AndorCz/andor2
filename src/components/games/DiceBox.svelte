@@ -4,6 +4,7 @@
   import DiceBox from '@3d-dice/dice-box-threejs'
   import CharacterSelect from '@components/games/characters/CharacterSelect.svelte'
 
+  export let game
   export let threadId
   export let gameStore
   export let activeAudienceIds
@@ -19,8 +20,10 @@
   $gameStore.dice = $gameStore.dice || defaults
 
   onMount(() => {
-    diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
-    diceBox.initialize()
+    if (!game.archived) {
+      diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
+      diceBox.initialize()
+    }
   })
 
   async function showRoll () {
@@ -70,72 +73,76 @@
   $: { if ($gameStore) { notation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',') } }
 </script>
 
-<div class='wrapper'>
-  <div class='playground'>
-    <div id='diceBox'></div>
-  </div>
-  <div class='tools'>
-    <div class='die'>
-      <button on:click={() => { clearDice('k4') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k4') }} class='addLarge k4'>k4</button>
-      <input type='text' bind:value={$gameStore.dice.k4} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k4') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k4') }} class='add material'>add</button>
+{#if game.archived}
+  <p class='info'>Hra je archivovaná, není možné v ní házet.</p>
+{:else}
+  <div class='wrapper'>
+    <div class='playground'>
+      <div id='diceBox'></div>
     </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k6') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k6') }} class='addLarge k6'>k6</button>
-      <input type='text' bind:value={$gameStore.dice.k6} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k6') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k6') }} class='add material'>add</button>
+    <div class='tools'>
+      <div class='die'>
+        <button on:click={() => { clearDice('k4') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k4') }} class='addLarge k4'>k4</button>
+        <input type='text' bind:value={$gameStore.dice.k4} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k4') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k4') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k6') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k6') }} class='addLarge k6'>k6</button>
+        <input type='text' bind:value={$gameStore.dice.k6} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k6') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k6') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k8') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k8') }} class='addLarge k8'>k8</button>
+        <input type='text' bind:value={$gameStore.dice.k8} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k8') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k8') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k10') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k10') }} class='addLarge k10'>k10</button>
+        <input type='text' bind:value={$gameStore.dice.k10} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k10') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k10') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k12') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k12') }} class='addLarge k12'>k12</button>
+        <input type='text' bind:value={$gameStore.dice.k12} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k12') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k12') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k20') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k20') }} class='addLarge k20'>k20</button>
+        <input type='text' bind:value={$gameStore.dice.k20} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k20') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k20') }} class='add material'>add</button>
+      </div>
+      <div class='die'>
+        <button on:click={() => { clearDice('k100') }} class='clear material'>delete</button>
+        <button on:click={() => { addDice('k100') }} class='addLarge k10'>k100</button>
+        <input type='text' bind:value={$gameStore.dice.k100} maxlength='2' class='count' />
+        <button on:click={() => { subDice('k100') }} class='sub material'>remove</button>
+        <button on:click={() => { addDice('k100') }} class='add material'>add</button>
+      </div>
     </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k8') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k8') }} class='addLarge k8'>k8</button>
-      <input type='text' bind:value={$gameStore.dice.k8} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k8') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k8') }} class='add material'>add</button>
-    </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k10') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k10') }} class='addLarge k10'>k10</button>
-      <input type='text' bind:value={$gameStore.dice.k10} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k10') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k10') }} class='add material'>add</button>
-    </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k12') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k12') }} class='addLarge k12'>k12</button>
-      <input type='text' bind:value={$gameStore.dice.k12} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k12') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k12') }} class='add material'>add</button>
-    </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k20') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k20') }} class='addLarge k20'>k20</button>
-      <input type='text' bind:value={$gameStore.dice.k20} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k20') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k20') }} class='add material'>add</button>
-    </div>
-    <div class='die'>
-      <button on:click={() => { clearDice('k100') }} class='clear material'>delete</button>
-      <button on:click={() => { addDice('k100') }} class='addLarge k10'>k100</button>
-      <input type='text' bind:value={$gameStore.dice.k100} maxlength='2' class='count' />
-      <button on:click={() => { subDice('k100') }} class='sub material'>remove</button>
-      <button on:click={() => { addDice('k100') }} class='add material'>add</button>
-    </div>
-  </div>
 
-  <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+    <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
 
-  <div class='row'>
-    <div class='notation'>
-      <input type='text' value={notation} on:input={parseNotation} size='48' />
-      <button on:click={copyNotation} class='copy material plain'>content_copy</button>
+    <div class='row'>
+      <div class='notation'>
+        <input type='text' value={notation} on:input={parseNotation} size='48' />
+        <button on:click={copyNotation} class='copy material plain'>content_copy</button>
+      </div>
+      <button on:click={showRoll} class='roll'>Hodit kostky</button>
     </div>
-    <button on:click={showRoll} class='roll'>Hodit kostky</button>
   </div>
-</div>
+{/if}
 
 <style>
   .playground {
@@ -263,6 +270,13 @@
         top: 15px;
         right: 15px;
       }
+
+  .info {
+    margin: 60px 0px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
 
   @media (max-width: 860px) {
     .tools {

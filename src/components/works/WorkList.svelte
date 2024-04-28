@@ -10,7 +10,6 @@
   export let works = []
   export let activeTab = 'articles'
   export let showHeadline = false
-  export let showTabs = false
 
   let listView = false
   let workListStore
@@ -51,19 +50,17 @@
   </div>
 {/if}
 
-{#if showTabs}
-  <nav class='tabs secondary'>
-    <button on:click={() => { activeTab = 'articles' }} class={activeTab === 'articles' ? 'active' : ''}>
-      Články
-    </button>
-    <button disabled on:click={() => { activeTab = 'images' }} class={activeTab === 'images' ? 'active' : ''}>
-      Obrázky
-    </button>
-    <button disabled on:click={() => { activeTab = 'music' }} class={activeTab === 'music' ? 'active' : ''}>
-      Hudba
-    </button>
-  </nav>
-{/if}
+<nav class='tabs secondary'>
+  <button on:click={() => { activeTab = 'articles' }} class:active={activeTab === 'articles'}>
+    Články
+  </button>
+  <button disabled on:click={() => { activeTab = 'images' }} class:active={activeTab === 'images'}>
+    Obrázky
+  </button>
+  <button disabled on:click={() => { activeTab = 'music' }} class:active={activeTab === 'music'}>
+    Hudba
+  </button>
+</nav>
 
 {#if isFilledArray(works)}
   {#if listView}

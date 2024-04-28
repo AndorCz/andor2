@@ -97,6 +97,13 @@
     showSuccess('Sekce přejmenována')
   }
 
+  async function toggleArchived () {
+    const { error } = await supabase.from('games').update({ archived: !game.archived }).eq('id', game.id)
+    if (error) { return handleError(error) }
+    game.archived = !game.archived
+    showSuccess(game.archived ? 'Hra byla archivována' : 'Hra byla aktivována')
+  }
+
   function showGame () {
     window.location.href = `/game/${game.id}`
   }
@@ -114,119 +121,133 @@
 </div>
 <main>
   {#if game.owner.id === user.id}
-    <h2 class='first'>Vlastní hlavička</h2>
-    Obrázek musí mít velikost alespoň 1100×226 px<br><br>
-    <div class='row'>
-      <label class='button' for='headerImage'>Nahrát obrázek</label>
-      <HeaderInput data={game} section='games' unit='game' />
-    </div>
+    {#if !game.archived}
+      <h2 class='first'>Vlastní hlavička</h2>
+      Obrázek musí mít velikost alespoň 1100×226 px<br><br>
+      <div class='row'>
+        <label class='button' for='headerImage'>Nahrát obrázek</label>
+        <HeaderInput data={game} section='games' unit='game' />
+      </div>
 
-    <h2>Název</h2>
-    <div class='row'>
-      <input type='text' id='gameName' name='gameName' bind:value={game.name} maxlength='80' />
-      <button on:click={updateGame} disabled={saving || (originalName === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Název</h2>
+      <div class='row'>
+        <input type='text' id='gameName' name='gameName' bind:value={game.name} maxlength='80' />
+        <button on:click={updateGame} disabled={saving || (originalName === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Anotace</h2>
-    <div class='row'>
-      <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={game.annotation} maxlength={150} />
-      <button on:click={updateGame} disabled={saving || originalAnnotation === game.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Anotace</h2>
+      <div class='row'>
+        <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={game.annotation} maxlength={150} />
+        <button on:click={updateGame} disabled={saving || originalAnnotation === game.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
-    <div class='row'>
-      <TextareaExpandable bind:this={welcomeMessageRef} userId={user.id} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
-      <button on:click={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
+      <div class='row'>
+        <TextareaExpandable bind:this={welcomeMessageRef} userId={user.id} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
+        <button on:click={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Kategorie</h2>
-    <div class='row'>
-      <select id='gameCategory' name='gameCategory' bind:value={game.category}>
-        {#each gameCategories as category}
-          <option value={category.value}>{category.label}</option>
-        {/each}
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalCategory === game.category)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Kategorie</h2>
+      <div class='row'>
+        <select id='gameCategory' name='gameCategory' bind:value={game.category}>
+          {#each gameCategories as category}
+            <option value={category.value}>{category.label}</option>
+          {/each}
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalCategory === game.category)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Herní systém</h2>
-    <div class='row'>
-      <select id='gameSystem' name='gameSystem' bind:value={game.system}>
-        {#each gameSystems as system}
-          <option value={system.value}>{system.label}</option>
-        {/each}
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalSystem === game.system)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Herní systém</h2>
+      <div class='row'>
+        <select id='gameSystem' name='gameSystem' bind:value={game.system}>
+          {#each gameSystems as system}
+            <option value={system.value}>{system.label}</option>
+          {/each}
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalSystem === game.system)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Nábor</h2>
-    <div class='row'>
-      <select id='gameRecruitmentOpen' name='gameRecruitmentOpen' bind:value={game.recruitment_open}>
-        <option value={false}>Uzavřený</option>
-        <option value={true}>Otevřený</option>
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === game.recruitment_open)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Nábor</h2>
+      <div class='row'>
+        <select id='gameRecruitmentOpen' name='gameRecruitmentOpen' bind:value={game.recruitment_open}>
+          <option value={false}>Uzavřený</option>
+          <option value={true}>Otevřený</option>
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === game.recruitment_open)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Viditelnost hry <span class='material' title='Skryje herní příspěvky, postavy a mapy' use:tooltip>info</span></h2>
-    <div class='row'>
-      <select id='gameOpen' name='gameOpen' bind:value={game.open_game}>
-        <option value={true}>Veřejná</option>
-        <option value={false}>Soukromá</option>
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalOpenGame === game.open_game)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Viditelnost hry <span class='material' title='Skryje herní příspěvky, postavy a mapy' use:tooltip>info</span></h2>
+      <div class='row'>
+        <select id='gameOpen' name='gameOpen' bind:value={game.open_game}>
+          <option value={true}>Veřejná</option>
+          <option value={false}>Soukromá</option>
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalOpenGame === game.open_game)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Viditelnost diskuze</h2>
-    <div class='row'>
-      <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={game.open_discussion}>
-        <option value={false}>Soukromá</option>
-        <option value={true}>Veřejná</option>
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === game.open_discussion)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Viditelnost diskuze</h2>
+      <div class='row'>
+        <select id='gameOpenDiscussion' name='gameOpenDiscussion' bind:value={game.open_discussion}>
+          <option value={false}>Soukromá</option>
+          <option value={true}>Veřejná</option>
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === game.open_discussion)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Viditelnost kodexu</h2>
-    <div class='row'>
-      <select id='gameOpenCodex' name='gameOpenCodex' bind:value={game.open_codex}>
-        <option value={true}>Veřejný</option>
-        <option value={false}>Soukromý</option>
-      </select>
-      <button on:click={updateGame} disabled={saving || (originalOpenCodex === game.open_codex)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
+      <h2>Viditelnost kodexu</h2>
+      <div class='row'>
+        <select id='gameOpenCodex' name='gameOpenCodex' bind:value={game.open_codex}>
+          <option value={true}>Veřejný</option>
+          <option value={false}>Soukromý</option>
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalOpenCodex === game.open_codex)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
 
-    <h2>Sekce kodexu</h2>
-    {#if game.codexSections && game.codexSections.length}
-      <ul>
-        {#each game.codexSections as section}
-          <li>
-            <div class='section'>
-              <h3>{section.name}</h3>
-              <button class='square material square' on:click={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
-              <button class='square material square' on:click={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
-            </div>
-          </li>
-        {/each}
-      </ul>
-    {:else}
-      <p class='info'>Žádné sekce</p>
+      <h2>Sekce kodexu</h2>
+      {#if game.codexSections && game.codexSections.length}
+        <ul>
+          {#each game.codexSections as section}
+            <li>
+              <div class='section'>
+                <h3>{section.name}</h3>
+                <button class='square material square' on:click={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
+                <button class='square material square' on:click={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class='info'>Žádné sekce</p>
+      {/if}
+      <h3><label for='codexSection'>Nová sekce</label></h3>
+      <div class='row'>
+        <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} />
+        <button class='material square' on:click={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+      </div>
+
+      <h2>Zobrazit hody mezi příspěvky</h2>
+      <div class='row'>
+        <input type='checkbox' id='contextDice' name='contextDice' bind:checked={game.context_dice} />
+        <button on:click={updateGame} disabled={saving || (originalContextDice === game.context_dice)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
     {/if}
-    <h3><label for='codexSection'>Nová sekce</label></h3>
-    <div class='row'>
-      <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} />
-      <button class='material square' on:click={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
-    </div>
-
-    <h2>Zobrazit hody mezi příspěvky</h2>
-    <div class='row'>
-      <input type='checkbox' id='contextDice' name='contextDice' bind:checked={game.context_dice} />
-      <button on:click={updateGame} disabled={saving || (originalContextDice === game.context_dice)} class='material square' title='Uložit' use:tooltip>check</button>
-    </div>
 
     <h2>Záloha do souboru</h2>
     <button class='export' on:click={exportGame}>
       <span class='material'>download</span><span>Stáhnout zálohu</span>
     </button>
+
+    {#if game.archived}
+      <h2>Obnova hry</h2>
+      <button class='archive' on:click={() => { if (confirm('Opravdu chcete tuto hru vrátit z archivu?')) { toggleArchived() } }}>
+        <span class='material'>unarchive</span><span>Znovu aktivovat</span>
+      </button>
+    {:else}
+      <h2>Archivace hry <span class='material' title='Hra bude jen pro čtení, lze vrátit' use:tooltip>info</span></h2>
+      <button class='archive' on:click={() => { if (confirm('Opravdu chcete tuto archivovat?')) { toggleArchived() } }}>
+        <span class='material'>archive</span><span>Archivovat hru</span>
+      </button>
+    {/if}
 
     <h2>Smazání hry</h2>
     Pozor, toto je nevratná akce.<br><br>
@@ -295,7 +316,7 @@
       .section h3 {
         width: 100%;
       }
-  .delete, .export {
+  .delete, .export, .archive {
     display: flex;
     gap: 10px;
   }

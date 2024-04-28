@@ -3,19 +3,23 @@
   import GameList from '@components/games/GameList.svelte'
 
   const { supabase, user } = Astro.locals
-  const sort = Astro.url.searchParams.get('sort')
-
-  let games = []
-
-  if (sort === 'active') {
-    const { data: gamesActivity, error } = await supabase.from('game_list').select('*').order('last_post')
-    if (error) { console.error(error) }
-    games = gamesActivity
-  } else { // newest
-    const { data: gamesAll, error } = await supabase.from('game_list').select('*')
-    if (error) { console.error(error) }
-    games = gamesAll
+  
+  const tab = Astro.url.searchParams.get('tab') || 'new'
+  let query
+  switch (tab) {
+    case 'new':
+      query = supabase.from('game_list').select('*').eq('archived', false).order('created_at')
+      break
+    case 'active':
+      query = supabase.from('game_list').select('*').eq('archived', false).order('last_post')
+      break
+    case 'archive':
+      query = supabase.from('game_list').select('*').eq('archived', true).order('last_post')
+      break
   }
+  const { data: games, error } = await query
+  if (error) { console.error(error) }
+  console.log('navigation fired')
 ---
 
 <Layout title='Hry'>

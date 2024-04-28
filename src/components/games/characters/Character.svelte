@@ -84,7 +84,7 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td>
-    {#if user.id && (isStoryteller || !character.accepted || character.open)}
+    {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
       <div class='options'>
         {#if character.open}
           <button on:click={() => claimCharacter()}>převzít</button>
