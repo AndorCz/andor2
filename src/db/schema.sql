@@ -855,6 +855,20 @@ end;
 $$ language plpgsql;
 
 
+create or replace function delete_my_character(character_id uuid)
+returns void as $$
+begin
+  -- first, try to update characters that are part of a game
+  update characters set game = null, player = null where id = character_id and player = (select auth.uid()) and game is not null;
+  -- if the character was not part of a game, attempt to delete it
+  if not found then
+    delete from characters
+    where id = character_id and player = (select auth.uid()) and game is null;
+    if not found then raise exception 'you do not have permission to delete this character.'; end if;
+  end if;
+end;
+$$ language plpgsql security definer;
+
 
 create or replace function delete_old_chat_posts () returns void as $$
 begin

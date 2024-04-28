@@ -36,14 +36,12 @@
   }
 
   async function deleteCharacter () {
+    const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
+    if (updateError) { return handleError(updateError) }
     if (character.game) {
-      const { error: updateError } = await supabase.from('characters').update({ player: null, game: null }).eq('id', character.id)
-      if (updateError) { return handleError(updateError) }
-      window.location.href = `/game/${character.game}?tab=chars&toastType=success&toastText=${encodeURIComponent('Postava byla smazána')}`
+      redirectWithToast({ url: window.location.origin + `/game/${character.game}?tab=chars`, toastType: 'success', toastText: 'Postava byla smazána' })
     } else {
-      const { error: deleteError } = await supabase.from('characters').delete().eq('id', character.id)
-      if (deleteError) { return handleError(deleteError) }
-      redirectWithToast({ toastType: 'success', toastText: 'Postava byla smazána' })
+      redirectWithToast({ url: window.location.origin, toastType: 'success', toastText: 'Postava byla smazána' })
     }
   }
 

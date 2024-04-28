@@ -45,7 +45,7 @@ create policy "READ for everyone in open game" on public.characters for select t
 create policy "READ for players in closed game" on public.characters for select to authenticated using (is_player(game));
 create policy "READ for open characters" on public.characters for select to public using (open = true);
 create policy "ALL to user's characters" on public.characters for all to authenticated using (player = (select auth.uid()));
-create policy "ALL for storytellers in their game" on public.characters for all to authenticated with check (is_storyteller(game));
+create policy "ALL for storytellers in their game" on public.characters for all to authenticated using (is_storyteller(game));
 
 -- Codex sections --
 
