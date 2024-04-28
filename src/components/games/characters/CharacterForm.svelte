@@ -58,7 +58,7 @@
   <form method='POST' autocomplete='off' bind:this={formEl}>
     <div class='row'>
       <div class='labels'><label for='charName'>Jméno *</label></div>
-      <div class='inputs'><input type='text' id='charName' name='charName' maxlength='100' bind:value={character.name} /></div>
+      <div class='inputs'><input type='text' id='charName' name='charName' maxlength='49' bind:value={character.name} /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled</label></div>
