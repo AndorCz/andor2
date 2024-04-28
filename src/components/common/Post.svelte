@@ -74,14 +74,13 @@
         {#if canModerate}
           <button on:click={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
         {/if}
-        {#if canDeleteAll || isMyPost}
-          {#if onEdit}
-            <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit' use:tooltip>edit</button>
-          {/if}
-          {#if onDelete && canDelete}
-            <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat' use:tooltip>delete</button>
-          {/if}
-        {:else if canModerate && !$postStore.moderated}
+        {#if onEdit && isMyPost}
+          <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit' use:tooltip>edit</button>
+        {/if}
+        {#if onDelete && canDelete}
+          <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat' use:tooltip>delete</button>
+        {/if}
+        {#if canModerate && !$postStore.moderated}
           <button on:click={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>
         {/if}
         {#if onReply}
