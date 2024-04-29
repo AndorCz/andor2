@@ -95,7 +95,7 @@
               {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
             </a>
           </div>
-          <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation}</div>
+          <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
         </div>
         {#if work.custom_header}
           <div class='col image'>

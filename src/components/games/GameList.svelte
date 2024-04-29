@@ -110,7 +110,7 @@
               {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
             </a>
           </div>
-          <div class='row annotation' title={game.annotation} use:tooltip>{game.annotation}</div>
+          <div class='row annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
         </div>
         {#if game.custom_header}
           <div class='col image'>

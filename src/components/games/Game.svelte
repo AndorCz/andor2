@@ -86,9 +86,11 @@
         <button on:click={toggleNotification} class='material square' class:active={notificationEnabled} title={notificationEnabled ? 'Zrušit notifikace' : 'Dostávat notifikace'} use:tooltip>{notificationEnabled ? 'notifications_off' : 'notifications'}</button>
       {/key}
       -->
-      {#key emailEnabled}
-        <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
-      {/key}
+      {#if isPlayer}
+        {#key emailEnabled}
+          <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
+        {/key}
+      {/if}
       {#if isGameOwner}
         <button on:click={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
