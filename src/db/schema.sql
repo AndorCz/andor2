@@ -854,7 +854,7 @@ begin
 
   return coalesce(user_data, '[]'::jsonb);
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 create or replace function delete_my_character(character_id uuid)
