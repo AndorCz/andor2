@@ -9,6 +9,7 @@
   export let user = {}
   export let games = []
   export let showHeadline = false
+  export let showTabs = true
 
   // let sort = 'new'
   let listView = false
@@ -68,11 +69,13 @@
   </div>
 {/if}
 
-<nav class='tabs secondary'>
-  <button on:click={() => { activateTab('new') }} class:active={activeTab === 'new'}>Nové</button>
-  <button on:click={() => { activateTab('active') }} class:active={activeTab === 'active'}>Aktivní</button>
-  <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
-</nav>
+{#if showTabs}
+  <nav class='tabs secondary'>
+    <button on:click={() => { activateTab('new') }} class:active={activeTab === 'new'}>Nové</button>
+    <button on:click={() => { activateTab('active') }} class:active={activeTab === 'active'}>Aktivní</button>
+    <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
+  </nav>
+{/if}
 
 {#if isFilledArray(games)}
   {#if listView}

@@ -30,7 +30,7 @@
 </main>
 
 <h2>Hry</h2>
-<GameList {user} games={data.games} />
+<GameList {user} games={data.games} showTabs={false} />
 
 <h2>Díla</h2>
 <WorkList {user} works={data.works} />
