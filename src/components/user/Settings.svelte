@@ -47,6 +47,12 @@
   {#if user}
     <h1>Uživatelské nastavení</h1>
 
+    <h2>Import z Andor.cz</h2>
+    <p>
+      Pokud jsi uživatel ze starého Andoru, můžeš si propojit účty a přenést si své hry a články.<br><br>
+      <a href='/migrate' class='button'>Přejít na import</a>
+    </p>
+
     <h2>Nastavit heslo</h2>
     <table>
       <tr>

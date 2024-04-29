@@ -38,39 +38,67 @@
   }
 </script>
 
-{#if user.id}
-  {#if user.old_id}
-    <h1>Import</h1>
-    <p>Tvůj starý login je: <b>{oldLogin}</b></p>
-    <p>
-      Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí,
-      kontaktuj prosím vývojáře - kontakty najdeš v hlavičce diskuze "Správa Andoru".
-    </p>
-    <MigrateGames {user} {oldUserData} />
-    <br>
-    <MigrateWorks {user} {oldUserData} />
-  {:else}
-    <h1>Propojení účtu</h1>
-    <p>
-      Tato stránka slouží na propojení účtů. Pokud zadáš login a heslo ze starého Andoru, budeme moci tvé účty propojit.
-      Pokud tvůj starý login nesouhlasí, nebo je zde jiný problém, kontaktuj prosím vývojáře - kontakty najdeš v hlavičce diskuze "Správa Andoru".
-    </p>
-    <div>
+<main>
+  {#if user.id}
+    {#if user.old_id}
+      <h1>Import</h1>
+      <p>Tvůj starý login je: <b>{oldLogin}</b></p>
+      <p>
+        Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí, kontaktuj prosím vývojáře.
+        Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.
+      </p>
+      <MigrateGames {user} {oldUserData} />
+      <br>
+      <MigrateWorks {user} {oldUserData} />
+    {:else}
+      <h1>Propojení účtu</h1>
+      <p>Tato stránka slouží na propojení účtů. Pokud zadáš login a heslo ze starého Andoru, budeme moci tvé účty propojit.</p>
+
       <form on:submit|preventDefault={linkUserToOldAccount} autocomplete='off'>
         <div class='row'>
           <label for='login_link'>Login</label>
-          <input type='text' id='oldLoginLink' bind:value={oldLogin}/>
+          <input type='text' id='oldLoginLink' bind:value={oldLogin} size='32' />
         </div>
         <div class='row'>
           <label for='password_old'>Heslo</label>
-          <input type='password' id='oldPasswordLink' bind:value={oldPassword} />
+          <input type='password' id='oldPasswordLink' bind:value={oldPassword} size='32' />
         </div>
         <center>
           <button type='submit' class='large'>Propojit účty</button>
         </center>
       </form>
-    </div>
+
+      <p class='info'>
+        Pokud tvůj starý login nesouhlasí, nebo je zde jiný problém, kontaktuj prosím vývojáře.
+        Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.
+      </p>
+    {/if}
+  {:else}
+    <h1>Pouze pro přihlášené uživatele</h1>
   {/if}
-{:else}
-  <h1>Pouze pro přihlášené uživatele</h1>
-{/if}
+</main>
+
+<style>
+  main {
+    max-width: 600px;
+    margin: auto;
+    line-height: 140%;
+  }
+  center {
+    margin: 20px 0px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+    margin: auto;
+    margin-top: 40px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+</style>
