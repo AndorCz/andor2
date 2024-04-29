@@ -288,7 +288,7 @@ create or replace view posts_owner as
     p.created_at desc;
 
 create or replace view board_list as
-  select b.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count
+  select b.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
   from boards b
     left join threads t on b.thread = t.id
     left join profiles pr on b.owner = pr.id
@@ -297,7 +297,7 @@ create or replace view board_list as
   order by b.created_at desc;
 
 create or replace view game_list as
-  select g.*, pr.id as owner_id, pr.name as owner_name, count(p.id) as post_count, max(p.created_at) as last_post
+  select g.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count, max(p.created_at) as last_post
   from games g
     left join threads t on g.game_thread = t.id
     left join profiles pr on g.owner = pr.id

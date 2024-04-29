@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl } from '@lib/database'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
@@ -80,20 +80,19 @@
 {#if isFilledArray(games)}
   {#if listView}
     <table class='list'>
-      <tr>
-        <th>název</th>
-        <th>kategorie</th>
-        <th>systém</th>
-        <th>příspěvků</th>
-        <th>vlastník</th>
-      </tr>
+      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr>
       {#each games as game}
         <tr class='gameLine'>
           <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
           <td><div class='category'>{getCategory(game.category)}</div></td>
           <td><div class='system'>{getSystem(game.system)}</div></td>
           <td><div class='count'>{game.post_count}</div></td>
-          <td><div class='owner user'>{game.owner_name}</div></td>
+          <td>
+            <a href='./user?id={game.owner_id}' class='user owner'>
+              {game.owner_name}
+              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
+            </a>
+          </td>
         </tr>
       {/each}
     </table>
@@ -106,7 +105,10 @@
             <div class='category' title='kategorie'>{getCategory(game.category)}</div>
             {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner' title='správce'><a href={'./user?id=' + game.owner} class='user'>{game.owner_name}</a></div>
+            <a href='./user?id={game.owner_id}' class='user owner' title='vlastník'>
+              {game.owner_name}
+              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
+            </a>
           </div>
           <div class='row annotation' title={game.annotation} use:tooltip>{game.annotation}</div>
         </div>
@@ -139,6 +141,25 @@
 
   .tabs {
     margin-bottom: 20px;
+  }
+
+  .owner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+    .portrait {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background-color: var(--background);
+    }
+  .list .owner {
+    padding-right: 20px;
   }
 
   /* blocks */

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl } from '@lib/database'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
@@ -42,17 +42,18 @@
 {#if isFilledArray(boards)}
   {#if listView || compactOnly}
     <table class='list'>
-      <tr>
-        <th>název</th>
-        <th>příspěvků</th>
-        <th>vlastník</th>
-      </tr>
+      <tr><th>název</th><th>příspěvků</th><th>vlastník</th></tr>
       {#each boards as board}
         <tr class='board'>
           <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
           <td><div class='count'>{board.post_count}</div></td>
-          <td><div class='owner user'>{board.owner_name}</div></td>
-        </tr>
+          <td>
+            <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
+              {board.owner_name}
+              {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='portrait' alt={board.owner_name} />{/if}
+            </a>
+          </td>
+      </tr>
       {/each}
     </table>
   {:else}
@@ -62,7 +63,10 @@
           <div class='row basics'>
             <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner user' title='správce'>{board.owner_name}</div>
+            <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
+              {board.owner_name}
+              {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='portrait' alt={board.owner_name} />{/if}
+            </a>
           </div>
           <div class='row annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
         </div>
@@ -91,6 +95,24 @@
   }
   .name a:first-letter {
     text-transform: uppercase;
+  }
+  .owner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+    .portrait {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background-color: var(--background);
+    }
+  .list .owner {
+    padding-right: 20px;
   }
 
   /* blocks */

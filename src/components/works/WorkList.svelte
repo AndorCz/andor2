@@ -65,20 +65,19 @@
 {#if isFilledArray(works)}
   {#if listView}
     <table class='list'>
-      <tr>
-        <th>název</th>
-        <th>kategorie</th>
-        <th>tagy</th>
-        <th>příspěvků</th>
-        <th>autor</th>
-      </tr>
+      <tr><th>název</th><th>kategorie</th><th>tagy</th><th>příspěvků</th><th>autor</th></tr>
       {#each works as work}
         <tr class='work' class:editorial={work.editorial}>
           <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
           <td><div class='category'>{getCategory(work)}</div></td>
           <td><div class='tags'>{getTags(work.tags)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
-          <td><div class='owner user'>{work.owner_name}{#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={user.name} />{/if}</div></td>
+          <td>
+            <a href='./user?id={work.owner_id}' class='user owner'>
+              {work.owner_name}
+              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
+            </a>
+          </td>
         </tr>
       {/each}
     </table>
@@ -91,7 +90,10 @@
             <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
-            <div class='owner user' title='autor'>{work.owner_name}{#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={user.name} />{/if}</div>
+            <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
+              {work.owner_name}
+              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
+            </a>
           </div>
           <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation}</div>
         </div>
