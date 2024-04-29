@@ -454,7 +454,8 @@ begin
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
-      and (_search is null or lower(p.content) like '%' || search_lower || '%')
+      -- search content and owner character name
+      and (_search is null or (lower(p.content) like '%' || search_lower || '%') or (lower(p.owner_name) like '%' || search_lower || '%'))
     ), ordered_posts as (
       select to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post
       from filtered_posts fp
