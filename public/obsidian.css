@@ -550,6 +550,7 @@ select {
 .post .content img {
   max-width: 100%;
   object-fit: contain;
+  height: auto;
   cursor: pointer;
 }
 .post .content a {

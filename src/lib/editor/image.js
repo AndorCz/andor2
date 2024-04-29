@@ -24,7 +24,8 @@ export const CustomImage = Image.extend({
       }
     }
     const alignmentStyle = getAlignmentStyle(node.attrs.alignment)
-    const sizeStyle = `width: ${node.attrs.width * node.attrs.size / 100}px; height: ${node.attrs.height * node.attrs.size / 100}px;`
+    // const sizeStyle = `width: ${node.attrs.width * node.attrs.size / 100}px; height: ${node.attrs.height * node.attrs.size / 100}px;`
+    const sizeStyle = 'max-width: 100%; object-fit: contain; height: auto'
     const style = `${alignmentStyle} ${sizeStyle}`
     return ['img', { ...HTMLAttributes, style }]
   },
