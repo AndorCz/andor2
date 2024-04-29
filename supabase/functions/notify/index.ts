@@ -12,7 +12,7 @@ const sender = new Sender('info@andor2.cz', 'Andor2.cz')
 
 Deno.serve(async (req: Request) => {
   try {
-    console.log('Notify fired, version 0.3.2')
+    console.log('Notify fired, version 0.3.5')
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SERVICE_KEY') ?? '',
@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
     console.log('Notification data', notificationData)
 
     let emailList = []
-    const portrait = character.portrait ? `<td style='padding-right: 10px'><img src='https://zwclrcefxleqmzhhfcte.supabase.co/storage/v1/object/public/portraits/${character.id}.jpg?hash=${character.portrait}' style='width: 100px' /></td>` : ''
+    const portrait = character.portrait ? `<td style='padding-right: 10px' valign='top'><img src='https://zwclrcefxleqmzhhfcte.supabase.co/storage/v1/object/public/portraits/${character.id}.jpg?hash=${character.portrait}' style='width: 100px' /></td>` : ''
 
     if (notificationData.length > 0) {
       notificationData.forEach(async (user) => {
@@ -57,8 +57,11 @@ Deno.serve(async (req: Request) => {
             <table>
               <tr>
                 ${portrait}
-                <td style='background-color: #33302f; bgcolor='#33302f'>
-                  <div style='padding: 5px 15px; color: #968ebd; font-weight: bold; border-bottom: 1px #2b2827 solid'>${character.name}</div>
+                <td style='color: #c4b6ab; background-color: #33302f' bgcolor='#33302f'>
+                  <div style='padding: 5px 15px; border-bottom: 1px #2b2827 solid'>
+                    <span style='font-size: 16px; color: #968ebd; font-weight: bold;'>${character.name}</span>
+                    ${record.audience ? ' (soukromý příspěvek)' : ''}
+                  </div>
                   <div style='padding: 15px; font-size: 16px'>${record.content}</div>
                 </td>
               </tr>
