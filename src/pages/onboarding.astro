@@ -8,11 +8,11 @@
     const userName = data.get('userName')
     if (userName) {
 
-    // Check if login belong to someone from old andor
-    const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
-    if (loginCheck) {
-      return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno patřilo někomu z původního Andoru a je rezervováno.'))
-    }
+      // Check availability
+      const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
+      if (loginCheck) {
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno patřilo někomu z původního Andoru a je rezervováno.'))
+      }
 
       const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
       if (error) {

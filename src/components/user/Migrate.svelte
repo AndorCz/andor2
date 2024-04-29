@@ -2,8 +2,8 @@
   import { supabase } from '@lib/database'
   import { showError } from '@lib/toasts'
   import { getOldUserId } from '@mig/migrate'
-  import MigrateGames from "@components/user/MigrateGames.svelte";
-  import MigrateWorks from "@components/user/MigrateWorks.svelte";
+  import MigrateGames from '@components/user/MigrateGames.svelte'
+  import MigrateWorks from '@components/user/MigrateWorks.svelte'
 
   export let user
   export let oldUserData
@@ -22,21 +22,13 @@
     if (!oldId) { return showError('Uživatel nenalezen nebo špatné heslo - pozor na velké, malé písmena.') }
 
     // Check if its not already linked
-    const { data: idCheck, error: idError } = await supabase
-      .from('profiles')
-      .select('old_id')
-      .eq('old_id', parseInt(oldId, 10))
-      .maybeSingle()
+    const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
     if (idError) { return showError('Chyba migrace: ', idError.message) }
 
     if (idCheck) {
       return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
     } else { // update profiles with old_id
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ old_id: parseInt(oldId, 10) })
-        .eq('id', user.id)
-        .maybeSingle()
+      const { error: updateError } = await supabase.from('profiles').update({ old_id: parseInt(oldId, 10) }).eq('id', user.id).maybeSingle()
       if (updateError) {
         showError('Error updating profile:', updateError)
       } else { // update successfull, refresh page
@@ -48,7 +40,7 @@
 
 {#if user.id}
   {#if user.old_id}
-    <h1>Migrace</h1>
+    <h1>Import</h1>
     <p>Tvůj starý login je: <b>{oldLogin}</b></p>
     <p>
       Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí,

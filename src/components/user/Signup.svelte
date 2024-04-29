@@ -90,7 +90,9 @@
       const { error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: newLogin, old_id: oldId })
       if (!profileError) {
         redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
-      } else { return showError('Chyba registrace') }
+      } else {
+        return showError('Chyba registrace')
+      }
     }
   }
 </script>
