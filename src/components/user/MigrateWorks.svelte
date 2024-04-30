@@ -14,7 +14,7 @@
   async function handleWorkAction (workId) {
     if (workId) {
       migratingGames.add(workId)
-      works = works.slice()
+      works = works // trigger reactivity
       try {
         const response = await fetch('/api/import', {
           method: 'POST',
@@ -25,7 +25,7 @@
         const result = await response.json()
         if (result.status === 200) {
           showSuccess('Článek importován')
-          works = works.slice()
+          works = works // trigger reactivity
         } else {
           showError('API failed to migrate:', result.error)
         }

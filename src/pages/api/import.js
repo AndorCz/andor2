@@ -241,13 +241,8 @@ async function importPortrait (newId, oldId, locals, isUser) {
   // remove even if does not exists
   await locals.supabase.storage.from('portraits').remove(newAvatarName)
 
-  let avatarName = `old_icons_chars/${oldId}.jpg`
-  if (isUser) {
-    avatarName = `old_icons_users/user_${oldId}.jpg`
-  }
-  const { data, error } = await locals.supabase.storage
-    .from('portraits')
-    .copy(avatarName, newAvatarName)
+  const avatarName = isUser ? `old_icons_users/user_${oldId}.jpg` : `old_icons_chars/${oldId}.jpg`
+  const { data, error } = await locals.supabase.storage.from('portraits').copy(avatarName, newAvatarName)
   if (!data || error) {
     console.log('Portrait not found:', avatarName)
     return false
@@ -268,8 +263,7 @@ async function importPortrait (newId, oldId, locals, isUser) {
 
 async function importUserPortrait (oldId, locals) {
   if (oldId !== locals.user.old_id) {
-    return new Response(JSON.stringify({ error: 'Snazis se ukradnut ikonku nebo jinej problem' }),
-      { status: 500 })
+    return new Response(JSON.stringify({ error: 'Snažíš se stáhnout cizí ikonku, nebo chybí id' }), { status: 500 })
   }
   const profileSet = await importPortrait(locals.user.id, locals.user.old_id, locals, true)
   if (profileSet) {
@@ -283,22 +277,10 @@ export const POST = async ({ request, locals }) => {
   try {
     const { action, gameId, workId, charId, oldId } = await request.json()
     switch (action) {
-      case 'migrate_game':
-      {
-        return migrateGame(gameId, locals)
-      }
-      case 'migrate_work':
-      {
-        return migrateWork(workId, locals)
-      }
-      case 'migrate_char':
-      {
-        return migrateChar(charId, locals)
-      }
-      case 'import_user_portrait':
-      {
-        return importUserPortrait(oldId, locals)
-      }
+      case 'migrate_game': return migrateGame(gameId, locals)
+      case 'migrate_work': return migrateWork(workId, locals)
+      case 'migrate_char': return migrateChar(charId, locals)
+      case 'import_user_portrait': return importUserPortrait(oldId, locals)
     }
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 })

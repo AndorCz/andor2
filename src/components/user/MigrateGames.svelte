@@ -15,7 +15,7 @@
     showSuccess('Probíhá import, může chvíli trvat')
     if (gameId) {
       migratingGames.add(gameId)
-      games = games.slice()
+      games = games // trigger reactivity
 
       try {
         const response = await fetch('/api/import', {
@@ -28,7 +28,7 @@
         if (result.status === 202) {
           showSuccess('Hra importována')
           migratingGames.add(gameId)
-          games = games.slice()
+          games = games // trigger reactivity
         } else {
           showError('API failed to import game')
         }
