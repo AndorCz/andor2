@@ -61,70 +61,75 @@ async function migrateOldPosts (oldGameId, newGameThread, idMap, locals) {
 }
 
 async function createGame (locals, oldGameData) {
-  // create new game
-  const { data, error: insertError } = await locals.supabase.from('games').insert({
-    owner: locals.user.id,
-    name: oldGameData.game_name,
-    created_at: oldGameData.created_at,
-    annotation: oldGameData.game_name
-  }).select().single()
-  if (insertError) { return { error: insertError } }
-
-  // add bookmark
-  const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
-  if (bookmarkError) { return { error: bookmarkError } }
-
-  // get GM id
-  const { data: gmData, error: gmError } = await locals.supabase
-    .from('characters')
-    .select('id')
-    .eq('game', data.id)
-    .eq('storyteller', true)
-    .single()
-  if (gmError) { return { error: gmError } }
-
-  // insert game description as first post
-  if (gmData) {
-    const { error: postError } = await locals.supabase.from('posts').insert({
-      owner: gmData.id,
-      owner_type: 'character',
-      content: oldGameData.game_desc,
-      thread: data.game_thread,
-      created_at: oldGameData.created_at
+  try {
+    // create new game
+    const { data, error: insertError } = await locals.supabase.from('games').insert({
+      owner: locals.user.id,
+      name: oldGameData.game_name,
+      created_at: oldGameData.created_at,
+      annotation: oldGameData.game_name
     }).select().single()
-    if (postError) { return { postError } }
-  } else {
-    return { error: 'GM not found' }
-  }
+    if (insertError) { return { error: insertError } }
 
-  const newGameId = data.id
-  const newGameGmId = gmData.id
-  const newGameThread = data.game_thread
+    // add bookmark
+    const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    if (bookmarkError) { return { error: bookmarkError } }
 
-  // Get every characters that have at least one post in game
-  const { data: oldCharData, error: oldCharError } = await locals.supabase
-    .rpc('get_old_chars_by_game', { game_id_param: oldGameData.id_game })
-  if (oldCharError) { return { error: oldCharError } }
+    // get GM id
+    const { data: gmData, error: gmError } = await locals.supabase
+      .from('characters')
+      .select('id')
+      .eq('game', data.id)
+      .eq('storyteller', true)
+      .single()
+    if (gmError) { return { error: gmError } }
 
-  const idMap = {}
-
-  for (const character of oldCharData) {
-    const isAlive = character.game_id === oldGameData.id_game
-    const isGm = character.gm_id === 1
-    const result = await migrateOldCharacter(newGameId, newGameGmId, character, locals, isGm, isAlive)
-    if (result.error) { return { error: result.error } }
-    if (isAlive) {
-      idMap[character.id_char] = isGm ? newGameGmId : result.id
+    // insert game description as first post
+    if (gmData) {
+      const { error: postError } = await locals.supabase.from('posts').insert({
+        owner: gmData.id,
+        owner_type: 'character',
+        content: oldGameData.game_desc,
+        thread: data.game_thread,
+        created_at: oldGameData.created_at
+      }).select().single()
+      if (postError) { return { postError } }
     } else {
-      idMap[character.id_char] = result.id
+      return { error: 'GM not found' }
     }
+
+    const newGameId = data.id
+    const newGameGmId = gmData.id
+    const newGameThread = data.game_thread
+
+    // Get every characters that have at least one post in game
+    const { data: oldCharData, error: oldCharError } = await locals.supabase
+      .rpc('get_old_chars_by_game', { game_id_param: oldGameData.id_game })
+    if (oldCharError) { return { error: oldCharError } }
+
+    const idMap = {}
+
+    for (const character of oldCharData) {
+      const isAlive = character.game_id === oldGameData.id_game
+      const isGm = character.gm_id === 1
+      const result = await migrateOldCharacter(newGameId, newGameGmId, character, locals, isGm, isAlive)
+      if (result.error) { return { error: result.error } }
+      if (isAlive) {
+        idMap[character.id_char] = isGm ? newGameGmId : result.id
+      } else {
+        idMap[character.id_char] = result.id
+      }
+    }
+
+    // Todo: Import icons for those characters
+
+    // migrate posts
+    const result = await migrateOldPosts(oldGameData.id_game, newGameThread, idMap, locals)
+    if (result.error) { return result }
+    return { status: 200 }
+  } catch (error) {
+    return { error }
   }
-
-  // Todo: Import icons for those characters
-
-  // migrate posts
-  const result = await migrateOldPosts(oldGameData.id_game, newGameThread, idMap, locals)
-  if (result.error) { return result }
 }
 
 async function migrateGame (gameId, locals) {
