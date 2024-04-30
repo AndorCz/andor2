@@ -28,6 +28,7 @@
     "@tiptap/pm": "2.1.13",
     "@tiptap/starter-kit": "2.1.13",
     "astro": "4.2.0",
+    "crypto-js": "^4.2.0",
     "luxon": "3.4.4",
     "notyf": "3.10.0",
     "openai": "4.20.1",

@@ -917,6 +917,14 @@ create or replace function delete_user () returns void as $$
 $$ language sql security definer;
 
 
+create or replace function get_old_chars_by_game (game_id_param bigint) returns setof old_chars as $$
+begin
+  return query select oc.* from old_chars oc
+  join (select distinct id_from from old_posts where game_id = game_id_param) op on oc.id_char = op.id_from;
+end;
+$$ language plpgsql;
+
+
 -- TRIGGERS --------------------------------------------
 
 
