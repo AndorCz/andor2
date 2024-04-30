@@ -9,7 +9,7 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
     return data
   }
 
-  const { data: newCharData } = await locals.supabase.from('characters').insert({
+  const { data: newCharData, error: inserError } = await locals.supabase.from('characters').insert({
     player: locals.user.id,
     game: newGameId,
     name: character.char_name,
@@ -18,6 +18,7 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
     state: isAlive ? 'alive' : 'dead',
     accepted: true
   }).select().single()
+  if (inserError) { return { error: inserError } }
 
   const result = await importPortrait(newCharData.id, character.id_char, locals, false)
   if (result.error) { return result }
@@ -25,7 +26,8 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
 }
 
 async function migrateOldPosts (oldGameId, newGameThread, idMap, locals) {
-  const { data: oldPosts } = await locals.supabase.from('old_posts').select('*').eq('game_id', oldGameId)
+  const { data: oldPosts, error: oldPostError } = await locals.supabase.from('old_posts').select('*').eq('game_id', oldGameId)
+  if (oldPostError) { return { error: oldPostError } }
 
   const postsToInsert = []
   for (const post of oldPosts) {
@@ -83,13 +85,14 @@ async function createGame (locals, oldGameData) {
 
   // insert game description as first post
   if (gmData) {
-    await locals.supabase.from('posts').insert({
+    const { error: postError } = await locals.supabase.from('posts').insert({
       owner: gmData.id,
       owner_type: 'character',
       content: oldGameData.game_desc,
       thread: data.game_thread,
       created_at: oldGameData.created_at
     }).select().single()
+    if (postError) { return { postError } }
   } else {
     return { error: 'GM not found' }
   }
@@ -138,12 +141,14 @@ async function migrateGame (gameId, locals) {
   if (!gameData) { return new Response(JSON.stringify({ error: 'Hra nenalezena - nesprávný uživatel nebo probíha migrace' }), { status: 404 }) }
 
   // we know game is ready to be migrated - update status, as this might take some time
-  await locals.supabase.from('old_games').update({ migrating: true }).eq('id_game', gameId)
+  const { error: oldGameError } = await locals.supabase.from('old_games').update({ migrating: true }).eq('id_game', gameId)
+  if (oldGameError) { return new Response(JSON.stringify({ error: oldGameError.message }), { status: 500 }) }
 
   const result = await createGame(locals, gameData)
   if (result.error) {
-    await locals.supabase.from('old_games').update({ migrating: false }).eq('id_game', gameId)
-    return new Response(JSON.stringify({ error: result.error }), { status: 500 })
+    const { error: finalizeError } = await locals.supabase.from('old_games').update({ migrating: false }).eq('id_game', gameId)
+    if (finalizeError) { return new Response(JSON.stringify({ error: finalizeError.message }), { status: 500 }) }
+    return new Response(JSON.stringify(result), { status: 500 })
   } else {
     return new Response(JSON.stringify({ status: 202 }))
   }
@@ -158,7 +163,6 @@ async function migrateWork (workId, locals) {
     .eq('owner', locals.user.old_id)
     .eq('migrated', false)
     .maybeSingle()
-
   if (workError) { return new Response(JSON.stringify({ error: workError.message }), { status: 500 }) }
   if (!workData) { return new Response(JSON.stringify({ error: 'Článek nenalezen - nesprávný uživatel nebo už byl zmigrován.' }), { status: 404 }) }
 
@@ -171,16 +175,12 @@ async function migrateWork (workId, locals) {
     tags: workData.tags,
     created_at: workData.post_date
   }).select().single()
+  if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
+  if (!data) { return new Response(JSON.stringify({ error: 'Error adding work' }), { status: 500 }) }
 
-  if (error || !data) {
-    console.error('Error:', error.message)
-    return new Response(JSON.stringify({ error: 'Error with db' }), { status: 500 })
-  }
   // Update old_works so we know what was migrated
-  await locals.supabase
-    .from('old_works')
-    .update({ migrated: true })
-    .eq('id', workId)
+  const { error: oldWorkError } = await locals.supabase.from('old_works').update({ migrated: true }).eq('id', workId)
+  if (oldWorkError) { return new Response(JSON.stringify({ error: oldWorkError.message }), { status: 500 }) }
   return new Response(JSON.stringify({ status: 200 }))
 }
 
@@ -193,28 +193,27 @@ async function migrateChar (charId, locals) {
     .eq('id_char', charId)
     .eq('migrated', false)
     .maybeSingle()
-  if (charError || !charData) {
-    return new Response(JSON.stringify({ status: 404 }))
-  }
+  if (charError) { return new Response(JSON.stringify({ error: charError.message }), { status: 500 }) }
+  if (!charData) { return new Response(JSON.stringify({ error: 'Error: Failed to add character' }, { status: 404 })) }
 
   // Create new char
-  const { data: newCharData } = await locals.supabase.from('characters').insert({
+  const { data: newCharData, error: newCharError } = await locals.supabase.from('characters').insert({
     player: locals.user.id,
     name: charData.char_name,
     bio: charData.char_desc,
     storyteller_notes: charData.gm_notes,
     state: 'alive'
   }).select().single()
+  if (newCharError) { return new Response(JSON.stringify({ error: newCharError.message }), { status: 500 }) }
 
   // Mark char as migrated
   if (newCharData) {
-    await locals.supabase
-      .from('old_chars')
-      .update({ migrated: true })
-      .eq('id_char', charData.id_char)
+    const { error: oldCharError } = await locals.supabase.from('old_chars').update({ migrated: true }).eq('id_char', charData.id_char)
+    if (oldCharError) { return new Response(JSON.stringify({ error: oldCharError.message }), { status: 500 }) }
   }
 
-  await importPortrait(newCharData.id, charData.id_char, locals, false)
+  const result = await importPortrait(newCharData.id, charData.id_char, locals, false)
+  if (result.error) { return new Response(JSON.stringify({ error: result.error }), { status: 500 }) }
   return new Response(JSON.stringify({ status: 200 }))
 }
 
