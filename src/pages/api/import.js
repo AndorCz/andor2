@@ -1,19 +1,12 @@
-import { createThread, getStoryteller } from '@lib/openai'
 
 async function migrateOldCharacter (newGameId, newGameGmId, character, locals, isGm, isAlive) {
   if (isGm) {
     // character is GM - do not create new one, just update existing
-    await locals.supabase
-      .from('characters')
-      .update({ name: character.char_name })
-      .eq('id', newGameGmId)
-    await importPortrait(newGameGmId, character.id_char, locals, false)
-    return
-  }
-
-  let alive = 'alive'
-  if (!isAlive) {
-    alive = 'dead'
+    const { data, error } = await locals.supabase.from('characters').update({ name: character.char_name }).eq('id', newGameGmId).select().single()
+    if (error) { return error }
+    const result = await importPortrait(newGameGmId, character.id_char, locals, false)
+    if (result.error) { return result }
+    return data
   }
 
   const { data: newCharData } = await locals.supabase.from('characters').insert({
@@ -22,34 +15,25 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
     name: character.char_name,
     bio: character.char_desc,
     storyteller_notes: character.gm_notes,
-    state: alive,
+    state: isAlive ? 'alive' : 'dead',
     accepted: true
   }).select().single()
 
-  await importPortrait(newCharData.id, character.id_char, locals, false)
-  return newCharData.id
+  const result = await importPortrait(newCharData.id, character.id_char, locals, false)
+  if (result.error) { return result }
+  return newCharData
 }
 
 async function migrateOldPosts (oldGameId, newGameThread, idMap, locals) {
-  const { data: oldPosts } = await locals.supabase
-    .from('old_posts')
-    .select('*')
-    .eq('game_id', oldGameId)
+  const { data: oldPosts } = await locals.supabase.from('old_posts').select('*').eq('game_id', oldGameId)
 
   const postsToInsert = []
   for (const post of oldPosts) {
     let toChars = null
-    if (post.to_chars) {
-      toChars = null
-    }
-
-    if (post.to_chars === '') {
-      toChars = null
-    } else {
+    if (post.to_chars !== '') {
       const ids = post.to_chars.split(',').map(id => id.trim())
       const convertedIds = ids.map(id => idMap[id] || null)
       const filteredIds = convertedIds.filter(id => id !== null)
-
       toChars = filteredIds.length > 0 ? filteredIds : null
     }
     const postToInsert = {
@@ -65,32 +49,28 @@ async function migrateOldPosts (oldGameId, newGameThread, idMap, locals) {
   const batchSize = 1000
   for (let i = 0; i < postsToInsert.length; i += batchSize) {
     const batch = postsToInsert.slice(i, i + batchSize)
-    await locals.supabase.from('posts').insert(batch)
+    const { error } = await locals.supabase.from('posts').insert(batch)
+    if (error) { return { error } }
   }
 
   // Everything good
-  await locals.supabase
-    .from('old_games')
-    .update({ migrating: false, migrated: true })
-    .eq('id_game', oldGameId)
+  const { error: oldGameError } = await locals.supabase.from('old_games').update({ migrating: false, migrated: true }).eq('id_game', oldGameId)
+  if (oldGameError) { return { error: oldGameError } }
 }
 
 async function createGame (locals, oldGameData) {
   // create new game
-  const openAiThread = await createThread()
-  const openAiStoryteller = await getStoryteller('base')
-  // eslint-disable-next-line no-unused-vars
-  const { data, error } = await locals.supabase.from('games').insert({
+  const { data, error: insertError } = await locals.supabase.from('games').insert({
     owner: locals.user.id,
     name: oldGameData.game_name,
-    openai_thread: openAiThread,
-    openai_storyteller: openAiStoryteller,
     created_at: oldGameData.created_at,
     annotation: oldGameData.game_name
   }).select().single()
+  if (insertError) { return { error: insertError } }
 
   // add bookmark
-  await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+  const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+  if (bookmarkError) { return { error: bookmarkError } }
 
   // get GM id
   const { data: gmData, error: gmError } = await locals.supabase
@@ -99,9 +79,10 @@ async function createGame (locals, oldGameData) {
     .eq('game', data.id)
     .eq('storyteller', true)
     .single()
+  if (gmError) { return { error: gmError } }
 
   // insert game description as first post
-  if (!gmError && gmData) {
+  if (gmData) {
     await locals.supabase.from('posts').insert({
       owner: gmData.id,
       owner_type: 'character',
@@ -109,6 +90,8 @@ async function createGame (locals, oldGameData) {
       thread: data.game_thread,
       created_at: oldGameData.created_at
     }).select().single()
+  } else {
+    return { error: 'GM not found' }
   }
 
   const newGameId = data.id
@@ -116,34 +99,33 @@ async function createGame (locals, oldGameData) {
   const newGameThread = data.game_thread
 
   // Get every characters that have at least one post in game
-  const { data: oldCharData } = await locals.supabase
+  const { data: oldCharData, error: oldCharError } = await locals.supabase
     .rpc('get_old_chars_by_game', { game_id_param: oldGameData.id_game })
+  if (oldCharError) { return { error: oldCharError } }
 
   const idMap = {}
 
   for (const character of oldCharData) {
-    if (character.game_id === oldGameData.id_game) {
-      // Char alive
-      if (character.gm_id === 1) {
-        await migrateOldCharacter(newGameId, newGameGmId, character, locals, true, true)
-        idMap[character.id_char] = newGameGmId
-      } else {
-        idMap[character.id_char] = await migrateOldCharacter(newGameId, newGameGmId, character, locals, false, true)
-      }
+    const isAlive = character.game_id === oldGameData.id_game
+    const isGm = character.gm_id === 1
+    const result = await migrateOldCharacter(newGameId, newGameGmId, character, locals, isGm, isAlive)
+    if (result.error) { return { error: result.error } }
+    if (isAlive) {
+      idMap[character.id_char] = isGm ? newGameGmId : result.id
     } else {
-      // Char is dead
-      idMap[character.id_char] = await migrateOldCharacter(newGameId, newGameGmId, character, locals, false, false)
+      idMap[character.id_char] = result.id
     }
   }
 
   // Todo: Import icons for those characters
 
   // migrate posts
-  await migrateOldPosts(oldGameData.id_game, newGameThread, idMap, locals)
+  const result = await migrateOldPosts(oldGameData.id_game, newGameThread, idMap, locals)
+  if (result.error) { return result }
 }
 
 async function migrateGame (gameId, locals) {
-  // Check if work belong to user
+  // Check if the game belongs to the user
   const { data: gameData, error: gameError } = await locals.supabase
     .from('old_games')
     .select('*')
@@ -156,15 +138,15 @@ async function migrateGame (gameId, locals) {
   if (!gameData) { return new Response(JSON.stringify({ error: 'Hra nenalezena - nesprávný uživatel nebo probíha migrace' }), { status: 404 }) }
 
   // we know game is ready to be migrated - update status, as this might take some time
-  await locals.supabase
-    .from('old_games')
-    .update({ migrating: true })
-    .eq('id_game', gameId)
+  await locals.supabase.from('old_games').update({ migrating: true }).eq('id_game', gameId)
 
-  createGame(locals, gameData)
-
-  // start process but do not wait
-  return new Response(JSON.stringify({ status: 202 }))
+  const result = await createGame(locals, gameData)
+  if (result.error) {
+    await locals.supabase.from('old_games').update({ migrating: false }).eq('id_game', gameId)
+    return new Response(JSON.stringify({ error: result.error }), { status: 500 })
+  } else {
+    return new Response(JSON.stringify({ status: 202 }))
+  }
 }
 
 async function migrateWork (workId, locals) {
@@ -239,25 +221,16 @@ async function migrateChar (charId, locals) {
 async function importPortrait (newId, oldId, locals, isUser) {
   const newAvatarName = `${newId}.jpg`
   // remove even if does not exists
-  await locals.supabase.storage.from('portraits').remove(newAvatarName)
+  const { error } = await locals.supabase.storage.from('portraits').remove(newAvatarName)
+  if (error) { return error }
 
   const avatarName = isUser ? `old_icons_users/user_${oldId}.jpg` : `old_icons_chars/${oldId}.jpg`
-  const { data, error } = await locals.supabase.storage.from('portraits').copy(avatarName, newAvatarName)
-  if (!data || error) {
-    console.log('Portrait not found:', avatarName)
-    return false
-  }
-  if (isUser) {
-    await locals.supabase
-      .from('profiles')
-      .update({ portrait: 'one_walrus_to_rule_them_all' })
-      .eq('id', newId)
-  } else {
-    await locals.supabase
-      .from('characters')
-      .update({ portrait: 'all_hail_god_emperor_walrus' })
-      .eq('id', newId)
-  }
+  const { data, error: copyError } = await locals.supabase.storage.from('portraits').copy(avatarName, newAvatarName)
+  if (copyError) { return copyError }
+  if (!data) { return { error: 'Portrait not found: ' + avatarName } }
+
+  const { error: hashError } = await locals.supabase.from(isUser ? 'profiles' : 'characters').update({ portrait: 'one_walrus_to_rule_them_all' }).eq('id', newId)
+  if (hashError) { return hashError }
   return true
 }
 
@@ -266,6 +239,7 @@ async function importUserPortrait (oldId, locals) {
     return new Response(JSON.stringify({ error: 'Snažíš se stáhnout cizí ikonku, nebo chybí id' }), { status: 500 })
   }
   const profileSet = await importPortrait(locals.user.id, locals.user.old_id, locals, true)
+  if (profileSet.error) { return new Response(JSON.stringify({ error: profileSet.error }), { status: 500 }) }
   if (profileSet) {
     return new Response(JSON.stringify({ status: 200 }))
   }

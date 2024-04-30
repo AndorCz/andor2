@@ -31,6 +31,7 @@
           games = games // trigger reactivity
         } else {
           showError('API failed to import game')
+          if (result.error) { console.error(result.error) }
         }
       } catch (error) {
         console.error('Error calling API:', error.toString())
