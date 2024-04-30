@@ -3,6 +3,7 @@
   import { Editor, Extension } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
+  // import { CustomStyling } from '@lib/editor/style'
   import { CustomImage } from '@lib/editor/image'
   import { resizeImage } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
@@ -34,6 +35,8 @@
   let currentAlign
   let isFocused = false
   let wasFocused = false
+
+  let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -83,6 +86,38 @@
       content,
       // ProseMirror events
       editorProps: {
+        /*
+        attributes: {
+          color: {
+            default: null,
+            parseHTML: element => {
+              // Directly return the color value, not an object
+              return element.style.color ? { color: element.style.color } : null
+            },
+            renderHTML: attributes => {
+              // Check and apply the color directly
+              if (attributes.color) {
+                return { style: `color: ${attributes.color}` }
+              }
+              return {}
+            }
+          },
+          fontFamily: {
+            default: null,
+            parseHTML: element => {
+              // Directly return the fontFamily value, not an object
+              return element.style.fontFamily ? { fontFamily: element.style.fontFamily } : null
+            },
+            renderHTML: attributes => {
+              // Check and apply the fontFamily directly
+              if (attributes.fontFamily) {
+                return { style: `font-family: ${attributes.fontFamily}` }
+              }
+              return {}
+            }
+          }
+        },
+        */
         handleDrop: function (view, event, slice, moved) { // handle dropping of images
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
             uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
@@ -95,7 +130,21 @@
           }
           return false
         },
-        handlePaste: function (view, event, slice) { // handle pasting of images
+        handlePaste: function (view, event, slice) { // handle pasting of text and images
+          /*
+          if (event.clipboardData.types.indexOf('text/html') !== -1) {
+            const html = event.clipboardData.getData('text/html')
+            editor.commands.insertContent(html)
+            event.preventDefault()
+            return true
+          }
+          */
+          if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse HTML from plain text
+            const text = event.clipboardData.getData('text/plain')
+            editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: false } })
+            event.preventDefault()
+            return true
+          }
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
@@ -167,6 +216,8 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
+        // debug
+        debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -301,6 +352,8 @@
     </div>
   {/if}
 </div>
+
+<div id='debug' style='white-space: pre-wrap'>{debug}</div>
 
 <style>
   .wrapper {
