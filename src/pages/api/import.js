@@ -256,6 +256,6 @@ export const POST = async ({ request, locals }) => {
       case 'import_user_portrait': return importUserPortrait(oldId, locals)
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 })
+    return new Response(JSON.stringify({ error }), { status: 500 })
   }
 }

@@ -115,7 +115,8 @@
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
-    <h1>Nastavení: <a href='/game/{game.id}' class='backlink'>{game.name}</a></h1>
+    <a href='/game/{game.id}' class='backlink'>{game.name}</a>
+    <h1>Nastavení</h1>
     <button on:click={showGame} class='material square back' title='Zpět do hry' use:tooltip>check</button>
   </div>
 </div>
