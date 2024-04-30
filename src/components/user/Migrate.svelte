@@ -53,7 +53,7 @@
           showError('Ikonka nenahrána, někde je chyba')
         }
       } catch (error) {
-        console.error('Error calling API:', error.message)
+        console.error('handlePortrait - error calling API:', error.message)
       }
     } else {
       showError('Chyba: Nemáš propojený účet s původním Andorem')

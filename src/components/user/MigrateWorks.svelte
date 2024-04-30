@@ -30,7 +30,7 @@
           showError('API failed to migrate:', result.error)
         }
       } catch (error) {
-        console.error('Error calling API:', error.message)
+        console.error('handleWorkAction - error calling API:', error.message)
       }
     } else {
       showError('Článek nenalezen')

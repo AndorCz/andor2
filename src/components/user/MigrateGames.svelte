@@ -27,7 +27,8 @@
         const result = await response.json()
         console.log('API response:', result)
 
-        if (result.status === 202) {
+        // get http status
+        if (response.status === 202) {
           showSuccess('Hra importována')
           migratingGames.add(gameId)
           games = games // trigger reactivity
@@ -36,7 +37,7 @@
           if (result.error) { console.error(result.error) }
         }
       } catch (error) {
-        console.error('Error calling API:', error.toString())
+        console.error('handleGameAction - error calling API:', error.toString())
       }
     } else {
       showError('Hra nenalezenena')
