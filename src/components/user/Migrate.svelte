@@ -4,6 +4,7 @@
   import { getOldUserId } from '@mig/migrate'
   import MigrateGames from '@components/user/MigrateGames.svelte'
   import MigrateWorks from '@components/user/MigrateWorks.svelte'
+  import MigrateCharacters from "@components/user/MigrateCharacters.svelte";
 
   export let user
   export let oldUserData
@@ -36,6 +37,33 @@
       }
     }
   }
+
+      
+  async function handlePortrait(oldId) {
+        if (oldId) {
+            try {
+                const response = await fetch('/api/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({action:'import_user_portrait', oldId:oldId})
+                });
+
+                const result = await response.json();
+                if (result.status == 200) {
+                    showSuccess("Ikonka nahrána - použi refresh!")
+                } else {
+                    showError('Ikonka nenahrána - někde je chyba');
+                }
+            } catch (error) {
+                console.error('Error calling API:', error.message);
+            }
+        } else {
+            showError('Chyba - nemáš linknutej účet');
+        }
+    }
+
 </script>
 
 <main>
@@ -47,9 +75,16 @@
         Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí, kontaktuj prosím vývojáře.
         Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.
       </p>
+      <p>
+        <b>Import ikonky: </b> <button on:click={() => handlePortrait(user.old_id)}>
+          Importovat
+      </button>
+      </p>
       <MigrateGames {user} {oldUserData} />
       <br>
       <MigrateWorks {user} {oldUserData} />
+      <br>
+      <MigrateCharacters {user} {oldUserData} />
     {:else}
       <h1>Propojení účtu</h1>
       <p>Tato stránka slouží na propojení účtů. Pokud zadáš login a heslo ze starého Andoru, budeme moci tvé účty propojit.</p>
