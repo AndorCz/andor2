@@ -25,6 +25,8 @@
         })
 
         const result = await response.json()
+        console.log('API response:', result)
+
         if (result.status === 202) {
           showSuccess('Hra importována')
           migratingGames.add(gameId)
