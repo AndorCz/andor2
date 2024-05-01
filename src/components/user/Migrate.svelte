@@ -67,6 +67,7 @@
     {#if user.old_id}
       <h1>Import</h1>
       <p>Tvůj starý login je: <b>{oldLogin}</b></p>
+      <p>Přihlašovací heslo si musíš znovu nastavit a nově se jako přihlašovací jméno používá e-mail.</p>
       <p>
         Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí, kontaktuj prosím vývojáře.
         Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.

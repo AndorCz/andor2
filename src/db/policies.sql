@@ -112,6 +112,7 @@ create policy "READ to members in closed boards" on public.posts for select usin
 create policy "ALL for mods and owner in boards" on public.posts for all using (exists (select 1 from boards where boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.mods))));
   -- works
 create policy "READ to everyone in works" on public.posts for select to public using (thread in (select thread from works));
+create policy "ALL for owners in works" on public.posts for all to authenticated using (thread in (select thread from works where owner = (select auth.uid())));
 
 -- Reactions --
 
