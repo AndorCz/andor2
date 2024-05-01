@@ -47,11 +47,15 @@
 </script>
 
 <div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
-  {#if $postStore.owner_portrait && iconSize}
-    <div class='icon' style='--iconSize: {iconSize}px'>
+  <div class='icon' style='--iconSize: {iconSize}px'>
+    {#if $postStore.owner_portrait}
       <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
-    </div>
-  {/if}
+    {:else if $postStore.owner_type === 'character'}
+      <img src='/default_char.jpg' class='portrait' alt={$postStore.owner_name} />
+    {:else}
+      <img src='/default_user.jpg' class='portrait' alt={$postStore.owner_name} />
+    {/if}
+  </div>
   {#if unread}
     <span class='badge'></span>
   {/if}

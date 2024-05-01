@@ -75,7 +75,7 @@
           {#if game.migrated}
             <button disabled>Hotovo!</button>
           {:else if game.migrating || migratingGames.has(game.id_game)}
-            <button disabled>Probíha import</button>
+            <button disabled>Probíhá import</button>
           {:else}
             <button on:click={() => handleGameAction(game.id_game)}>Importovat</button>
           {/if}
