@@ -60,15 +60,15 @@
     {#each boards as board}
       <div class='block'>
         <div class='col left'>
-          <div class='row basics'>
-            <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
+          <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
+          <div class='annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
+          <div class='meta'>
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
               {board.owner_name}
               {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='portrait' alt={board.owner_name} />{/if}
             </a>
           </div>
-          <div class='row annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
         </div>
         {#if board.custom_header}
           <div class='col image'>
@@ -124,28 +124,29 @@
     min-height: 115px;
   }
     .block .left {
-      padding: 10px;
+      padding: 20px;
+      padding-bottom: 10px;
       flex: 1;
       display: grid;
       grid-template-columns: 1fr;
     }
-      .block .row {
-        padding: 10px;
+      .block .name a {
+        font-size: 24px;
       }
-      .block .basics {
+      .block .annotation {
+        font-style: italic;
+        padding-top: 5px;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .block .meta {
         display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding-bottom: 5px;
-        justify-content: space-between;
         align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
       }
-        .block .name {
-          flex: 1;
-        }
-          .block .name a {
-            font-size: 24px;
-          }
         .block .count {
           font-family: arial, sans-serif;
           font-size: 16px;
@@ -156,14 +157,6 @@
         .block .ico {
           font-size: 16px;
         }
-      .block .annotation {
-        font-style: italic;
-        padding-top: 5px;
-        color: var(--dim);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     .block .image {
       width: 30%;
       overflow: hidden;

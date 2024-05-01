@@ -100,8 +100,9 @@
     {#each games as game}
       <div class='block'>
         <div class='col left'>
-          <div class='row basics'>
-            <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
+          <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
+          <div class='annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
+          <div class='meta'>
             <div class='category' title='kategorie'>{getCategory(game.category)}</div>
             {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
@@ -110,7 +111,6 @@
               {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
             </a>
           </div>
-          <div class='row annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
         </div>
         {#if game.custom_header}
           <div class='col image'>
@@ -171,28 +171,29 @@
     min-height: 115px;
   }
     .block .left {
-      padding: 10px;
+      padding: 20px;
+      padding-bottom: 10px;
       flex: 1;
       display: grid;
       grid-template-columns: 1fr;
     }
-      .block .row {
-        padding: 10px;
+      .block .name a {
+        font-size: 24px;
       }
-      .block .basics {
+      .block .annotation {
+        font-style: italic;
+        padding: 5px 0px;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .block .meta {
         display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding-bottom: 5px;
-        justify-content: space-between;
         align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
       }
-        .block .name {
-          flex: 1;
-        }
-          .block .name a {
-            font-size: 24px;
-          }
         .block .count {
           font-family: arial, sans-serif;
           font-size: 16px;
@@ -203,14 +204,6 @@
         .block .ico {
           font-size: 16px;
         }
-      .block .annotation {
-        padding-top: 5px;
-        font-style: italic;
-        color: var(--dim);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     .block .image {
       width: 30%;
       overflow: hidden;
