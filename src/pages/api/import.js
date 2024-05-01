@@ -11,7 +11,6 @@ async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
         .select('*')
         .eq('game_id', oldGameId)
         .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1)
-      console.log('I have data: ', oldPosts.length)
       if (error) {
         console.error('Failed to fetch data:', error)
         break
@@ -39,10 +38,8 @@ async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
       results = results.concat(oldPosts)
       if (!oldPosts || oldPosts.length < pageSize) {
         hasMore = false
-        console.log('End')
       } else {
         pageIndex++
-        console.log('Index++')
       }
     }
 
@@ -90,12 +87,23 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
 
 async function createGame (locals, oldGameData) {
   try {
+    // get Homepage
+    const { data: hpData, error: hpError } = await locals.supabase
+      .from('old_homepages')
+      .select('content')
+      .eq('game_id', parseInt(oldGameData.id_game, 10))
+      .maybeSingle()
+
+    let hpInfo = 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'
+    hpInfo = (hpData && !hpError) ? hpData.content : hpInfo
+
     // Create new game in database
     const { data, error: insertError } = await locals.supabase.from('games').insert({
       owner: locals.user.id,
       name: oldGameData.game_name,
       created_at: oldGameData.created_at,
-      annotation: oldGameData.game_name
+      annotation: oldGameData.game_name,
+      info: hpInfo
     }).select().single()
     if (insertError) throw new Error(`Failed to create game: ${insertError.message}`)
 
