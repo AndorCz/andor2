@@ -3,14 +3,13 @@
   import { Editor, Extension } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { CustomTextStyle } from '@lib/editor/style'
   import { CustomImage } from '@lib/editor/image'
   import { resizeImage } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
-  // import TextStyle from '@tiptap/extension-text-style'
+  import TextStyle from '@tiptap/extension-text-style'
   import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
@@ -35,8 +34,7 @@
   let currentAlign
   let isFocused = false
   let wasFocused = false
-
-  let debug = ''
+  // let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -86,38 +84,6 @@
       content,
       // ProseMirror events
       editorProps: {
-        /*
-        attributes: {
-          color: {
-            default: null,
-            parseHTML: element => {
-              // Directly return the color value, not an object
-              return element.style.color ? { color: element.style.color } : null
-            },
-            renderHTML: attributes => {
-              // Check and apply the color directly
-              if (attributes.color) {
-                return { style: `color: ${attributes.color}` }
-              }
-              return {}
-            }
-          },
-          fontFamily: {
-            default: null,
-            parseHTML: element => {
-              // Directly return the fontFamily value, not an object
-              return element.style.fontFamily ? { fontFamily: element.style.fontFamily } : null
-            },
-            renderHTML: attributes => {
-              // Check and apply the fontFamily directly
-              if (attributes.fontFamily) {
-                return { style: `font-family: ${attributes.fontFamily}` }
-              }
-              return {}
-            }
-          }
-        },
-        */
         handleDrop: function (view, event, slice, moved) { // handle dropping of images
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
             uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
@@ -132,16 +98,20 @@
         },
         handlePaste: function (view, event, slice) { // handle pasting of text and images
           /*
-          if (event.clipboardData.types.indexOf('text/html') !== -1) {
+          if (event.clipboardData.types.indexOf('text/html') !== -1) { // parse HTML format
             const html = event.clipboardData.getData('text/html')
             editor.commands.insertContent(html)
             event.preventDefault()
             return true
           }
           */
-          if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse HTML from plain text
+          if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse plain text format (possibly with HTML content)
             const text = event.clipboardData.getData('text/plain')
-            editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: false } })
+            if (editor.isEmpty) {
+              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: false } })
+            } else {
+              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: false } })
+            }
             event.preventDefault()
             return true
           }
@@ -158,13 +128,10 @@
         }
       },
       extensions: [
-        StarterKit.configure({
-          exclude: ['textStyle']
-        }),
+        StarterKit,
         EnterKeyHandler,
         Underline,
-        // TextStyle,
-        CustomTextStyle,
+        TextStyle,
         FontFamily,
         Reply,
         Details.configure({ HTMLAttributes: { class: 'details' } }),
@@ -173,7 +140,7 @@
         Image.configure(),
         CustomImage,
         Link.configure({ openOnClick: false }),
-        Color.configure({ types: ['textStyle'] }),
+        Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
         BubbleMenuText.configure({
           pluginKey: 'bubbleMain',
           element: bubbleEl,
@@ -219,8 +186,7 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
-        // debug
-        debug = JSON.stringify(editor.getJSON(), null, '\t')
+        // debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -230,6 +196,12 @@
   onDestroy(() => { if (editor) { editor.destroy() } })
 
   export function getEditor () { return editor }
+
+  export function setContent (newContent) {
+    if (newContent !== '<p></p>') { // skip empty paragraph
+      editor.commands.setContent(newContent)
+    }
+  }
 
   function handleStyleSelect (selectedOption) {
     switch (selectedOption.detail.value) {
@@ -352,12 +324,11 @@
       <input on:change={addImage} accept='image/*' type='file' id='addImage'>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
-      <button type='button' on:click={() => editor.chain().focus().setMark('textStyle', { color: '#958DF1' }).run()}>test</button>
     </div>
   {/if}
 </div>
 
-<div id='debug' style='white-space: pre-wrap'>{debug}</div>
+<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
 
 <style>
   .wrapper {
