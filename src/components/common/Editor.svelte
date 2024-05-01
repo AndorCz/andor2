@@ -132,7 +132,7 @@
         EnterKeyHandler,
         Underline,
         TextStyle,
-        FontFamily,
+        FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
         Reply,
         Details.configure({ HTMLAttributes: { class: 'details' } }),
         DetailsSummary,
