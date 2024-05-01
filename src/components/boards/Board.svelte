@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
@@ -13,6 +14,10 @@
   const boardStore = getSavedStore('board-' + data.id)
 
   let bookmarkId
+
+  onMount(() => {
+    data.header = data.header || 'Užitečné odkazy, pravidla apod.'
+  })
 
   function toggleHeader () {
     $boardStore.hideHeader = !$boardStore.hideHeader
