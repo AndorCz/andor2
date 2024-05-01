@@ -168,30 +168,6 @@ async function createGame (locals, oldGameData) {
   }
 }
 
-async function migrateHomepage (oldGameId, newGameId, locals) {
-  try {
-    const { data: gameData, error: gameError } = await locals.supabase
-      .from('old_homepages')
-      .select('content')
-      .eq('game_id', parseInt(oldGameId, 10))
-      .maybeSingle()
-
-    if (gameData && !gameError) {
-      const { data, error: insertError } = await locals.supabase.from('games').update({
-        owner: locals.user.id,
-        name: oldGameData.game_name,
-        created_at: oldGameData.created_at,
-        annotation: oldGameData.game_name
-      }).select().single()
-      if (insertError) throw new Error(`Failed to create game: ${insertError.message}`)
-
-    }
-  } catch (error) {
-    console.log('Homepage not imported, do not care', error)
-    console.log(gameError)
-  }
-}
-
 async function migrateGame (gameId, locals) {
   try {
     // Check if the game belongs to the user and handle error
