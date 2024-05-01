@@ -56,13 +56,16 @@
     const { error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).single()
     if (error) { return handleError(error) }
     data[type] = newPeople
+    newMod = null
+    newBan = null
+    newMember = null
   }
 
   async function removePerson (type, person) {
     const newPeople = data[type].filter(p => p !== person.id)
-    const { data: updatedData, error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).select()
+    const { error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).select()
     if (error) { return handleError(error) }
-    data[type] = updatedData[type]
+    data[type] = newPeople
   }
 
   async function loadUsers (name) {
@@ -80,7 +83,8 @@
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
-    <h1>Nastavení: <a href='/board/{data.id}' class='backlink'>{data.name}</a></h1>
+    <a href='/board/{data.id}' class='backlink'>{data.name}</a>
+    <h1>Nastavení</h1>
     <button on:click={showBoard} class='material square back' title='Zpět do diskuze' use:tooltip>check</button>
   </div>
 </div>
@@ -259,6 +263,7 @@
   }
     .list h3 {
       width: 100%;
+      margin: 10px 0px;
     }
 
   .separator {
