@@ -114,7 +114,7 @@
         </div>
         {#if game.custom_header}
           <div class='col image'>
-            <img src={getHeaderUrl('game', game.id)} alt='game header' />
+            <img src={getHeaderUrl('game', game.id, game.custom_header)} alt='game header' />
           </div>
         {/if}
       </div>

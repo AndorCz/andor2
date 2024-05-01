@@ -51,8 +51,8 @@ export function getImageUrl (path, storage) {
   return data.publicUrl
 }
 
-export function getHeaderUrl (type, id) {
-  return getImageUrl(`${type}-${id}.jpg`, 'headers')
+export function getHeaderUrl (type, id, hash) {
+  return getImageUrl(`${type}-${id}.jpg?hash=${hash}`, 'headers')
 }
 
 export function getPortraitUrl (identityId, hash) {

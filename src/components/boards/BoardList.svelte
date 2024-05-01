@@ -72,7 +72,7 @@
         </div>
         {#if board.custom_header}
           <div class='col image'>
-            <img src={getHeaderUrl('board', board.id)} alt='board header' />
+            <img src={getHeaderUrl('board', board.id, board.custom_header)} alt='board header' />
           </div>
         {/if}
       </div>

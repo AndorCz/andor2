@@ -59,7 +59,8 @@
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
-    <h1>Nastavení: <a href='/work/{data.id}' class='backlink'>{data.name}</a></h1>
+    <a href='/work/{data.id}' class='backlink'>{data.name}</a>
+    <h1>Nastavení</h1>
     <button on:click={showWork} class='material square back' title='Zpět do díla' use:tooltip>check</button>
   </div>
 </div>

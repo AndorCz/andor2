@@ -85,8 +85,9 @@
     {#each works as work}
       <div class='block' class:editorial={work.editorial}>
         <div class='col left'>
-          <div class='row basics'>
-            <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
+          <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
+          <div class='annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
+          <div class='meta'>
             <div class='category' title='kategorie'>{getCategory(work)}</div>
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
@@ -95,11 +96,10 @@
               {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
             </a>
           </div>
-          <div class='row annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
         </div>
         {#if work.custom_header}
           <div class='col image'>
-            <img src={getHeaderUrl('work', work.id)} alt='work header' />
+            <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
           </div>
         {/if}
       </div>
@@ -142,28 +142,29 @@
     margin-bottom: 5px;
   }
     .block .left {
-      padding: 10px;
+      padding: 20px;
+      padding-bottom: 10px;
       flex: 1;
       display: grid;
       grid-template-columns: 1fr;
     }
-      .block .row {
-        padding: 10px;
+      .block .name a {
+        font-size: 24px;
       }
-      .block .basics {
+      .block .annotation {
+        font-style: italic;
+        padding: 5px 0px;
+        color: var(--dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .block .meta {
         display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding-bottom: 5px;
-        justify-content: space-between;
         align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
       }
-        .block .name {
-          flex: 1;
-        }
-          .block .name a {
-            font-size: 24px;
-          }
         .block .count {
           font-family: arial, sans-serif;
           font-size: 16px;
@@ -174,14 +175,6 @@
         .block .ico {
           font-size: 16px;
         }
-      .block .annotation {
-        font-style: italic;
-        padding-top: 5px;
-        color: var(--dim);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     .block .image {
       width: 30%;
       overflow: hidden;
