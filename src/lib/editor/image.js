@@ -24,8 +24,9 @@ export const CustomImage = Image.extend({
       }
     }
     const alignmentStyle = getAlignmentStyle(node.attrs.alignment)
-    // const sizeStyle = `width: ${node.attrs.width * node.attrs.size / 100}px; height: ${node.attrs.height * node.attrs.size / 100}px;`
-    const sizeStyle = 'max-width: 100%; object-fit: contain; height: auto'
+    const imageWidth = node.attrs.width < this.editor.view.dom.offsetWidth ? node.attrs.width : this.editor.view.dom.offsetWidth
+    const aspectRatio = node.attrs.height / node.attrs.width
+    const sizeStyle = `width: ${imageWidth * node.attrs.size / 100}px; height: ${imageWidth * aspectRatio * node.attrs.size / 100}px; object-fit: contain; max-width: 100%;`
     const style = `${alignmentStyle} ${sizeStyle}`
     return ['img', { ...HTMLAttributes, style }]
   },
@@ -45,7 +46,7 @@ export const CustomImage = Image.extend({
       increaseImageSize: () => ({ state, commands }) => {
         const { selection } = state
         const { node, pos } = selection
-        const newSize = Math.min(200, (node.attrs.size || 100) + 20)
+        const newSize = Math.min(100, (node.attrs.size || 100) + 10)
         return commands.updateAttributes('image', { size: newSize }, pos)
       },
       decreaseImageSize: () => ({ state, commands }) => {
