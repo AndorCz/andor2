@@ -172,6 +172,11 @@
           gap: 5px;
           align-items: center;
         }
+        .block .tags {
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
         .block .ico {
           font-size: 16px;
         }
