@@ -57,7 +57,7 @@
         <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
       </div>
       -->
-      <div class='toggle compact'>
+      <div class='toggle'>
         <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
@@ -168,6 +168,7 @@
     background-color: var(--block);
     display: flex;
     margin-bottom: 5px;
+    min-height: 115px;
   }
     .block .left {
       padding: 10px;
@@ -251,9 +252,6 @@
   @media (max-width: 1200px) {
     .block .name {
       flex-basis: 100%;
-    }
-    .compact {
-      display: none;
     }
   }
 
