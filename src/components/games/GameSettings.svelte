@@ -75,6 +75,7 @@
     const index = game.codexSections ? game.codexSections.length + 1 : 1
     const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index }).select()
     if (error) { return handleError(error) }
+    game.codexSections = game.codexSections || []
     game.codexSections = [...game.codexSections, { id: newSection[0].id, slug, name: newCodexSection }]
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
