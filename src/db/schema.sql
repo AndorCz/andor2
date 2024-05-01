@@ -924,7 +924,7 @@ begin
   return query select oc.* from old_chars oc
   join (select distinct id_from from old_posts where game_id = game_id_param) op on oc.id_char = op.id_from;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 -- TRIGGERS --------------------------------------------
