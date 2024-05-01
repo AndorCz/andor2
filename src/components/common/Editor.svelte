@@ -3,14 +3,14 @@
   import { Editor, Extension } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  // import { CustomStyling } from '@lib/editor/style'
+  import { CustomTextStyle } from '@lib/editor/style'
   import { CustomImage } from '@lib/editor/image'
   import { resizeImage } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
-  import TextStyle from '@tiptap/extension-text-style'
+  // import TextStyle from '@tiptap/extension-text-style'
   import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
@@ -158,10 +158,13 @@
         }
       },
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          exclude: ['textStyle']
+        }),
         EnterKeyHandler,
         Underline,
-        TextStyle,
+        // TextStyle,
+        CustomTextStyle,
         FontFamily,
         Reply,
         Details.configure({ HTMLAttributes: { class: 'details' } }),
@@ -349,6 +352,7 @@
       <input on:change={addImage} accept='image/*' type='file' id='addImage'>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
+      <button type='button' on:click={() => editor.chain().focus().setMark('textStyle', { color: '#958DF1' }).run()}>test</button>
     </div>
   {/if}
 </div>

@@ -1,39 +1,39 @@
 // Temporary test
 
-import { Extension } from '@tiptap/core'
+import { TextStyle } from '@tiptap/extension-text-style'
 
-export const CustomStyling = Extension.create({
-  addGlobalAttributes () {
+export const CustomTextStyle = TextStyle.extend({
+  addAttributes() {
+    return {
+      color: {
+        default: null,
+        parseHTML: element => element.style.color,
+        renderHTML: attributes => attributes.color ? { style: `color: ${attributes.color}` } : {},
+      },
+      fontFamily: {
+        default: null,
+        parseHTML: element => element.style.fontFamily,
+        renderHTML: attributes => attributes.fontFamily ? { style: `font-family: ${attributes.fontFamily}` } : {},
+      }
+    };
+  },
+  parseHTML() {
     return [
       {
-        types: ['heading', 'paragraph', 'textStyle'],
-        attributes: {
-          color: {
-            default: null,
-            parseHTML: element => {
-              return element.style.color ? { color: element.style.color } : null;
-            },
-            renderHTML: attributes => {
-              if (attributes.color) {
-                return { style: `color: ${attributes.color}` };
-              }
-              return {};
-            },
-          },
-          fontFamily: {
-            default: null,
-            parseHTML: element => {
-              return element.style.fontFamily ? { fontFamily: element.style.fontFamily } : null;
-            },
-            renderHTML: attributes => {
-              if (attributes.fontFamily) {
-                return { style: `font-family: ${attributes.fontFamily}` };
-              }
-              return {};
-            },
-          }
-        },
+        tag: 'span[style]',
+        getAttrs: node => ({
+          color: node.style.color,
+          fontFamily: node.style.fontFamily
+        }),
       },
-    ]
-  },
+      {
+        tag: 'b[style]',
+        getAttrs: node => ({
+          color: node.style.color,
+          fontFamily: node.style.fontFamily
+        }),
+      },
+      // Extend to other tags as needed
+    ];
+  }
 });
