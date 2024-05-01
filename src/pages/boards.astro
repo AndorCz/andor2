@@ -4,10 +4,10 @@
 
   const { supabase, user } = Astro.locals
 
-  const { data: openBoards, error: openError } = await supabase.from('board_list').select('*').eq('open', true)
+  const { data: openBoards, error: openError } = await supabase.from('board_list').select('*').eq('open', true).order('id', { ascending: false })
   if (openError) { console.error(openError) }
 
-  const { data: privateBoards, error: privateError } = await supabase.from('board_list').select('*').eq('open', false)
+  const { data: privateBoards, error: privateError } = await supabase.from('board_list').select('*').eq('open', false).order('id', { ascending: false })
   if (privateError) { console.error(privateError) }
 ---
 

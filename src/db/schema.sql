@@ -900,6 +900,7 @@ create or replace function add_default_bookmarks () returns trigger as $$
 begin
   insert into bookmarks (user_id, board_id) values (new.id, 1);
   insert into bookmarks (user_id, board_id) values (new.id, 2);
+  insert into bookmarks (user_id, board_id) values (new.id, 3);
   return new;
 end;
 $$ language plpgsql;
@@ -974,3 +975,4 @@ insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
 insert into threads (name) values ('Chat'); -- has to be ID 1
 insert into public.boards (name, owner) values ('Nápověda', auth.uid())
 insert into public.boards (name, owner) values ('Správa Andoru', auth.uid())
+insert into public.boards (name, owner) values ('Nahlášení obsahu', auth.uid())
