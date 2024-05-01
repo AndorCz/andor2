@@ -1,3 +1,61 @@
+async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
+  try {
+    let pageIndex = 0
+    const pageSize = 1000
+    let results = []
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: oldPosts, error } = await locals.supabase
+        .from('old_posts')
+        .select('*')
+        .eq('game_id', oldGameId)
+        .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1)
+      console.log('I have data: ', oldPosts.length)
+      if (error) {
+        console.error('Failed to fetch data:', error)
+        break
+      }
+
+      const postsToInsert = oldPosts.map(post => {
+        let toChars = null
+        if (post.to_chars) {
+          const ids = post.to_chars.split(',').map(id => id.trim())
+          const convertedIds = ids.map(id => idMap[id] || null).filter(id => id !== null)
+          toChars = convertedIds.length > 0 ? convertedIds : null
+        }
+        return {
+          thread: newGameThread,
+          owner: idMap[post.id_from],
+          owner_type: 'character',
+          content: post.content,
+          created_at: post.post_date,
+          audience: toChars
+        }
+      })
+      const { error: batchInsertError } = await locals.supabase.from('posts').insert(postsToInsert)
+      if (batchInsertError) throw new Error(`Failed to insert posts batch: ${batchInsertError.message}`)
+
+      results = results.concat(oldPosts)
+      if (!oldPosts || oldPosts.length < pageSize) {
+        hasMore = false
+        console.log('End')
+      } else {
+        pageIndex++
+        console.log('Index++')
+      }
+    }
+
+    // Update old game status after migration
+    const { error: oldGameError } = await locals.supabase.from('old_games').update({ migrating: false, migrated: true }).eq('id_game', oldGameId)
+    if (oldGameError) throw new Error(`Failed to update old game status: ${oldGameError.message}`)
+
+    // Successful migration
+    return { status: 'Migration of posts completed successfully' }
+  } catch (err) {
+    return { error: err.message }
+  }
+}
 
 async function migrateOldCharacter (newGameId, newGameGmId, character, locals, isGm, isAlive) {
   try {
@@ -5,10 +63,8 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
       // Attempt to update character for GM
       const { data, error } = await locals.supabase.from('characters').update({ name: character.char_name }).eq('id', newGameGmId).select().single()
       if (error) throw new Error(`Failed to update GM character: ${error.message}`)
-
       const result = await importPortrait(newGameGmId, character.id_char, locals, false)
-      if (result.error) throw new Error(result.error)
-
+      if (result.error) console.log('Portrait not updated but do not care')
       return data
     }
 
@@ -23,53 +79,10 @@ async function migrateOldCharacter (newGameId, newGameGmId, character, locals, i
       accepted: true
     }).select().single()
     if (insertError) throw new Error(`Failed to insert character: ${insertError.message}`)
-
     const portraitResult = await importPortrait(newCharData.id, character.id_char, locals, false)
-    if (portraitResult.error) throw new Error(portraitResult.error)
+    if (portraitResult.error) console.log('Portrait not updated but do not care')
 
     return newCharData
-  } catch (err) {
-    return { error: err.message }
-  }
-}
-
-async function migrateOldPosts (oldGameId, newGameThread, idMap, locals) {
-  try {
-    // Retrieve old posts
-    const { data: oldPosts, error: oldPostError } = await locals.supabase.from('old_posts').select('*').eq('game_id', oldGameId)
-    if (oldPostError) throw new Error(`Failed to retrieve old posts: ${oldPostError.message}`)
-
-    const postsToInsert = oldPosts.map(post => {
-      let toChars = null
-      if (post.to_chars) {
-        const ids = post.to_chars.split(',').map(id => id.trim())
-        const convertedIds = ids.map(id => idMap[id] || null).filter(id => id !== null)
-        toChars = convertedIds.length > 0 ? convertedIds : null
-      }
-      return {
-        thread: newGameThread,
-        owner: idMap[post.id_from],
-        owner_type: 'character',
-        content: post.content,
-        created_at: post.post_date,
-        audience: toChars
-      }
-    })
-
-    // Insert posts in batches to avoid payload too large errors
-    const batchSize = 1000
-    for (let i = 0; i < postsToInsert.length; i += batchSize) {
-      const batch = postsToInsert.slice(i, i + batchSize)
-      const { error: batchInsertError } = await locals.supabase.from('posts').insert(batch)
-      if (batchInsertError) throw new Error(`Failed to insert posts batch: ${batchInsertError.message}`)
-    }
-
-    // Update old game status after migration
-    const { error: oldGameError } = await locals.supabase.from('old_games').update({ migrating: false, migrated: true }).eq('id_game', oldGameId)
-    if (oldGameError) throw new Error(`Failed to update old game status: ${oldGameError.message}`)
-
-    // Successful migration
-    return { status: 'Migration of posts completed successfully' }
   } catch (err) {
     return { error: err.message }
   }
@@ -134,15 +147,11 @@ async function createGame (locals, oldGameData) {
       const isGm = character.gm_id === 1
       const result = await migrateOldCharacter(newGameId, newGameGmId, character, locals, isGm, isAlive)
       if (result.error) throw new Error(result.error)
-      if (isAlive) {
-        idMap[character.id_char] = isGm ? newGameGmId : result.id
-      } else {
-        idMap[character.id_char] = result.id
-      }
+      idMap[character.id_char] = isGm ? newGameGmId : result.id
     }
 
     // Migrate posts
-    const result = await migrateOldPosts(oldGameData.id_game, newGameThread, idMap, locals)
+    const result = await importAllPosts(oldGameData.id_game, newGameThread, idMap, locals)
     if (result.error) throw new Error(result.error)
 
     return { status: 200, message: 'Game creation and migration successful' }
@@ -251,7 +260,7 @@ async function migrateChar (charId, locals) {
 
     // Import portrait
     const result = await importPortrait(newCharData.id, charData.id_char, locals, false)
-    if (result.error) throw new Error(result.error)
+    if (result.error) console.log('Portrait not updated but do not care')
 
     // Successfully migrated character
     return new Response(JSON.stringify({ status: 200, message: 'Character migrated successfully.' }), { status: 200 })
@@ -268,7 +277,7 @@ async function importPortrait (newId, oldId, locals, isUser) {
 
     // Attempt to remove the existing portrait if it exists (optional step)
     const { error: removeError } = await locals.supabase.storage.from('portraits').remove(newAvatarName)
-    if (removeError) throw new Error(`Failed to remove existing portrait: ${removeError.message}`)
+    if (removeError) console.log('No need to remove portrait')
 
     // Define the source file path based on whether the portrait is for a user or a character
     const avatarName = isUser ? `old_icons_users/user_${oldId}.jpg` : `old_icons_chars/${oldId}.jpg`
