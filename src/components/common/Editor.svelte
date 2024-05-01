@@ -34,6 +34,7 @@
   let currentAlign
   let isFocused = false
   let wasFocused = false
+  // let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -95,7 +96,25 @@
           }
           return false
         },
-        handlePaste: function (view, event, slice) { // handle pasting of images
+        handlePaste: function (view, event, slice) { // handle pasting of text and images
+          /*
+          if (event.clipboardData.types.indexOf('text/html') !== -1) { // parse HTML format
+            const html = event.clipboardData.getData('text/html')
+            editor.commands.insertContent(html)
+            event.preventDefault()
+            return true
+          }
+          */
+          if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse plain text format (possibly with HTML content)
+            const text = event.clipboardData.getData('text/plain')
+            if (editor.isEmpty) {
+              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: false } })
+            } else {
+              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: false } })
+            }
+            event.preventDefault()
+            return true
+          }
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
@@ -121,7 +140,7 @@
         Image.configure(),
         CustomImage,
         Link.configure({ openOnClick: false }),
-        Color.configure({ types: ['textStyle'] }),
+        Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
         BubbleMenuText.configure({
           pluginKey: 'bubbleMain',
           element: bubbleEl,
@@ -167,6 +186,7 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
+        // debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -176,6 +196,12 @@
   onDestroy(() => { if (editor) { editor.destroy() } })
 
   export function getEditor () { return editor }
+
+  export function setContent (newContent) {
+    if (newContent !== '<p></p>') { // skip empty paragraph
+      editor.commands.setContent(newContent)
+    }
+  }
 
   function handleStyleSelect (selectedOption) {
     switch (selectedOption.detail.value) {
@@ -301,6 +327,8 @@
     </div>
   {/if}
 </div>
+
+<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
 
 <style>
   .wrapper {

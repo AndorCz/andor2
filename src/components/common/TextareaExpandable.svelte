@@ -34,7 +34,7 @@
       tiptap = editorRef.getEditor()
       if (value) {
         // set html content
-        tiptap.commands.setContent(value)
+        editorRef.setContent(value)
       }
     }
   })
