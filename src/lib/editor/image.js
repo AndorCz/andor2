@@ -51,7 +51,7 @@ export const CustomImage = Image.extend({
       decreaseImageSize: () => ({ state, commands }) => {
         const { selection } = state
         const { node, pos } = selection
-        const newSize = Math.max(20, (node.attrs.size || 100) - 20)
+        const newSize = Math.max(10, (node.attrs.size || 100) - 10)
         return commands.updateAttributes('image', { size: newSize }, pos)
       }
     }
