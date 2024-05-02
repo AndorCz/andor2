@@ -770,13 +770,20 @@ create or replace function calculate_unread_count (user_uuid uuid, slug_alias te
 declare
   unread_count int;
   numeric_id int;
+  user_characters uuid[];
 begin
   numeric_id := substring(slug_alias from '\d+$')::int; -- Extract numeric part
   if slug_alias like 'thread-%' then
     -- Calculate unread posts for threads
+    user_characters := array(select id from characters where player = user_uuid);
     unread_count := (
-      select count(*) from posts p where p.thread = numeric_id and p.created_at > (select coalesce(max(read_at), '1970-01-01')
-      from user_reads where user_id = user_uuid and slug = slug_alias)
+      select count(*) from posts p where p.thread = numeric_id 
+      and p.created_at > (select coalesce(max(read_at), '1970-01-01') from user_reads where user_id = user_uuid and slug = slug_alias)
+      and (
+        p.audience is null 
+        or p.audience && user_characters  -- Checks if any of the user's characters are in the audience
+        or p.audience @> array[user_uuid]  -- Checks if the user's uuid is directly in the audience
+      )
     );
   elsif slug_alias like 'game-info-%' or slug_alias like 'game-characters-%' then
     -- Calculate unread for game info or characters
