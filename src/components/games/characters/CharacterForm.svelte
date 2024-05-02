@@ -4,6 +4,7 @@
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import { showError } from '@lib/toasts';
 
   export let isStoryteller
   export let isGameOwner
@@ -36,12 +37,15 @@
   }
 
   async function deleteCharacter () {
-    const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
-    if (updateError) { return handleError(updateError) }
-    if (character.game) {
-      redirectWithToast({ url: window.location.origin + `/game/${character.game}?tab=chars`, toastType: 'success', toastText: 'Postava byla smazána' })
-    } else {
-      redirectWithToast({ url: window.location.origin, toastType: 'success', toastText: 'Postava byla smazána' })
+    if (character.game != null) { showError('Postava je ve hře, není možné ji smazat!')}
+    else {
+      const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
+      if (updateError) { return handleError(updateError) }
+      if (character.game) {
+        redirectWithToast({ url: window.location.origin + `/game/${character.game}?tab=chars`, toastType: 'success', toastText: 'Postava byla smazána' })
+      } else {
+        redirectWithToast({ url: window.location.origin, toastType: 'success', toastText: 'Postava byla smazána' })
+      }
     }
   }
 
