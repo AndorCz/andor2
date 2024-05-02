@@ -37,13 +37,6 @@
     if (error) { return handleError(error) }
     redirectWithToast({ toastType: 'success', toastText: own ? 'Přihláška byla zrušena' : 'Postava byla odmítnuta' })
   }
-
-  async function kickOwnCharacter () {
-    if (!window.confirm('Opravdu zabít postavu? Vytvoří se kopie a postava se přesune na hřbitov')) { return }
-    await supabase.from('characters').update({ state: 'dead' }).eq('id', character.id)
-    await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: 'Postava byla přesunuta na hřbitov' })
-  }
   
   async function kickCharacter () {
     if (character.player.id == user.id) {
@@ -57,9 +50,6 @@
         await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
       }
     }
-    // update the original character to remove the player
-
-    if (error) { return handleError(error) }
     // set character to dead
     await supabase.from('characters').update({ state: 'dead' }).eq('id', character.id)
     await charactersChanged()
