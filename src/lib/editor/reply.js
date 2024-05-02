@@ -11,7 +11,8 @@ export const Reply = Node.create({
   addAttributes () {
     return {
       postId: { default: null },
-      name: { default: null }
+      name: { default: null },
+      user: { default: null }
     }
   },
 
@@ -32,7 +33,7 @@ export const Reply = Node.create({
 
   // Define how the node will be rendered to HTML
   renderHTML ({ node }) {
-    return ['cite', mergeAttributes({ class: 'reply', 'data-id': node.attrs.postId, 'data-name': node.attrs.name }), `${node.attrs.name}:`]
+    return ['cite', mergeAttributes({ class: 'reply', 'data-id': node.attrs.postId, 'data-name': node.attrs.name, 'data-user': node.attrs.user }), `${node.attrs.name}:`]
   },
 
   // Define how the node will be parsed from HTML (if you need to parse existing content)
@@ -42,7 +43,8 @@ export const Reply = Node.create({
         tag: 'cite[data-id]',
         getAttrs: node => ({
           postId: node.getAttribute('data-id'),
-          name: node.getAttribute('data-name')
+          name: node.getAttribute('data-name'),
+          user: node.getAttribute('data-user')
         })
       }
     ]

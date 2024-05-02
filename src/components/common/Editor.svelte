@@ -252,8 +252,8 @@
     fileInputEl.value = ''
   }
 
-  export function addReply (postId, name) {
-    editor.chain().focus().addReply({ postId, name }).run()
+  export function addReply (postId, name, user) {
+    editor.chain().focus().addReply({ postId, name, user }).run()
   }
 
   async function uploadImage (file) {

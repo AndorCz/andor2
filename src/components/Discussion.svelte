@@ -62,7 +62,13 @@
   })
 
   async function loadPosts () {
-    const { data: postData, count, error } = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    let query
+    if (data.id === 3 && !canModerate) { // Special board "Nahlášení obsahu" (see only your posts and responses from mods)
+      query = await supabase.from('posts_owner').select('*', { count: 'exact' }).or(`owner.eq.${user.id},audience.cs.{${user.id}}`).match({ thread }).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    } else {
+      query = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    }
+    const { data: postData, count, error } = await query
     if (error) { return handleError(error) }
     $posts = postData
     pages = Math.ceil(count / limit)
@@ -76,10 +82,16 @@
     if (saving || textareaValue === '') { return }
     saving = true
     const identity = useIdentities ? getIdentity() : userIdentity
+    let audience = null
+    if (data.id === 3) { // Special board "Nahlášení obsahu"
+      const repliedIds = [...textareaValue.matchAll(/data-user="([^"]+)"/g)].map(match => match[1])
+      if (repliedIds.length) { audience = repliedIds }
+      console.log(audience)
+    }
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     } else {
-      await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type })
+      await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     }
     textareaValue = ''
     await loadPosts()
@@ -113,8 +125,8 @@
     // saving is done in submitPost
   }
 
-  async function triggerReply (postId, userName) {
-    textareaRef.addReply(postId, userName)
+  async function triggerReply (postId, userName, userId) {
+    textareaRef.addReply(postId, userName, userId)
   }
 
   async function saveUnsent () {

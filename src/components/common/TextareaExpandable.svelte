@@ -88,8 +88,8 @@
     isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
   }
 
-  export function addReply (postId, userName) {
-    return editorRef.addReply(postId, userName)
+  export function addReply (postId, userName, userId) {
+    return editorRef.addReply(postId, userName, userId)
   }
 
   // handle enter and escape

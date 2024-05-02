@@ -89,7 +89,7 @@
         {/if}
         {#if onReply}
           <span class='sep'></span>
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name) }} class='material reaction reply square' title='Reagovat' use:tooltip>reply</button>
+          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, $postStore.owner) }} class='material reaction reply square' title='Reagovat' use:tooltip>reply</button>
         {/if}
       </span>
     </div>
