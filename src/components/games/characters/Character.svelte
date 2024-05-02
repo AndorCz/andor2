@@ -47,6 +47,19 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla vyřazena ze hry' })
   }
 
+  async function takeOverCharacter () {
+    if (!window.confirm('Opravdu násilně převzít postavu? Hráč bude vyřazen a vytvoří se mu kopie.')) { return }
+    // update the original character to remove the player and create copy for original player
+    const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
+    if (data && !error) {
+      // copy portrait
+      await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
+    }
+    if (error) { return handleError(error) }
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
+  }
+
   async function freeCharacter () {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
@@ -97,7 +110,11 @@
             {#if !character.open}
               <button on:click={() => freeCharacter()}>uvolnit</button>
             {/if}
+          {#if character.player.id != user.id}
+            <button on:click={() => takeOverCharacter()}>převzít</button>
+          {:else}
             <button on:click={() => kickCharacter()}>vyloučit</button>
+          {/if}
           {:else}
             <button on:click={() => acceptCharacter()}>přijmout</button>
             <button on:click={() => rejectCharacter()}>odmítnout</button>
