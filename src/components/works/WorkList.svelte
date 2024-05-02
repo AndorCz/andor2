@@ -65,7 +65,7 @@
 {#if isFilledArray(works)}
   {#if listView}
     <table class='list'>
-      <tr><th>název</th><th>kategorie</th><th>tagy</th><th>příspěvků</th><th>autor</th></tr>
+      <tr><th>název</th><th class='category'>kategorie</th><th>tagy</th><th>příspěvků</th><th class='owner'>autor</th></tr>
       {#each works as work}
         <tr class='work' class:editorial={work.editorial}>
           <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
@@ -217,6 +217,9 @@
         width: 100%;
         height: 100%;
         padding: 20px;
+      }
+      .category {
+        padding-right: 20px;
       }
 
   /* common */

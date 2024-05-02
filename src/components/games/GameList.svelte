@@ -80,7 +80,7 @@
 {#if isFilledArray(games)}
   {#if listView}
     <table class='list'>
-      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr>
+      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th class='owner'>vlastník</th></tr>
       {#each games as game}
         <tr class='gameLine'>
           <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
