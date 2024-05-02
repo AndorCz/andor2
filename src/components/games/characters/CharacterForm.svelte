@@ -37,7 +37,7 @@
   }
 
   async function deleteCharacter () {
-    if (character.game != null) { showError('Postava hraje v jeskyni, není možné ji smazat!')}
+    if (character.game != null) { showError('Postava je ve hře, není možné ji smazat!')}
     else {
       const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
       if (updateError) { return handleError(updateError) }
