@@ -363,6 +363,17 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function claim_character (character_id uuid) returns void as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if character_row.open is false then raise exception 'Not free to claim'; end if;
+  
+  update characters set player = auth.uid(), open = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
 create or replace function hand_over_character (character_id uuid, new_owner uuid) returns uuid as $$
 declare
   character_row characters%ROWTYPE;
@@ -398,23 +409,6 @@ begin
   return character_row.id;
 end;
 $$ language plpgsql security definer;
-
-create or replace function kick_character (character_id uuid) returns void as $$
-declare
-  character_row characters%ROWTYPE;
-begin
-  select * into character_row from characters where id = character_id;
-  if is_storyteller(character_row.game) is false then raise exception 'Not a storyteller'; end if;
-  -- create a new character with the same data for the player to keep (except for the player and game columns)
-  character_row.id := gen_random_uuid();
-  character_row.game := null;
-  character_row.accepted := false;
-  insert into characters values (character_row.*);
-  -- update the original character to remove the player and game (to keep their game posts the same)
-  update characters set player = null, game = null where id = character_id;
-end;
-$$ language plpgsql security definer;
-
 
 create or replace function add_game_threads () returns trigger as $$
 begin
