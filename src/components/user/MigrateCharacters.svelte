@@ -48,6 +48,7 @@
 
   onMount(async () => {
     chars = await getCharactersById(oldUserData.old_id)
+    chars.sort((a, b) => a.char_name.localeCompare(b.char_name));
   })
 </script>
 

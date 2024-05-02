@@ -9,6 +9,7 @@
 
   onMount(async () => {
     games = await getGamesByGmId(oldUserData.old_id)
+    games.sort((a, b) => a.game_name.localeCompare(b.game_name));
   })
 
   async function handleGameAction (gameId) {

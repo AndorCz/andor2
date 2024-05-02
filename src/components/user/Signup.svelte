@@ -61,7 +61,7 @@
 
     // Get info about old user
     const hashedPassword = md5(oldPassword).toString()
-    const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
+    const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id').eq('old_login', oldLogin.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
     if (userError || !userInfoMigrate) { return showError('Chyba čtení starých uživatelů: ' + userError.message) }
 
     // Check if user is already linked to some user
@@ -76,7 +76,7 @@
     if (loginCheck) { return showError('Login je už zabraný') }
 
     // Check if user is trying to claim login that belonged to someone else
-    const { data: userExisted, error: userExistedError } = await supabase.from('old_users').select('old_id').eq('old_login', newLogin).not('old_id', 'eq', oldId).maybeSingle()
+    const { data: userExisted, error: userExistedError } = await supabase.from('old_users').select('old_id').eq('old_login', newLogin.toLowerCase()).not('old_id', 'eq', oldId).maybeSingle()
     if (userExistedError) { return showError('Chyba čtení uživatelů: ' + userExistedError.message) }
     if (userExisted) { return showError('Zdá se že se snažíš zabrat cizí login') }
 

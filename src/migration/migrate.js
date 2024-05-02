@@ -7,7 +7,7 @@ export async function getOldUserId (oldLogin, oldPassword) {
   const { data: userInfoMigrate, error: userError } = await supabase
     .from('old_users')
     .select('old_id')
-    .eq('old_login', oldLogin)
+    .eq('old_login', oldLogin.toLowerCase())
     .eq('old_psw', hashedPassword)
     .maybeSingle()
 
