@@ -11,6 +11,7 @@ async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
         .select('*')
         .eq('game_id', oldGameId)
         .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1)
+        .order('id_post', { ascending: true })
       if (error) {
         console.error('Failed to fetch data:', error)
         break
