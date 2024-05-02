@@ -39,12 +39,18 @@
   }
 
   async function kickCharacter () {
-    if (!window.confirm('Opravdu vyhodit postavu? Její příspěvky zůstanou.')) { return }
+    if (!window.confirm('Opravdu zabít postavu? Hráč bude vyřazen, vytvoří se mu kopie a postava se přesune na hřbitov')) { return }
     // update the original character to remove the player
-    const { error } = await supabase.rpc('kick_character', { character_id: character.id })
+    const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
+    if (data && !error) {
+      // copy portrait
+      await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
+    }
     if (error) { return handleError(error) }
+    // set character to dead
+    await supabase.from('characters').update({ state: 'dead' }).eq('id', character.id)
     await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: 'Postava byla vyřazena ze hry' })
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla přesunuta na hřbitov' })
   }
 
   async function takeOverCharacter () {
@@ -61,7 +67,7 @@
   }
 
   async function freeCharacter () {
-    if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
+    if (!window.confirm('Opravdu dát na seznam volných postav? (bude nabídnuta všem)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
     if (error) { return handleError(error) }
     await charactersChanged()
@@ -74,6 +80,19 @@
     await charactersChanged()
     if (error) { return handleError(error) }
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
+  }
+
+  async function leaveGame () {
+    if (!window.confirm('Opravdu odejít z hry? Postava zůstane a vytvoří se kopie')) { return }
+    const { data, error } = await supabase.rpc('hand_over_character', { character_id: character.id, new_owner: game.owner.id })
+    if (data && !error) {
+      // copy portrait
+      await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
+    }
+    if (error) { return handleError(error) }
+    
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
 </script>
 
@@ -96,6 +115,13 @@
   {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
+  {#if isPlayer && character.accepted && !isStoryteller }
+    <td>
+      <div class='options'>
+        <button on:click={() => leaveGame()}>odejít</button>
+      </div>
+    </td>
+  {/if}
   <td>
     {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
       <div class='options'>
@@ -107,13 +133,13 @@
         {/if}
         {#if isStoryteller}
           {#if character.accepted}
-            {#if !character.open}
-              <button on:click={() => freeCharacter()}>uvolnit</button>
+            {#if !character.open && character.player.id == user.id}
+              <button on:click={() => freeCharacter()}>nabídnout</button>
             {/if}
           {#if character.player.id != user.id}
             <button on:click={() => takeOverCharacter()}>převzít</button>
           {:else}
-            <button on:click={() => kickCharacter()}>vyloučit</button>
+            <button on:click={() => kickCharacter()}>zabít</button>
           {/if}
           {:else}
             <button on:click={() => acceptCharacter()}>přijmout</button>
