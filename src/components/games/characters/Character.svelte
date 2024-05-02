@@ -60,7 +60,6 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
   }
 
-  // Not used right now
   async function freeCharacter () {
     if (!window.confirm('Opravdu dát na seznam volných postav? (bude předána jinému hráči)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
