@@ -363,6 +363,22 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function take_over_character (character_id uuid) returns uuid as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if is_storyteller(character_row.game) is false then raise exception 'Not a storyteller'; end if;
+  -- create a new character with the same data for the player to keep (except for the game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  insert into characters values (character_row.*);
+  -- update the original character to change the player
+  update characters set player = auth.uid() where id = character_id;
+  return character_row.id;
+end;
+$$ language plpgsql security definer;
 
 create or replace function kick_character (character_id uuid) returns void as $$
 declare
