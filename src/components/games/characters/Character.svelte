@@ -40,7 +40,7 @@
   
   async function kickCharacter () {
     if (character.player.id == user.id) {
-      if (!window.confirm('Opravdu zabít postavu? Vytvoří se kopie a postava se přesune na hřbitov')) { return }
+      if (!window.confirm('Opravdu zabít postavu? Postava se přesune na hřbitov')) { return }
     }
     else {
       if (!window.confirm('Opravdu zabít postavu? Hráč bude vyřazen, vytvoří se mu kopie a postava se přesune na hřbitov')) { return }
@@ -97,6 +97,18 @@
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
+
+  async function unDeadCharacter () {
+    await supabase.from('characters').update({ state: 'alive' }).eq('id', character.id)
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava byla oživena' })
+  }
+
+  async function deleteCharacter () {
+    await supabase.from('characters').update({ state: 'unconscious' }).eq('id', character.id)
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: 'Postava smazána' })
+  }
 </script>
 
 <tr class='char'>
@@ -118,7 +130,14 @@
   {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
-  {#if isPlayer && character.accepted && !isStoryteller }
+  {#if character.state == 'dead'}
+  <td>
+    <div class='options'>
+      <button on:click={() => unDeadCharacter()}>oživit</button>
+      <button on:click={() => deleteCharacter()}>smazat</button>
+  </td>
+  {/if}
+  {#if isPlayer && character.accepted && !isStoryteller && character.state == 'alive' }
     <td>
       <div class='options'>
         <button on:click={() => leaveGame()}>odejít</button>
@@ -126,7 +145,7 @@
     </td>
   {/if}
   <td>
-    {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
+    {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.state == 'alive'}
       <div class='options'>
         {#if character.open}
           <button on:click={() => claimCharacter()}>vzít</button>

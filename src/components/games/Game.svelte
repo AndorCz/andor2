@@ -10,6 +10,7 @@
   import GameThread from '@components/games/GameThread.svelte'
   import GameStoryteller from '@components/games/GameStoryteller.svelte'
   import GameCharacters from '@components/games/characters/GameCharacters.svelte'
+  import GameGraveyard from '@components/games/characters/GameGraveyard.svelte'
 
   export let user = {}
   export let game = {}
@@ -114,6 +115,9 @@
       <button on:click={() => { changeTab('story') }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
         Vypravěč
       </button>
+      <button on:click={() => { changeTab('graveyard') }} class={$gameStore.activeTab === 'graveyard' ? 'active' : ''}>
+        Hřbitov
+      </button>
     {/if}
   </nav>
 
@@ -129,6 +133,8 @@
       <GameCharacters {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'story' && isStoryteller}
       <GameStoryteller {game} {user} {isStoryteller} />
+    {:else if $gameStore.activeTab === 'graveyard' && isStoryteller}
+      <GameGraveyard {game} {user} {isStoryteller} />
     {/if}
   </div>
 </main>

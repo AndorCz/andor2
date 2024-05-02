@@ -23,7 +23,7 @@
       characters.storytellers.push(char)
     } else if (char.open) { // open
       characters.open.push(char)
-    } else if (char.player) {
+    } else if (char.player && char.state == 'alive') {
       if (char.accepted) { // playing
         characters.playing.push(char)
       } else { // waiting
