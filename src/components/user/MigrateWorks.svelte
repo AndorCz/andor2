@@ -9,6 +9,7 @@
 
   onMount(async () => {
     works = await getWorksById(oldUserData.old_id)
+    works.sort((a, b) => a.name.localeCompare(b.name));
   })
 
   async function handleWorkAction (workId) {
