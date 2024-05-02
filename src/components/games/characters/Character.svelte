@@ -47,7 +47,7 @@
       const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
       if (data && !error) {
         // copy portrait
-          await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
+        await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
       }
     }
     // set character to dead
