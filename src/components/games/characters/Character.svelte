@@ -1,12 +1,15 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { clickOutside } from '@lib/clickOutside'
   import { redirectWithToast } from '@lib/utils'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
 
   export let user
   export let game
   export let character
   export let isStoryteller
+  export let actionsVisible = false
 
   const isPlayer = character.player.id === user.id
 
@@ -37,13 +40,12 @@
     if (error) { return handleError(error) }
     redirectWithToast({ toastType: 'success', toastText: own ? 'Přihláška byla zrušena' : 'Postava byla odmítnuta' })
   }
-  
-  async function kickCharacter () {
+
+  async function killCharacter () {
     const previousOwner = character.player.id
-    if (character.player.id == user.id) {
+    if (character.player.id === user.id) {
       if (!window.confirm('Opravdu zabít postavu? Postava se přesune na hřbitov')) { return }
-    }
-    else {
+    } else {
       if (!window.confirm('Opravdu zabít postavu? Hráč bude vyřazen, vytvoří se mu kopie a postava se přesune na hřbitov')) { return }
       const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
       if (data && !error) {
@@ -100,7 +102,7 @@
     }
     await supabase.from('messages').insert({ content: `Odešel jsem z tvé hry ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
     if (error) { return handleError(error) }
-    
+
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
@@ -116,12 +118,18 @@
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava smazána' })
   }
+
+  function handleClickOutside (event) {
+    actionsVisible = false
+  }
 </script>
 
 <tr class='char'>
   <td class='portrait'>
     {#if character.portrait}
       <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt='portrét postavy' />
+    {:else}
+      <img src='/default_char.jpg' class='portrait empty' alt='portrét postavy' />
     {/if}
   </td>
   <td class='name'>
@@ -137,44 +145,46 @@
   {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
-  {#if character.state == 'dead'}
-  <td>
-    <div class='options'>
+  <td class='options' use:clickOutside on:click_outside={handleClickOutside}>
+    {#if character.state === 'alive'}
+      <!-- active player options -->
+      {#if isPlayer && character.accepted && !isStoryteller }
+        <button on:click={() => leaveGame()}>odejít</button>
+      {/if}
+
+      {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
+        <div class='actions' class:visible={actionsVisible}>
+          <!-- recruitment actions -->
+          {#if character.open}
+            <button on:click={() => claimCharacter()}>vzít</button>
+          {/if}
+          {#if isPlayer && !character.accepted && !isStoryteller}
+            <button on:click={() => rejectCharacter(true)}>zrušit</button>
+          {/if}
+          <!-- storyteller actions -->
+          {#if isStoryteller}
+            {#if character.accepted}
+              {#if !character.open && character.player.id === user.id}
+                <button on:click={() => freeCharacter()}>nabídnout</button>
+              {/if}
+            {#if character.player.id !== user.id}
+              <button on:click={() => takeOverCharacter()}>převzít</button>
+            {/if}
+              <button on:click={() => killCharacter()} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+            {:else}
+              <button on:click={() => acceptCharacter()}>přijmout</button>
+              <button on:click={() => rejectCharacter()}>odmítnout</button>
+            {/if}
+          {/if}
+        </div>
+        {#if $platform === 'mobile'}
+          <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
+        {/if}
+      {/if}
+    {:else if character.state === 'dead'}
+      <!-- graveyard -->
       <button on:click={() => unDeadCharacter()}>oživit</button>
       <button on:click={() => deleteCharacter()}>smazat</button>
-  </td>
-  {/if}
-  {#if isPlayer && character.accepted && !isStoryteller && character.state == 'alive' }
-    <td>
-      <div class='options'>
-        <button on:click={() => leaveGame()}>odejít</button>
-      </div>
-    </td>
-  {/if}
-  <td>
-    {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.state == 'alive'}
-      <div class='options'>
-        {#if character.open}
-          <button on:click={() => claimCharacter()}>vzít</button>
-        {/if}
-        {#if isPlayer && !character.accepted && !isStoryteller}
-          <button on:click={() => rejectCharacter(true)}>zrušit</button>
-        {/if}
-        {#if isStoryteller}
-          {#if character.accepted}
-            {#if !character.open && character.player.id == user.id}
-              <button on:click={() => freeCharacter()}>nabídnout</button>
-            {/if}
-          {#if character.player.id != user.id}
-            <button on:click={() => takeOverCharacter()}>převzít</button>
-          {/if}
-            <button on:click={() => kickCharacter()}>zabít</button>
-          {:else}
-            <button on:click={() => acceptCharacter()}>přijmout</button>
-            <button on:click={() => rejectCharacter()}>odmítnout</button>
-          {/if}
-        {/if}
-      </div>
     {/if}
   </td>
 </tr>
@@ -192,6 +202,9 @@
       width: 60px;
       min-width: 60px;
       padding: 0px;
+      max-height: 80px;
+      object-fit: cover;
+      object-position: center 20%;
     }
       .portrait img {
         display: block;
@@ -212,11 +225,15 @@
         font-size: 22px;
       }
     .options {
-      display: flex;
-      gap: 10px;
-      height: 100%;
-      padding: 0px 5px;
+      position: relative;
     }
+      .actions {
+        display: flex;
+        gap: 10px;
+        height: 100%;
+        padding: 0px 5px;
+        justify-content: flex-end;
+      }
     .player {
       margin-right: 20px;
       font-weight: bold;
@@ -224,4 +241,23 @@
     button {
       padding: 10px;
     }
+  @media (max-width: 860px) {
+    .actions {
+      display: none;
+      position: absolute;
+      top: 0px;
+      right: 60px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: var(--panel);
+      box-shadow: 3px 3px 6px #0003;
+    }
+      .actions.visible {
+        display: flex;
+        height: 80px;
+      }
+        .actions.visible button {
+          height: 100%;
+        }
+  }
 </style>
