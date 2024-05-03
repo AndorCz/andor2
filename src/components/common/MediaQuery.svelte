@@ -3,7 +3,7 @@
 
   export const breakpoint = readable('l', set => {
     const breakpoints = [
-      { value: 'mobile', mediaquery: window.matchMedia('(max-width:  860px)') },
+      { value: 'mobile', mediaquery: window.matchMedia('(max-width:  720px)') },
       { value: 'desktop', mediaquery: window.matchMedia('(min-width: 720px)') }
     ]
 

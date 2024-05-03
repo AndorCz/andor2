@@ -62,22 +62,17 @@
 
 </script>
 
-<main>
+<main id='import'>
   {#if user.id}
     {#if user.old_id}
       <h1>Import</h1>
       <p>Tvůj starý login je: <b>{oldLogin}</b></p>
-      <p>Přihlašovací heslo si musíš znovu nastavit a nově se jako přihlašovací jméno používá e-mail.</p>
       <p>
         Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí, kontaktuj prosím vývojáře.
         Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.
       </p>
-      <p>
-        <b>Import ikonky: </b>
-        <button on:click={() => handlePortrait(user.old_id)}>
-        Importovat
-      </button>
-      </p>
+      <p><button on:click={() => handlePortrait(user.old_id)}>Importovat ikonku</button></p>
+      <p>Přihlašovací heslo si musíš znovu nastavit a nově se jako přihlašovací jméno používá e-mail.</p>
       <MigrateGames {user} {oldUserData} />
       <br>
       <MigrateWorks {user} {oldUserData} />
@@ -133,5 +128,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+  }
+  :global(#import table) {
+    width: 100%;
+  }
+  :global(#import table td) {
+    text-align: center;
   }
 </style>
