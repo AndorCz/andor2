@@ -82,6 +82,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px;
+    margin-bottom: 1px;
+    background-color: var(--block);
   }
   .name {
     flex: 1;

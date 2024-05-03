@@ -54,8 +54,8 @@
 <h2>Import článků</h2>
 
 <div id='works' class='importList'>
-  <div class='row'>
-    {#each works as work}
+  {#each works as work}
+    <div class='row'>
       <div class='name'>{work.name}</div>
       <div class='action'>
         {#if work.migrated}
@@ -66,8 +66,8 @@
           <button on:click={() => handleWorkAction(work.id)}>Importovat</button>
         {/if}
       </div>
-    {/each}
-  </div>
+    </div>
+  {/each}
 </div>
 
 <style>
@@ -75,6 +75,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px;
+    margin-bottom: 1px;
+    background-color: var(--block);
   }
   .name {
     flex: 1;

@@ -55,8 +55,8 @@
 <h2>Migrace Postav</h2>
 
 <div id='chars' class='importList'>
-  <div class='row'>
-    {#each chars as char}
+  {#each chars as char}
+    <div class='row'>
       <div class='name'>{char.char_name}</div>
       <div class='action'>
         {#if char.migrated}
@@ -69,8 +69,8 @@
           </button>
         {/if}
       </div>
-    {/each}
-  </div>
+    </div>
+  {/each}
 </div>
 
 <style>
@@ -78,6 +78,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px;
+    margin-bottom: 1px;
+    background-color: var(--block);
   }
   .name {
     flex: 1;
