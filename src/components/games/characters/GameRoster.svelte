@@ -1,0 +1,53 @@
+<script>
+  import { isFilledArray } from '@lib/utils'
+  import Character from '@components/games/characters/Character.svelte'
+  import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
+
+  export let game = {}
+  export let user = {}
+  export let isStoryteller
+  export let isPlayer
+
+  const characters = { playing: [], storytellers: [] }
+
+  game.characters.forEach((char) => {
+    if (char.state === 'alive') {
+      if (char.storyteller) {
+        characters.storytellers.push(char)
+      } else if (char.player && char.accepted) {
+        characters.playing.push(char)
+      }
+    }
+  })
+</script>
+
+{#if game.open_game || isStoryteller || isPlayer}
+  <h2>Vypravěči</h2>
+  <table class='characters'>
+    {#if isFilledArray(characters.storytellers)}
+      <CharacterHeader {isStoryteller} />
+      {#each characters.storytellers as character}
+        <Character {user} {character} {isStoryteller} {game} />
+      {/each}
+    {:else}
+      <td class='none'>Žádní vypravěči</td>
+    {/if}
+  </table>
+
+  <h2>Ve hře</h2>
+  <table class='characters'>
+    {#if isFilledArray(characters.playing)}
+      <CharacterHeader {isStoryteller} />
+      {#each characters.playing as character}
+        <Character {user} {character} {isStoryteller} {game} />
+      {/each}
+    {:else}
+      <tr><td class='none'>Žádné postavy</td></tr>
+    {/if}
+  </table>
+{:else}
+  <center><div class='note'><span class='material'>info</span>Hra je soukromá, nemůžeš vidět její postavy</div></center>
+{/if}
+
+<style>
+</style>

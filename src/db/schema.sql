@@ -363,16 +363,17 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function claim_character (character_id uuid) returns void as $$
 declare
   character_row characters%ROWTYPE;
 begin
   select * into character_row from characters where id = character_id;
   if character_row.open is false then raise exception 'Not free to claim'; end if;
-  
   update characters set player = auth.uid(), open = false where id = character_id;
 end;
 $$ language plpgsql security definer;
+
 
 create or replace function hand_over_character (character_id uuid, new_owner uuid) returns uuid as $$
 declare
@@ -392,6 +393,7 @@ begin
 end;
 $$ language plpgsql security definer;
 
+
 create or replace function take_over_character (character_id uuid) returns uuid as $$
 declare
   character_row characters%ROWTYPE;
@@ -409,6 +411,7 @@ begin
   return character_row.id;
 end;
 $$ language plpgsql security definer;
+
 
 create or replace function add_game_threads () returns trigger as $$
 begin

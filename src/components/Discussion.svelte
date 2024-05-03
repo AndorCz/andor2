@@ -181,6 +181,9 @@
 </main>
 
 <style>
+  main {
+    padding-top: 10px;
+  }
   .addPostWrapper {
     display: flex;
     width: 100%;
