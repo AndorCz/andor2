@@ -262,7 +262,7 @@
       </div>
     {/if}
 
-    <h2>Fonty <span class='material' title='Umožní další fonty z Google Fonts. Pozor, každý font navíc o něco zpomalý načítání hry všem hráčům' use:tooltip>info</span></h2>
+    <h2>Fonty <span class='material' title='Umožní další fonty z Google Fonts. Pozor, každý font navíc o něco zpomalí načítání hry všem hráčům' use:tooltip>info</span></h2>
     {#if game.fonts && game.fonts.length}
       <ul>
         {#each game.fonts as font}
