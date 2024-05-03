@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { createSlug } from '@lib/utils'
-  import { showSuccess } from '@lib/toasts'
+  import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database'
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -23,6 +23,7 @@
   let originalContextDice
   let welcomeMessageRef
   let newCodexSection = ''
+  let newFont = ''
   let isWelcomeMessageDirty = false
   let headlineEl
 
@@ -30,6 +31,11 @@
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
+
+    // load google fonts api
+    // window.gapi.client.setApiKey('AIzaSyDj3gKPr8w-lAH97ukj5tKEQcUtVXKj1wA')
+    // window.gapi.client.load('https://www.googleapis.com/discovery/v1/apis/webfonts/v1/rest')
+    // window.gapi.load('client')
   })
 
   function setOriginal () {
@@ -47,7 +53,7 @@
   async function updateGame () {
     saving = true
     const welcomeMessage = await welcomeMessageRef.getContent()
-    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game }).eq('id', game.id)
+    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game, fonts: game.fonts }).eq('id', game.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -112,8 +118,30 @@
   function exportGame () {
     window.location.href = '/api/game/download?game=' + game.id
   }
+
+  async function addFont () {
+    // check if the font exists in google fonts
+    const response = await fetch(`https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyDj3gKPr8w-lAH97ukj5tKEQcUtVXKj1wA&family=${newFont}`)
+    const data = await response.json()
+    if (data.error) { return showError('Font nenalezen') }
+    // add to the game
+    game.fonts = game.fonts || []
+    game.fonts = [...game.fonts, newFont]
+    await updateGame()
+    newFont = ''
+  }
+
+  async function removeFont (font) {
+    game.fonts = game.fonts.filter((f) => { return f !== font })
+    await updateGame()
+  }
 </script>
 
+<!--
+<svelte:head>
+  <script src='https://apis.google.com/js/api.js'></script>
+</svelte:head>
+-->
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
     <a href='/game/{game.id}' class='backlink'>{game.name}</a>
@@ -234,6 +262,27 @@
       </div>
     {/if}
 
+    <h2>Fonty <span class='material' title='Umožní další fonty z Google Fonts. Pozor, každý font navíc o něco zpomalý načítání hry všem hráčům' use:tooltip>info</span></h2>
+    {#if game.fonts && game.fonts.length}
+      <ul>
+        {#each game.fonts as font}
+          <li>
+            <div class='font'>
+              <h3>{font}</h3>
+              <button class='square material square' on:click={() => { removeFont(font) }} title='Odebrat font' use:tooltip>delete</button>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <p class='info'>Žádné fonty navíc</p>
+    {/if}
+    <h3><label for='gameFont'>Nový font</label></h3>
+    <div class='row'>
+      <input type='text' id='gameFont' name='gameFont' size='40' bind:value={newFont} />
+      <button class='material square' on:click={addFont} disabled={saving || newFont.trim() === ''} title='Přidat font' use:tooltip>add</button>
+    </div>
+
     <h2>Záloha do souboru</h2>
     <button class='export' on:click={exportGame}>
       <span class='material'>download</span><span>Stáhnout zálohu</span>
@@ -310,18 +359,31 @@
     input[type=text], select {
       width: 100%;
     }
-    .section {
+    .section, .font {
       display: flex;
       align-items: center;
       gap: 20px;
     }
-      .section h3 {
+      .section h3, .font h3 {
         width: 100%;
       }
   .delete, .export, .archive {
     display: flex;
     gap: 10px;
   }
+
+  ul {
+    padding: 0px;
+  }
+    li {
+      padding: 10px 20px;
+      margin-bottom: 1px;
+      list-style-type: none;
+      background: var(--block);
+    }
+      ul h3 {
+        margin: 10px 0px;
+      }
 
   @media (max-width: 1200px) {
     .headline {

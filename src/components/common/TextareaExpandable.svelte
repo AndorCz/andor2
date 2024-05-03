@@ -22,7 +22,8 @@
   export let maxlength = null
   export let loading = false
   export let singleLine = false
-  export let placeholder
+  export let placeholder = ''
+  export let fonts = null
 
   let isEmpty = value === ''
   let editorRef
@@ -108,7 +109,7 @@
 
 <div class='wrapper' class:singleLine>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} {fonts} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>

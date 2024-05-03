@@ -11,7 +11,7 @@
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 ---
 
-<Layout title={game?.name} headerStorage={game?.custom_header ? `game-${game.id}.jpg?hash=${game.custom_header}` : null}>
+<Layout fonts={game?.fonts} title={game?.name} headerStorage={game?.custom_header ? `game-${game.id}.jpg?hash=${game.custom_header}` : null}>
   {(showSettings ? (
     <GameSettings {game} {user} client:only />
   ) : (

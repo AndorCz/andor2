@@ -115,7 +115,7 @@
         <ul>
           {#each list as ban}
             <li>
-              <div class='ban list'>
+              <div class='ban item'>
                 <h3>{ban.name}</h3>
                 <button class='square material square' on:click={() => { removePerson('bans', ban) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
@@ -140,7 +140,7 @@
         <ul>
           {#each list as member}
             <li>
-              <div class='member list'>
+              <div class='member item'>
                 <h3>{member.name}</h3>
                 <button class='square material square' on:click={() => { removePerson('members', member) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
@@ -169,7 +169,7 @@
         <ul>
           {#each list as mod}
             <li>
-              <div class='mod list'>
+              <div class='mod item'>
                 <h3>{mod.name}</h3>
                 <button class='square material' on:click={() => { removePerson('mods', mod) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
@@ -256,15 +256,24 @@
     width: 100%;
   }
 
-  .list {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  ul {
+    padding: 0px;
   }
-    .list h3 {
-      width: 100%;
-      margin: 10px 0px;
+    li {
+      padding: 10px 20px;
+      margin-bottom: 1px;
+      list-style-type: none;
+      background: var(--block);
     }
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+        ul h3 {
+          width: 100%;
+          margin: 10px 0px;
+        }
 
   .separator {
     display: flex;

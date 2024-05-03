@@ -25,6 +25,7 @@
   export let onChange = null
   export let minHeight = 140
   export let enterSend = false
+  export let fonts = null
 
   let editor
   let editorEl
@@ -57,6 +58,12 @@
     { value: 'caveat', label: "<span class='caveat'>Caveat</span>" },
     { value: 'orbitron', label: "<span class='orbitron'>Orbitron</span>" }
   ]
+
+  if (fonts) {
+    fonts.forEach(font => {
+      fontOptions.push({ value: font, label: `<span style='font-family: ${font}'>${font}</span>` })
+    })
+  }
 
   const EnterKeyHandler = Extension.create({
     name: 'enterKeyHandler',
