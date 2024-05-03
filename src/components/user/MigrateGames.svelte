@@ -9,7 +9,7 @@
 
   onMount(async () => {
     games = await getGamesByGmId(oldUserData.old_id)
-    games.sort((a, b) => a.game_name.localeCompare(b.game_name));
+    games.sort((a, b) => a.game_name.localeCompare(b.game_name))
   })
 
   async function handleGameAction (gameId) {
@@ -26,7 +26,6 @@
         })
 
         const result = await response.json()
-        console.log('API response:', result)
 
         // get http status
         if (response.status === 202) {
@@ -59,29 +58,35 @@
   }
 </script>
 
-<h2>Import hry</h2>
+<h2>Import her</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Název hry</th>
-      <th>Importovat</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each games as game}
-      <tr>
-        <td>{game.game_name}</td>
-        <td>
-          {#if game.migrated}
-            <button disabled>Hotovo!</button>
-          {:else if game.migrating || migratingGames.has(game.id_game)}
-            <button disabled>Probíhá import</button>
-          {:else}
-            <button on:click={() => handleGameAction(game.id_game)}>Importovat</button>
-          {/if}
-        </td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
+<div id='games' class='importList'>
+  {#each games as game}
+    <div class='row'>
+      <div class='name'>{game.game_name}</div>
+      <div class='action'>
+        {#if game.migrated}
+          <button disabled>Hotovo!</button>
+        {:else if game.migrating || migratingGames.has(game.id_game)}
+          <button disabled>Probíhá import</button>
+        {:else}
+          <button on:click={() => handleGameAction(game.id_game)}>Importovat</button>
+        {/if}
+      </div>
+    </div>
+  {/each}
+</div>
+
+<style>
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .name {
+    flex: 1;
+  }
+  .action {
+    flex: 0;
+  }
+</style>

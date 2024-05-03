@@ -129,10 +129,4 @@
     justify-content: space-between;
     gap: 10px;
   }
-  :global(#import table) {
-    width: 100%;
-  }
-  :global(#import table td) {
-    text-align: center;
-  }
 </style>

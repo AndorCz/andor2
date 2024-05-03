@@ -48,35 +48,41 @@
 
   onMount(async () => {
     chars = await getCharactersById(oldUserData.old_id)
-    chars.sort((a, b) => a.char_name.localeCompare(b.char_name));
+    chars.sort((a, b) => a.char_name.localeCompare(b.char_name))
   })
 </script>
 
 <h2>Migrace Postav</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Postava</th>
-      <th>Migrovat</th>
-    </tr>
-  </thead>
-  <tbody>
+<div id='chars' class='importList'>
+  <div class='row'>
     {#each chars as char}
-      <tr>
-        <td>{char.char_name}</td>
-        <td>
-          {#if char.migrated}
-            <button disabled>Hotovo!</button>
-          {:else if migratingChars.has(char.id_char)}
-            <button disabled>Probíhá</button>
-          {:else}
-            <button on:click={() => handleWorkAction(char.id_char)}>
-              Migrovat
-            </button>
-          {/if}
-        </td>
-      </tr>
+      <div class='name'>{char.char_name}</div>
+      <div class='action'>
+        {#if char.migrated}
+          <button disabled>Hotovo!</button>
+        {:else if migratingChars.has(char.id_char)}
+          <button disabled>Probíhá</button>
+        {:else}
+          <button on:click={() => handleWorkAction(char.id_char)}>
+            Migrovat
+          </button>
+        {/if}
+      </div>
     {/each}
-  </tbody>
-</table>
+  </div>
+</div>
+
+<style>
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .name {
+    flex: 1;
+  }
+  .action {
+    flex: 0;
+  }
+</style>

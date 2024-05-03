@@ -9,7 +9,7 @@
 
   onMount(async () => {
     works = await getWorksById(oldUserData.old_id)
-    works.sort((a, b) => a.name.localeCompare(b.name));
+    works.sort((a, b) => a.name.localeCompare(b.name))
   })
 
   async function handleWorkAction (workId) {
@@ -53,27 +53,33 @@
 
 <h2>Import článků</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Název článku</th>
-      <th>Importovat</th>
-    </tr>
-  </thead>
-  <tbody>
+<div id='works' class='importList'>
+  <div class='row'>
     {#each works as work}
-      <tr>
-        <td>{work.name}</td>
-        <td>
-          {#if work.migrated}
-            <button disabled>Hotovo!</button>
-          {:else if migratingGames.has(work.id)}
-            <button disabled>Probíhá</button>
-          {:else}
-            <button on:click={() => handleWorkAction(work.id)}>Importovat</button>
-          {/if}
-        </td>
-      </tr>
+      <div class='name'>{work.name}</div>
+      <div class='action'>
+        {#if work.migrated}
+          <button disabled>Hotovo!</button>
+        {:else if migratingGames.has(work.id)}
+          <button disabled>Probíhá</button>
+        {:else}
+          <button on:click={() => handleWorkAction(work.id)}>Importovat</button>
+        {/if}
+      </div>
     {/each}
-  </tbody>
-</table>
+  </div>
+</div>
+
+<style>
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .name {
+    flex: 1;
+  }
+  .action {
+    flex: 0;
+  }
+</style>
