@@ -48,6 +48,8 @@
     if (us.id == user.id) {
       // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
       const { data, error } = await supabase.from('messages').select('*')
+        .is('recipient_character', null)
+        .is('sender_character', null)
         .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
         .order('created_at', { ascending: true })
       if (error) { return handleError(error) }
