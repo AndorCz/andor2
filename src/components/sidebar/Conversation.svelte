@@ -57,7 +57,7 @@
     } else {
       // Game messages - filter out those sent by different user
       const { data, error } = await supabase.from('messages').select('*')
-        .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id},sender_user.eq.${them.player}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id},recipient_user.eq.${them.player})`)
+        .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id})`)
         .order('created_at', { ascending: true })
       if (error) { return handleError(error) }
       $messages = data
