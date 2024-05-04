@@ -51,6 +51,7 @@
   }
 
   async function addPerson (type, person) {
+    if (person.id === user.id) { return showError('Nemůžeš přidat sám/sama sebe') }
     if (data[type].find(p => p.id === person.id)) { showError('Tento uživatel už je v této skupině') }
     const newPeople = [...data[type], person.id]
     const { error } = await supabase.from('boards').update({ [type]: newPeople }).eq('id', data.id).single()
