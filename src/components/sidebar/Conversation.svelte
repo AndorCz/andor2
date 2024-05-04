@@ -45,12 +45,21 @@
   }
 
   async function loadMessages () {
-    // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
-    const { data, error } = await supabase.from('messages').select('*')
-      .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
-      .order('created_at', { ascending: true })
-    if (error) { return handleError(error) }
-    $messages = data
+    if (us.id == user.id) {
+      // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
+      const { data, error } = await supabase.from('messages').select('*')
+        .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
+        .order('created_at', { ascending: true })
+      if (error) { return handleError(error) }
+      $messages = data
+    } else {
+      // Game messages - filter out those sent by different user
+      const { data, error } = await supabase.from('messages').select('*')
+        .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id},sender_user.eq.${them.player}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id},recipient_user.eq.${them.player})`)
+        .order('created_at', { ascending: true })
+      if (error) { return handleError(error) }
+      $messages = data
+    }
     markMessagesRead()
   }
 
@@ -63,8 +72,14 @@
   }
 
   async function sendMessage () {
-    const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: us.id, [recipientColumn]: them.id })
-    if (error) { return handleError(error) }
+    if (us.id != user.id) {
+      // Game messages - insert both sender and character ids
+      const { error } = await supabase.from('messages').insert({ content: textareaValue, sender_character: us.id, sender_user: user.id, recipient_character: them.id, recipient_user: them.player })
+      if (error) { return handleError(error) }
+    } else {
+      const { error } = await supabase.from('messages').insert({ content: textareaValue, [senderColumn]: us.id, [recipientColumn]: them.id })
+      if (error) { return handleError(error) }
+    }
     textareaValue = ''
     await loadMessages()
   }
