@@ -46,8 +46,14 @@
     {/if}
   </table>
 {:else}
-  <center><div class='note'><span class='material'>info</span>Hra je soukromá, nemůžeš vidět její postavy</div></center>
+  <div class='info'><span class='material'>info</span>Hra je soukromá, nemůžeš vidět její postavy</div>
 {/if}
 
 <style>
+  .info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
 </style>

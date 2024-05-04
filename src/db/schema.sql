@@ -364,12 +364,20 @@ end;
 $$ language plpgsql;
 
 
+create or replace function reject_character (character_id uuid) returns void as $$
+begin
+  if not is_players_character(character_id) and not is_storyteller((select game from characters where id = character_id)) then raise exception 'Nejsi vypravěč hry, ani vlastník postavy'; end if;
+  update characters set game = null, accepted = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
 create or replace function claim_character (character_id uuid) returns void as $$
 declare
   character_row characters%ROWTYPE;
 begin
   select * into character_row from characters where id = character_id;
-  if character_row.open is false then raise exception 'Not free to claim'; end if;
+  if character_row.open is false then raise exception 'Postava není volná'; end if;
   update characters set player = auth.uid(), open = false where id = character_id;
 end;
 $$ language plpgsql security definer;
@@ -380,7 +388,7 @@ declare
   character_row characters%ROWTYPE;
 begin
   select * into character_row from characters where id = character_id;
-  if auth.uid() != character_row.player then raise exception 'Not your character'; end if;
+  if auth.uid() != character_row.player then raise exception 'Není tvoje postava'; end if;
   -- create a new character with the same data for the player to keep (except for the game columns)
   character_row.id := gen_random_uuid();
   character_row.game := null;
@@ -399,7 +407,7 @@ declare
   character_row characters%ROWTYPE;
 begin
   select * into character_row from characters where id = character_id;
-  if is_storyteller(character_row.game) is false then raise exception 'Not a storyteller'; end if;
+  if is_storyteller(character_row.game) is false then raise exception 'Nejsi vypravěč'; end if;
   -- create a new character with the same data for the player to keep (except for the game columns)
   character_row.id := gen_random_uuid();
   character_row.game := null;

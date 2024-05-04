@@ -12,7 +12,7 @@
   export let isPlayer
 
   // sort character categories
-  let activeSection = 'active'
+  let activeSection = new URLSearchParams(window.location.search).get('section') || 'active'
 
   function changeSection (section) {
     activeSection = section

@@ -36,7 +36,7 @@
 
   async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
-    const { error } = await supabase.from('characters').update({ game: null, accepted: false }).eq('id', character.id)
+    const { error } = await supabase.rpc('reject_character', { character_id: character.id })
     if (error) { return handleError(error) }
     redirectWithToast({ toastType: 'success', toastText: own ? 'Přihláška byla zrušena' : 'Postava byla odmítnuta' })
   }
