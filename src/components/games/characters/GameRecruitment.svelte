@@ -6,7 +6,7 @@
   import EditableLong from '@components/common/EditableLong.svelte'
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
-
+  
   export let game = {}
   export let user = {}
   export let isStoryteller
@@ -50,7 +50,7 @@
   }
 
   async function signExisting () {
-    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false }).eq('id', myOpenSelected)
+    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller:false }).eq('id', myOpenSelected)
     await supabase.from('messages').insert({ content: `Hlásím se do tvé hry ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
     if (error) { return handleError(error) }
     await charactersChanged()
