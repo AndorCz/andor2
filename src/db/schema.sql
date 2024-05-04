@@ -162,6 +162,7 @@ create table characters (
   storyteller boolean not null default false,
   open boolean not null default false,
   accepted boolean not null default false,
+  created_at timestamp with time zone default current_timestamp,
   state public.character_state not null default 'alive'::character_state,
   constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
   constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade

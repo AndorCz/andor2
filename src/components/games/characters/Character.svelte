@@ -156,7 +156,7 @@
       {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
         <div class='actions' class:visible={actionsVisible}>
           <!-- recruitment actions -->
-          {#if character.open}
+          {#if character.open && character.player.id !== user.id}
             <button on:click={() => claimCharacter()}>vzít</button>
           {/if}
           {#if isPlayer && !character.accepted && !isStoryteller}
