@@ -4,7 +4,6 @@
   import { redirectWithToast } from '@lib/utils'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
-    import { storyteller } from 'src/ai/base';
 
   export let user
   export let game
