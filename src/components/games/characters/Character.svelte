@@ -19,7 +19,7 @@
   }
 
   async function acceptCharacter () {
-    const { error } = await supabase.from('characters').update({ accepted: true, open: false }).eq('id', character.id)
+    const { error } = await supabase.from('characters').update({ accepted: true, open: false, storyteller: false }).eq('id', character.id)
     if (error) { return handleError(error) }
 
     // add bookmark to the new player
@@ -87,6 +87,7 @@
   async function claimCharacter () {
     if (!window.confirm('Opravdu převzít postavu?')) { return }
     const { error } = await supabase.rpc('claim_character', { character_id: character.id })
+    await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
     if (error) { return handleError(error) }
     await charactersChanged()

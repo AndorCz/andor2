@@ -32,11 +32,11 @@
 <h2>Hry</h2>
 <GameList {user} games={data.games} showTabs={false} />
 
-<h2>Díla</h2>
-<WorkList {user} works={data.works} />
-
 <h2>Diskuze</h2>
 <BoardList {user} boards={data.boards} />
+
+<h2>Díla</h2>
+<WorkList {user} works={data.works} />
 
 <style>
   main {
