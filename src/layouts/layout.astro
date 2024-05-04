@@ -28,8 +28,8 @@ const dynamicFontsUrl = fonts ? `https://fonts.googleapis.com/css2?${fonts.map(f
     <link rel='stylesheet' href={'/obsidian.css?v=' + version}>
 
     <!-- game fonts -->
-    <link href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap' rel='stylesheet'>
-    <link href={dynamicFontsUrl} rel='stylesheet'>
+    <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap' rel='stylesheet'>
+    <link rel='preload' as='style' href={dynamicFontsUrl} rel='stylesheet'>
 
     <!-- services -->
     <script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>
