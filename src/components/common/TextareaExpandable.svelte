@@ -24,6 +24,7 @@
   export let singleLine = false
   export let placeholder = ''
   export let fonts = null
+  export let mentionList = null
 
   let isEmpty = value === ''
   let editorRef
@@ -109,7 +110,7 @@
 
 <div class='wrapper' class:singleLine>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} {fonts} />
+    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
