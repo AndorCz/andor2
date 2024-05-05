@@ -112,14 +112,14 @@
     display: flex;
     justify-content: space-between;
   }
-    .toggle button {
+    .toggle button.secondary {
       font-family: var(--headlineFont);
       padding: 0px;
     }
-    .toggle button.active {
-      box-shadow: none;
-      color: var(--text);
-    }
+      .toggle button.secondary.active, .toggle button.secondary:hover {
+        box-shadow: none;
+        color: var(--text);
+      }
   ul {
     list-style: none;
     padding: 0px;

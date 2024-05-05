@@ -664,6 +664,7 @@ begin
             'name', c.name,
             'id', c.id,
             'portrait', c.portrait,
+            'state', c.state,
             'player', c.player,
             'storyteller', c.storyteller,
             'game', c.game,
@@ -683,6 +684,7 @@ begin
                 'id', other_c.id,
                 'portrait', other_c.portrait,
                 'player', other_c.player,
+                'state', other_c.state,
                 'storyteller', other_c.storyteller,
                 'state', other_c.state,
                 'unread', coalesce((
@@ -703,16 +705,16 @@ begin
             ) > 0))
           ) as contacts
         from characters c
-        where c.player = auth.uid() and c.state = 'alive'
+        where c.player = auth.uid()
       ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
+      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
-      where c.player = auth.uid() and c.game is null and c.state = 'alive'
+      where c.player = auth.uid() and c.game is null
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
