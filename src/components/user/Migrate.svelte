@@ -12,6 +12,7 @@
   let oldLogin = ''
   let oldId = ''
   let oldPassword = ''
+  let oldCreatedAt = ''
 
   if (oldUserData) {
     oldId = oldUserData.old_id
@@ -21,15 +22,23 @@
   async function linkUserToOldAccount () {
     oldId = await getOldUserId(oldLogin, oldPassword)
     if (!oldId) { return showError('Uživatel nenalezen nebo špatné heslo - pozor na velká a malá písmena') }
-
     // Check if its not already linked
     const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
     if (idError) { return showError('Chyba migrace: ', idError.message) }
 
     if (idCheck) {
       return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
-    } else { // update profiles with old_id
-      const { error: updateError } = await supabase.from('profiles').update({ old_id: parseInt(oldId, 10) }).eq('id', user.id).maybeSingle()
+    } else { 
+      // update profiles with old_id
+      const { data: createdAtData, error: createdAtError } = await supabase.from('old_users').select('old_created_at').eq('old_id', parseInt(oldId, 10)).maybeSingle()
+      if (createdAtData && !createdAtError) {
+        oldCreatedAt = createdAtData.old_created_at
+      }
+      const { error: updateError } = await supabase.from('profiles').update({
+        old_id: parseInt(oldId, 10),
+        ...(oldCreatedAt ? { created_at: oldCreatedAt } : {})
+      }).eq('id', user.id).maybeSingle();
+
       if (updateError) {
         showError('Error updating profile:', updateError)
       } else { // update successfull, refresh page
