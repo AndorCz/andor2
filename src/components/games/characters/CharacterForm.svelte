@@ -5,7 +5,6 @@
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { showError } from '@lib/toasts';
-    import { storyteller } from 'src/ai/base';
 
   export let isStoryteller
   export let isGameOwner
