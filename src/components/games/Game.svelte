@@ -88,7 +88,7 @@
       -->
       {#if isPlayer}
         {#key emailEnabled}
-          <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'unsubscribe' : 'email'}</button>
+          <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'mail_off' : 'email'}</button>
         {/key}
       {/if}
       {#if isGameOwner}
