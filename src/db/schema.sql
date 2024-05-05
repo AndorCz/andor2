@@ -28,7 +28,7 @@ drop view if exists last_posts;
 -- ENUMS --------------------------------------------
 
 
-create type character_state as enum ('alive', 'unconscious', 'dead');
+create type character_state as enum ('alive', 'unconscious', 'dead', 'deleted');
 create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');

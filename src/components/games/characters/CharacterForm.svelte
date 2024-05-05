@@ -41,7 +41,7 @@
     else {
       // Actually delete - do not use for now
       // const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
-      const { error: updateError } = await supabase.from('characters').update({ state: 'unconscious', storyteller: 'false' }).eq('id', character.id)
+      const { error: updateError } = await supabase.from('characters').update({ state: 'deleted', storyteller: 'false' }).eq('id', character.id)
       if (updateError) { return handleError(updateError) }
       if (character.game) {
         redirectWithToast({ url: window.location.origin + `/game/${character.game}?tab=chars`, toastType: 'success', toastText: 'Postava byla smazána' })

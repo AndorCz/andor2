@@ -115,7 +115,7 @@
   }
 
   async function deleteCharacter () {
-    await supabase.from('characters').update({ state: 'unconscious' }).eq('id', character.id)
+    await supabase.from('characters').update({ state: 'deleted' }).eq('id', character.id)
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava smazána' })
   }
