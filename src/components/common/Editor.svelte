@@ -17,7 +17,7 @@
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import Colors from '@components/common/Colors.svelte'
-  import Mention from '@tiptap/extension-mention'
+  // import Mention from '@tiptap/extension-mention'
 
   export let userId
   export let content = ''
@@ -131,6 +131,7 @@
       TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
     ]
 
+    /*
     if (mentionList.length) {
       extensions.push(Mention.configure({
         HTMLAttributes: { class: 'mention' },
@@ -139,6 +140,7 @@
         }
       }))
     }
+    */
 
     const config = {
       element: editorEl,
