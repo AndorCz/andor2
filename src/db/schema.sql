@@ -668,7 +668,8 @@ begin
             'storyteller', c.storyteller,
             'game', c.game,
             'unread', (select coalesce(sum((contact->>'unread')::int), 0) from json_array_elements(c.contacts) as contact),
-            'contacts', c.contacts
+            'contacts', c.contacts,
+            'state', c.state
           ) order by c.name
         ) as characters
       from user_games ug
@@ -683,6 +684,7 @@ begin
                 'portrait', other_c.portrait,
                 'player', other_c.player,
                 'storyteller', other_c.storyteller,
+                'state', other_c.state,
                 'unread', coalesce((
                   select count(*)
                   from messages m
@@ -693,6 +695,12 @@ begin
             )
             from characters other_c
             where other_c.game = c.game and other_c.id <> c.id and other_c.player <> c.player
+            and (other_c.state = 'alive' or (other_c.state = 'dead' and (
+              select count(*)
+              from messages m
+              where (m.sender_character = other_c.id and m.recipient_character = c.id and m.recipient_user = c.player) 
+                or (m.sender_character = c.id and m.recipient_character = other_c.id and m.sender_user = c.player) 
+            ) > 0))
           ) as contacts
         from characters c
         where c.player = auth.uid() and c.state = 'alive'

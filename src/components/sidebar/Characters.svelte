@@ -32,6 +32,7 @@
             {/if}
             <div class='name character'>
               {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+              {#if character.state == 'dead'} <span class='material square' title='Mrtvolka'>skull</span>{/if}
               {character.name}
             </div>
             {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
