@@ -545,6 +545,7 @@ select {
 }
 .post .content p {
   margin: 0px;
+  min-height: 30px;
   line-height: 150%;
 }
 .post .content img {

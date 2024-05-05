@@ -101,7 +101,7 @@
       // copy portrait
       await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
     }
-    await supabase.from('messages').insert({ content: `Opustil/a jsem z tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
+    await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
     if (error) { return handleError(error) }
 
     await charactersChanged()

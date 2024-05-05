@@ -21,6 +21,7 @@
   let fowChanged = false
   let tool = 'select'
   let npcTokenName = ''
+  let isPinned = map.isActive
 
   const tokenDiameter = 50
 
@@ -91,7 +92,8 @@
     const { error } = await supabase.from('games').update({ active_map: map.isActive ? null : map.id }).eq('id', game.id)
     if (error) { return handleError(error) }
     map.isActive = !map.isActive
-    return showSuccess(map.isActive ? 'Mapa byla aktivována, zobrazí se všem hráčům' : 'Mapa byla deaktivována')
+    isPinned = map.isActive
+    return showSuccess(map.isActive ? 'Mapa byla připnuta, zobrazí se všem hráčům' : 'Připnutí mapy bylo zrušeno')
   }
 
   function changeTool (newTool) {
@@ -186,10 +188,10 @@
 
 {#if isStoryteller}
   <td class='options row'>
-    {#if map.isActive}
-      <button type='button' on:click={() => { toggleActive(map, game) }}>Deaktivovat</button>
+    {#if isPinned}
+      <button type='button' class='material square active' on:click={() => { toggleActive(map, game) }} title='Zrušit připnutí' use:tooltip>keep_off</button>
     {:else}
-      <button type='button' on:click={() => { toggleActive(map, game) }} title='Nastaví mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>Aktivovat</button>
+      <button type='button' class='material square' on:click={() => { toggleActive(map, game) }} title='Připnout mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>keep</button>
     {/if}
     <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
     <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>

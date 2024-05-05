@@ -27,17 +27,17 @@
     if (idError) { return showError('Chyba migrace: ', idError.message) }
 
     if (idCheck) {
-      return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
-    } else { 
+      return showError(`ID původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)
+    } else {
       // update profiles with old_id
       const { data: createdAtData, error: createdAtError } = await supabase.from('old_users').select('old_created_at').eq('old_id', parseInt(oldId, 10)).maybeSingle()
       if (createdAtData && !createdAtError) {
         oldCreatedAt = createdAtData.old_created_at
       }
-      const { error: updateError } = await supabase.from('profiles').update({
-        old_id: parseInt(oldId, 10),
-        ...(oldCreatedAt ? { created_at: oldCreatedAt } : {})
-      }).eq('id', user.id).maybeSingle();
+
+      const profileData = { old_id: parseInt(oldId, 10) }
+      if (oldCreatedAt) { profileData.created_at = oldCreatedAt }
+      const { error: updateError } = await supabase.from('profiles').update(profileData).eq('id', user.id).maybeSingle()
 
       if (updateError) {
         showError('Error updating profile:', updateError)
