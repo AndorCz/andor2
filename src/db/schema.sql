@@ -686,7 +686,7 @@ begin
                 'unread', coalesce((
                   select count(*)
                   from messages m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character <> c.id
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character <> c.id and m.recipient_user = auth.uid()
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by other_c.name
@@ -744,7 +744,7 @@ begin
         (p.id in (select id from unread_users)) as has_unread,
         (p.id in (select id from contacted_users) or p.id in (select id from active_users)) as contacted_or_active,
         (p.last_activity > (now() - interval '5 minutes')) as active,
-        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = auth.uid() and m.read = false) as unread
+        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = auth.uid() and m.read = false and sender_character is null and recipient_character is null) as unread
       from profiles p
       where p.id in (select id from unread_users)
          or p.id in (select id from active_users)
@@ -756,7 +756,6 @@ begin
   );
 end;
 $$ language plpgsql;
-
 
 create or replace function get_sidebar_data () returns json as $$
 declare
