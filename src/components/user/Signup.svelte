@@ -84,16 +84,12 @@
     const { data: authData, error: authError } = await supabase.auth.signUp({ email, password })
     if (authError) { return handleError(authError) }
     if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
-    
-    // Create user profile with old_id.old_created_at
-    const oldCreatedAt = userInfoMigrate.old_created_at
+
+    // Create user profile with old_id and old_created_at
     if (authData && authData.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        name: newLogin,
-        old_id: oldId,
-        ...(oldCreatedAt ? { created_at: oldCreatedAt } : {})
-      })
+      const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId }
+      if (userInfoMigrate.old_created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
+      const { error: profileError } = await supabase.from('profiles').insert(newProfile)
 
       if (!profileError) {
         redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
