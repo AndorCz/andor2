@@ -488,7 +488,7 @@ begin
         -- Check if a search term is provided, if not, use the original content
         case
           when search_lower = '' then p.content
-          else replace(lower(p.content), search_lower, '<span class="highlight">' || search_lower || '</span>')
+          else REGEXP_REPLACE(p.content, '(?i)' || _search, '<span class="highlight">' ||UPPER(_search)||'</span>', 'g')
         end as highlighted_content
       from posts_owner p where p.thread = thread_id
       and (
