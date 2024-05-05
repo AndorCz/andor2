@@ -109,7 +109,9 @@
 {:else}
   <div class='empty'>Žádné postavy</div>
 {/if}
-{#if !selected}
+{#if selected}
+  <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
+{:else}
   <div class='row'>
     <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
     <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>

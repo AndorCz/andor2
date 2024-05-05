@@ -705,7 +705,7 @@ begin
             ) > 0))
           ) as contacts
         from characters c
-        where c.player = auth.uid()
+        where c.player = auth.uid() and c.state <> 'deleted'
       ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
@@ -714,7 +714,7 @@ begin
       select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
-      where c.player = auth.uid() and c.game is null
+      where c.player = auth.uid() and c.game is null and c.state <> 'deleted'
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
