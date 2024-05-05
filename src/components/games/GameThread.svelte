@@ -34,13 +34,13 @@
   const activeAudienceIds = writable()
   const posts = writable([])
   const limit = 50
-  const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id })
+  const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
   let otherCharacters = []
 
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },
-      ...game.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId)
+      ...game.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId && char.state === 'alive')
     ]
   }
 
@@ -66,7 +66,7 @@
   }
 
   function getActiveCharacterId () {
-    if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId })) {
+    if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId})) {
       return $gameStore.activeCharacterId // set character from localStorage
     } else if (myCharacters[0]) {
       return myCharacters[0].id // no character in localStorage, set first character
