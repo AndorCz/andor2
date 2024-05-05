@@ -1,11 +1,15 @@
 <script>
   import { getPortraitUrl } from '@lib/database'
   import { isFilledArray } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
 
   export let characters = { allGrouped: [], myStranded: [] }
   export let openConversation
 
   let selected // { character, gameIndex, characterIndex }
+  let showDead = false
+
+  console.log('characters', characters)
 
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
@@ -14,7 +18,7 @@
 
 {#if isFilledArray(characters.allGrouped) || isFilledArray(characters.myStranded)}
   {#if selected}
-    <h4>
+    <h4 class='row selected'>
       <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
       <a href={`${window.location.origin}/game/character?id=${selected.character.id}`} class='character profile'>
         <div class='name character'>{selected.character.name}</div>
@@ -24,19 +28,22 @@
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
         <h4>Kontakty</h4>
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
-          <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
-            {#if character.portrait}
-              <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
-            {:else}
-              <span class='portrait gap'></span>
-            {/if}
-            <div class='name character'>
-              {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-              {character.name}
-            </div>
-            {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-            {#if character.active}<span class='status'></span>{/if}
-          </button>
+          {#if character.state !== 'dead' || showDead}
+            <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
+              {#if character.portrait}
+                <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
+              {:else}
+                <span class='portrait gap'></span>
+              {/if}
+              <div class='name character' class:dead={character.state === 'dead'}>
+                {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                {#if character.state === 'dead'}<span class='material skull' title='Mrtvolka'>skull</span>{/if}
+                {character.name}
+              </div>
+              {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+              {#if character.active}<span class='status'></span>{/if}
+            </button>
+          {/if}
         {/each}
       {:else}
         <div class='empty'>Hra nemá další postavy</div>
@@ -49,20 +56,23 @@
         <ul class='characters'>
           {#if isFilledArray(characters)}
             {#each characters as character, characterIndex}
-              <li class='mine'>
-                <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
-                  {#if character.portrait}
-                    <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
-                  {:else}
-                    <span class='portrait gap'></span>
-                  {/if}
-                  <span class='name character'>
-                    {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-                    {character.name}
-                  </span>
-                  {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
-                </button>
-              </li>
+              {#if character.state !== 'dead' || showDead}
+                <li class='mine'>
+                  <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
+                    {#if character.portrait}
+                      <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
+                    {:else}
+                      <span class='portrait gap'></span>
+                    {/if}
+                    <span class='name character' class:dead={character.state === 'dead'}>
+                      {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                      {#if character.state === 'dead'}<span class='material skull' title='Mrtvolka'>skull</span>{/if}
+                      {character.name}
+                    </span>
+                    {#if character.unread}<span class='unread'>{character.unread}</span>{/if}
+                  </button>
+                </li>
+              {/if}
             {/each}
           {/if}
         </ul>
@@ -75,20 +85,23 @@
       <h4>Bez hry</h4>
       <ul class='characters'>
         {#each characters.myStranded as character}
-          <li class='mine'>
-            <button on:click={openProfile(character)}>
-              {#if character.portrait}
-                {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-              {:else}
-                <span class='portrait gap'></span>
-              {/if}
-              <span class='name character'>
-                {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-                {character.name}
-              </span>
-              {#if character.active}<span class='status'></span>{/if}
-            </button>
-          </li>
+          {#if character.state !== 'dead' || showDead}
+            <li class='mine'>
+              <button on:click={openProfile(character)}>
+                {#if character.portrait}
+                  {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                {:else}
+                  <span class='portrait gap'></span>
+                {/if}
+                <span class='name character' class:dead={character.state === 'dead'}>
+                  {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                  {#if character.state === 'dead'}<span class='material skull' title='Mrtvolka'>skull</span>{/if}
+                  {character.name}
+                </span>
+                {#if character.active}<span class='status'></span>{/if}
+              </button>
+            </li>
+          {/if}
         {/each}
       </ul>
     {/if}
@@ -97,10 +110,17 @@
   <div class='empty'>Žádné postavy</div>
 {/if}
 {#if !selected}
-  <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
+  <div class='row'>
+    <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
+    <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
+  </div>
 {/if}
 
 <style>
+  .row {
+    display: flex;
+    justify-content: space-between;
+  }
   .empty {
     padding: 20px 0px;
     text-align: center;
@@ -111,19 +131,22 @@
     color: var(--dim);
     margin: 0px;
     margin-bottom: 10px;
-    display: flex;
+    display: inline-block;
     align-items: center;
   }
     a:hover h4 {
       color: var(--linkHover);
     }
+    .selected {
+      margin-bottom: 20px;
+    }
   ul.characters {
     list-style: none;
     padding: 0px;
     margin: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
   }
-    button {
+    ul button {
       position: relative;
       font-weight: bold;
       background: none;
@@ -140,22 +163,26 @@
       justify-content: space-between;
       gap: 10px;
     }
-      button:hover .portrait {
+      ul button:hover .portrait {
         transform: scale(1.1);
       }
-      button:hover .name {
+      ul button:hover .name {
         color: var(--characterHover);
       }
-      button:hover .unread {
+      ul button:hover .unread {
         color: var(--maximum);
       }
       .name {
         flex: 1;
       }
-        .name .star {
+        .name .star, .name .skull {
           font-size: 17px;
           margin-right: 5px;
+          transform: translateY(2px);
         }
+      .dead {
+        text-decoration: line-through;
+      }
       .portrait, .gap {
         display: block;
         width: 40px;
@@ -191,8 +218,6 @@
         font-size: 25px;
       }
       .newChar {
-        margin: auto;
-        margin-top: 30px;
         display: block;
         width: fit-content;
       }
