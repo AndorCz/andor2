@@ -61,7 +61,7 @@
 
     // Get info about old user
     const hashedPassword = md5(oldPassword).toString()
-    const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id').eq('old_login', oldLogin.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
+    const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id, old_created_at').eq('old_login', oldLogin.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
     if (userError || !userInfoMigrate) { return showError('Chyba čtení starých uživatelů: ' + userError.message) }
 
     // Check if user is already linked to some user
@@ -85,9 +85,12 @@
     if (authError) { return handleError(authError) }
     if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
 
-    // Create user profile with old_id
+    // Create user profile with old_id and old_created_at
     if (authData && authData.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name: newLogin, old_id: oldId })
+      const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId }
+      if (userInfoMigrate.old_created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
+      const { error: profileError } = await supabase.from('profiles').insert(newProfile)
+
       if (!profileError) {
         redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
       } else {
