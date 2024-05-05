@@ -9,8 +9,6 @@
   let selected // { character, gameIndex, characterIndex }
   let showDead = false
 
-  console.log('characters', characters)
-
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
   }

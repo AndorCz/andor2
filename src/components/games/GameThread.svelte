@@ -66,7 +66,7 @@
   }
 
   function getActiveCharacterId () {
-    if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId})) {
+    if (myCharacters.find((char) => { return char.id === $gameStore.activeCharacterId })) {
       return $gameStore.activeCharacterId // set character from localStorage
     } else if (myCharacters[0]) {
       return myCharacters[0].id // no character in localStorage, set first character

@@ -17,6 +17,7 @@
   import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import Colors from '@components/common/Colors.svelte'
+  import Mention from '@tiptap/extension-mention'
 
   export let userId
   export let content = ''
@@ -26,6 +27,7 @@
   export let minHeight = 140
   export let enterSend = false
   export let fonts = null
+  export let mentionList = []
 
   let editor
   let editorEl
@@ -35,7 +37,7 @@
   let currentAlign
   let isFocused = false
   let wasFocused = false
-  // let debug = ''
+  let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -86,6 +88,58 @@
   const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
 
   onMount(() => {
+    const extensions = [
+      StarterKit,
+      EnterKeyHandler,
+      Underline,
+      TextStyle,
+      Reply,
+      FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
+      Details.configure({ HTMLAttributes: { class: 'details' } }),
+      DetailsSummary,
+      DetailsContent,
+      Image.configure(),
+      CustomImage,
+      Link.configure({ openOnClick: false }),
+      Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
+      BubbleMenuText.configure({
+        pluginKey: 'bubbleMain',
+        element: bubbleEl,
+        tippyOptions: {
+          maxWidth: 'none',
+          onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+        },
+        shouldShow: ({ editor, view }) => { // don't show for images
+          const { selection } = editor.state
+          const isImage = selection.node && selection.node.type.name === 'image'
+          return !selection.empty && !isImage
+        }
+      }),
+      BubbleMenuImage.configure({
+        pluginKey: 'bubbleImage',
+        element: bubbleElImage,
+        tippyOptions: {
+          maxWidth: 'none',
+          onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+        },
+        shouldShow: ({ editor, view }) => { // only show for images
+          const { selection } = editor.state
+          const isImage = selection.node && selection.node.type.name === 'image'
+          return isImage
+        }
+      }),
+      TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
+    ]
+
+    if (mentionList.length) {
+      extensions.push(Mention.configure({
+        HTMLAttributes: { class: 'mention' },
+        suggestion: {
+          items: ({ query }) => { return mentionList.filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) }
+        }
+      }))
+    }
+
     const config = {
       element: editorEl,
       content,
@@ -113,11 +167,12 @@
           }
           */
           if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse plain text format (possibly with HTML content)
-            const text = event.clipboardData.getData('text/plain')
+            let text = event.clipboardData.getData('text/plain')
+            text = text.replace(/\n/g, '<br>') // replace newlines with line breaks
             if (editor.isEmpty) {
-              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: false } })
+              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: 'full' } })
             } else {
-              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: false } })
+              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: 'full' } })
             }
             event.preventDefault()
             return true
@@ -134,48 +189,7 @@
           return false
         }
       },
-      extensions: [
-        StarterKit,
-        EnterKeyHandler,
-        Underline,
-        TextStyle,
-        FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
-        Reply,
-        Details.configure({ HTMLAttributes: { class: 'details' } }),
-        DetailsSummary,
-        DetailsContent,
-        Image.configure(),
-        CustomImage,
-        Link.configure({ openOnClick: false }),
-        Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
-        BubbleMenuText.configure({
-          pluginKey: 'bubbleMain',
-          element: bubbleEl,
-          tippyOptions: {
-            maxWidth: 'none',
-            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
-          },
-          shouldShow: ({ editor, view }) => { // don't show for images
-            const { selection } = editor.state
-            const isImage = selection.node && selection.node.type.name === 'image'
-            return !selection.empty && !isImage
-          }
-        }),
-        BubbleMenuImage.configure({
-          pluginKey: 'bubbleImage',
-          element: bubbleElImage,
-          tippyOptions: {
-            maxWidth: 'none',
-            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
-          },
-          shouldShow: ({ editor, view }) => { // only show for images
-            const { selection } = editor.state
-            const isImage = selection.node && selection.node.type.name === 'image'
-            return isImage
-          }
-        }),
-        TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
-      ],
+      extensions,
       onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected
       onSelectionUpdate: ({ editor }) => {
         // check for headings and paragraph
@@ -193,7 +207,7 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
-        // debug = JSON.stringify(editor.getJSON(), null, '\t')
+        debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -335,7 +349,7 @@
   {/if}
 </div>
 
-<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
+<div id='debug' style='white-space: pre-wrap'>{debug}</div>
 
 <style>
   .wrapper {
