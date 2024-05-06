@@ -82,7 +82,11 @@
   async function transferCharacter (transferTo) {
     if (!window.confirm('Opravdu chceš převést postavu?')) { return }
     const { error } = await supabase.from('characters').update({ open: true, transfer_to: transferTo }).eq('id', character.id)
-    await supabase.from('messages').insert({ content: `Nabízím ti postavu ${character.name} ve hře ${game.name}`, sender_user: user.id, recipient_user: transferTo })
+    await supabase.from('messages').insert({
+      content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button'>Přijmout postavu</a> nebo <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button'>Odmítnout</a>`,
+      sender_user: user.id,
+      recipient_user: transferTo
+    })
     if (error) { return handleError(error) }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${transferTo}` })
@@ -171,14 +175,14 @@
     {#if character.state === 'alive'}
       <!-- active player options -->
       {#if isPlayer && character.accepted && !isStoryteller }
-        <button on:click={() => leaveGame()}>odejít</button>
+        <button on:click={leaveGame}>odejít</button>
       {/if}
 
       {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
         <div class='actions' class:visible={actionsVisible}>
           <!-- recruitment actions -->
           {#if character.open && character.player.id !== user.id} <!--  && (!character.transfer_to || character.transfer_to === user.id) -->
-            <button on:click={() => claimCharacter()} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
+            <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
           {/if}
           {#if isPlayer && !character.accepted && !isStoryteller}
             <button on:click={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
@@ -187,16 +191,16 @@
           {#if isStoryteller}
             {#if character.accepted}
               {#if !character.open && character.player.id === user.id}
-                <button on:click={() => freeCharacter()} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
+                <button on:click={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
               {/if}
               {#if !character.open && character.player.id !== user.id}
-                <button on:click={() => takeOverCharacter()} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
+                <button on:click={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
               {/if}
               <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
-              <button on:click={() => killCharacter()} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+              <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
             {:else}
-              <button on:click={() => acceptCharacter()}>přijmout</button>
-              <button on:click={() => rejectCharacter()}>odmítnout</button>
+              <button on:click={acceptCharacter}>přijmout</button>
+              <button on:click={rejectCharacter}>odmítnout</button>
             {/if}
           {/if}
         </div>
@@ -206,8 +210,8 @@
       {/if}
     {:else if character.state === 'dead'}
       <!-- graveyard -->
-      <button on:click={() => reviveCharacter()}>oživit</button>
-      <button on:click={() => deleteCharacter()}>smazat</button>
+      <button on:click={reviveCharacter}>oživit</button>
+      <button on:click={deleteCharacter}>smazat</button>
     {/if}
 
     <div class='transferModal' class:visible={showTransfer}>
@@ -216,7 +220,7 @@
         <Select bind:value={newOwner} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
           <div slot='empty'>Uživatel nenalezen</div>
         </Select>
-        <button on:click={() => transferCharacter()} class='material square'>check</button>
+        <button on:click={transferCharacter} class='material square'>check</button>
       </div>
     </div>
   </td>
