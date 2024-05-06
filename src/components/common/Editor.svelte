@@ -4,9 +4,10 @@
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { CustomImage } from '@lib/editor/image'
-  import { resizeImage } from '@lib/utils'
+  import { resizeImage, isFilledArray } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
+  import { MentionRender } from '@lib/editor/mention'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
@@ -131,30 +132,13 @@
       TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
     ]
 
-    if (mentionList.length) {
+    if (isFilledArray(mentionList)) {
       extensions.push(
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
           suggestion: {
             items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) },
-            render: () => ({
-              onBeforeStart: (props) => {
-                console.log('onBeforeStart props', props)
-              },
-              onStart: (props) => {
-                console.log('onStart props', props)
-              },
-              onBeforeUpdate: (props) => {
-                console.log('onBeforeUpdate props', props)
-              },
-              onExit: (props) => {
-                console.log('onExit props', props)
-              },
-              onKeyDown: (props) => {
-                console.log('onKeyDown props', props)
-                return false // Ensure you return a boolean from onKeyDown as expected
-              }
-            })
+            render: MentionRender
           }
         })
       )
