@@ -138,7 +138,8 @@
           HTMLAttributes: { class: 'mention' },
           suggestion: {
             items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) },
-            render: MentionRender
+            render: MentionRender,
+            renderText ({ options, node }) { return `${node.attrs.label}` }
           }
         })
       )
@@ -174,9 +175,9 @@
             let text = event.clipboardData.getData('text/plain')
             text = text.replace(/\n/g, '<br>') // replace newlines with line breaks
             if (editor.isEmpty) {
-              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: 'full' } })
+              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: true } })
             } else {
-              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: 'full' } })
+              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: true } })
             }
             event.preventDefault()
             return true
@@ -226,6 +227,7 @@
     if (newContent !== '<p></p>') { // skip empty paragraph
       editor.commands.setContent(newContent)
     }
+    console.log('isEmpty', editor.isEmpty)
   }
 
   function handleStyleSelect (selectedOption) {

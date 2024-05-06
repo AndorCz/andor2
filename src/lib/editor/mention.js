@@ -7,9 +7,10 @@ export const MentionRender = (props) => {
   return {
     onStart: props => {
       container = document.createElement('div') // container for the Svelte component
+      container.tabIndex = -1
       component = new MentionList({
         target: container,
-        props: { items: props.items, command: props.command }
+        props: { ...props, onClose: () => { popup[0].hide() } }
       })
 
       if (props.clientRect) {
@@ -20,9 +21,11 @@ export const MentionRender = (props) => {
           showOnCreate: true,
           interactive: true,
           trigger: 'manual',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
+          onHide: () => { props.editor.view.focus() }
         })
       }
+      setTimeout(() => { container.firstElementChild.focus() }, 10)
     },
 
     onUpdate: (props) => { // update props

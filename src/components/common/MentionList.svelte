@@ -3,22 +3,24 @@
 
   export let items = []
   export let command
+  export let onClose
+
   let selectedIndex = 0
   let listElement
 
   const selectItem = (index) => {
     const item = items[index]
-    if (item) { command({ id: item.name }) }
+    if (item) { command({ label: item.name, id: item.id }) }
   }
 
   const handleKeydown = (event) => {
-    console.log('event', event.key)
     switch (event.key) {
       case 'ArrowUp': selectedIndex = (selectedIndex + items.length - 1) % items.length; break
       case 'ArrowDown': selectedIndex = (selectedIndex + 1) % items.length; break
       case 'Enter': selectItem(selectedIndex); break
-      case 'Escape': break // 2DO: Handle escape, close the popup
+      case 'Escape': onClose(); break
     }
+    event.preventDefault()
   }
 
   onMount(() => {
@@ -39,6 +41,9 @@
     flex-direction: column;
     gap: 5px;
   }
+    .mentionList:focus {
+      outline: 0px;
+    }
     .mentionList button {
       text-align: left;
     }
