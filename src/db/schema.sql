@@ -158,6 +158,7 @@ create table characters (
   name text,
   bio text,
   appearance text,
+  color text,
   storyteller_notes text,
   storyteller boolean not null default false,
   open boolean not null default false,

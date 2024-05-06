@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { Editor, Extension } from '@tiptap/core'
+  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { CustomImage } from '@lib/editor/image'
@@ -138,8 +138,14 @@
           HTMLAttributes: { class: 'mention' },
           suggestion: {
             items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) },
-            render: MentionRender,
-            renderText ({ options, node }) { return `${node.attrs.label}` }
+            render: MentionRender
+          },
+          renderHTML ({ options, node, HTMLAttributes }) {
+            return [
+              'span',
+              mergeAttributes({ class: 'char_' + node.attrs.id }, options.HTMLAttributes),
+              `${node.attrs.label}`
+            ]
           }
         })
       )
@@ -227,7 +233,6 @@
     if (newContent !== '<p></p>') { // skip empty paragraph
       editor.commands.setContent(newContent)
     }
-    console.log('isEmpty', editor.isEmpty)
   }
 
   function handleStyleSelect (selectedOption) {

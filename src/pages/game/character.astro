@@ -9,7 +9,7 @@
   let isStoryteller = false
 
   if (id) {
-    const { data: charData, error: charError } = await supabase.from('characters').select('id, game(id, name), player, portrait, name, bio, appearance, storyteller, storyteller_notes, open, accepted').eq('id', id).single()
+    const { data: charData, error: charError } = await supabase.from('characters').select('id, game(id, name), player, portrait, name, bio, appearance, storyteller, storyteller_notes, color, open, accepted').eq('id', id).single()
     if (charError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba čtení postavy: ' + charError.message)}`) }
     character = charData
 
