@@ -82,7 +82,7 @@
           <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit' use:tooltip>edit</button>
         {/if}
         {#if onDelete && canDelete}
-          <button on:click={() => onDelete($postStore.id)} class='material delete' title='Smazat' use:tooltip>delete</button>
+          <button on:click={() => onDelete($postStore.id, $postStore.dice)} class='material delete' title='Smazat' use:tooltip>delete</button>
         {/if}
         {#if canModerate && !$postStore.moderated}
           <button on:click={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>

@@ -119,8 +119,8 @@
     editing = false
   }
 
-  async function deletePost (id) {
-    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
+  async function deletePost (id, dice) {
+    if (!window.confirm(dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) { return }
     const res = await fetch(`/api/post?id=${id}&thread=${game.openai_thread}`, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
