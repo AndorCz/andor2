@@ -4,6 +4,8 @@
   import { redirectWithToast } from '@lib/utils'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
+    import { showError } from '@lib/toasts';
+    import People from '@components/sidebar/People.svelte';
 
   export let user
   export let game
@@ -76,6 +78,15 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
   }
 
+  async function transferCharacter (transferTo) {
+    if (!window.confirm('Opravdu chceš převést postavu?')) { return }
+    const { error } = await supabase.from('characters').update({ open: true, transfer_to: transferTo}).eq('id', character.id)
+    await supabase.from('messages').insert({ content: `Nabízím ti postavu ${character.name} ve hře ${game.name}`, sender_user: user.id, recipient_user: transferTo })
+    if (error) { return handleError(error) }
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${transferTo}` })
+  }
+
   async function freeCharacter () {
     if (!window.confirm('Opravdu dát na seznam volných postav? (Bude nabídnuta všem)')) { return }
     const { error } = await supabase.from('characters').update({ open: true }).eq('id', character.id)
@@ -86,12 +97,19 @@
 
   async function claimCharacter () {
     if (!window.confirm('Opravdu převzít postavu?')) { return }
-    const { error } = await supabase.rpc('claim_character', { character_id: character.id })
-    await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
-    await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
-    if (error) { return handleError(error) }
-    await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
+    if (character.transfer_to && character.transfer_to != user.id) {
+      showError("Postava není určena tobě!")
+    }
+    else {
+      const { error } = await supabase.rpc('claim_character', { character_id: character.id })
+      if (error) { return handleError(error) }
+      if (!error) {
+        await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+        await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
+        await charactersChanged()
+        redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
+      }
+    }
   }
 
   async function leaveGame () {
@@ -156,7 +174,7 @@
       {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
         <div class='actions' class:visible={actionsVisible}>
           <!-- recruitment actions -->
-          {#if character.open && character.player.id !== user.id}
+          {#if character.open && character.player.id !== user.id && (!character.transfer_to || character.transfer_to == user.id)}
             <button on:click={() => claimCharacter()}>vzít</button>
           {/if}
           {#if isPlayer && !character.accepted && !isStoryteller}
