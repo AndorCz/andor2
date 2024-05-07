@@ -7,8 +7,11 @@ export const GET = async ({ request, url, redirect, locals }) => {
   // get character data
   const { data, error } = await locals.supabase.rpc('transfer_character', { character_id: characterId })
   if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
-  console.log(data)
-  console.log(typeof data)
+
+  // add game bookmark
+  const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+  if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
+
   if (data) {
     return redirect(`/game/${gameId}?tab=chars&toastType=success&toastText=` + encodeURIComponent('Postava byla přijata'))
   } else {
