@@ -158,14 +158,17 @@
       <img src='/default_char.jpg' class='portrait empty' alt='portrét postavy' />
     {/if}
   </td>
-  <td class='name'>
-    {#if character.storyteller}
-      <span use:tooltip class='material star' title='Vypravěč'>star</span>
-    {/if}
+  <td class='name' style={`--nameColor: ${character.color || '#968ebd'}`}>
     {#if isPlayer || isStoryteller}
-      <a href={`${window.location.origin}/game/character?id=${character.id}`} class='character'>{character.name}</a>
+      <a href={`${window.location.origin}/game/character?id=${character.id}`} class='full character'>
+        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
+        {character.name}
+      </a>
     {:else}
-      {character.name}
+      <div class='full'>
+        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
+        {character.name}
+      </div>
     {/if}
   </td>
   {#if isStoryteller}
@@ -251,23 +254,33 @@
       .portrait img {
         display: block;
       }
-    .name {
+      .name {
       width: 100%;
+      min-width: 100px;
     }
-      .name .star {
-        font-size: 17px;
-        margin-right: 5px;
+      .name .full {
+        color: var(--nameColor);
+        padding: 15px;
+        display: block;
+        height: 100%;
+        font-size: 22px;
       }
-
-    .name, .player {
+        .name .star {
+          font-size: 17px;
+          margin-right: 5px;
+        }
+        .name a.full:hover {
+          color: var(--linkHover);
+          background-color: var(--block);
+        }
+    .player {
       padding: 15px;
       min-width: 100px;
     }
-      .name a {
-        font-size: 22px;
-      }
+
     .options {
       position: relative;
+      padding: 10px;
     }
       .actions {
         display: flex;
