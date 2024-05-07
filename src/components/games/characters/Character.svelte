@@ -79,17 +79,17 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
   }
 
-  async function transferCharacter (transferTo) {
+  async function transferCharacter () {
     if (!window.confirm('Opravdu chceš převést postavu?')) { return }
-    const { error } = await supabase.from('characters').update({ open: true, transfer_to: transferTo }).eq('id', character.id)
+    const { error } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
     await supabase.from('messages').insert({
-      content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button'>Přijmout postavu</a> nebo <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button'>Odmítnout</a>`,
+      content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
       sender_user: user.id,
-      recipient_user: transferTo
+      recipient_user: newOwner.id
     })
     if (error) { return handleError(error) }
     await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${transferTo}` })
+    redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${newOwner.name}` })
   }
 
   async function claimCharacter () {
@@ -172,14 +172,14 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td class='options' use:clickOutside on:click_outside={handleClickOutside}>
-    {#if character.state === 'alive'}
-      <!-- active player options -->
-      {#if isPlayer && character.accepted && !isStoryteller }
-        <button on:click={leaveGame}>odejít</button>
-      {/if}
+    <div class='actions' class:visible={actionsVisible}>
+      {#if character.state === 'alive'}
+        <!-- active player options -->
+        {#if isPlayer && character.accepted && !isStoryteller }
+          <button on:click={leaveGame}>odejít</button>
+        {/if}
 
-      {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
-        <div class='actions' class:visible={actionsVisible}>
+        {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
           <!-- recruitment actions -->
           {#if character.open && character.player.id !== user.id} <!--  && (!character.transfer_to || character.transfer_to === user.id) -->
             <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
@@ -203,15 +203,15 @@
               <button on:click={rejectCharacter}>odmítnout</button>
             {/if}
           {/if}
-        </div>
-        {#if $platform === 'mobile'}
-          <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
+        {:else if character.state === 'dead'}
+          <!-- graveyard -->
+          <button on:click={reviveCharacter}>oživit</button>
+          <button on:click={deleteCharacter}>smazat</button>
         {/if}
       {/if}
-    {:else if character.state === 'dead'}
-      <!-- graveyard -->
-      <button on:click={reviveCharacter}>oživit</button>
-      <button on:click={deleteCharacter}>smazat</button>
+    </div>
+    {#if $platform === 'mobile'}
+      <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
     {/if}
 
     <div class='transferModal' class:visible={showTransfer}>
