@@ -1,5 +1,6 @@
-# generated types
+# generated
 .astro/
+dist/
 
 # node
 node_modules/

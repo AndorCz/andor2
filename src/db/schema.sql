@@ -985,6 +985,22 @@ end;
 $$ language plpgsql security definer;
 
 
+create or replace function transfer_character (character_id uuid) returns boolean as $$
+begin
+  update characters set player = auth.uid(), transfer_to = null where id = character_id and transfer_to = auth.uid();
+  return found;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function reject_transfer (character_id uuid) returns boolean as $$
+begin
+  update characters set transfer_to = null where id = character_id and transfer_to = auth.uid();
+  return found;
+end;
+$$ language plpgsql security definer;
+
+
 -- TRIGGERS --------------------------------------------
 
 
