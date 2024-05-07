@@ -159,12 +159,21 @@
     {/if}
   </td>
   <td class='name' style={`--nameColor: ${character.color || '#968ebd'}`}>
+  <td class='name' style={`--nameColor: ${character.color || '#968ebd'}`}>
     {#if isPlayer || isStoryteller}
       <a href={`${window.location.origin}/game/character?id=${character.id}`} class='full character'>
         {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
         {character.name}
       </a>
+      <a href={`${window.location.origin}/game/character?id=${character.id}`} class='full character'>
+        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
+        {character.name}
+      </a>
     {:else}
+      <div class='full'>
+        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
+        {character.name}
+      </div>
       <div class='full'>
         {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
         {character.name}

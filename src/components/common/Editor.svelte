@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { Editor, Extension } from '@tiptap/core'
+  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { CustomImage } from '@lib/editor/image'
@@ -139,6 +139,13 @@
           suggestion: {
             items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) },
             render: MentionRender
+          },
+          renderHTML ({ options, node, HTMLAttributes }) {
+            return [
+              'span',
+              mergeAttributes({ class: 'char_' + node.attrs.id }, options.HTMLAttributes),
+              `${node.attrs.label}`
+            ]
           }
         })
       )
@@ -174,9 +181,9 @@
             let text = event.clipboardData.getData('text/plain')
             text = text.replace(/\n/g, '<br>') // replace newlines with line breaks
             if (editor.isEmpty) {
-              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: 'full' } })
+              editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: true } })
             } else {
-              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: 'full' } })
+              editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: true } })
             }
             event.preventDefault()
             return true

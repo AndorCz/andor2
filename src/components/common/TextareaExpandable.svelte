@@ -18,7 +18,7 @@
   export let editing = false
   export let minHeight = 140
   export let enterSend = false
-  export let disableEmpty = false
+  export let disableEmpty = true
   export let maxlength = null
   export let loading = false
   export let singleLine = false
@@ -26,7 +26,7 @@
   export let fonts = null
   export let mentionList = null
 
-  let isEmpty = value === ''
+  let isEmpty = true
   let editorRef
   let tiptap
   let originalValue = value
@@ -34,10 +34,7 @@
   onMount(() => {
     if (allowHtml) {
       tiptap = editorRef.getEditor()
-      if (value) {
-        // set html content
-        editorRef.setContent(value)
-      }
+      if (value) { editorRef.setContent(value) } // set html content
     }
   })
 

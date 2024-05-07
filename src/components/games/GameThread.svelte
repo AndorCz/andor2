@@ -34,6 +34,7 @@
   const activeAudienceIds = writable()
   const posts = writable([])
   const limit = 50
+  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
   const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
   let otherCharacters = []
 
@@ -118,8 +119,8 @@
     editing = false
   }
 
-  async function deletePost (id) {
-    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
+  async function deletePost (id, dice) {
+    if (!window.confirm(dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) { return }
     const res = await fetch(`/api/post?id=${id}&thread=${game.openai_thread}`, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
@@ -195,7 +196,7 @@
         {#if game.archived}
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
-          <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} mentionList={game.characters} showButton disableEmpty />
+          <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
           <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
         {/if}
