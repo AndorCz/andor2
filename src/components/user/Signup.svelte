@@ -28,7 +28,7 @@
   }
 
   async function signUpNewUser () {
-    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
+    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
@@ -37,9 +37,7 @@
   }
 
   async function validateUser () {
-    // TODO: Comment/uncomment for testing, remove comment before launch
-    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Zkus to prosím znovu nebo napiš na eskel.work@gmail.com') }
-
+    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     const hashedPassword = md5(oldPassword).toString()
     const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
 

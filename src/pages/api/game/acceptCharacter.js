@@ -13,7 +13,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
   if (existsError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(existsError.message)) }
 
   if (!charExists) {
-    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Postava nenalezena nebo se převádí na jiného uživatele.'))
+    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Postava nenalezena, nebo se převádí na jiného uživatele.'))
   }
 
   // get character data
