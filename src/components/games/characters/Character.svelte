@@ -92,6 +92,21 @@
     redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${newOwner.name}` })
   }
 
+  async function cancelTransfer() {
+    if (!window.confirm('Opravdu chceš zrušit převod?')) { return }
+    const oldOwner = character.transfer_to
+    const { error } = await supabase.from('characters').update({ open: false, transfer_to: null }).eq('id', character.id)
+    if (error) { return handleError(error) }
+    await supabase.from('messages').insert({
+      content: 'Nabídka byla zrušena',
+      sender_user: user.id,
+      recipient_user: oldOwner
+    })
+
+    await charactersChanged()
+    redirectWithToast({ toastType: 'success', toastText: `Nabídka zrušena` })
+  }
+
   async function claimCharacter () {
     if (!window.confirm('Opravdu převzít postavu?')) { return }
     const { error } = await supabase.rpc('claim_character', { character_id: character.id })
@@ -165,10 +180,6 @@
         {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
         {character.name}
       </a>
-      <a href={`${window.location.origin}/game/character?id=${character.id}`} class='full character'>
-        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
-        {character.name}
-      </a>
     {:else}
       <div class='full'>
         {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
@@ -193,7 +204,7 @@
 
         {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
           <!-- recruitment actions -->
-          {#if character.open && character.player.id !== user.id} <!--  && (!character.transfer_to || character.transfer_to === user.id) -->
+          {#if character.open && character.player.id !== user.id && !character.transfer_to}
             <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
           {/if}
           {#if isPlayer && !character.accepted && !isStoryteller}
@@ -202,14 +213,24 @@
           <!-- storyteller actions -->
           {#if isStoryteller}
             {#if character.accepted}
+              <!-- free character -->
               {#if !character.open && character.player.id === user.id}
                 <button on:click={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
               {/if}
+              <!-- take over character -->
               {#if !character.open && character.player.id !== user.id}
                 <button on:click={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
               {/if}
-              <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
-              <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+              <!-- transfer over character -->
+              {#if character.player.id == user.id && !character.transfer_to}
+                <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
+              {/if}
+              {#if character.transfer_to}
+                <button on:click={cancelTransfer}>zrušit převod</button>
+              {/if}
+              {#if !character.transfer_to}
+                <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+              {/if}
             {:else}
               <button on:click={acceptCharacter}>přijmout</button>
               <button on:click={rejectCharacter}>odmítnout</button>
