@@ -12,7 +12,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
     .maybeSingle()
 
   if (!charExists) {
-    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Nemáš právo přijmout tuto postavu'))
+    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Postava nenalezena nebo se provádí na jiného uživatele.'))
   }
 
   // get character data
