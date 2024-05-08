@@ -1,9 +1,11 @@
 
 export const GET = async ({ request, cookies, redirect, locals }) => {
+  const referer = request.headers.get('referer')
   try {
     cookies.delete('sb-access-token')
     cookies.delete('sb-refresh-token')
-    await locals.supabase.auth.signOut()
+    const { error } = await locals.supabase.auth.signOut()
+    if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
   } catch (error) {
     console.error(error.message)
   }
