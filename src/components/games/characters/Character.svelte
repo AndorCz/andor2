@@ -5,6 +5,7 @@
   import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl, userAutocomplete } from '@lib/database'
   import Select from 'svelte-select'
+    import { showError } from '@lib/toasts';
 
   export let user
   export let game
@@ -81,15 +82,29 @@
 
   async function transferCharacter () {
     if (!window.confirm('Opravdu chceš převést postavu?')) { return }
+    const { data } = await supabase
+        .from('characters')
+        .select('id',)
+        .eq('id', character.id)
+        .eq('transfer_to', null)
+        .eq('player', user.id)
+        .maybeSingle();
+    if (!data) {
+      showError('Postava nenalezena nebo se provádí na jiného uživatele.')
+    }
     const { error } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
-    await supabase.from('messages').insert({
-      content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
-      sender_user: user.id,
-      recipient_user: newOwner.id
-    })
-    if (error) { return handleError(error) }
-    await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${newOwner.name}` })
+    if (!error) {
+        await supabase.from('messages').insert({
+        content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
+        sender_user: user.id,
+        recipient_user: newOwner.id
+      })
+      await charactersChanged()
+      redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${newOwner.name}` })
+    }
+    else {
+      { return handleError(error) }
+    }
   }
 
   async function cancelTransfer() {
@@ -181,10 +196,6 @@
         {character.name}
       </a>
     {:else}
-      <div class='full'>
-        {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
-        {character.name}
-      </div>
       <div class='full'>
         {#if character.storyteller}<span use:tooltip class='material star' title='Vypravěč'>star</span>{/if}
         {character.name}
