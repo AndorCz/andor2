@@ -5,7 +5,6 @@
   import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl, userAutocomplete } from '@lib/database'
   import Select from 'svelte-select'
-    import { showError } from '@lib/toasts';
 
   export let user
   export let game
