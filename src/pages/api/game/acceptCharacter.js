@@ -4,15 +4,16 @@ export const GET = async ({ request, url, redirect, locals }) => {
   const { gameId, characterId } = Object.fromEntries(url.searchParams)
   if (!locals.user.id || !gameId || !characterId) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o postavě')) }
 
-  const { data: charExists } = await locals.supabase
+  const { data: charExists, error: existsError } = await locals.supabase
     .from('characters')
     .select('id')
     .eq('id', characterId)
     .eq('transfer_to', locals.user.id)
     .maybeSingle()
+  if (existsError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(existsError.message)) }
 
   if (!charExists) {
-    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Postava nenalezena nebo se provádí na jiného uživatele.'))
+    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Postava nenalezena nebo se převádí na jiného uživatele.'))
   }
 
   // get character data
