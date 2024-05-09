@@ -985,6 +985,14 @@ begin
 end;
 $$ language plpgsql security definer;
 
+create or replace function check_if_transferable(character_id uuid) returns boolean as $$
+begin
+  -- check if character belongs to owner and not being transferred already
+  return exists (
+    select 1 from characters where id = character_id and player = auth.uid() and transfer_to is null
+  );
+end;
+$$ language plpgsql;
 
 create or replace function transfer_character (character_id uuid) returns boolean as $$
 begin

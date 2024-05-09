@@ -58,7 +58,7 @@
   }
 </script>
 
-{#if userId}
+{#if userId && character.player === userId}
   <form method='POST' autocomplete='off' bind:this={formEl}>
     <div class='row'>
       <div class='labels'><label for='charName'>Jméno *</label></div>
