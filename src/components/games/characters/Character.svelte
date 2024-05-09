@@ -49,7 +49,7 @@
   async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
     const { error } = await supabase.rpc('reject_character', { character_id: character.id })
-    if (!own && user.id !== character.player.id) {
+    if (user.id !== character.player.id) {
       const { error: messageError } = await supabase.from('messages').insert({ content: 'Tvoje přihláška do mé hry byla odmítnuta.', sender_user: user.id, recipient_user: character.player.id })
       if (messageError) { return handleError(messageError) }
     }
