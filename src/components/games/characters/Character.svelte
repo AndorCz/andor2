@@ -31,8 +31,10 @@
     if (bookmarkError) { return handleError(bookmarkError) }
 
     // send welcome message to the new player
-    const { error: messageError } = await supabase.from('messages').insert({ content: game.welcome_message, sender_user: user.id, recipient_user: character.player.id })
-    if (messageError) { return handleError(messageError) }
+    if (user.id !== character.player.id) {
+      const { error: messageError } = await supabase.from('messages').insert({ content: game.welcome_message, sender_user: user.id, recipient_user: character.player.id })
+      if (messageError) { return handleError(messageError) }
+    }
 
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přijata' })
@@ -41,6 +43,10 @@
   async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
     const { error } = await supabase.rpc('reject_character', { character_id: character.id })
+    if (!own && user.id !== character.player.id) {
+      const { error: messageError } = await supabase.from('messages').insert({ content: 'Tvoje přihláška do mé hry byla odmítnuta.', sender_user: user.id, recipient_user: character.player.id })
+      if (messageError) { return handleError(messageError) }
+    }
     if (error) { return handleError(error) }
     redirectWithToast({ toastType: 'success', toastText: own ? 'Přihláška byla zrušena' : 'Postava byla odmítnuta' })
   }
@@ -61,8 +67,11 @@
     const { error: deadError } = await supabase.from('characters').update({ state: 'dead' }).eq('id', character.id)
     if (deadError) { return handleError(deadError) }
     await charactersChanged()
-    const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
-    if (insertError) { return handleError(insertError) }
+
+    if (user.id !== previousOwner) {
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
+      if (insertError) { return handleError(insertError) }
+    }
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přesunuta na hřbitov' })
   }
 
@@ -78,8 +87,10 @@
     if (error) { return handleError(error) }
     await charactersChanged()
     // Send message to player
-    const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
-    if (insertError) { return handleError(insertError) }
+    if (user.id !== previousOwner) {
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
+      if (insertError) { return handleError(insertError) }
+    }
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
   }
 
@@ -90,12 +101,14 @@
     const { error: updateError } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
     if (updateError) { return handleError(updateError) }
 
-    const { error: insertError } = await supabase.from('messages').insert({
-      content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
-      sender_user: user.id,
-      recipient_user: newOwner.id
-    })
-    if (insertError) { return handleError(insertError) }
+    if (user.id !== newOwner.id) {
+      const { error: insertError } = await supabase.from('messages').insert({
+        content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
+        sender_user: user.id,
+        recipient_user: newOwner.id
+      })
+      if (insertError) { return handleError(insertError) }
+    }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: `Postava byla nabídnuta hráči ${newOwner.name}` })
   }
@@ -105,9 +118,10 @@
     const oldOwner = character.transfer_to
     const { error } = await supabase.from('characters').update({ open: false, transfer_to: null }).eq('id', character.id)
     if (error) { return handleError(error) }
-    const { error: insertError } = await supabase.from('messages').insert({ content: 'Nabídka byla zrušena', sender_user: user.id, recipient_user: oldOwner })
-    if (insertError) { return handleError(insertError) }
-
+    if (user.id !== oldOwner) {
+      const { error: insertError } = await supabase.from('messages').insert({ content: 'Nabídka byla zrušena', sender_user: user.id, recipient_user: oldOwner })
+      if (insertError) { return handleError(insertError) }
+    }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Nabídka postavy zrušena' })
   }
@@ -120,8 +134,10 @@
     const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (upsertError) { return handleError(upsertError) }
 
-    const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
-    if (insertError) { return handleError(insertError) }
+    if (user.id !== game.owner.id) {
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
+      if (insertError) { return handleError(insertError) }
+    }
     await charactersChanged()
 
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })
@@ -143,8 +159,10 @@
       const { error: copyError } = await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
       if (copyError) { return handleError(copyError) }
     }
-    const { error: insertError } = await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
-    if (insertError) { return handleError(insertError) }
+    if (user.id !== game.owner.id) {
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
+      if (insertError) { return handleError(insertError) }
+    }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
