@@ -1,5 +1,5 @@
 ---
-	import Layout from '@layouts/layout.astro'
+  import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/characters/CharacterForm.svelte'
   import { uploadPortrait, getHash } from '@lib/database'
   import { base64ToBlob } from '@lib/utils'
@@ -47,7 +47,7 @@
         const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', gameId)
         if (timestampError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + timestampError.message)}`) }
 
-        if (id && user.id != gameData.owner) {
+        if (!id && user.id !== gameData.owner) {
           const { error: messageError } = await supabase.from('messages').insert({ content: `Hlásím se do tvé hry ${gameData.name}`, sender_user: user.id, recipient_user: gameData.owner })
           if (messageError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + messageError.message)}`) }
         }
