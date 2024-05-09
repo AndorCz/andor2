@@ -101,8 +101,9 @@
 
   async function transferCharacter () {
     if (!window.confirm('Opravdu chceš převést postavu?')) { return }
-    const found = supabase.rpc('check_if_transferable', { character_id: character.id }).single()
-    if (!found) { return handleError('Postava nenalezena, nebo se provádí na jiného uživatele.') }
+    const { data: found, error } = await supabase.rpc('check_if_transferable', { character_id: character.id }).single()
+    if (error) { return handleError(error) }
+    if (!found) { return handleError('Postava nenalezena, nebo se převádí na jiného uživatele.') }
     const { error: updateError } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
     if (updateError) { return handleError(updateError) }
 
