@@ -37,7 +37,8 @@
   }
 
   async function validateUser () {
-    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
+    // remove captcha when importing from old andor for now
+    // if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     const hashedPassword = md5(oldPassword).toString()
     const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
 
