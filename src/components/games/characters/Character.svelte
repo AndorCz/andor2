@@ -67,7 +67,7 @@
     const { error: deadError } = await supabase.from('characters').update({ state: 'dead' }).eq('id', character.id)
     if (deadError) { return handleError(deadError) }
     await charactersChanged()
-    
+
     if (user.id !== previousOwner) {
       const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
       if (insertError) { return handleError(insertError) }
@@ -100,7 +100,7 @@
     if (!data || checkError) { showError('Postava nenalezena, nebo se provádí na jiného uživatele.') }
     const { error: updateError } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
     if (updateError) { return handleError(updateError) }
-    
+
     if (user.id !== newOwner.id) {
       const { error: insertError } = await supabase.from('messages').insert({
         content: `Nabízím ti postavu ${character.name} ve hře ${game.name}.<br><a href='/api/game/acceptCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Přijmout postavu</a> <a href='/api/game/rejectCharacter?gameId=${game.id}&characterId=${character.id}' class='button' rel='noreferrer noopener'>Odmítnout</a>`,
@@ -133,7 +133,7 @@
 
     const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (upsertError) { return handleError(upsertError) }
-    
+
     if (user.id !== game.owner.id) {
       const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
       if (insertError) { return handleError(insertError) }
