@@ -21,7 +21,7 @@
 
   async function linkUserToOldAccount () {
     oldId = await getOldUserId(oldLogin, oldPassword)
-    if (!oldId) { return showError('Uživatel nenalezen nebo špatné heslo - pozor na velká a malá písmena') }
+    if (!oldId) { return showError('Uživatel nenalezen, nebo nesprávné heslo') }
     // Check if its not already linked
     const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
     if (idError) { return showError('Chyba migrace: ', idError.message) }
