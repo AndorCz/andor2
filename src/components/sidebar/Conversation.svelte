@@ -165,7 +165,6 @@
 <style>
   #conversation {
     position: fixed;
-    right: 20px;
     top: 20px;
     background-color: var(--panel);
     border-radius: 10px;
@@ -220,7 +219,7 @@
     .messages {
       border-top: 1px var(--block) solid;
       flex: 1;
-      overflow-y: scroll;
+      overflow-y: auto;
       scrollbar-width: thin;
       padding: 20px 20px 10px 20px;
     }
