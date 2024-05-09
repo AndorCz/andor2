@@ -1,6 +1,7 @@
 <script>
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
+  import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
@@ -19,20 +20,19 @@
   */
 
   async function generateStory () {
-    if (!confirm('Opravdu chceš vygenerovat nové podklady pro vypravěče? Přepíše obsah tohoto pole.')) { return }
+    if (!confirm('Opravdu chceš vygenerovat nové podklady pro vypravěče? Přepíše obsah pole níže.')) { return }
     generatingStory = true
-    game.prompt = 'načítám...'
-    const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ game: game.id, annotation: game.annotation, owner: game.owner.id, system: game.system }), headers: { 'Content-Type': 'application/json' } })
+    const res = await fetch('/api/game/generateStory', { method: 'POST', body: JSON.stringify({ name: game.name, game: game.id, annotation: game.annotation, prompt: game.prompt, owner: game.owner.id, system: game.system }), headers: { 'Content-Type': 'application/json' } })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    game.prompt = json.story
+    game.story = json.story
     // await updateAI()
     generatingStory = false
     showSuccess('Vygenerováno')
   }
 
   async function updateGameInfo () {
-    const newData = { prompt: game.prompt, notes: game.notes }
+    const newData = { prompt: game.prompt, notes: game.notes, story: game.story }
     const { error } = await supabase.from('games').update(newData).eq('id', game.id)
     if (error) { return handleError(error) }
     // await updateAI()
@@ -44,11 +44,13 @@
   <h2>Poznámky</h2>
   <EditableLong userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
-  <h2>Podklady pro AI</h2>
+  <h2>AI generování podkladů</h2>
   <EditableLong userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
   <br>
-  <button on:click={generateStory} disabled={generatingStory}>Vygenerovat podklady AI</button>
-  <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah tohoto pole.</span>
+  <ButtonLoading label='Vygenerovat podklady AI' handleClick={generateStory} loading={generatingStory} disabled={game.prompt?.length < 20} />
+  <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah pole níže.</span>
+  <br><br>
+  <EditableLong allowHtml placeholder='Výstup generovaných podkladů' userId={user.id} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
 </main>
 
 <style>

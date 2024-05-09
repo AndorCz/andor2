@@ -7,6 +7,7 @@
   export let userId
   export let onSave
   export let value = ''
+  export let placeholder = ''
   export let loading = false
   export let canEdit = false
   export let allowHtml = false
@@ -40,9 +41,9 @@
 
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} buttonIcon='done' showButton />
+    <TextareaExpandable {placeholder} {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} disableEmpty={false} buttonIcon='done' showButton />
   {:else}
-    <main class='editableLong'><Render html={value} /></main>
+    <main class='editableLong'><Render html={value || placeholder} /></main>
     {#if canEdit}
       <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
     {/if}

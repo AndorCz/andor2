@@ -1,7 +1,7 @@
 
 import { generatePost } from '@lib/openai'
 
-export const POST = async ({ request, redirect, locals }) => {
+export const POST = async ({ request, locals }) => {
   const data = await request.json()
 
   if (locals.user.id === data.owner) { // check if user is the owner of the game

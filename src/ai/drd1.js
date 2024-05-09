@@ -17,4 +17,4 @@ export const assistant = `
   ${baseAssistant.goal}
 `
 
-export const files = ['file-Ae5bz34Q9oFP1zMYTMW4cGNL', 'file-jdgppOijRhvDrnIDkoAfKD9T']
+// export const files = ['file-Ae5bz34Q9oFP1zMYTMW4cGNL', 'file-jdgppOijRhvDrnIDkoAfKD9T'] // not permanent, rework

@@ -1,4 +1,3 @@
-
 export const GET = async ({ request, url, redirect, locals }) => {
   const referer = request.headers.get('referer')
   const { gameId, characterId } = Object.fromEntries(url.searchParams)

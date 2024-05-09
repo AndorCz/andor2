@@ -20,9 +20,10 @@ export async function getStoryteller (system) {
 }
 
 export async function createAssistant (name, system) {
-  const { assistant: instructions, files } = await import(`../ai/${system}.js`)
-  const { id } = await openai.beta.assistants.create({ name, model: 'gpt-4-1106-preview', tools: [{ type: 'retrieval' }], instructions, file_ids: files }).catch(error => { return error })
-  return id
+  const { assistant: instructions } = await import(`../ai/${system}.js`)
+  const res = await openai.beta.assistants.create({ name, model: 'gpt-4-turbo', instructions }).catch(error => { return error })
+  if (res.error) { handleError(res.error) }
+  return res.id
 }
 
 export async function createThread () {
@@ -77,15 +78,23 @@ export async function editPost (threadId, messageId, newContent) {
   return await openai.beta.threads.messages.update(threadId, messageId, { content: [{ type: 'text', text: { value: newContent } }] }).catch(error => { return error })
 }
 
-export async function generateStory (prompt, system) {
+export async function generateStory (name, annotation, prompt, system) {
   try {
     const assistantId = await createAssistant('Temporary Assistant', system)
     const threadId = await createThread()
 
     // write the basic setting (place)
-    savePost(threadId, `Vycházej z tohoto zadání pro hru: ${prompt}
-        Nyní popiš první kategorii podkladů:
-        1. Místo: Kde se hra odehrává? Kdy? Vypiš na jeden řádek stručně tyto dvě faktické informace. Na další řádek přidej jednu větu kterou shrneš (či vymyslíš) aktuální setting a druhou větu o čem v kampani půjde.`
+    savePost(threadId, `Hrajeme stolní RPG hru jménem: ${name}
+      Popis pro hráče:
+      ${annotation}
+      ---
+      Toto je zadání vypravěče pro přípravu podkladů:
+      ${prompt}
+      ---
+      Výstup prosím formátuj pomocí HTML značek.
+      ---
+      Nyní popiš první kategorii podkladů:
+      1. Místo: Kde se hra odehrává? Kdy? Vypiš na jeden řádek stručně tyto dvě faktické informace. Na další řádek přidej jednu větu kterou shrneš (či vymyslíš) aktuální setting a druhou větu o čem v kampani půjde.`
     )
     await processRun(threadId, assistantId)
 
@@ -111,7 +120,8 @@ export async function generateStory (prompt, system) {
     // delete the thread and assistant
     await openai.beta.threads.del(threadId)
     await openai.beta.assistants.del(assistantId)
-
+    
+    console.log('responses', responses.join('\n\n'))
     return responses.join('\n\n')
   } catch (error) {
     console.error(error)

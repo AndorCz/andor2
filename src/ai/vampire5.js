@@ -36,4 +36,4 @@ export const assistant = `
   ${dictionary}
 `
 
-export const files = ['file-zhLBtLjBySf747SVgEL6CgDx']
+// export const files = ['file-zhLBtLjBySf747SVgEL6CgDx'] // not permanent, rework
