@@ -51,6 +51,17 @@
     $bookmarks = data?.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
     users = data?.users || []
     characters = data?.characters || { allGrouped: [], myStranded: [] }
+    // remove contacts for not-accepted
+    if (characters.allGrouped) {
+        characters.allGrouped.forEach(group => {
+            group.characters.forEach(character => {
+                if (character.accepted === false) {
+                    character.contacts = [];  // Set contacts to an empty array if not accepted
+                }
+            });
+        });
+    }
+
     // get tab information
     activeUsers = users.filter(u => u.active).length
     unreadUsers = users.some(u => u.unread)

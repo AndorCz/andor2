@@ -671,7 +671,7 @@ begin
             'game', c.game,
             'unread', (select coalesce(sum((contact->>'unread')::int), 0) from json_array_elements(c.contacts) as contact),
             'contacts', c.contacts,
-            'state', c.state
+            'accepted', c.accepted
           ) order by c.name
         ) as characters
       from user_games ug
