@@ -40,6 +40,19 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přijata' })
   }
 
+  async function copyCharacterPortrait(fromId, toId) {
+    try {
+      const { error: copyError } = await supabase.storage.from('portraits').copy(`${fromId}.jpg`, `${toId}.jpg`)
+      if (copyError) { showError(copyError.message) {
+      if (!copyError) {
+        return true
+      }
+    } catch (insertError) {
+      return false
+    }
+    return false
+  }
+
   async function rejectCharacter (own = false) {
     if (!window.confirm(own ? 'Opravdu zrušit přihlášení?' : 'Opravdu odmítnout postavu?')) { return }
     const { error } = await supabase.rpc('reject_character', { character_id: character.id })
@@ -59,8 +72,7 @@
       if (!window.confirm('Opravdu zabít postavu? Hráč bude vyřazen, vytvoří se mu kopie a postava se přesune na hřbitov')) { return }
       const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
       if (data && !error) { // copy portrait
-        const { error: copyError } = await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
-        if (copyError) { return handleError(copyError) }
+        await copyCharacterPortrait(character.id, data)
       }
     }
     // set character to dead
@@ -80,9 +92,9 @@
     // update the original character to remove the player and create copy for original player
     const previousOwner = character.player.id
     const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
-    if (data && !error) { // copy portrait
-      const { error: copyError } = await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
-      if (copyError) { return handleError(copyError) }
+    if (data && !error) { 
+      // copy portrait
+      await copyCharacterPortrait(character.id, data)
     }
     if (error) { return handleError(error) }
     await charactersChanged()
@@ -155,10 +167,9 @@
     if (!window.confirm('Opravdu odejít z hry? Postava zůstane a vytvoří se kopie')) { return }
     const { data, error } = await supabase.rpc('hand_over_character', { character_id: character.id, new_owner: game.owner.id })
     if (error) { return handleError(error) }
-    if (data && !error) { // copy portrait
-      const { error: copyError } = await supabase.storage.from('portraits').copy(`${character.id}.jpg`, `${data}.jpg`)
-      if (copyError) { return handleError(copyError) }
-    }
+    if (data && !error) { 
+      // copy portrait
+      await copyCharacterPortrait(character.id, data)
     if (user.id !== game.owner.id) {
       const { error: insertError } = await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
       if (insertError) { return handleError(insertError) }
@@ -166,6 +177,7 @@
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
+}
 
   async function reviveCharacter () {
     const { error } = await supabase.from('characters').update({ state: 'alive' }).eq('id', character.id)

@@ -30,7 +30,7 @@
     mapEl.addEventListener('drop', handleDrop)
 
     game.characters.forEach(character => {
-      if (!character.storyteller && character.accepted && !map.characters[character.id]) {
+      if (!character.storyteller && character.accepted && !map.characters[character.id] && character.state == 'alive') {
         availableCharacters.push(character)
       }
     })

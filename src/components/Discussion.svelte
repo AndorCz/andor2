@@ -35,7 +35,7 @@
   // set identities for discussion
   const getMyCharacters = () => {
     if (!useIdentities || !showDiscussion) { return [] }
-    let myCharacters = data.characters.filter((char) => { return char.player?.id === user.id })
+    let myCharacters = data.characters.filter((char) => { return char.player?.id === user.id && char.state === 'alive' })
     myCharacters = clone(myCharacters)
     myCharacters.forEach((char) => { char.type = 'character' })
     return myCharacters
