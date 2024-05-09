@@ -11,16 +11,16 @@ export default [
       globals: {
         ...globals.es2021,
         ...globals.node,
+        ...globals.browser,
         document: 'readonly',
         navigator: 'readonly',
         window: 'readonly'
       }
     },
-  
     rules: {
       'no-var': 'warn',
       'object-shorthand': ['warn', 'properties'],
-  
+
       'accessor-pairs': ['error', { setWithoutGet: true, enforceForClassMembers: true }],
       'array-bracket-spacing': ['error', 'never'],
       'array-callback-return': ['error', {
