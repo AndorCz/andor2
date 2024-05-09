@@ -40,12 +40,14 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přijata' })
   }
 
-  async function copyCharacterPortrait(from_id, to_id) {
+  async function copyCharacterPortrait(fromId, toId) {
     try {
-      const { error: copyError } = await supabase.storage.from('portraits').copy(`${from_id}.jpg`, `${to_id}.jpg`)
-      if (!copyError) { return true}
-    }
-    catch (insertError) { 
+      const { error: copyError } = await supabase.storage.from('portraits').copy(`${fromId}.jpg`, `${toId}.jpg`)
+      if (!copyError) {
+        showError(copyError.message)
+        return true
+      }
+    } catch (insertError) {
       return false
     }
     return false
