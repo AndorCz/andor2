@@ -74,7 +74,7 @@
     await charactersChanged()
 
     if (user.id !== previousOwner) {
-      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvoji postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
       if (insertError) { return handleError(insertError) }
     }
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přesunuta na hřbitov' })
@@ -93,7 +93,7 @@
     await charactersChanged()
     // Send message to player
     if (user.id !== previousOwner) {
-      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvojí postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
+      const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem tvoji postavu ${character.name}`, sender_user: user.id, recipient_user: previousOwner })
       if (insertError) { return handleError(insertError) }
     }
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla převzata' })

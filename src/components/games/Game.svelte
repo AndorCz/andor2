@@ -80,6 +80,12 @@
   $: bookmarkId = $bookmarks.games.find(b => b.id === game.id)?.bookmark_id
 </script>
 
+<svelte:head>
+  {#if game.fonts}
+    <link rel='stylesheet' href={`https://fonts.googleapis.com/css2?family=${game.fonts.join('&family=')}&display=swap'`}>
+  {/if}
+</svelte:head>
+
 <main>
   <div class='headline'>
     <h1>{game.name}{#if game.archived}&nbsp;(archiv){/if}</h1>
