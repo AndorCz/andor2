@@ -118,7 +118,7 @@
     const oldOwner = character.transfer_to
     const { error } = await supabase.from('characters').update({ open: false, transfer_to: null }).eq('id', character.id)
     if (error) { return handleError(error) }
-    if (sender_user.id != oldOwner) {
+    if (user.id != oldOwner) {
       const { error: insertError } = await supabase.from('messages').insert({ content: 'Nabídka byla zrušena', sender_user: user.id, recipient_user: oldOwner })
       if (insertError) { return handleError(insertError) }
     }
