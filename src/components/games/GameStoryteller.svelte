@@ -48,7 +48,7 @@
   <EditableLong userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
   <br>
   <ButtonLoading label='Vygenerovat podklady AI' handleClick={generateStory} loading={generatingStory} disabled={game.prompt?.length < 20} />
-  <span class='warning'>Upozornění: Tato akce potrvá cca 5 minut a přepíše obsah pole níže.</span>
+  <span class='warning'>Upozornění: Tato akce potrvá cca 5-10 minut a přepíše obsah pole níže.</span>
   <br><br>
   <EditableLong allowHtml placeholder='Výstup generovaných podkladů' userId={user.id} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
 </main>

@@ -28,7 +28,7 @@ if (typeof window !== 'undefined') {
   window.onbeforeunload = () => { window.isWindowClosed = true }
 }
 
-export function handleError (error, astro) {
+export function handleError (error) {
   if (typeof window !== 'undefined') {
     if (!window.isWindowClosed) { // ignore fetch errors (cancelled fetches) when the page is closing/reloading
       console.error(error)

@@ -12,7 +12,7 @@
   "dependencies": {
     "@3d-dice/dice-box-threejs": "0.0.12",
     "@astrojs/cloudflare": "9.0.0",
-    "@astrojs/svelte": "5.0.3",
+    "@astrojs/svelte": "5.4.0",
     "@jill64/svelte-sanitize": "1.2.4",
     "@supabase/ssr": "0.3.0",
     "@supabase/supabase-js": "2.38.4",
@@ -29,7 +29,7 @@
     "@tiptap/pm": "2.1.13",
     "@tiptap/starter-kit": "2.1.13",
     "@tiptap/suggestion": "^2.3.1",
-    "astro": "4.2.0",
+    "astro": "4.8.2",
     "crypto-js": "^4.2.0",
     "luxon": "3.4.4",
     "notyf": "3.10.0",
