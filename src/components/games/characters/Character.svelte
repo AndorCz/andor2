@@ -232,8 +232,8 @@
           {#if isPlayer && !character.accepted && !isStoryteller}
             <button on:click={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
           {/if}
-          <!-- storyteller actions -->
           {#if isStoryteller}
+          <!-- storyteller actions -->
             {#if character.accepted}
               <!-- free character -->
               {#if !character.open && character.player.id === user.id}
@@ -258,11 +258,12 @@
               <button on:click={rejectCharacter}>odmítnout</button>
             {/if}
           {/if}
-        {:else if character.state === 'dead'}
-          <!-- graveyard -->
-          <button on:click={reviveCharacter}>oživit</button>
-          <button on:click={deleteCharacter}>smazat</button>
         {/if}
+      {/if}
+      {#if character.state === 'dead' && isStoryteller}
+        <!-- graveyard -->
+        <button on:click={reviveCharacter}>oživit</button>
+        <button on:click={deleteCharacter}>smazat</button>
       {/if}
     </div>
     {#if $platform === 'mobile'}
