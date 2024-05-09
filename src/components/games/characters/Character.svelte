@@ -43,8 +43,8 @@
   async function copyCharacterPortrait(fromId, toId) {
     try {
       const { error: copyError } = await supabase.storage.from('portraits').copy(`${fromId}.jpg`, `${toId}.jpg`)
+      if (copyError) { showError(copyError.message) {
       if (!copyError) {
-        showError(copyError.message)
         return true
       }
     } catch (insertError) {
