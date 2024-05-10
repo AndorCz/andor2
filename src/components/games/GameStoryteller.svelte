@@ -28,8 +28,9 @@
 
     eventSource.onmessage = (event) => {
       showSuccess('Část příběhu vygenerována')
-      console.log('event.data', event.data)
-      game.story += decodeURIComponent(event.data)
+      if (event.data) {
+        game.story += decodeURIComponent(event.data)
+      }
     }
 
     eventSource.onerror = (event) => {
@@ -61,7 +62,7 @@
 
 <main>
   <h2>Poznámky</h2>
-  <EditableLong userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
+  <EditableLong userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>AI generování podkladů</h2>
   <EditableLong userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />

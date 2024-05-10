@@ -2,14 +2,24 @@ import { openai, createAssistant, createThread, processRun, getPosts, savePost }
 
 export const maxDuration = 600 // 10 minutes
 
-async function cleanup (threadId, assistantId) {
+async function finalize (threadId, assistantId) {
+  console.log('Finalizing')
+
+  // clear the thread and return all AI messages
+  const responses = await getPosts({ threadId, role: 'assistant', order: 'asc' })
+  if (responses.error) { handleError(responses.error) }
+
+  // save to db
+  const story = responses.join('\n\n')
+  const { error } = await locals.supabase.from('games').update({ story }).eq('id', gameId)
+  if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
+  
   await openai.beta.threads.del(threadId)
-  await openai.beta.assistants.del(assistantId)  
+  await openai.beta.assistants.del(assistantId)
 }
 
 export const GET = async ({ request, url, locals }) => {
   const { name, annotation, prompt, system, gameId } = Object.fromEntries(url.searchParams)
-  const encoder = new TextEncoder()
 
   // check if user is a storyteller for the game
   const { data: storytellerData, error: storytellerError } = await locals.supabase.rpc('is_storyteller', { game_id: gameId }).single()
@@ -21,10 +31,12 @@ export const GET = async ({ request, url, locals }) => {
       async start(controller) {
 
         request.signal.addEventListener('abort', async () => {
-          await cleanup(threadId, assistantId)
-          controller.error(new Error('Zrušeno uživatelem'))
+          console.log('abort fired')
+          await finalize(threadId, assistantId)
+          controller.close()
         })
 
+        const encoder = new TextEncoder()
         const assistantId = await createAssistant('Temporary Assistant', decodeURIComponent(system))
         const threadId = await createThread()
 
@@ -70,16 +82,7 @@ export const GET = async ({ request, url, locals }) => {
         data = await processRun(threadId, assistantId, true)
         if (data) { controller.enqueue(encoder.encode(`data: ${encodeURIComponent(data)}\n\n`)) } else { return 'Failed to generate the story (plot)' } 
 
-        // clear the thread and return all AI messages
-        const responses = await getPosts({ threadId, role: 'assistant', order: 'asc' })
-        if (responses.error) { handleError(responses.error) }
-
-        // save to db
-        const story = responses.join('\n\n')
-        const { error } = await locals.supabase.from('games').update({ story }).eq('id', gameId)
-        if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
-
-        await cleanup(threadId, assistantId)
+        await finalize(threadId, assistantId)
 
         controller.close()
       }

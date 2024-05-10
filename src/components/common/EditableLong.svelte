@@ -48,7 +48,7 @@
       <Loading />
     {/if}
     <main class='editableLong'><Render html={value || placeholder} /></main>
-    {#if canEdit}
+    {#if canEdit && !loading}
       <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
     {/if}
   {/if}
