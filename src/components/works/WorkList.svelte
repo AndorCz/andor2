@@ -106,10 +106,14 @@
     {/each}
   {/if}
 {:else}
-  <center>Žádná díla nenalezena</center>
+  <p class='info'>Žádná díla nenalezena</p>
 {/if}
 
 <style>
+  .info {
+    padding: 20px;
+    text-align: center;
+  }
   .headline {
     justify-content: space-between;
   }

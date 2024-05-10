@@ -121,10 +121,14 @@
     {/each}
   {/if}
 {:else}
-  <p>Žádné hry nenalezeny</p>
+  <p class='info'>Žádné hry nenalezeny</p>
 {/if}
 
 <style>
+  .info {
+    padding: 20px;
+    text-align: center;
+  }
   .headline {
     justify-content: space-between;
   }

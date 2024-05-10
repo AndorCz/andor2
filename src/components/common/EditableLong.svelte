@@ -2,6 +2,7 @@
   // Shows a long text that can be edited in place
   import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
+  import Loading from '@components/common/Loading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let userId
@@ -43,6 +44,9 @@
   {#if isEditing}
     <TextareaExpandable {placeholder} {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} disableEmpty={false} buttonIcon='done' showButton />
   {:else}
+    {#if loading}
+      <Loading />
+    {/if}
     <main class='editableLong'><Render html={value || placeholder} /></main>
     {#if canEdit}
       <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>

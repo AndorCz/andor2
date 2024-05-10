@@ -81,10 +81,14 @@
     {/each}
   {/if}
 {:else}
-  <p>Žádné diskuze nenalezeny</p>
+  <p class='info'>Žádné diskuze nenalezeny</p>
 {/if}
 
 <style>
+  .info {
+    padding: 20px;
+    text-align: center;
+  }
   .headline {
     justify-content: space-between;
   }
