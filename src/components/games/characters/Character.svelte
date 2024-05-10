@@ -101,8 +101,9 @@
 
   async function transferCharacter () {
     if (!window.confirm('Opravdu chceš převést postavu?')) { return }
-    const { data, error: checkError } = await supabase.from('characters').select('id').eq('id', character.id).eq('transfer_to', null).eq('player', user.id).maybeSingle()
-    if (!data || checkError) { showError('Postava nenalezena, nebo se provádí na jiného uživatele.') }
+    const { data: found, error } = await supabase.rpc('check_if_transferable', { character_id: character.id }).single()
+    if (error) { return handleError(error) }
+    if (!found) { return handleError('Postava nenalezena, nebo se převádí na jiného uživatele.') }
     const { error: updateError } = await supabase.from('characters').update({ open: true, transfer_to: newOwner.id }).eq('id', character.id)
     if (updateError) { return handleError(updateError) }
 
@@ -124,8 +125,9 @@
     const { error } = await supabase.from('characters').update({ open: false, transfer_to: null }).eq('id', character.id)
     if (error) { return handleError(error) }
     if (user.id !== oldOwner) {
-      const { error: insertError } = await supabase.from('messages').insert({ content: 'Nabídka byla zrušena', sender_user: user.id, recipient_user: oldOwner })
-      if (insertError) { return handleError(insertError) }
+      // update message
+      const {error: messageUpdateError } = await supabase.rpc('update_transfer_message', { character_id: character.id, game_id: game.id, new_content: "<br>Nabídka byla zrušena!" })
+      if (messageUpdateError) { return handleError(insertError) }
     }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Nabídka postavy zrušena' })
