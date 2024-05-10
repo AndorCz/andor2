@@ -6,9 +6,15 @@ export const GET = async ({ request, url, redirect, locals }) => {
 
   // get character data
   const { data, error } = await locals.supabase.rpc('reject_transfer', { character_id: characterId })
+
   if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
+
+  // update message
+  const {error: messageUpdateError } = await locals.supabase.rpc('update_transfer_message', { character_id: characterId, game_id: gameId, new_content: "<br>Odmítnuto!" })
+  if (messageUpdateError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
+
   if (data) {
-    return redirect(`/game/${gameId}?tab=chars&toastType=success&toastText=` + encodeURIComponent('Postava byla přijata'))
+    return redirect(`/game/${gameId}?tab=chars&toastType=success&toastText=` + encodeURIComponent('Postava byla odmítnuta'))
   } else {
     return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Nemáš právo na tuto akci'))
   }

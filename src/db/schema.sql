@@ -1009,6 +1009,19 @@ begin
 end;
 $$ language plpgsql security definer;
 
+create or replace function update_transfer_message (character_id uuid, game_id integer, new_content text) returns boolean as $$
+begin
+  update messages 
+  set content = (
+        select case
+            when content like '%' || '/api/game/acceptCharacter?gameId=' || game_id || '&characterId=' || character_id || '%' then
+              concat(SPLIT_PART(content, '<br>', 1), '<br>' || new_content)
+            else content
+        end )
+    where content like '%' || '/api/game/acceptCharacter?gameId=' || game_id || '&characterId=' || character_id || '%';
+  return found;
+end;
+$$ language plpgsql security definer;
 
 -- TRIGGERS --------------------------------------------
 
