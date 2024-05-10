@@ -9,7 +9,6 @@ export default [
       sourceType: 'module',
       parserOptions: { ecmaFeatures: { jsx: true } },
       globals: {
-        ...globals.es2021,
         ...globals.node,
         ...globals.browser,
         document: 'readonly',
