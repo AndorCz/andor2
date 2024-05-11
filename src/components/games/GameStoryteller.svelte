@@ -1,7 +1,6 @@
 <script>
   import { supabase, handleError } from '@lib/database'
   import { showError, showSuccess } from '@lib/toasts'
-  import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
@@ -22,6 +21,7 @@
 
   async function generateStory () {
     if (!confirm('Opravdu chceš vygenerovat nové podklady pro vypravěče? Přepíše obsah pole níže.')) { return }
+    game.story = ''
     generatingStory = true
 
     eventSource = new EventSource(`/api/game/generateStory?name=${encodeURIComponent(game.name)}&annotation=${encodeURIComponent(game.annotation)}&prompt=${encodeURIComponent(game.prompt)}&system=${encodeURIComponent(game.system)}&gameId=${game.id}`)
@@ -33,13 +33,17 @@
       }
     }
 
+    eventSource.addEventListener('success', (event) => {
+      generatingStory = false
+      showSuccess('Vygenerováno')
+      eventSource.close()
+    })
+
     eventSource.onerror = (event) => {
-      if (eventSource.readyState === EventSource.CLOSED) { // Connection was closed
-        generatingStory = false
-        showSuccess('Vygenerováno')
-      } else {
-        showError('Nastala chyba při generování příběhu')
-      }
+      generatingStory = false
+      showError('Nastala chyba při generování příběhu')
+      eventSource.close()
+      console.log('event', event)
     }
 
     // await updateAI()

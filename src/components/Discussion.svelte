@@ -86,7 +86,6 @@
     if (data.id === 3) { // Special board "Nahlášení obsahu"
       const repliedIds = [...textareaValue.matchAll(/data-user="([^"]+)"/g)].map(match => match[1])
       if (repliedIds.length) { audience = repliedIds }
-      console.log(audience)
     }
     if (editing) {
       await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
