@@ -153,7 +153,6 @@
 </main>
 
 <style>
-
   main, center {
     margin-top: 30px;
   }
@@ -175,13 +174,15 @@
     }
 
   .pagination {
-    text-align: center;
+    text-align: left;
     margin-top: 70px;
   }
     .pagination button {
       margin: 5px;
       font-size: 22px;
-      padding: 15px 25px;
+      padding: 0px;
+      width: 40px;
+      height: 40px;
     }
   #replyPreview {
     position: absolute;
