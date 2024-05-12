@@ -191,4 +191,10 @@
       padding: 10px;
     }
   }
+
+  @media (max-width: 500px) {
+    .content {
+      padding: 10px 0px;
+    }
+  }
 </style>
