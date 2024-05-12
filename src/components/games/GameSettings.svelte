@@ -377,7 +377,7 @@
   }
     li {
       padding: 10px 20px;
-      margin-bottom: 1px;
+      margin-bottom: 2px;
       list-style-type: none;
       background: var(--block);
     }
