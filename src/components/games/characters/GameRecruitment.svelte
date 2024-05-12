@@ -6,7 +6,7 @@
   import EditableLong from '@components/common/EditableLong.svelte'
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
-  
+
   export let game = {}
   export let user = {}
   export let isStoryteller
@@ -32,8 +32,8 @@
   onMount(async () => {
     if (user.id) {
       const { data: myOpen, error: error2 } = await supabase.from('characters')
-      .select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted')
-      .eq('player', user.id).eq('state', 'alive').is('game', null)
+        .select('id, name, player:profiles(id, name), portrait, open, storyteller, state, accepted')
+        .eq('player', user.id).eq('state', 'alive').is('game', null)
       if (error2) { return handleError(error2) }
       characters.myOpen = myOpen
     }
@@ -52,8 +52,8 @@
   }
 
   async function signExisting () {
-    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller:false }).eq('id', myOpenSelected)
-    if (user.id != game.owner.id) {
+    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller: false }).eq('id', myOpenSelected)
+    if (user.id !== game.owner.id) {
       await supabase.from('messages').insert({ content: `Hlásím se do tvé hry ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
     }
     if (error) { return handleError(error) }
@@ -130,6 +130,7 @@
   }
   .row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-around;
     margin-top: 20px;
     gap: 40px;
@@ -141,8 +142,18 @@
   }
     .existing select {
       flex: 1;
+      min-width: 300px;
+      flex-wrap: wrap;
     }
     .empty {
       opacity: 0.5;
     }
+  @media (max-width: 500px) {
+    .existing {
+      flex-direction: column;
+    }
+    .existing select {
+      width: 100%;
+    }
+  }
 </style>

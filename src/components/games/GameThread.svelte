@@ -267,18 +267,20 @@
     justify-content: center;
   }
 
-  @media (max-width: 400px) {
+  @media (max-width: 500px) {
     .tools {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      margin-top: 0px;
+      margin-top: 10px;
     }
-    .tools button {
-      gap: 5px;
-    }
-    .tools .material {
-      font-size: 18px;
-    }
+      .tools button {
+        gap: 5px;
+        padding: 0px;
+        font-size: 21px;
+      }
+        .tools .material {
+          font-size: 18px;
+        }
   }
 </style>

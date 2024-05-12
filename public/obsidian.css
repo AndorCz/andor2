@@ -783,11 +783,25 @@ select {
 @media (max-width: 500px) {
   .tabs a, .tabs button {
     padding: 10px 8px;
+    font-size: 21px;
   }
     .tabs a.active, .tabs button.active {
       padding: 10px 15px;
     }
+  .tabs.secondary {
+    justify-content: space-between;
+  }
+  .tabs.secondary button {
+    padding: 0px;
+  }
+    .tabs.secondary button.active {
+      padding: 10px;
+    }
   .ProseMirror {
     padding-right: 15px;
+  }
+  button.square {
+    padding: 5px;
+    font-size: 20px;
   }
 }

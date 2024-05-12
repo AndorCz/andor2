@@ -57,4 +57,9 @@
       gap: 10px;
     }
   }
+  @media (max-width: 500px) {
+    select {
+      padding: 0px;
+    }
+  }
 </style>
