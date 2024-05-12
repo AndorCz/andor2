@@ -47,7 +47,10 @@
     {#if loading}
       <Loading />
     {/if}
-    <main class='editableLong'><Render html={value || placeholder} /></main>
+    <main class='editableLong'>
+      <Render html={value || placeholder} />
+      <div class='clear'></div>
+    </main>
     {#if canEdit && !loading}
       <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
     {/if}
@@ -77,6 +80,10 @@
       border-radius: 0px;
       padding: 10px 15px;
       border-radius: 10px 0px 10px 0px;
+    }
+
+    .clear {
+      clear: both;
     }
   @media (max-width: 500px) {
     main {
