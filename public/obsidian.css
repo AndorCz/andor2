@@ -800,8 +800,4 @@ select {
   .ProseMirror {
     padding-right: 15px;
   }
-  button.square {
-    padding: 5px;
-    font-size: 20px;
-  }
 }

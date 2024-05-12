@@ -5,6 +5,7 @@
   import { showSuccess } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import { Vtt } from '@lib/map/vtt'
+  import { stringToColor } from '@lib/utils'
   import { Character } from '@lib/map/character'
   import { getCanvasCoordinates } from '@lib/map/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -161,11 +162,11 @@
         <h3>Přidat postavu</h3>
         <div class='characterList'>
           {#each availableCharacters as character}
-            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character' style="--color: {character.color}">
+            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character'>
               {#if character.portraitUrl}
                 <img class='portrait' src={character.portraitUrl} alt={character.name} />
               {:else}
-                <span class='empty'></span>
+                <span class='empty' style="--color: {character.color || stringToColor(character.name)}"></span>
               {/if}
               <span class='name'>{character.name}</span>
             </button>

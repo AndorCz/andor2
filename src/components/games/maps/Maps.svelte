@@ -1,7 +1,7 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database'
   import { showSuccess } from '@lib/toasts'
-  import { isFilledArray, stringToColor } from '@lib/utils'
+  import { isFilledArray } from '@lib/utils'
   import Map from '@components/games/maps/Map.svelte'
 
   export let user
@@ -15,7 +15,6 @@
 
   game.characters?.forEach(character => {
     character.portraitUrl = character.portrait ? getPortraitUrl(character.id, character.portrait) : null
-    character.color = stringToColor(character.name)
   })
 
   async function deleteMap (mapId) {
