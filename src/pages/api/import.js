@@ -93,11 +93,11 @@ async function createGame (locals, oldGameData) {
       .from('old_homepages')
       .select('content')
       .eq('game_id', parseInt(oldGameData.id_game, 10))
-      .maybeSingle()
+      .maybeSingle()  
 
     let hpInfo = 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'
     hpInfo = (hpData && !hpError) ? hpData.content : hpInfo
-
+    
     // Create new game in database
     const { data, error: insertError } = await locals.supabase.from('games').insert({
       owner: locals.user.id,
@@ -126,6 +126,7 @@ async function createGame (locals, oldGameData) {
       .eq('storyteller', true)
       .single()
     if (gmError) throw new Error(`GM character not found: ${gmError.message}`)
+    console.log("I have GM")
 
     // Insert game description as the first post
     if (gmData) {
