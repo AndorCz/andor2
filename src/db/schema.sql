@@ -291,6 +291,16 @@ create or replace view posts_owner as
   order by
     p.created_at desc;
 
+create or replace view game_posts_owner as
+  select
+    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.important,
+    characters.name as owner_name,
+    characters.portrait as owner_portrait,
+    games.id as game_id
+  from posts p join games on p.thread = games.game_thread left join characters on p.owner = characters.id
+  where games.id is not null
+  order by p.created_at desc;
+
 create or replace view board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
   from boards b
@@ -468,14 +478,14 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text DEFAULT NULL)
+create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
   returns json as $$
 declare
   is_storyteller boolean;
   player_characters uuid[];
   search_lower text;
 begin
-  -- Normalize the search term to lowercase, handling NULL cases
+  -- normalize the search term to lowercase, handling NULL cases
   search_lower := lower(coalesce(_search, ''));
 
   -- check if the user is a storyteller in this game
@@ -487,12 +497,12 @@ begin
   return (
     with filtered_posts as (
       select p.*,
-        -- Check if a search term is provided, if not, use the original content
+        -- check if a search term is provided, if not, use the original content
         case
           when search_lower = '' then p.content
           else REGEXP_REPLACE(p.content, '(?i)' || _search, '<span class="highlight">' ||UPPER(_search)||'</span>', 'g')
         end as highlighted_content
-      from posts_owner p where p.thread = thread_id
+      from game_posts_owner p where p.thread = thread_id
       and (
         p.audience is null or is_storyteller or
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
@@ -501,13 +511,15 @@ begin
       -- search content and owner character name
       and (_search is null or (lower(p.content) like '%' || search_lower || '%') or (lower(p.owner_name) like '%' || search_lower || '%'))
     ), ordered_posts as (
-      select to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post
+      select 
+        to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post,
+        get_character_names(fp.audience) as audience_names
       from filtered_posts fp
-      order by created_at desc
+      order by fp.created_at desc
       limit _limit offset _offset
     )
     select json_build_object(
-      'posts', (select json_agg(op.post) from ordered_posts op),
+      'posts', (select json_agg(op.post || jsonb_build_object('audience_names', op.audience_names)) from ordered_posts op),
       'count', (select count(*) from filtered_posts)
     )
   );
