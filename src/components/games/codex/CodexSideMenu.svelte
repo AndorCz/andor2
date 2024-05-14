@@ -30,6 +30,7 @@
 
   $: if (Array.isArray(pages)) {
     visiblePageCount = isStoryteller ? pages.length : pages.filter((p) => { return !p.hidden }).length
+    pages.sort((a, b) => a.name.localeCompare(b.name)) // sort pages by name
   }
 </script>
 

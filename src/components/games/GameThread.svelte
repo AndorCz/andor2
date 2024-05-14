@@ -31,6 +31,8 @@
   let diceMode = 'icon'
   // let generatingPost = false
 
+  game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
+
   const activeAudienceIds = writable()
   const posts = writable([])
   const limit = 50
