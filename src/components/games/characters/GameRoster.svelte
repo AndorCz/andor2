@@ -19,6 +19,9 @@
       }
     }
   })
+
+  characters.storytellers.sort((a, b) => a.name.localeCompare(b.name))
+  characters.playing.sort((a, b) => a.name.localeCompare(b.name))
 </script>
 
 {#if game.open_game || isStoryteller || isPlayer}

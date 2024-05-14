@@ -29,6 +29,11 @@
     }
   })
 
+  // sort characters by name
+  characters.waiting.sort((a, b) => a.name.localeCompare(b.name))
+  characters.open.sort((a, b) => a.name.localeCompare(b.name))
+  characters.myOpen.sort((a, b) => a.name.localeCompare(b.name))
+
   onMount(async () => {
     if (user.id) {
       const { data: myOpen, error: error2 } = await supabase.from('characters')
