@@ -23,7 +23,7 @@
     {#each items as item}
       <div class='item'>
         {#if item.custom_header}
-          <img src={getHeaderUrl(slug, item.id)} alt={item.name} class='header' />
+          <img src={getHeaderUrl(slug, item.id, item.custom_header)} alt={item.name} class='header' />
         {/if}
         <main>
           <a href={`/${slug}/${item.id}`} class='name'><h2>{item.name}</h2></a>
