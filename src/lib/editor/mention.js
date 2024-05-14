@@ -25,7 +25,6 @@ export const MentionRender = (props) => {
           onHide: () => { props.editor.view.focus() }
         })
       }
-      setTimeout(() => { container.firstElementChild.focus() }, 10)
     },
 
     onUpdate: (props) => { // update props

@@ -43,7 +43,6 @@
       generatingStory = false
       showError('Nastala chyba při generování příběhu')
       eventSource.close()
-      console.log('event', event)
     }
 
     // await updateAI()

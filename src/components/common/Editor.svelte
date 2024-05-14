@@ -1,9 +1,10 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { supabase, handleError, getImageUrl } from '@lib/database'
+  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { CustomImage } from '@lib/editor/image'
+  import { EnterKeyHandler } from '@lib/editor/enter'
   import { resizeImage, isFilledArray } from '@lib/utils'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
@@ -68,33 +69,16 @@
     })
   }
 
-  const EnterKeyHandler = Extension.create({
-    name: 'enterKeyHandler',
-    addKeyboardShortcuts () {
-      return {
-        Enter: () => {
-          if (enterSend) {
-            if (!this.editor.isActive('code') && !event.shiftKey) { // trigger save when Shift is not pressed
-              if (!this.editor.isEmpty) { triggerSave() }
-              return true // prevents the default enter behavior
-            }
-          }
-          return false // allows the default behavior (new line) when Shift is pressed
-        }
-      }
-    }
-  })
-
   const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
   const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
 
   onMount(() => {
     const extensions = [
       StarterKit,
-      EnterKeyHandler,
       Underline,
       TextStyle,
       Reply,
+      EnterKeyHandler({ triggerSave, enterSend }),
       FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
       Details.configure({ HTMLAttributes: { class: 'details' } }),
       DetailsSummary,
@@ -137,7 +121,7 @@
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
           suggestion: {
-            items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5) },
+            items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {

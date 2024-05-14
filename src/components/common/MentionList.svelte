@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
 
   export let items = []
   export let command
@@ -15,21 +15,18 @@
 
   const handleKeydown = (event) => {
     switch (event.key) {
-      case 'ArrowUp': selectedIndex = (selectedIndex + items.length - 1) % items.length; break
-      case 'ArrowDown': selectedIndex = (selectedIndex + 1) % items.length; break
-      case 'Enter': selectItem(selectedIndex); break
-      case 'Escape': onClose(); break
+      case 'ArrowUp': selectedIndex = (selectedIndex + items.length - 1) % items.length; event.preventDefault(); break
+      case 'ArrowDown': selectedIndex = (selectedIndex + 1) % items.length; event.preventDefault(); break
+      case 'Enter': selectItem(selectedIndex); event.preventDefault(); break
+      case 'Escape': onClose(); event.preventDefault(); break
     }
-    event.preventDefault()
   }
 
-  onMount(() => {
-    if (listElement) { listElement.focus() }
-  })
+  onMount(() => { document.addEventListener('keydown', handleKeydown) })
+  onDestroy(() => { document.removeEventListener('keydown', handleKeydown) })
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-static-element-interactions -->
-<div bind:this={listElement} class='mentionList' on:keydown={handleKeydown} tabindex='0'>
+<div bind:this={listElement} class='mentionList'>
   {#each items as item, index}
     <button class='plain' class:selected={index === selectedIndex} on:click={() => selectItem(index)}>{item.name}</button>
   {/each}
@@ -40,6 +37,9 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    max-height: 200px;
+    padding: 10px;
+    overflow: auto;
   }
     .mentionList:focus {
       outline: 0px;

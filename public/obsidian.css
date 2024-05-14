@@ -688,8 +688,8 @@ select {
   background-color: var(--background) !important;
   color: var(--text) !important;
   font-size: 18px !important;
-  padding: 10px;
   box-shadow: 1px 1px 6px #0002;
+  padding: 0px;
 }
 .tippy-arrow {
   color: var(--background) !important;

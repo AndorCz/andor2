@@ -192,6 +192,8 @@
     transform: scale(0.75);
     transform-origin: top left;
     padding: 20px;
+    background-color: var(--panel);
+    box-shadow: 0px 0px 10px var(--background);
   }
   @media (max-width: 860px) {
     #replyPreview {
