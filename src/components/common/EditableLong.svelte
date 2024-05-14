@@ -13,6 +13,7 @@
   export let canEdit = false
   export let allowHtml = false
   export let enterSend = false
+  export let mentionList
 
   let isEditing = false
   let originalValue = value
@@ -42,7 +43,7 @@
 
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable {placeholder} {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} disableEmpty={false} buttonIcon='done' showButton />
+    <TextareaExpandable {placeholder} {loading} {userId} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
   {:else}
     {#if loading}
       <Loading />

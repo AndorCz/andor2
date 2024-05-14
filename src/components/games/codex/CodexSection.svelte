@@ -14,6 +14,8 @@
   let activePage
   let visiblePageCount = 0
 
+  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
+
   async function loadData () {
     const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id })
     if (error) { return handleError(error) }
@@ -43,14 +45,14 @@
   <main>
     {#if activePage}
       {#if (!activePage.hidden || isStoryteller)}
-        <CodexPage {user} {isStoryteller} page={activePage} {onPageChange} />
+        <CodexPage {user} {game} {isStoryteller} page={activePage} {onPageChange} />
       {:else}
         <div class='content'><p class='info'>Tato stránka je skrytá</p></div>
       {/if}
     {:else}
       <!-- Base section content -->
       <div class='content'>
-        <EditableLong userId={user.id} bind:value={activeSection.content} onSave={updateSection} canEdit={isStoryteller} allowHtml />
+        <EditableLong userId={user.id} bind:value={activeSection.content} onSave={updateSection} canEdit={isStoryteller} {mentionList} allowHtml />
       </div>
     {/if}
   </main>

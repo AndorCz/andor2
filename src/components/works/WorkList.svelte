@@ -134,9 +134,6 @@
   .editorial {
     background-color: var(--prominent) !important;
   }
-  center {
-    padding: 50px;
-  }
 
   /* blocks */
 

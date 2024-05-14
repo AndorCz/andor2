@@ -6,9 +6,12 @@
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user
+  export let game
   export let page
   export let isStoryteller
   export let onPageChange
+
+  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
 
   async function updatePage () {
     const { error } = await supabase.from('codex_pages').update({ content: page.content }).eq('id', page.id)
@@ -53,7 +56,7 @@
 </script>
 
 <div class='content'>
-  <EditableLong userId={user.id} bind:value={page.content} onSave={updatePage} canEdit={isStoryteller} allowHtml />
+  <EditableLong userId={user.id} bind:value={page.content} onSave={updatePage} canEdit={isStoryteller} {mentionList} allowHtml />
 </div>
 <footer>
   <div class='meta'>

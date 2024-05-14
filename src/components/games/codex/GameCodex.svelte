@@ -17,6 +17,7 @@
   let searchEl
   let searchPhrase = ''
   let searchResults = []
+  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
 
   onMount(() => {
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
@@ -95,7 +96,7 @@
     {/if}
     {#if activeSection.slug === 'general'}
       <!-- single section only -->
-      <EditableLong userId={user.id} bind:value={game.info} onSave={updateGeneral} canEdit={isStoryteller} allowHtml />
+      <EditableLong userId={user.id} bind:value={game.info} onSave={updateGeneral} canEdit={isStoryteller} {mentionList} allowHtml />
       <br><br>
       Správce hry: {game.owner.name}
     {:else if activeSection.slug === 'search'}
