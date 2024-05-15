@@ -8,6 +8,7 @@
   let gamesEl
   let boardsEl
   let worksEl
+  let sorting = false
   let saving = false
 
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
@@ -16,26 +17,31 @@
 
   onMount(() => {
     if ($bookmarks.games.length) {
-      new Sortable(gamesEl, { animation: 150, group: { name: 'games', pull: false }, onEnd: (sort) => saveOrder('games', sort) })
+      new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
     if ($bookmarks.boards.length) {
-      new Sortable(boardsEl, { animation: 150, group: { name: 'boards', pull: false }, onEnd: (sort) => saveOrder('boards', sort) })
+      new Sortable(boardsEl, { animation: 150, handle: '.handle', group: { name: 'boards', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('boards', sort) })
     }
     if ($bookmarks.works.length) {
-      new Sortable(worksEl, { animation: 150, group: { name: 'works', pull: false }, onEnd: (sort) => saveOrder('works', sort) })
+      new Sortable(worksEl, { animation: 150, handle: '.handle', group: { name: 'works', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('works', sort) })
     }
   })
 
-  async function saveOrder (type, sort) {
+  function sortStart (event) { sorting = true }
+
+  async function sortEnd (type, sort) {
+    sorting = false
     if (sort.oldIndex === sort.newIndex) { return }
+    saving = true
     for (const [index, child] of Array.from(sort.from.children).entries()) {
       const bookmarkId = child.dataset.id
       await updateIndex(bookmarkId, index)
     }
+    saving = false
   }
 
   async function updateIndex (bookmarkId, newIndex) {
-    const { data, error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmarkId)
+    const { error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmarkId)
     if (error) { handleError(error) }
   }
 
@@ -53,6 +59,9 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
+        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
       </li>
     {/each}
   </ul>
@@ -69,6 +78,9 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
+        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
       </li>
     {/each}
   </ul>
@@ -85,6 +97,9 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
+        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
       </li>
     {/each}
   </ul>
@@ -111,20 +126,37 @@
   }
   ul {
     list-style: none;
-    padding: 0px 10px;
+    padding: 0px;
+    padding-left: 10px;
   }
     li {
       padding: 8px 0px;
-    }
-    li a {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
-      .unread {
-        color: var(--new);
+      li a {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
-    li.active a {
-      color: var(--text);
-    }
+        .unread {
+          color: var(--new);
+        }
+      li.active a {
+        color: var(--text);
+      }
+      .handle {
+        cursor: grab;
+        color: var(--block);
+        min-width: 25px;
+        min-height: 25px;
+      }
+        .handle:hover {
+          color: var(--dim);
+        }
+        .handle.hidden {
+          display: none;
+        }
 </style>

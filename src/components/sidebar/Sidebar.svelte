@@ -202,6 +202,7 @@
 
   #panels, .login {
     padding: 20px;
+    padding-right: 10px;
     border-radius: 10px;
     background-color: var(--panel);
     position: relative;

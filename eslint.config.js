@@ -17,6 +17,7 @@ export default [
       }
     },
     rules: {
+      'svelte/no-at-html-tags': 'off',
       'no-var': 'warn',
       'object-shorthand': ['warn', 'properties'],
 
@@ -146,7 +147,7 @@ export default [
       'no-multi-spaces': 'error',
       'no-multi-str': 'error',
       'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
-      'no-new': 'error',
+      'no-new': 'off',
       'no-new-func': 'error',
       'no-new-object': 'error',
       'no-new-symbol': 'error',
