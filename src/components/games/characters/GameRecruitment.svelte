@@ -51,10 +51,12 @@
     showSuccess('Uloženo')
   }
 
+  /*
   async function charactersChanged (event) {
     const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game.id)
     if (timestampError) { return handleError(timestampError) }
   }
+  */
 
   async function signExisting () {
     const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller: false }).eq('id', myOpenSelected)
@@ -62,7 +64,7 @@
       await supabase.from('messages').insert({ content: `Hlásím se do tvé hry ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
     }
     if (error) { return handleError(error) }
-    await charactersChanged()
+    // await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přihlášena do hry' })
   }
 </script>
