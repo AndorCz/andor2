@@ -7,6 +7,13 @@
   const { data: openBoards, error: openError } = await supabase.from('board_list').select('*').eq('open', true).order('id', { ascending: false })
   if (openError) { console.error(openError) }
 
+  // put boards id 1,2 and 3 at the top of the list
+  openBoards.sort((a, b) => {
+    if (a.id < 4) return -1
+    if (b.id < 4) return 1
+    return 0
+  })
+
   const { data: privateBoards, error: privateError } = await supabase.from('board_list').select('*').eq('open', false).order('id', { ascending: false })
   if (privateError) { console.error(privateError) }
 ---
