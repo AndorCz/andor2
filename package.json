@@ -36,15 +36,16 @@
     "openai": "4.20.1",
     "pixi-filters": "^6.0.0",
     "pixi.js": "^8.0.5",
+    "sortablejs": "^1.15.2",
     "svelte": "4.0.0",
     "svelte-easy-crop": "2.0.3",
     "svelte-select": "5.8.3",
     "tippy.js": "6.3.7"
   },
   "devDependencies": {
-    "globals": "15.2.0",
     "eslint": "9.2.0",
     "eslint-plugin-astro": "1.1.2",
-    "eslint-plugin-svelte": "2.38.0"
+    "eslint-plugin-svelte": "2.38.0",
+    "globals": "15.2.0"
   }
 }

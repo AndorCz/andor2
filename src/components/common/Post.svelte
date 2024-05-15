@@ -25,7 +25,7 @@
   const postStore = writable(post)
   let expanded = false
 
-  const onHeaderClick = () => {
+  function onHeaderClick () {
     if ($postStore.moderated) { expanded = !expanded }
   }
 

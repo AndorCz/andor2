@@ -237,6 +237,7 @@ create table bookmarks (
   game_id int4,
   board_id int4,
   work_id int4,
+  index smallint default 0,
   created_at timestamp with time zone default current_timestamp,
   constraint unique_user_game unique (user_id, game_id),
   constraint unique_user_board unique (user_id, board_id),
@@ -576,6 +577,7 @@ begin
     (
       select jsonb_agg(jsonb_build_object(
         'bookmark_id', b.id,
+        'index', b.index,
         'id', g.id,
         'name', g.name,
         'created_at', b.created_at,
@@ -595,6 +597,7 @@ begin
     (
       select jsonb_agg(jsonb_build_object(
         'bookmark_id', b.id,
+        'index', b.index,
         'id', brd.id,
         'name', brd.name,
         'created_at', b.created_at,
@@ -611,6 +614,7 @@ begin
     (
       select jsonb_agg(jsonb_build_object(
         'bookmark_id', b.id,
+        'index', b.index,
         'id', w.id,
         'name', w.name,
         'created_at', b.created_at,
