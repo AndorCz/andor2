@@ -93,7 +93,6 @@
     h1 {
       flex: 1;
       margin: 0;
-      overflow-wrap: anywhere;
     }
     .headline button {
       flex-shrink: 0;

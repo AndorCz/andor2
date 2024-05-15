@@ -83,6 +83,7 @@ body, a {
 h1, h2, h3, h4, h5 {
   font-family: var(--headlineFont);
   line-height: 120%;
+  overflow-wrap: anywhere;
 }
 
 h1, h2, h3, h4 {
