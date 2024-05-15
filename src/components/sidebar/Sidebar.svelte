@@ -12,6 +12,7 @@
   export let user = {}
 
   let showSidebar = false
+  let loginInProgress = false
 
   // bookmarks
   let bookmarkUnreadTotal = 0
@@ -67,6 +68,7 @@
 
   async function signInWithEmail () {
     if (!email || !password) { return }
+    loginInProgress = true
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { handleError(new Error('Neplatné přihlašovací údaje')) }
     if (data.session?.access_token && data.session?.refresh_token) {
@@ -74,6 +76,7 @@
       document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=100*1000*60*60*24*365`
       redirectWithToast({ toastType: 'success', toastText: 'Přihlášení proběhlo úspěšně' })
     }
+    loginInProgress = false
   }
 
   $: bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
@@ -124,7 +127,7 @@
         <input type='email' class='w100' placeholder='E-mail' bind:value={email} />
         <div class='row'>
           <input type='password' placeholder='Heslo' bind:value={password} />
-          <button type='submit' class='material confirm' on:click={signInWithEmail}>login</button>
+          <button type='submit' class='material confirm' on:click={signInWithEmail} disabled={loginInProgress}>login</button>
         </div>
         <div class='row links'>
           <a href='/signup' class='register'>Registrovat</a>
@@ -133,7 +136,7 @@
       </div>
       <div class='login google'>
         <form action='/api/auth/login' method='post' data-astro-reload><!-- data-astro-reload prevents an issue from view-transition -->
-          <button value='google' name='provider' type='submit' class='google w100 large'>Přihlásit přes Google</button>
+          <button value='google' name='provider' type='submit' class='google w100 large' disabled={loginInProgress}>Přihlásit přes Google</button>
         </form>
       </div>
     {/if}
