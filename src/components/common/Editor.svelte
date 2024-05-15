@@ -1,14 +1,14 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError, getImageUrl } from '@lib/database'
-  import { Editor, Extension, mergeAttributes } from '@tiptap/core'
+  import { Editor, mergeAttributes } from '@tiptap/core'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { CustomImage } from '@lib/editor/image'
-  import { EnterKeyHandler } from '@lib/editor/enter'
   import { resizeImage, isFilledArray } from '@lib/utils'
+  import { EnterKeyHandler } from '@lib/editor/enter'
+  import { MentionRender } from '@lib/editor/mention'
+  import { CustomImage } from '@lib/editor/image'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
-  import { MentionRender } from '@lib/editor/mention'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
@@ -36,7 +36,7 @@
   let bubbleEl
   let bubbleElImage
   let currentStyle
-  let currentAlign
+  let currentAlign = 'left'
   let isFocused = false
   let wasFocused = false
   // let debug = ''
@@ -190,8 +190,9 @@
         // check for headings and paragraph
         const headingLevel = editor.getAttributes('heading').level
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
-        // check for text alignment based on https://github.com/ueberdosis/tiptap/issues/4240#issuecomment-1673411677
-        currentAlign = ['left', 'center', 'right', 'justify'].find((alignment) => editor.isActive({ textAlign: alignment }))
+        const alignments = ['left', 'center', 'right', 'justify']
+        currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
+        console.log('selection fired, currentAlign:', currentAlign)
       },
       onFocus () {
         isFocused = true
@@ -226,12 +227,12 @@
       case 'heading3': editor.chain().focus().setHeading({ level: 3 }).run(); break
       default: editor.chain().focus().setParagraph().run()
     }
-    // selectedStyle = selectedOption.detail.value
+    currentStyle = selectedOption.detail.value
   }
 
   function handleAlignSelect (selectedOption) {
     editor.chain().focus().setTextAlign(selectedOption.detail.value).run()
-    // selectedAlign = selectedOption.value
+    currentAlign = selectedOption.detail.value
   }
 
   function handleFontSelect (selectedOption) {

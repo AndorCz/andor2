@@ -7,12 +7,9 @@
   export let defaultLabel
   export let title
 
-  // let selected = null
   let isOpen = false
   let dropdownEl
   const dispatch = createEventDispatcher()
-
-  // $: selected = current // Automatically update selected based on 'current' prop
 
   onMount(() => { document.addEventListener('click', handleClickOutside) })
   onDestroy(() => { document.removeEventListener('click', handleClickOutside) })
@@ -32,32 +29,34 @@
   function getUnselectedOptions () { return options.filter(option => option.value !== selected) }
 </script>
 
-<span class='dropdown' bind:this={dropdownEl}>
-  <button type='button' class='dropdown-toggle material' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
-    {#if selected && findSelectedOption()}
-      {#if iconsOnly}
-        {findSelectedOption().icon}
+{#key selected}
+  <span class='dropdown' bind:this={dropdownEl}>
+    <button type='button' class='dropdown-toggle material' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
+      {#if selected && findSelectedOption()}
+        {#if iconsOnly}
+          {findSelectedOption().icon}
+        {:else}
+          {@html findSelectedOption().label}
+        {/if}
       {:else}
-        {@html findSelectedOption().label}
+        {defaultLabel}
       {/if}
-    {:else}
-      {defaultLabel}
+    </button>
+    {#if isOpen}
+      <div class='options'>
+        {#each getUnselectedOptions() as option}
+          <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
+            {#if iconsOnly}
+              {option.icon}
+            {:else}
+              {@html option.label}
+            {/if}
+          </button>
+        {/each}
+      </div>
     {/if}
-  </button>
-  {#if isOpen}
-    <div class='options'>
-      {#each getUnselectedOptions() as option}
-        <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
-          {#if iconsOnly}
-            {option.icon}
-          {:else}
-            {@html option.label}
-          {/if}
-        </button>
-      {/each}
-    </div>
-  {/if}
-</span>
+  </span>
+{/key}
 
 <style>
   .dropdown {

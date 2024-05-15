@@ -158,7 +158,7 @@ export default [
       'no-redeclare': ['error', { builtinGlobals: false }],
       'no-regex-spaces': 'error',
       'no-return-assign': ['error', 'except-parens'],
-      'no-self-assign': 'never',
+      'no-self-assign': 'off',
       'no-self-compare': 'error',
       'no-sequences': 'error',
       'no-shadow-restricted-names': 'error',
