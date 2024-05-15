@@ -8,6 +8,7 @@
   let gamesEl
   let boardsEl
   let worksEl
+  let saving = false
 
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
@@ -15,40 +16,37 @@
 
   onMount(() => {
     if ($bookmarks.games.length) {
-      new Sortable(gamesEl, { animation: 150, group: { name: 'games', pull: false }, onEnd: ({ oldIndex, newIndex }) => switchBookmarks({ type: 'games', oldIndex, newIndex }) })
+      new Sortable(gamesEl, { animation: 150, group: { name: 'games', pull: false }, onEnd: (sort) => saveOrder('games', sort) })
     }
     if ($bookmarks.boards.length) {
-      new Sortable(boardsEl, { animation: 150, group: { name: 'boards', pull: false }, onEnd: ({ oldIndex, newIndex }) => switchBookmarks({ type: 'boards', oldIndex, newIndex }) })
+      new Sortable(boardsEl, { animation: 150, group: { name: 'boards', pull: false }, onEnd: (sort) => saveOrder('boards', sort) })
     }
     if ($bookmarks.works.length) {
-      new Sortable(worksEl, { animation: 150, group: { name: 'works', pull: false }, onEnd: ({ oldIndex, newIndex }) => switchBookmarks({ type: 'works', oldIndex, newIndex }) })
+      new Sortable(worksEl, { animation: 150, group: { name: 'works', pull: false }, onEnd: (sort) => saveOrder('works', sort) })
     }
   })
 
-  async function switchBookmarks ({ type, oldIndex, newIndex }) {
-    if (oldIndex === newIndex) { return }
-    await updateIndex($bookmarks[type][oldIndex], newIndex)
-    await updateIndex($bookmarks[type][newIndex], oldIndex)
+  async function saveOrder (type, sort) {
+    if (sort.oldIndex === sort.newIndex) { return }
+    for (const [index, child] of Array.from(sort.from.children).entries()) {
+      const bookmarkId = child.dataset.id
+      await updateIndex(bookmarkId, index)
+    }
   }
 
-  async function updateIndex (bookmark, newIndex) {
-    const { data, error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmark.bookmark_id)
+  async function updateIndex (bookmarkId, newIndex) {
+    const { data, error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmarkId)
     if (error) { handleError(error) }
   }
 
   $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length
-  // $: $bookmarks = { // sort games by index and then by name
-  //   games: $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name)),
-  //   boards: $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name)),
-  //   works: $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
-  // }
 </script>
 
 {#if $bookmarks.games.length > 0}
   <h4>Hry</h4>
-  <ul class='games' bind:this={gamesEl}>
+  <ul class='games' bind:this={gamesEl} class:saving>
     {#each $bookmarks.games as bookmark}
-      <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname}>
+      <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/game/' + bookmark.id + '?tab=game'}>
           {bookmark.name}
           {#if bookmark.unread && window.location.pathname !== '/game/' + bookmark.id}
@@ -62,9 +60,9 @@
 
 {#if $bookmarks.boards.length > 0}
   <h4>Diskuze</h4>
-  <ul class='boards' bind:this={boardsEl}>
+  <ul class='boards' bind:this={boardsEl} class:saving>
     {#each $bookmarks.boards as bookmark}
-      <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname}>
+      <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/board/' + bookmark.id}>
           {bookmark.name}
           {#if bookmark.unread && window.location.pathname !== '/board/' + bookmark.id}
@@ -78,13 +76,13 @@
 
 {#if $bookmarks.works.length > 0}
   <h4>Tvorba</h4>
-  <ul class='works' bind:this={worksEl}>
-    {#each $bookmarks.works as work}
-      <li class='bookmark' class:active={'/work/' + work.id === window.location.pathname}>
-        <a href={'/work/' + work.id}>
-          {work.name}
-          {#if work.unread && window.location.pathname !== '/work/' + work.id}
-            <span class='unread'>{work.unread}</span>
+  <ul class='works' bind:this={worksEl} class:saving>
+    {#each $bookmarks.works as bookmark}
+      <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/work/' + bookmark.id}>
+          {bookmark.name}
+          {#if bookmark.unread && window.location.pathname !== '/work/' + bookmark.id}
+            <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
       </li>
@@ -97,6 +95,10 @@
 {/if}
 
 <style>
+  .saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
   .empty {
     padding: 20px 0px;
     text-align: center;
