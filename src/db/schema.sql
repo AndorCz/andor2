@@ -708,13 +708,13 @@ begin
                 'unread', coalesce((
                   select count(*)
                   from messages m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character <> c.id and m.recipient_user = auth.uid()
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = auth.uid()
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by other_c.name
             )
             from characters other_c
-            where other_c.game = c.game and other_c.id <> c.id and other_c.player <> c.player
+            where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
             and (other_c.state = 'alive' or (other_c.state = 'dead' and (
               select count(*)
               from messages m
@@ -723,7 +723,7 @@ begin
             ) > 0))
           ) as contacts
         from characters c
-        where c.player = auth.uid() and c.state <> 'deleted'
+        where c.player = auth.uid() and c.state != 'deleted'
       ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
@@ -732,7 +732,7 @@ begin
       select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
-      where c.player = auth.uid() and c.game is null and c.state <> 'deleted'
+      where c.player = auth.uid() and c.game is null and c.state != 'deleted'
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
