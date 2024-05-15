@@ -134,6 +134,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      overflow-wrap: anywhere;
     }
       li a {
         flex: 1;

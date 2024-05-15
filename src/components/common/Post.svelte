@@ -148,7 +148,7 @@
     .content {
       background-color: var(--block);
       padding: 20px;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
       /* box-shadow: 2px 2px 3px #0002; */
     }
       .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .time, .hidden .reply {

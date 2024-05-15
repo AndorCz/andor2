@@ -91,8 +91,12 @@
     gap: 10px;
   }
     h1 {
-      margin: 0px;
       flex: 1;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .headline button {
+      flex-shrink: 0;
     }
   .mods {
     text-align: right;
