@@ -80,6 +80,7 @@ alter table public.works enable row level security;
 
 create policy "READ for everyone" on public.works for select to public using (true);
 create policy "ALL for owners" on public.works for all to authenticated using (owner = (select auth.uid()));
+create policy "INSERT for owners, unpublished" on public.works for insert to authenticated with check (published = false);
 
 
 -- GENERAL --------------------------------------------

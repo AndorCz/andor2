@@ -6,7 +6,7 @@
   export let table = 'game_list'
 
   async function loadData () {
-    const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false }).limit(5)
+    const { data, error } = await supabase.from(table).select('*').eq('published', true).order('created_at', { ascending: false }).limit(5)
     if (error) { handleError(error) }
     return data
   }

@@ -82,6 +82,7 @@ create table games (
   context_dice boolean not null default true,
   fonts text[] default '{}',
   archived boolean default false,
+  published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   info_changed_at timestamp with time zone default current_timestamp,
   characters_changed_at timestamp with time zone default current_timestamp,
@@ -146,6 +147,7 @@ create table boards (
   bans uuid[] default '{}'::uuid[],
   members uuid[] default '{}'::uuid[],
   custom_header text,
+  published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint boards_owner_fkey foreign key (owner) references profiles(id) on delete restrict,
   constraint boards_thread_fkey foreign key (thread) references threads(id)
@@ -185,6 +187,7 @@ create table works (
   dislikes uuid[] default '{}'::uuid[],
   reports uuid[] default '{}'::uuid[],
   editorial boolean default false,
+  published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint works_owner_fkey foreign key (owner) references profiles (id) on delete set null
 );
