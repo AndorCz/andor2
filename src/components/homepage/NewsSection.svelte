@@ -16,10 +16,9 @@
   }
 </script>
 
-<h3>{headline}</h3>
-
 {#await loadData() then items}
   <div id='news'>
+    <h3>{headline}</h3>
     {#each items as item}
       <div class='item'>
         {#if item.custom_header}
@@ -45,20 +44,22 @@
 
 <style>
   h3 {
-    margin-top: 0px;
+    margin: 10px 0px;
     font-size: 20px;
   }
   #news {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
     .item {
       display: flex;
-      width: 100%;
+      flex-direction: column;
     }
       .item .image {
-        max-width: 100px;
+        max-width: 100%;
+        max-height: 50px;
         display: block;
         object-fit: cover;
       }
@@ -78,7 +79,7 @@
             line-height: 120%;
           }
         .annotation {
-          font-size: 18px;
+          font-size: 17px;
           font-style: italic;
           font-variation-settings: 'wght' 400;
           margin: 5px 0px;

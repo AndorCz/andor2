@@ -36,6 +36,8 @@
 <style>
   #editorial {
     padding: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
     text-align: justify;
     text-justify: inter-word;
     hyphens: auto;
