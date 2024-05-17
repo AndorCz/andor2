@@ -14,7 +14,7 @@
   let hasAccess = boardData.open
   let isMod = boardData.owner.id === user.id || boardData.mods.includes(user.id)
 
-  if (user) {
+  if (user.id) {
     if (boardData.open) { // open board, allow everyone except banned users
       hasAccess = !boardData.bans.includes(user.id)
     } else { // private board, allow owner, mods and members

@@ -11,7 +11,7 @@
 
   export let user = {}
   export let data = {}
-  export let canModerate
+  export let canModerate = false
   export let slug
   export let contentSection
   export let isPermitted = true
@@ -64,6 +64,7 @@
   async function loadPosts () {
     let query
     if (data.id === 3 && !canModerate) { // Special board "Nahlášení obsahu" (see only your posts and responses from mods)
+      if (!user.id) { return }
       query = await supabase.from('posts_owner').select('*', { count: 'exact' }).or(`owner.eq.${user.id},audience.cs.{${user.id}}`).match({ thread }).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     } else {
       query = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
