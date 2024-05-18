@@ -143,7 +143,28 @@ alter table public.user_reads enable row level security;
 
 create policy "ALL for owners" on public.user_reads for all to authenticated using (user_id = (select auth.uid()));
 
+-- A1 Character import --
+alter table public.old_chars enable row level security;
+create policy "READ for migrated character owner" on "public"."old_chars" as PERMISSIVE for SELECT to authenticated using (id_user = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+create policy "UPDATE for migrated character owner" on "public"."old_chars" as PERMISSIVE for UPDATE to authenticated using (id_user = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+-- A1 Games import --
+alter table public.old_games enable row level security;
+create policy "READ for migrated game author" on "public"."old_games" as PERMISSIVE for SELECT to authenticated using (gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+create policy "UPDATE for migrated game author" on "public"."old_games" as PERMISSIVE for UPDATE to authenticated using (gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+-- A1 Homepages import --
+alter table public.old_homepages enable row level security;
+create policy "READ for game homepage owner" on "public"."old_homepages" as PERMISSIVE for SELECT to authenticated using (game_id in (SELECT id_game FROM old_games WHERE gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid())));
+create policy "UPDATE for game homepage owner" on "public"."old_homepages" as PERMISSIVE for UPDATE to authenticated using (game_id in (SELECT id_game FROM old_games WHERE gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid())));
+-- A1 Posts import --
+alter table public.old_posts enable row level security;
+create policy "READ posts for game owner" on "public"."old_posts" as PERMISSIVE for SELECT to authenticated using (game_id in (SELECT id_game FROM old_games WHERE gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid())));
+create policy "UPDATE posts for game owner" on "public"."old_posts" as PERMISSIVE for UPDATE to authenticated using (game_id in (SELECT id_game FROM old_games WHERE gm_id = (SELECT old_id FROM profiles WHERE id = auth.uid())));
+-- A1 Users import --
 
+-- A1 Works import --
+alter table public.old_works enable row level security;
+create policy "READ for migrated work author" on "public"."old_works" as PERMISSIVE for SELECT to authenticated using (owner = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+create policy "UPDATE for migrated work author" on "public"."old_works" as PERMISSIVE for UPDATE to authenticated using (owner = (SELECT old_id FROM profiles WHERE id = auth.uid()));
 -- STORAGE --------------------------------------------
 
 -- Headers
