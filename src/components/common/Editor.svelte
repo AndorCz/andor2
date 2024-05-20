@@ -9,6 +9,8 @@
   import { CustomImage } from '@lib/editor/image'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
+  import { CustomHeading } from '@lib/editor/heading'
+  import { CustomTextAlign } from '@lib/editor/alignment'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
@@ -16,7 +18,6 @@
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
-  import TextAlign from '@tiptap/extension-text-align'
   import Dropdown from '@components/common/Dropdown.svelte'
   import Colors from '@components/common/Colors.svelte'
   import Mention from '@tiptap/extension-mention'
@@ -39,7 +40,7 @@
   let currentAlign = 'left'
   let isFocused = false
   let wasFocused = false
-  // let debug = ''
+  let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -113,7 +114,11 @@
           return isImage
         }
       }),
-      TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] })
+      CustomHeading,
+      CustomTextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify']
+      })
     ]
 
     if (isFilledArray(mentionList)) {
@@ -192,7 +197,6 @@
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
         const alignments = ['left', 'center', 'right', 'justify']
         currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
-        // console.log('selection fired, currentAlign:', currentAlign)
       },
       onFocus () {
         isFocused = true
@@ -203,7 +207,7 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
-        // debug = JSON.stringify(editor.getJSON(), null, '\t')
+        debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -345,7 +349,7 @@
   {/if}
 </div>
 
-<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
+<div id='debug' style='white-space: pre-wrap'>{debug}</div>
 
 <style>
   .wrapper {

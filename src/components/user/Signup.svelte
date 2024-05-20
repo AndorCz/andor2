@@ -40,7 +40,7 @@
     // remove captcha when importing from old andor for now
     // if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     const hashedPassword = md5(oldPassword).toString()
-    const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin).eq('old_psw', hashedPassword).maybeSingle()
+    const { data, error } = await supabase.from('old_users').select('old_email').eq('old_login', oldLogin.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
 
     if (error) { return showError('Chyba čtení starých uživatelů: ' + error.message) }
 
@@ -70,7 +70,7 @@
     if (idCheck) { return showError(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`) }
 
     // Check if new login is available
-    const { data: loginCheck, error: loginError } = await supabase.from('profiles').select('name').eq('name', newLogin).maybeSingle()
+    const { data: loginCheck, error: loginError } = await supabase.from('profiles').select('name').eq('name', newLogin.toLowerCase()).maybeSingle()
     if (loginError) { return showError('Chyba čtení uživatelů: ' + loginError.message) }
     if (loginCheck) { return showError('Login je už zabraný') }
 
