@@ -87,8 +87,9 @@
     // Create user profile with old_id and old_created_at
     if (authData && authData.user) {
       const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId }
-      if (userInfoMigrate.old_created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
+      if (userInfoMigrate.created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
       const { error: profileError } = await supabase.rpc('create_profile', newProfile)
+
       if (profileError) {
         return showError('Chyba registrace: ' + profileError.message)
       } else {
