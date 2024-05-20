@@ -372,7 +372,7 @@ create or replace view work_list as
 -- FUNCTIONS --------------------------------------------
 
 
-create or replace function create_profile (id uuid, name text, old_id int4, created_at timestamp with time zone) returns void as $$
+create or replace function create_profile (id uuid, name text, old_id int4, created_at timestamp with time zone DEFAULT current_timestamp) returns void as $$
 begin
   insert into profiles (id, name, old_id, created_at) values (id, name, old_id, created_at);
 end;

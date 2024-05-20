@@ -221,7 +221,7 @@
       flex: 1;
       overflow-y: auto;
       scrollbar-width: thin;
-      padding: 20px;
+      padding: 20px 20px 10px 20px;
     }
       .clear {
         clear: both;
