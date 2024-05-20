@@ -27,13 +27,13 @@
   })
 
   async function loadIndex () {
-    const { data, error } = await supabase.from('codex_pages').select('content').eq('game', game.id).is('section', null).single()
+    const { data, error } = await supabase.from('codex_pages').select('content').match({ game: game.id, slug: 'index' }).single()
     if (error) { return handleError(error) }
     indexPageContent = data.content
   }
 
   async function updateIndex () {
-    const { error } = await supabase.from('codex_pages').update({ content: indexPageContent }).eq('game', game.id).is('section', null)
+    const { error } = await supabase.from('codex_pages').update({ content: indexPageContent }).match({ game: game.id, slug: 'index' })
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
   }
