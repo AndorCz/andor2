@@ -89,12 +89,8 @@
       const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId }
       if (userInfoMigrate.old_created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
       const { error: profileError } = await supabase.from('profiles').insert(newProfile)
-
-      if (!profileError) {
-        redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
-      } else {
-        return showError('Chyba registrace')
-      }
+      if (profileError) { return showError('Chyba registrace: ' + profileError.message) }
+      if (!profileError) { redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' }) }
     }
   }
 </script>
@@ -141,29 +137,31 @@
       </form>
     </div>
   {:else}
-    <h1>Potvrzení importu</h1>
-    <form on:submit|preventDefault={signUpMigrate}>
-      <input type='hidden' id='oldLogin' value={oldLogin} />
-      <div class='row'>
-        <label for='email'>Login</label>
-        <input type='text' id='newLogin' bind:value={newLogin} />
-      </div>
-      <div class='row'>
-        <label for='email'>E-mail</label>
-        <input type='email' id='email' bind:value={email} />
-      </div>
-      <div class='row'>
-        <label for='password'>Nové Heslo</label>
-        <input type='password' id='password' bind:value={password} />
-      </div>
-      <div class='row'>
-        <label for='password'>Potvrzení hesla</label>
-        <input type='password' id='password2' bind:value={password2} />
-      </div>
-      <center>
-        <button type='submit' class='large'>Importovat</button>
-      </center>
-    </form>
+    <div>
+      <h1>Potvrzení importu</h1>
+      <form on:submit|preventDefault={signUpMigrate}>
+        <input type='hidden' id='oldLogin' value={oldLogin} />
+        <div class='row'>
+          <label for='email'>Login</label>
+          <input type='text' id='newLogin' bind:value={newLogin} />
+        </div>
+        <div class='row'>
+          <label for='email'>E-mail</label>
+          <input type='email' id='email' bind:value={email} />
+        </div>
+        <div class='row'>
+          <label for='password'>Nové Heslo</label>
+          <input type='password' id='password' bind:value={password} />
+        </div>
+        <div class='row'>
+          <label for='password'>Potvrzení hesla</label>
+          <input type='password' id='password2' bind:value={password2} />
+        </div>
+        <center>
+          <button type='submit' class='large'>Importovat</button>
+        </center>
+      </form>
+    </div>
   {/if}
 </main>
 
