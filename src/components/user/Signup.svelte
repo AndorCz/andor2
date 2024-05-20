@@ -85,6 +85,8 @@
     if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
 
     // Create user profile with old_id and old_created_at
+    console.log('user', authData.user)
+    console.log('id', authData.user.id)
     if (authData && authData.user) {
       const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId, created_at: userInfoMigrate.old_created_at }
       const { error: profileError } = await supabase.rpc('create_profile', newProfile)
