@@ -40,7 +40,7 @@
   let currentAlign = 'left'
   let isFocused = false
   let wasFocused = false
-  let debug = ''
+  // let debug = ''
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -207,7 +207,7 @@
         if (onKeyUp) { onKeyUp() }
         if (onChange) { onChange() }
         content = editor.state.doc.textContent
-        debug = JSON.stringify(editor.getJSON(), null, '\t')
+        // debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
@@ -349,7 +349,7 @@
   {/if}
 </div>
 
-<div id='debug' style='white-space: pre-wrap'>{debug}</div>
+<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
 
 <style>
   .wrapper {
