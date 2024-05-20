@@ -1,13 +1,37 @@
 ---
 	import Layout from '@layouts/layout.astro'
+  import md5 from 'crypto-js/md5'
 
   const { supabase, user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
+
     const data = await Astro.request.formData()
     const userName = data.get('userName')
-    if (userName) {
+    const oldUserName = data.get('oldUserName')
+    const oldPassword = data.get('oldPassword')
+    if (oldPassword && oldUserName) {
+      const hashedPassword = md5(oldPassword).toString()
+      const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id, old_created_at').eq('old_login', oldUserName.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
+      if (userError) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Chyba čtení starých uživatelů: ' + userError.message)) }
+      if (!userInfoMigrate) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Uživatel nenalazen')) }
 
+      // Check if user is already linked to some user
+      const oldId = userInfoMigrate.old_id
+      const { data: idCheck, error: idError } = await supabase.from('profiles').select('old_id').eq('old_id', parseInt(oldId, 10)).maybeSingle()
+      if (idError) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Chyba čtení uživatelů: ' + idError.message)) }
+      if (idCheck) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)) }
+
+      // Link user with old login
+      const { error } = await supabase.from('profiles').insert({ id: user.id, name: oldUserName, old_id: oldId, created_at: userInfoMigrate.old_created_at, created_at: userInfoMigrate.old_created_at })
+      if (error) {
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'))
+      } else {
+        return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
+      }
+
+    } else {
+      if (userName) {
       // Check availability
       const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
       if (loginCheck) {
@@ -24,21 +48,39 @@
     } else {
       return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být prázdná'))
     }
+    }
   }
 ---
 
 <Layout title='Přezdívka'>
   <h1>Dokončení registrace</h1>
-  <p>Pokud chceš přezdívku z původního Andoru, dej si jakoukoliv dočasnou, pak přejdi na Nastavení profilu a využij import.</p>
 
   {user.id && !user.name ? (
     <form method='POST' autocomplete='off'>
+        <h3>Nový uživatel</h3>
       <div class='flex'>
         <div class='labels'>
           <label for='userName'>Přezdívka</label>
         </div>
         <div class='inputs'>
           <input type='text' id='userName' name='userName' minlength='1' maxlength='30' />
+        </div>
+      </div>
+      <center>
+        <button type='submit' class='large'>Dokončit</button>
+      </center>
+    </form>
+    <form method='POST' autocomplete='off'>
+      <h3>Uživatel Andor.cz</h3>
+      <p class='info'>Své hry, postavy a články si poté budeš moci importovat, v Nastavení uživatele.</p>
+      <div class='flex'>
+        <div class='labels'>
+          <label for='userName'>Původní přezdívka</label>
+          <label for='password'>Původní heslo</label>
+        </div>
+        <div class='inputs'>
+          <input type='text' id='oldUserName' name='oldUserName' minlength='1' maxlength='30' />
+          <input type='password' id='oldPassword' name='oldPassword' />
         </div>
       </div>
       <center>
