@@ -12,8 +12,9 @@
   export let isStoryteller
   export let isPlayer
 
-  let sections = [{ slug: 'general', name: 'Obecné' }]
+  let sections = [{ slug: 'index', name: 'Úvod' }]
   let activeSection = sections[0]
+  let indexPageContent
   let searchEl
   let searchPhrase = ''
   let searchResults = []
@@ -25,30 +26,33 @@
     if (section) { activeSection = sections.find((s) => { return s.slug === section }) || sections[0] }
   })
 
+  async function loadIndex () {
+    const { data, error } = await supabase.from('codex_pages').select('content').eq('game', game.id).is('section', null).single()
+    if (error) { return handleError(error) }
+    indexPageContent = data.content
+  }
+
+  async function updateIndex () {
+    const { error } = await supabase.from('codex_pages').update({ content: indexPageContent }).eq('game', game.id).is('section', null)
+    if (error) { return handleError(error) }
+    showSuccess('Uloženo')
+  }
+
   function activate (section) {
     activeSection = section
-    if (section.slug === 'general') {
+    if (section.slug === 'index') {
       window.history.pushState({}, '', window.location.pathname)
     } else {
       updateURLParam('codex_section', section.slug)
     }
   }
 
-  async function updateGeneral (publicChange = true) {
-    const newData = { info: game.info }
-    if (publicChange) { newData.info_changed_at = new Date() }
-    const { error } = await supabase.from('games').update(newData).eq('id', game.id)
-    if (error) { return handleError(error) }
-    showSuccess('Uloženo')
-    // seen()
-  }
-
   async function handleSearch () {
     searchResults = []
     if (searchPhrase) {
-      // search general game.info
-      if (game.info.toLowerCase().includes(searchPhrase.toLowerCase())) {
-        searchResults = [{ name: 'Obecné', content: game.info }]
+      // search the index page
+      if (indexPageContent.toLowerCase().includes(searchPhrase.toLowerCase())) {
+        searchResults = [{ name: 'Úvod', content: indexPageContent }]
       }
       // search codex_sections.content
       const { data: sections, error: sectionError } = await supabase.from('codex_sections').select('*').eq('game', game.id).ilike('content', `%${searchPhrase}%`)
@@ -94,9 +98,12 @@
         </div>
       </div>
     {/if}
-    {#if activeSection.slug === 'general'}
-      <!-- single section only -->
-      <EditableLong userId={user.id} bind:value={game.info} onSave={updateGeneral} canEdit={isStoryteller} {mentionList} allowHtml />
+    {#if activeSection.slug === 'index'}
+      {#await loadIndex()}
+        Načítám úvod
+      {:then}<!-- single section only -->
+        <EditableLong userId={user.id} bind:value={indexPageContent} placeholder='Úvodní stránka kodexu. Informace pro hráče o pravidlech, světě, postavách, příběhu apod. Více sekcí a stránek lze přidat v nastavení.' onSave={updateIndex} canEdit={isStoryteller} {mentionList} allowHtml />
+      {/await}
       <br><br>
       Správce hry: {game.owner.name}
     {:else if activeSection.slug === 'search'}

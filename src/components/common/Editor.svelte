@@ -192,7 +192,7 @@
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
         const alignments = ['left', 'center', 'right', 'justify']
         currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
-        console.log('selection fired, currentAlign:', currentAlign)
+        // console.log('selection fired, currentAlign:', currentAlign)
       },
       onFocus () {
         isFocused = true
