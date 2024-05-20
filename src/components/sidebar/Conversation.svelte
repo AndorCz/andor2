@@ -45,7 +45,7 @@
   }
 
   async function loadMessages () {
-    if (us.id == user.id) {
+    if (us.id === user.id) {
       // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
       const { data, error } = await supabase.from('messages').select('*')
         .is('recipient_character', null)
@@ -74,7 +74,7 @@
   }
 
   async function sendMessage () {
-    if (us.id != user.id) {
+    if (us.id !== user.id) {
       // Game messages - insert both sender and character ids
       const { error } = await supabase.from('messages').insert({ content: textareaValue, sender_character: us.id, sender_user: user.id, recipient_character: them.id, recipient_user: them.player })
       if (error) { return handleError(error) }
@@ -221,7 +221,7 @@
       flex: 1;
       overflow-y: auto;
       scrollbar-width: thin;
-      padding: 20px 20px 10px 20px;
+      padding: 20px;
     }
       .clear {
         clear: both;

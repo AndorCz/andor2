@@ -171,7 +171,7 @@
 <style>
   main {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     height: fit-content;
   }
   form {
