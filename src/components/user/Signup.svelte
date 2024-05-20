@@ -88,9 +88,12 @@
     if (authData && authData.user) {
       const newProfile = { id: authData.user.id, name: newLogin, old_id: oldId }
       if (userInfoMigrate.old_created_at) { newProfile.created_at = userInfoMigrate.old_created_at }
-      const { error: profileError } = await supabase.from('profiles').insert(newProfile)
-      if (profileError) { return showError('Chyba registrace: ' + profileError.message) }
-      if (!profileError) { redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' }) }
+      const { error: profileError } = await supabase.rpc('create_profile', newProfile)
+      if (profileError) {
+        return showError('Chyba registrace: ' + profileError.message)
+      } else {
+        redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
+      }
     }
   }
 </script>
@@ -137,7 +140,7 @@
       </form>
     </div>
   {:else}
-    <div>
+    <div class='center'>
       <h1>Potvrzení importu</h1>
       <form on:submit|preventDefault={signUpMigrate}>
         <input type='hidden' id='oldLogin' value={oldLogin} />
@@ -177,6 +180,9 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+  .center {
+    margin: auto;
   }
   .row {
     display: flex;
