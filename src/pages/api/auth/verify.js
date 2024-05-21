@@ -1,5 +1,5 @@
-
 // verify recaptcha token
+// not needed anymore, using turnstile instead
 export const GET = async ({ url, request, locals }) => {
   const token = url.searchParams.get('token')
   const secret = import.meta.env.RECAPTCHA_SECRET
