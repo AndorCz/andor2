@@ -165,13 +165,13 @@
     justify-content: space-around;
     height: fit-content;
   }
-  form {
-    margin: auto;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+    form {
+      margin: auto;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
   .center {
     margin: auto;
   }

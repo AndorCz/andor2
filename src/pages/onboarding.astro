@@ -54,75 +54,83 @@
 
 <Layout title='Přezdívka'>
   <h1>Dokončení registrace</h1>
-
-  {user.id && !user.name ? (
-    <form method='POST' autocomplete='off'>
-        <h3>Nový uživatel</h3>
-      <div class='flex'>
-        <div class='labels'>
+  <main>
+    {user.id && !user.name ? (
+      <form method='POST' autocomplete='off'>
+        <h2>Nový uživatel</h2>
+        <div class='row'>
           <label for='userName'>Přezdívka</label>
-        </div>
-        <div class='inputs'>
           <input type='text' id='userName' name='userName' minlength='1' maxlength='30' />
         </div>
-      </div>
-      <center>
-        <button type='submit' class='large'>Dokončit</button>
-      </center>
-    </form>
-    <form method='POST' autocomplete='off'>
-      <h3>Uživatel Andor.cz</h3>
-      <p class='info'>Své hry, postavy a články si poté budeš moci importovat, v Nastavení uživatele.</p>
-      <div class='flex'>
-        <div class='labels'>
-          <label for='userName'>Původní přezdívka</label>
-          <label for='password'>Původní heslo</label>
+        <center>
+          <button type='submit' class='large'>Dokončit</button>
+        </center>
+      </form>
+      <form method='POST' autocomplete='off'>
+        <h2>Uživatel Andor.cz</h2>
+        <div class='flex'>
+          <div class='row'>
+            <label for='userName'>Původní přezdívka</label>
+            <input type='text' id='oldUserName' name='oldUserName' minlength='1' maxlength='30' />
+          </div>
+          <div class='row'>
+            <label for='password'>Původní heslo</label>
+            <input type='password' id='oldPassword' name='oldPassword' />
+          </div>
         </div>
-        <div class='inputs'>
-          <input type='text' id='oldUserName' name='oldUserName' minlength='1' maxlength='30' />
-          <input type='password' id='oldPassword' name='oldPassword' />
-        </div>
-      </div>
-      <center>
-        <button type='submit' class='large'>Dokončit</button>
-      </center>
-    </form>
-  ) : (
-    <>
-      {user.id && user.name ? (
-        <p>Tato stránka slouží k doplnění přezdívky pro dokončení registrace, ale tvoje už je zdá se kompletní. Tvoje přezdívka je "{user.name}".<br> Pokud je to chyba, napiš mi prosím na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
-      ) : (
-        <p>Tato stránka slouží k dokončení registrace a potřebuje tvoje uživatelské id. To ale nebylo nalezeno.<br> Zkus prosím registrační proces znovu, nebo mi prosím napiš na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
-      )}
-    </>
-  )}
+        <p class='info'><span class='material'>info</span>Své hry, postavy a články si poté budeš moci importovat, v Nastavení uživatele.</p>
+        <center>
+          <button type='submit' class='large'>Dokončit</button>
+        </center>
+      </form>
+    ) : (
+      <>
+        {user.id && user.name ? (
+          <p>Tato stránka slouží k doplnění přezdívky pro dokončení registrace, ale tvoje už je zdá se kompletní. Tvoje přezdívka je "{user.name}".<br> Pokud je to chyba, napiš mi prosím na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
+        ) : (
+          <p>Tato stránka slouží k dokončení registrace a potřebuje tvoje uživatelské id. To ale nebylo nalezeno.<br> Zkus prosím registrační proces znovu, nebo mi prosím napiš na <a href='mailto:eskel.work@gmail.com'>eskel.work@gmail.com</a>, že je to rozbité. :)</p>
+        )}
+      </>
+    )}
+  </main>
 </Layout>
 
 <style>
-  form {
-    width: 50%;
-    margin: auto;
+  main {
+    display: flex;
   }
-    form div {
-      padding-top: 10px;
-      padding-bottom: 10px;
-    }
-    .labels {
-      width: 20%;
-      padding-right: 10px;
-    }
-    .flex {
-      gap: 20px;
-    }
-    .inputs {
+    form {
+      max-width: 500px;
       flex: 1;
     }
-      input {
-        width: 100%;
+      form div {
+        padding-top: 10px;
+        padding-bottom: 10px;
       }
-  center {
-    margin-top: 20px;
-  }
+      .labels {
+        width: 20%;
+        padding-right: 10px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .inputs {
+        flex: 1;
+      }
+        input {
+          width: 100%;
+        }
+    center {
+      margin-top: 20px;
+    }
+    .info {
+      margin: 60px 0px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
 	@media (max-width: 860px) {
     form {
       width: 100%;
