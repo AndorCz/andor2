@@ -44,7 +44,7 @@ const { title, headerStatic, headerStorage } = Astro.props
         <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
-      {user.name || !(user.name && user.email) ? (
+      {(user.name || (!user.name && !user.email)) ? (
         <Sidebar {user} client:only />
       ) : null}
     </div>
