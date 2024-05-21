@@ -56,7 +56,7 @@
   <h1>Dokončení registrace</h1>
   <main>
     {user.id && !user.name ? (
-      <form method='POST' autocomplete='off'>
+      <form method='POST' autocomplete='off' class='new'>
         <h2>Nový uživatel</h2>
         <div class='row'>
           <label for='userName'>Přezdívka</label>
@@ -67,7 +67,7 @@
         </center>
       </form>
       <div class='divider'></div>
-      <form method='POST' autocomplete='off'>
+      <form method='POST' autocomplete='off' class='og'>
         <h2>Uživatel Andor.cz</h2>
         <div class='row'>
           <label for='userName'>Původní přezdívka</label>
@@ -141,9 +141,10 @@
         display: none;
       }
       form {
-        width: 100%;
+        max-width: 400px;
+        margin: auto;
       }
-        label {
+        .new label {
           min-width: initial;
         }
   }
