@@ -66,17 +66,16 @@
           <button type='submit' class='large'>Dokončit</button>
         </center>
       </form>
+      <div class='divider'></div>
       <form method='POST' autocomplete='off'>
         <h2>Uživatel Andor.cz</h2>
-        <div class='flex'>
-          <div class='row'>
-            <label for='userName'>Původní přezdívka</label>
-            <input type='text' id='oldUserName' name='oldUserName' minlength='1' maxlength='30' />
-          </div>
-          <div class='row'>
-            <label for='password'>Původní heslo</label>
-            <input type='password' id='oldPassword' name='oldPassword' />
-          </div>
+        <div class='row'>
+          <label for='userName'>Původní přezdívka</label>
+          <input type='text' id='oldUserName' name='oldUserName' minlength='1' maxlength='30' />
+        </div>
+        <div class='row'>
+          <label for='password'>Původní heslo</label>
+          <input type='password' id='oldPassword' name='oldPassword' />
         </div>
         <p class='info'><span class='material'>info</span>Své hry, postavy a články si poté budeš moci importovat, v Nastavení uživatele.</p>
         <center>
@@ -98,23 +97,25 @@
 <style>
   main {
     display: flex;
+    justify-content: space-around;
   }
+    .divider {
+      width: 5px;
+      align-self: stretch;
+      background-color: var(--block);
+    }
     form {
       max-width: 500px;
       flex: 1;
     }
-      form div {
-        padding-top: 10px;
-        padding-bottom: 10px;
-      }
-      .labels {
-        width: 20%;
-        padding-right: 10px;
+      label {
+        min-width: 150px;
       }
       .row {
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-bottom: 10px;
       }
       .inputs {
         flex: 1;
@@ -126,7 +127,7 @@
       margin-top: 20px;
     }
     .info {
-      margin: 60px 0px;
+      margin: 20px 0px;
       display: flex;
       gap: 10px;
       justify-content: center;
@@ -134,6 +135,14 @@
 	@media (max-width: 860px) {
     form {
       width: 100%;
+    }
+  }
+	@media (max-width: 500px) {
+    label {
+      min-width: initial;
+    }
+    main {
+      flex-direction: column;
     }
   }
 </style>
