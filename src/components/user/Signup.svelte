@@ -164,6 +164,7 @@
     display: flex;
     justify-content: space-around;
     height: fit-content;
+    gap: 40px;
   }
     form {
       margin: auto;
