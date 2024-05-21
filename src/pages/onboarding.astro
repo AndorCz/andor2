@@ -132,17 +132,18 @@
       gap: 10px;
       justify-content: center;
     }
-	@media (max-width: 860px) {
-    form {
-      width: 100%;
-    }
-  }
-	@media (max-width: 500px) {
-    label {
-      min-width: initial;
-    }
+	@media (max-width: 1000px) {
     main {
       flex-direction: column;
     }
+      .divider {
+        display: none;
+      }
+      form {
+        width: 100%;
+      }
+        label {
+          min-width: initial;
+        }
   }
 </style>
