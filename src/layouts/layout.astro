@@ -43,8 +43,8 @@ const { title, headerStatic, headerStorage } = Astro.props
         </div>
         <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
       </main>
-      {user.name ? (
-        <Store {user} client:only />
+      {user.id && !user.name ? (
+        <Sidebar {user} client:only />
       ) : null}
     </div>
   </body>
