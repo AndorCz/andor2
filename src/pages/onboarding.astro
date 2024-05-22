@@ -23,7 +23,7 @@
       if (idCheck) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent(`Id původního uživatele ${oldLogin} je již spojeno s jiným účtem. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.`)) }
 
       // Link user with old login
-      const { error } = await supabase.from('profiles').insert({ id: user.id, name: oldUserName, old_id: oldId, created_at: userInfoMigrate.old_created_at })
+      const { error } = await supabase.from('profiles').insert({ id: user.id, name: oldUserName, old_id: oldId, created_at: userInfoMigrate.old_created_at, created_at: userInfoMigrate.old_created_at })
       if (error) {
         return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'))
       } else {

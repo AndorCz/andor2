@@ -318,7 +318,7 @@
     background-color: var(--panel);
     padding-top: 10px;
     padding-bottom: 10px;
-    margin: 0px -40px;
+    margin: 0px -60px;
     z-index: 10;
   }
     .wrapper {

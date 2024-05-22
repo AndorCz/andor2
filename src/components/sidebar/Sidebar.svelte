@@ -70,7 +70,7 @@
     if (!email || !password) { return }
     loginInProgress = true
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { handleError(new Error('Chyba přihlášení: ' + error.message)) }
+    if (error) { handleError(new Error('Neplatné přihlašovací údaje')) }
     if (data.session?.access_token && data.session?.refresh_token) {
       document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=100*1000*60*60*24*365` // 100 years
       document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=100*1000*60*60*24*365`

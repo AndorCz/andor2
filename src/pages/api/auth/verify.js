@@ -1,5 +1,5 @@
+
 // verify recaptcha token
-/* not needed anymore, using CloudFlare Turnstile instead
 export const GET = async ({ url, request, locals }) => {
   const token = url.searchParams.get('token')
   const secret = import.meta.env.RECAPTCHA_SECRET
@@ -11,4 +11,3 @@ export const GET = async ({ url, request, locals }) => {
   const data = await response.json()
   return new Response(JSON.stringify(data), { status: data.status })
 }
-*/

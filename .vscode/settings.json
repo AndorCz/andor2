@@ -1,7 +1,0 @@
-{
-  "html.format.wrapAttributes": "preserve",
-  "html.format.wrapLineLength": 9999,
-  "prettier.proseWrap": "never",
-  "prettier.embeddedLanguageFormatting": "off",
-  "prettier.printWidth": 999
-}
