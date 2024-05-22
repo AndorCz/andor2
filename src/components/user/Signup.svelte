@@ -16,7 +16,9 @@
 
   onMount(() => {
     try {
-      window.turnstile.render('#captchaEl', { sitekey: import.meta.env.PUBLIC_TURNSTILE_SITEKEY, callback: (token) => { captchaToken = token } })
+      window.turnstile.ready(() => {
+        window.turnstile.render('#captchaEl', { sitekey: import.meta.env.PUBLIC_TURNSTILE_SITEKEY, callback: (token) => { captchaToken = token } })
+      })
       // window.grecaptcha?.ready(async () => { captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' }) })
     } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
   })
