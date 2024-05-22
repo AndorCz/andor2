@@ -1,4 +1,3 @@
-
 import { getSupabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
@@ -14,7 +13,8 @@ export async function onRequest ({ cookies, locals, redirect, url }, next) {
   const accessToken = cookies.get('sb-access-token')?.value
   const refreshToken = cookies.get('sb-refresh-token')?.value
 
-  const supabase = getSupabase(cookies)
+  if (!locals.env.PUBLIC_SUPABASE_URL || !locals.env.PUBLIC_SUPABASE_ANON_KEY) { return handleError(new Error('Missing environment variables')) }
+  const supabase = getSupabase(cookies, locals.env)
 
   if (accessToken && refreshToken) {
     locals.supabase = supabase
