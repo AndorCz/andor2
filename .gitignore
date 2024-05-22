@@ -1,6 +1,7 @@
 # generated
 .astro/
 dist/
+wrangler.toml
 
 # node
 node_modules/

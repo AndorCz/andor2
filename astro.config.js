@@ -13,7 +13,7 @@ export default defineConfig({
   prefetch: false,
   vite: {
     ssr: {
-      external: ['node:buffer']
+      external: ['node:buffer', 'node:process']
     }
   }
   /* disabled because of issues with cloudflare cache, had to clear it manually
