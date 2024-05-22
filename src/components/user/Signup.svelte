@@ -7,31 +7,38 @@
 
   let email = ''
   let oldLogin = ''
+  let newLogin = ''
   let oldPassword = ''
   let password = ''
   let password2 = ''
   let isConfirming = false
   let captchaToken = ''
-  let newLogin = ''
 
   onMount(() => {
     try {
-      window.grecaptcha?.ready(async () => { captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' }) })
+      /*
+      window.turnstile.ready(() => {
+        window.turnstile.render('#captchaEl', { sitekey: import.meta.env.PUBLIC_TURNSTILE_SITEKEY, callback: (token) => { captchaToken = token } })
+      })
+      */
+      // window.grecaptcha?.ready(async () => { captchaToken = await window.grecaptcha.execute('6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG', { action: 'submit' }) })
     } catch (e) { showError('Chyba při ověření reCAPTCHA' + e.message) }
   })
 
+  /*
   async function verifyCaptcha () {
     const response = await fetch(`/api/auth/verify?token=${captchaToken}`, { method: 'GET' })
     if (!response.ok) { showError('Chyba při ověření reCAPTCHA') }
     const data = await response.json()
     return response.ok && data.success
   }
+  */
 
   async function signUpNewUser () {
-    if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
+    // if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, captchaToken } })
     if (error) { return handleError(error) }
     if (data.user) { redirectWithToast({ toastType: 'success', toastText: 'Prosím potvrď svůj e-mail pro dokončení registrace.' }) }
   }
@@ -87,6 +94,7 @@
       redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
     }
   }
+
 </script>
 
 <main>
@@ -158,6 +166,8 @@
     </div>
   {/if}
 </main>
+<br><br>
+<div id='captchaEl'></div>
 
 <style>
   main {

@@ -29,7 +29,8 @@ const { title, headerStatic, headerStorage } = Astro.props
     <link rel='stylesheet' href={'/obsidian.css?v=' + version}>
 
     <!-- services -->
-    <script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>
+    <script src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' async defer></script>
+    <!--<script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>-->
 
     <ViewTransitions />
     <title>Andor2.cz ― {title}</title>
