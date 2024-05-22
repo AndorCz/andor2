@@ -1,4 +1,3 @@
-
 import { createServerClient, createBrowserClient } from '@supabase/ssr'
 
 // front-end

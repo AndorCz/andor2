@@ -10,7 +10,12 @@ export default defineConfig({
   integrations: [svelte()],
   output: 'server',
   adapter: cloudflare(),
-  prefetch: false
+  prefetch: false,
+  vite: {
+    ssr: {
+      external: ['node:buffer']
+    }
+  }
   /* disabled because of issues with cloudflare cache, had to clear it manually
   vite: {
     build: {

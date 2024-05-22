@@ -1,4 +1,3 @@
-
 import { DateTime } from 'luxon'
 
 // eslint-disable-next-line camelcase
@@ -68,7 +67,6 @@ export function debounce (callback, wait) {
   let timerId
   return (...args) => {
     clearTimeout(timerId)
-    // eslint-disable-next-line n/no-callback-literal
     timerId = setTimeout(() => { callback(...args) }, wait)
   }
 }
