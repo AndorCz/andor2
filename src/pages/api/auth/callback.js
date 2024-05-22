@@ -1,14 +1,13 @@
-
 import { getSupabase } from '@lib/database'
 import { saveAuthCookies } from '@lib/utils'
 
-export const GET = async ({ request, cookies, redirect }) => {
+export const GET = async ({ request, cookies, redirect, locals }) => {
   try {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
     const next = requestUrl.searchParams.get('next') || '/'
     if (code) {
-      const supabase = getSupabase(cookies)
+      const supabase = getSupabase(cookies, locals.env)
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       saveAuthCookies(cookies, data.session)
       if (error) { return redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }

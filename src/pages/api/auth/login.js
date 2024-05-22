@@ -1,15 +1,15 @@
 import { getSupabase } from '@lib/database'
 
-export const GET = async ({ request, redirect }) => {
+export const GET = async () => {
   return new Response('Login selhal', { status: 400 })
 }
 
-export const POST = async ({ cookies, request, redirect }) => {
+export const POST = async ({ cookies, request, redirect, locals }) => {
   const formData = await request.formData()
   const provider = formData.get('provider')?.toString()
 
   if (provider) {
-    const supabase = getSupabase(cookies)
+    const supabase = getSupabase(cookies, locals.env)
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       options: { redirectTo: new URL(request.url).origin + '/api/auth/callback' },

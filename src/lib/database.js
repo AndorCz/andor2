@@ -7,10 +7,10 @@ export const supabase = createBrowserClient(
 )
 
 // back-end
-export function getSupabase (cookies) {
+export function getSupabase (cookies, env) {
   return createServerClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+    env.PUBLIC_SUPABASE_URL,
+    env.PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get (key) { return cookies.get(key)?.value },
