@@ -65,15 +65,15 @@
 
 <main>
   <h2>Poznámky</h2>
-  <EditableLong userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
+  <EditableLong placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>AI generování podkladů</h2>
-  <EditableLong userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
+  <EditableLong placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
   <br>
   {#if generatingStory}
     <button on:click={cancelGeneration}>Zrušit generování</button>
   {:else}
-    <button on:click={generateStory} loading={generatingStory} disabled={game.prompt?.length < 20}>Vygenerovat podklady AI</button>
+    <button on:click={generateStory} loading={generatingStory}>Vygenerovat podklady</button>
   {/if}
   <span class='warning'>Upozornění: Tato akce potrvá cca 5-10 minut a přepíše obsah pole níže.</span>
   <br><br>

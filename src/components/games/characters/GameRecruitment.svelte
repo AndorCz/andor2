@@ -69,7 +69,7 @@
   }
 </script>
 
-<EditableLong userId={user.id} bind:value={game.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
+<EditableLong placeholder='Informace o náboru nových hráčů, četnosti hraní a tvorbě postav.' userId={user.id} bind:value={game.recruitment} onSave={updateRecruitment} canEdit={isStoryteller} enterSend={false} allowHtml />
 <br>
 
 {#if game.archived}
