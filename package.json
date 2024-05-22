@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@3d-dice/dice-box-threejs": "0.0.12",
-    "@astrojs/cloudflare": "9.0.0",
+    "@astrojs/cloudflare": "10.2.6",
     "@astrojs/svelte": "5.4.0",
     "@jill64/svelte-sanitize": "1.2.4",
     "@supabase/ssr": "0.3.0",
