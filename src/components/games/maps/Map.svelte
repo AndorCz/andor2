@@ -1,12 +1,12 @@
 <script>
   import { clearCharacter, updateMapDescription, saveTransfrom } from '@lib/map/db'
-  import { supabase, handleError, getHash } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
+  import { stringToColor, getHash } from '@lib/utils'
   import { onMount, onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
+  import { Character } from '@lib/map/character'
   import { tooltip } from '@lib/tooltip'
   import { Vtt } from '@lib/map/vtt'
-  import { stringToColor } from '@lib/utils'
-  import { Character } from '@lib/map/character'
   import { getCanvasCoordinates } from '@lib/map/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -31,7 +31,7 @@
     mapEl.addEventListener('drop', handleDrop)
 
     game.characters.forEach(character => {
-      if (!character.storyteller && character.accepted && !map.characters[character.id] && character.state == 'alive') {
+      if (!character.storyteller && character.accepted && !map.characters[character.id] && character.state === 'alive') {
         availableCharacters.push(character)
       }
     })

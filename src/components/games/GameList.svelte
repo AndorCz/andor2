@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl, getPortraitUrl } from '@lib/database'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
   import { isFilledArray } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'

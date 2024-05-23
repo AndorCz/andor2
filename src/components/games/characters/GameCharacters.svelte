@@ -1,5 +1,5 @@
 <script>
-  import { setRead } from '@lib/database'
+  import { setRead } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { addURLParam } from '@lib/utils'
   import GameRoster from '@components/games/characters/GameRoster.svelte'

@@ -1,5 +1,5 @@
 <script>
-  import { getPortraitUrl } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database-browser'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 

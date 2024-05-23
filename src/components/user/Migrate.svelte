@@ -1,7 +1,7 @@
 <script>
-  import { supabase } from '@lib/database'
-  import { showSuccess, showError } from '@lib/toasts'
+  import { supabase } from '@lib/database-browser'
   import { getOldUserId } from '@mig/migrate'
+  import { showSuccess, showError } from '@lib/toasts'
   import MigrateGames from '@components/user/MigrateGames.svelte'
   import MigrateWorks from '@components/user/MigrateWorks.svelte'
   import MigrateCharacters from '@components/user/MigrateCharacters.svelte'

@@ -1,6 +1,6 @@
-import { defineConfig } from 'astro/config'
 import svelte from '@astrojs/svelte'
 import cloudflare from '@astrojs/cloudflare'
+import { defineConfig } from 'astro/config'
 
 // import { loadEnv } from 'vite'
 // const env = loadEnv('', process.cwd(), '')

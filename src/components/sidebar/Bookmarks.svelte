@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { bookmarks } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import Sortable from 'sortablejs'
 
   let bookmarkNumber

@@ -3,21 +3,27 @@
 	import Editorial from '@components/homepage/Editorial.svelte'
 	import NewsSection from '@components/homepage/NewsSection.svelte'
 
-  const { supabase, user } = Astro.locals
+	let editorialError, lastEditorial
 
-	const { data: lastEditorial, error } = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
-	if (error) { console.error('Error loading editorial', error) }
+	try {
+		const { supabase, user } = Astro.locals
+		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+		if (res.error) { throw res.error }
+		lastEditorial = res.data
 
-	// const { data: lastPosts, error: error2 } = await supabase.from('last_posts').select('*').limit(10)
-	// if (error2) { console.error('error loading last posts', error2) }
+		// const { data: lastPosts, error: error2 } = await supabase.from('last_posts').select('*').limit(10)
+		// if (error2) { console.error('error loading last posts', error2) }
+	} catch (error) {
+		editorialError = 'Chyba načtení editorialu: ' + error.message
+	}
 ---
 
 <Layout title='Hlavní strana'>
-	<Editorial {lastEditorial} client:only />
+  {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only />}
 	<main>
-		<NewsSection headline='Nové hry' table='game_list' slug='game' client:load />
-		<NewsSection headline='Nové články' table='work_list' slug='work' client:load />
-		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:load />
+		<NewsSection headline='Nové hry' table='game_list' slug='game' client:only />
+		<NewsSection headline='Nové články' table='work_list' slug='work' client:only />
+		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:only />
 	</main>
 </Layout>
 

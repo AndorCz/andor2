@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { isFilledArray, redirectWithToast } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import Character from '@components/games/characters/Character.svelte'

@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { writable } from 'svelte/store'
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'

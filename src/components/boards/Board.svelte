@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { getSavedStore, bookmarks } from '@lib/stores'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'

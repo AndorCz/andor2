@@ -1,5 +1,5 @@
 <script>
-  import { supabase } from '@lib/database'
+  import { supabase } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import { onMount } from 'svelte'
   export let oldUserData

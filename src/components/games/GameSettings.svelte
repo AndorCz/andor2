@@ -3,7 +3,7 @@
   import { tooltip } from '@lib/tooltip'
   import { createSlug } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
@@ -66,13 +66,11 @@
     */
     showSuccess('Změna hry uložena')
     saving = false
-    // await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
   }
 
   async function deleteGame () {
     const { error } = await supabase.from('games').delete().eq('id', game.id)
     if (error) { return handleError(error) }
-    // await fetch('/api/cache?type=games', { method: 'GET' }) // clear cache
     window.location.href = '/games?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 

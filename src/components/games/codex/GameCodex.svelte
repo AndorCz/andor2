@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'

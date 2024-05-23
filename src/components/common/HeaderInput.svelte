@@ -1,6 +1,6 @@
 <script>
-  import { supabase, handleError, getHash } from '@lib/database'
-  import { getImage, cropImageToBlob } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database-browser'
+  import { getImage, cropImageToBlob, getHash } from '@lib/utils'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview } from '@lib/stores'
   import { tooltip } from '@lib/tooltip'
@@ -42,7 +42,6 @@
     showSuccess('Hlavička byla uložena')
     uploading = false
     $headerPreview = URL.createObjectURL(file)
-    // await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
   }
 
   async function clearHeader () { // clear in db
@@ -57,7 +56,6 @@
     $headerPreview = '/header.jpg'
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
-    // await fetch('/api/cache?type=' + section, { method: 'GET' }) // clear cache
   }
 
   // Cropping

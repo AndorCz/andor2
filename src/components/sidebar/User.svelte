@@ -1,13 +1,14 @@
 <script>
   import PortraitInput from '@components/common/PortraitInput.svelte'
-  import { supabase, uploadPortrait } from '@lib/database'
   import { activeConversation } from '@lib/stores'
+  import { uploadPortrait } from '@lib/utils'
+  import { supabase } from '@lib/database-browser'
   import { tooltip } from '@lib/tooltip'
 
   export let user = {}
 
   async function onPortraitChange (file) {
-    await uploadPortrait(user.id, 'profiles', file)
+    await uploadPortrait(supabase, user.id, 'profiles', file)
   }
 
   async function logout () {

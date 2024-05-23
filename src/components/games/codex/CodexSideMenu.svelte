@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { showError, showSuccess } from '@lib/toasts'

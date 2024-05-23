@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getHeaderUrl } from '@lib/database'
+  import { supabase, handleError, getHeaderUrl } from '@lib/database-browser'
 
   async function loadData () {
     const { data: games, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(3)

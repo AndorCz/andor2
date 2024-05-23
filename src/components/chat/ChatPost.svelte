@@ -2,7 +2,7 @@
   import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
-  import { getPortraitUrl } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database-browser'
   import { Render } from '@jill64/svelte-sanitize'
   import Reactions from '@components/common/Reactions.svelte'
   import ReactionInput from '@components/common/ReactionInput.svelte'

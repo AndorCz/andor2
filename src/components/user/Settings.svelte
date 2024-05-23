@@ -1,7 +1,7 @@
 <script>
   import { showSuccess, showError } from '@lib/toasts'
   import { activeConversation } from '@lib/stores'
-  import { supabase } from '@lib/database'
+  import { supabase } from '@lib/database-browser'
   import { tooltip } from '@lib/tooltip'
 
   export let user

@@ -1,4 +1,3 @@
-
 // import { updateStoryteller } from '@lib/openai'
 
 export const POST = async ({ request, redirect, locals }) => {
@@ -6,7 +5,7 @@ export const POST = async ({ request, redirect, locals }) => {
 
   if (locals.user.id === data.owner) { // check if user is the owner of the game
     // const post = await updateStoryteller(data.storyteller, data.system, `\n\n Úvod do hry: ${data.annotation} \n\n Herní informace: ${data.prompt}`)
-    return new Response(JSON.stringify({ post }), { status: 200 })
+    return new Response(JSON.stringify({ post: '' }), { status: 200 })
   } else {
     return new Response(JSON.stringify({ error: 'Nejsi vlastníkem hry' }), { status: 500 })
   }

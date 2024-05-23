@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { setRead, getReply } from '@lib/database'
+  import { setRead, getReply } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'

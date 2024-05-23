@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { showError } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { redirectWithToast } from '@lib/utils'
 
   let email = ''

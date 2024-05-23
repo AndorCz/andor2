@@ -1,4 +1,5 @@
-import { supabase, handleError, getHash } from '@lib/database'
+import { supabase, handleError } from '@lib/database-browser'
+import { getHash } from '@lib/utils'
 import { showSuccess } from '@lib/toasts'
 
 // database operations for map

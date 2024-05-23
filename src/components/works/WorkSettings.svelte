@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { workTags, workCategoriesText } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'

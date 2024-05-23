@@ -1,5 +1,5 @@
 <script>
-  import { getPortraitUrl } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database-browser'
 
   export let users = []
   export let openConversation

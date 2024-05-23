@@ -1,29 +1,32 @@
-
 // import { savePost, editPost } from '@lib/openai'
 import { isFilledArray } from '@lib/utils'
 
 // get all posts
 
-export const GET = async ({ url, request, locals }) => {
-  const { thread, game, owners, limit = 100, offset = 0, search } = Object.fromEntries(url.searchParams)
-  const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
-  let res, posts, count
-  if (game) { // handle game thread
-    res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset, _search: search })
-    if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
-    posts = res.data.posts
-    count = res.data.count
-  } else { // handle other threads
-    const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit - 1)
-    if (search) { query.ilike('content', `%${search}%`) } // search in posts
-    if (filterOwners) { query.in('owner', filterOwners) } // add your posts
-    query.order('created_at', { ascending: false })
-    res = await query
-    if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
-    posts = res.data
-    count = res.count
+export const GET = async ({ url, redirect, locals }) => {
+  try {
+    const { thread, game, owners, limit = 100, offset = 0, search } = Object.fromEntries(url.searchParams)
+    const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
+    let res, posts, count
+    if (game) { // handle game thread
+      res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset, _search: search })
+      if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
+      posts = res.data.posts
+      count = res.data.count
+    } else { // handle other threads
+      const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit - 1)
+      if (search) { query.ilike('content', `%${search}%`) } // search in posts
+      if (filterOwners) { query.in('owner', filterOwners) } // add your posts
+      query.order('created_at', { ascending: false })
+      res = await query
+      if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
+      posts = res.data
+      count = res.count
+    }
+    return new Response(JSON.stringify({ posts, count }), { status: 200 })
+  } catch (error) {
+    return redirect(`/500?error=${encodeURIComponent(error.message)}`, 302)
   }
-  return new Response(JSON.stringify({ posts, count }), { status: 200 })
 }
 
 // add new post

@@ -1,6 +1,6 @@
 <script>
   import { activeConversation } from '@lib/stores'
-  import { getPortraitUrl } from '@lib/database'
+  import { getPortraitUrl } from '@lib/database-browser'
   import GameList from '@components/games/GameList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'

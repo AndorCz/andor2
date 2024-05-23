@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getHeaderUrl, getPortraitUrl } from '@lib/database'
+  import { supabase, getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
 
   export let headline = 'Nové hry'
   export let slug = 'game'
@@ -7,7 +7,7 @@
 
   async function loadData () {
     const { data, error } = await supabase.from(table).select('*').eq('published', true).order('created_at', { ascending: false }).limit(5)
-    if (error) { handleError(error) }
+    if (error) { throw new Error('Nepodařilo se načíst novinky. Důvod: ' + error.message) }
     return data
   }
 
@@ -16,7 +16,9 @@
   }
 </script>
 
-{#await loadData() then items}
+{#await loadData()}
+  Načítám novinky
+{:then items}
   <div id='news'>
     <h3>{headline}</h3>
     {#each items as item}
@@ -40,6 +42,8 @@
       </div>
     {/each}
   </div>
+{:catch error}
+  <p style='color: red'>{error.message}</p>
 {/await}
 
 <style>

@@ -3,9 +3,9 @@
   import { clickOutside } from '@lib/clickOutside'
   import { redirectWithToast } from '@lib/utils'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import { supabase, handleError, getPortraitUrl, userAutocomplete } from '@lib/database'
-  import Select from 'svelte-select'
+  import { supabase, handleError, getPortraitUrl, userAutocomplete } from '@lib/database-browser'
   import { showError } from '@lib/toasts'
+  import Select from 'svelte-select'
 
   export let user
   export let game
@@ -40,7 +40,7 @@
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přijata' })
   }
 
-  async function copyCharacterPortrait(fromId, toId) {
+  async function copyCharacterPortrait (fromId, toId) {
     const { error: copyError } = await supabase.storage.from('portraits').copy(`${fromId}.jpg`, `${toId}.jpg`)
     if (!copyError) { return true } else { showError(copyError.message) }
     return false
@@ -85,7 +85,7 @@
     // update the original character to remove the player and create copy for original player
     const previousOwner = character.player.id
     const { data, error } = await supabase.rpc('take_over_character', { character_id: character.id })
-    if (data && !error) { 
+    if (data && !error) {
       // copy portrait
       await copyCharacterPortrait(character.id, data)
     }
@@ -126,8 +126,8 @@
     if (error) { return handleError(error) }
     if (user.id !== oldOwner) {
       // update message
-      const {error: messageUpdateError } = await supabase.rpc('update_transfer_message', { character_id: character.id, game_id: game.id, new_content: "<br>Nabídka byla zrušena!" })
-      if (messageUpdateError) { return handleError(insertError) }
+      const { error: messageUpdateError } = await supabase.rpc('update_transfer_message', { character_id: character.id, game_id: game.id, new_content: '<br>Nabídka byla zrušena' })
+      if (messageUpdateError) { return handleError(messageUpdateError) }
     }
     await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Nabídka postavy zrušena' })
@@ -162,17 +162,17 @@
     if (!window.confirm('Opravdu odejít z hry? Postava zůstane a vytvoří se kopie')) { return }
     const { data, error } = await supabase.rpc('hand_over_character', { character_id: character.id, new_owner: game.owner.id })
     if (error) { return handleError(error) }
-    if (data && !error) { 
+    if (data && !error) {
       // copy portrait
       await copyCharacterPortrait(character.id, data)
-    if (user.id !== game.owner.id) {
-      const { error: insertError } = await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
-      if (insertError) { return handleError(insertError) }
+      if (user.id !== game.owner.id) {
+        const { error: insertError } = await supabase.from('messages').insert({ content: `Opustil/a jsem tvou hru ${game.name}. Postava ${character.name} tam zůstává.`, sender_user: user.id, recipient_user: game.owner.id })
+        if (insertError) { return handleError(insertError) }
+      }
+      await charactersChanged()
+      redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
     }
-    await charactersChanged()
-    redirectWithToast({ toastType: 'success', toastText: 'Postava byla předána' })
   }
-}
 
   async function reviveCharacter () {
     const { error } = await supabase.from('characters').update({ state: 'alive' }).eq('id', character.id)

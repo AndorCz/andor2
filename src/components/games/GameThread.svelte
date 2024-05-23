@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { writable } from 'svelte/store'
-  import { sendPost } from '@lib/database'
+  import { sendPost } from '@lib/database-browser'
   import { clone, addURLParam } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
   import { platform } from '@components/common/MediaQuery.svelte'

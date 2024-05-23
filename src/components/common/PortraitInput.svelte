@@ -1,7 +1,7 @@
 <script>
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { resizePortrait, getHash } from '@lib/utils'
   import { showError } from '@lib/toasts'
-  import { resizePortrait } from '@lib/utils'
-  import { supabase, handleError, getPortraitUrl, getHash } from '@lib/database'
   import { tooltip } from '@lib/tooltip'
 
   export let table

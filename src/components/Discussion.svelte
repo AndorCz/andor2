@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
-  import { supabase, handleError, sendPost } from '@lib/database'
+  import { supabase, handleError, sendPost } from '@lib/database-browser'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { clone } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'

@@ -1,7 +1,6 @@
 ---
 	import Download from '@layouts/download.astro'
-  import { formatDate } from '@lib/utils'
-  import { getImageUrl } from '@lib/database'
+  import { formatDate, getImageUrl } from '@lib/utils'
 
   const { supabase, user } = Astro.locals
   const gameId = Astro.url.searchParams.get('id') || ''
@@ -36,7 +35,7 @@
 
     async function getBase64Portrait (identityId, hash) {
       const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
-      const imageUrl = await getImageUrl(path, 'portraits')
+      const imageUrl = await getImageUrl(supabase, path, 'portraits')
       if (!portraits[identityId]) {
         const b64 = await imageToBase64(imageUrl)
         portraits[identityId] = b64

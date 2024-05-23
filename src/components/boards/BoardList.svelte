@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl, getPortraitUrl } from '@lib/database'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'

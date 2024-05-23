@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
 
   let users = []
   let page = 0

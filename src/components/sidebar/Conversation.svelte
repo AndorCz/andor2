@@ -4,7 +4,7 @@
   import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
   import { activeConversation, lightboxImage } from '@lib/stores'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user

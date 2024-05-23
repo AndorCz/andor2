@@ -1,15 +1,16 @@
-import { getSupabase } from '@lib/database'
+import { getSupabase } from '@lib/database-server'
 
 export const GET = async () => {
   return new Response('Login selhal', { status: 400 })
 }
 
-export const POST = async ({ cookies, request, redirect, locals }) => {
+export const POST = async ({ cookies, request, redirect, context }) => {
   const formData = await request.formData()
   const provider = formData.get('provider')?.toString()
 
   if (provider) {
-    const supabase = getSupabase(cookies, locals.env)
+    const env = import.meta.env ? import.meta.env : context.locals.runtime.env
+    const supabase = getSupabase(cookies, env)
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       options: { redirectTo: new URL(request.url).origin + '/api/auth/callback' },

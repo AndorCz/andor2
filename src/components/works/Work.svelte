@@ -1,6 +1,6 @@
 <script>
   import { tooltip } from '@lib/tooltip'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess, showError } from '@lib/toasts'
-  import { supabase, handleError, userAutocomplete } from '@lib/database'
+  import { supabase, handleError, userAutocomplete } from '@lib/database-browser'
   import Select from 'svelte-select'
   import HeaderInput from '@components/common/HeaderInput.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'

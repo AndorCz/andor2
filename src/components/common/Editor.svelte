@@ -1,9 +1,9 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, getImageUrl } from '@lib/database'
-  import { Editor, mergeAttributes } from '@tiptap/core'
+  import { supabase, handleError } from '@lib/database-browser'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { resizeImage, isFilledArray } from '@lib/utils'
+  import { resizeImage, isFilledArray, getImageUrl } from '@lib/utils'
+  import { Editor, mergeAttributes } from '@tiptap/core'
   import { EnterKeyHandler } from '@lib/editor/enter'
   import { MentionRender } from '@lib/editor/mention'
   import { CustomImage } from '@lib/editor/image'
@@ -149,7 +149,7 @@
           if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
             uploadImage(event.dataTransfer.files[0]).then(({ data, img }) => {
               const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-              const node = view.state.schema.nodes.image.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.image.create({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(coordinates.pos, node)
               view.dispatch(transaction)
             })
@@ -180,7 +180,7 @@
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
-              const node = view.state.schema.nodes.image.create({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height })
+              const node = view.state.schema.nodes.image.create({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height })
               const transaction = view.state.tr.insert(from, node)
               view.dispatch(transaction)
             })
@@ -268,7 +268,7 @@
     const file = fileInputEl.files[0]
     if (file) {
       const { data, img } = await uploadImage(file)
-      editor.chain().focus().setImage({ src: getImageUrl(data.path, 'posts'), width: img.width, height: img.height }).run()
+      editor.chain().focus().setImage({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height }).run()
     }
     fileInputEl.value = ''
   }

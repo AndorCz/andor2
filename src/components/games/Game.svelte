@@ -4,7 +4,7 @@
   import { showSuccess } from '@lib/toasts'
   import { removeURLParam } from '@lib/utils'
   import { getSavedStore, bookmarks } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import Discussion from '@components/Discussion.svelte'
   import GameCodex from '@components/games/codex/GameCodex.svelte'
   import GameThread from '@components/games/GameThread.svelte'

@@ -1,5 +1,4 @@
 import OpenAI from 'openai'
-import { handleError } from './database'
 
 /*
   The OpenAI assistant only has certain instructions and holds files that it can use for generation with Retrieval Augmented Generation.
@@ -9,7 +8,9 @@ import { handleError } from './database'
   Storyteller's assistant: Generate a new assistant for each output and delete it after generation.
 */
 
-export const openai = new OpenAI({ apiKey: import.meta.env.OPENAI_API_KEY })
+export function getOpenAI (env) {
+  return new OpenAI({ apiKey: env.OPENAI_API_KEY })
+}
 
 export async function getStoryteller (system) {
   switch (system) {
@@ -20,25 +21,25 @@ export async function getStoryteller (system) {
   }
 }
 
-export async function createAssistant (name, system = 'base') {
+export async function createAssistant (openai, name, system = 'base') {
   const { assistant: instructions } = await import(`../ai/${system}.js`)
   const res = await openai.beta.assistants.create({ name, model: 'gpt-4o', instructions }).catch(error => { return error })
-  if (res.error) { handleError(res.error) }
+  if (res.error) { throw res.error }
   return res.id
 }
 
-export async function createThread () {
+export async function createThread (openai) {
   const res = await openai.beta.threads.create().catch(error => { return error })
-  if (res.error) { handleError(res.error) }
+  if (res.error) { throw res.error }
   return res.id
 }
 
 // Creates a run, waits for it to complete, and optionally returns the last message
-export async function processRun (threadId, assistantId, returnLastMessage = false) {
+export async function processRun (openai, threadId, assistantId, returnLastMessage = false) {
   const maxDuration = 600000 // 10 minutes
   const pollInterval = 5000 // 5 seconds
   const run = await openai.beta.threads.runs.create(threadId, { assistant_id: assistantId }).catch(error => { return error })
-  if (run.error) { handleError(run.error) }
+  if (run.error) { throw run.error }
 
   return new Promise((resolve, reject) => {
     const intervalId = setInterval(async () => {
@@ -72,9 +73,9 @@ export async function processRun (threadId, assistantId, returnLastMessage = fal
   })
 }
 
-export async function getPosts ({ threadId, role, order = 'asc' }) {
+export async function getPosts (openai, { threadId, role, order = 'asc' }) {
   const messages = await openai.beta.threads.messages.list(threadId, { order }).catch(error => { return error })
-  if (messages.error) { return handleError(messages.error) }
+  if (messages.error) { throw messages.error }
   if (role) {
     return messages.data.filter(message => message.role === role)
       .map(assistantMessage => assistantMessage.content[0].text.value)
@@ -83,15 +84,15 @@ export async function getPosts ({ threadId, role, order = 'asc' }) {
   }
 }
 
-export async function savePost (threadId, content, characterId) {
+export async function savePost (openai, threadId, content, characterId) {
   return await openai.beta.threads.messages.create(threadId, { role: 'user', content, metadata: { characterId } }).catch(error => { return error })
 }
 
-export async function editPost (threadId, messageId, newContent) {
+export async function editPost (openai, threadId, messageId, newContent) {
   return await openai.beta.threads.messages.update(threadId, messageId, { content: [{ type: 'text', text: { value: newContent } }] }).catch(error => { return error })
 }
 
-export async function generatePost (thread, prompt, system) {
+export async function generatePost (openai, thread, prompt, system) {
   try {
     /*
       This function should start the "run" of the openAI thread, get the input from the AI and return it into the textarea. AI post will then be deleted.
@@ -104,7 +105,7 @@ export async function generatePost (thread, prompt, system) {
   }
 }
 
-export async function generatePortrait (appearance, user) {
+export async function generatePortrait (openai, appearance, user) {
   const image = await openai.images.generate({
     model: 'dall-e-3',
     prompt: `Digital painting, no text, RPG character in full-length and background environment: ${appearance}`,
@@ -118,7 +119,7 @@ export async function generatePortrait (appearance, user) {
   return blob
 }
 
-export async function generateMap (description, user) {
+export async function generateMap (openai, description, user) {
   return await openai.images.generate({
     model: 'dall-e-3',
     prompt: `D&D RPG map, digital painting, top-down view, dark background, tiled with square grid: ${description}`,

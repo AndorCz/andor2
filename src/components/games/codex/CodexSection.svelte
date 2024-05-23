@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess } from '@lib/toasts'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSideMenu from '@components/games/codex/CodexSideMenu.svelte'

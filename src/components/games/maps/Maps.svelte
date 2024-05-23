@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray } from '@lib/utils'
   import Map from '@components/games/maps/Map.svelte'

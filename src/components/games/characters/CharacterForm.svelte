@@ -1,10 +1,10 @@
 <script>
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { cropPortrait, resizePortrait, getImage, redirectWithToast } from '@lib/utils'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { showError } from '@lib/toasts';
+  import { showError } from '@lib/toasts'
 
   export let isStoryteller
   export let isGameOwner
@@ -37,8 +37,9 @@
   }
 
   async function deleteCharacter () {
-    if (character.game != null) { showError('Postava je ve hře, není možné ji smazat!')}
-    else {
+    if (character.game != null) {
+      showError('Postava je ve hře, není možné ji smazat')
+    } else {
       // Actually delete - do not use for now
       // const { error: updateError } = await supabase.rpc('delete_my_character', { character_id: character.id })
       const { error: updateError } = await supabase.from('characters').update({ state: 'deleted', storyteller: 'false' }).eq('id', character.id)

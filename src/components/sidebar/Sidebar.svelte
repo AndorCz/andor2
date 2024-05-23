@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { redirectWithToast } from '@lib/utils'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase, handleError } from '@lib/database-browser'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
@@ -48,7 +48,7 @@
 
   async function loadData () {
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
-    if (error) { handleError(error) }
+    if (error) { throw error }
     $bookmarks = data?.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
     users = data?.users || []
     characters = data?.characters || { allGrouped: [], myStranded: [] }
@@ -120,6 +120,8 @@
               <Characters {characters} {openConversation} />
             {/if}
           </div>
+        {:catch error}
+          <p>Chyba načítání panelu: {error.message}</p>
         {/await}
       {/if}
     {:else}

@@ -1,6 +1,7 @@
 import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
 import { saveTransfrom, saveProposition, clearProposition, toggleFoW } from '@lib/map/db'
-import { getImageUrl, getHash } from '@lib/database'
+import { supabase } from '@lib/database-browser'
+import { getImageUrl, getHash } from '@lib/utils'
 import { showError } from '@lib/toasts'
 import { Buttons } from '@lib/map/buttons'
 import { FoW } from '@lib/map/fow'
@@ -20,7 +21,7 @@ export class Vtt {
 
     // add map background image
     this.mapEl.appendChild(this.app.canvas)
-    const mapUrl = getImageUrl(`${this.game.id}/${this.map.id}?${this.map.image}`, 'maps')
+    const mapUrl = getImageUrl(supabase, `${this.game.id}/${this.map.id}?${this.map.image}`, 'maps')
     this.mapTexture = await Assets.load({ src: mapUrl, loadParser: 'loadTextures' })
     const map = new Sprite({ texture: this.mapTexture, roundPixels: true })
     map.eventMode = 'none'
@@ -43,7 +44,7 @@ export class Vtt {
     // fog of war
     if (this.map.fow) {
       if (this.map.fow_image) {
-        const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
+        const fowUrl = getImageUrl(supabase, `${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
         this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
       }
       this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene, isStoryteller: this.isStoryteller })
@@ -177,7 +178,7 @@ export class Vtt {
   async enableFog () {
     this.map.fow = true
     if (this.map.fow_image) {
-      const fowUrl = getImageUrl(`${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
+      const fowUrl = getImageUrl(supabase, `${this.game.id}/${this.map.id}_fow?${this.map.fow_image}`, 'maps')
       this.map.fowImage = await Assets.load({ src: fowUrl, loadParser: 'loadTextures' })
     }
     this.fow = new FoW({ vtt: this, map: this.map, app: this.app, scene: this.scene })

@@ -1,13 +1,15 @@
-import { openai, createAssistant, createThread, processRun, savePost } from '@lib/openai'
+import { getOpenAI, createAssistant, createThread, processRun, savePost } from '@lib/openai'
 
 export const maxDuration = 600 // 10 minutes
 
-async function cleanup (threadId, assistantId) {
+async function cleanup (openai, threadId, assistantId) {
   await openai.beta.threads.del(threadId)
   await openai.beta.assistants.del(assistantId)
 }
 
-export const GET = async ({ request, url, locals }) => {
+export const GET = async ({ request, url, locals, context }) => {
+  const env = import.meta.env ? import.meta.env : context.locals.runtime.env
+  const openai = getOpenAI(env)
   const { name, annotation, prompt, system, gameId } = Object.fromEntries(url.searchParams)
 
   async function save (responses) {
@@ -32,7 +34,7 @@ export const GET = async ({ request, url, locals }) => {
         // console.log('STARTING TO GENERATE')
 
         request.signal.addEventListener('abort', async () => { // not working, not sure why
-          await cleanup(threadId, assistantId)
+          await cleanup(openai, threadId, assistantId)
           controller.close()
         })
 
@@ -92,7 +94,7 @@ export const GET = async ({ request, url, locals }) => {
           data = await processRun(threadId, assistantId, true)
           if (data) { sendEvent(controller, encoder, data, responses, locals) } else { return 'Failed to generate the story (plot)' }
         }
-        await cleanup(threadId, assistantId)
+        await cleanup(openai, threadId, assistantId)
         controller.enqueue(encoder.encode('event: success\ndata: {}\n\n'))
         controller.close()
         // console.log('FINISHED GENERATING')

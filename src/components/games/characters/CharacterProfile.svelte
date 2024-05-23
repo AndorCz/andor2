@@ -1,5 +1,5 @@
 <script>
-  import { supabase, handleError, getPortraitUrl } from '@lib/database'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { showSuccess } from '@lib/toasts'
   import { Render } from '@jill64/svelte-sanitize'
   import { tooltip } from '@lib/tooltip'

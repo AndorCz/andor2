@@ -1,11 +1,20 @@
 import { DateTime } from 'luxon'
 
-// eslint-disable-next-line camelcase
-export function saveAuthCookies (cookies, { access_token, refresh_token }) {
-  const maxAge = 100 * 1000 * 60 * 60 * 24 * 365 // 100 years
-  const secure = import.meta.env.NODE_ENV === 'production' // disable 'secure' flag in development, Safari refuses to set a 'secure' cookie
-  cookies.set('sb-access-token', access_token, { path: '/', secure, maxAge })
-  cookies.set('sb-refresh-token', refresh_token, { path: '/', secure, maxAge })
+export function getHash () {
+  return Math.random().toString(36).slice(-5)
+}
+
+export function getImageUrl (supabase, path, storage) {
+  const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
+  if (error) { throw error }
+  return data.publicUrl
+}
+
+export async function uploadPortrait (supabase, identityId, table, file) {
+  const { error: error1 } = await supabase.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
+  if (error1) { return Promise.reject(error1) }
+  const { error: error2 } = await supabase.from(table).update({ portrait: getHash() }).eq('id', identityId)
+  if (error2) { return Promise.reject(error2) }
 }
 
 export function clone (source) { return source ? JSON.parse(JSON.stringify(source)) : source }

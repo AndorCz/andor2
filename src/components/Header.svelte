@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
-  import { supabase, handleError } from '@lib/database'
+  import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
   import Lightbox from '@components/common/Lightbox.svelte'
 
@@ -11,11 +11,16 @@
   export let showMenu = true
 
   let headerUrl = headerStatic
+  let errorFetchingHeader = false
 
   async function getHeaderUrl () {
-    const { data, error } = await supabase.storage.from('headers').getPublicUrl(headerStorage)
-    if (error) { return handleError(error) }
-    headerUrl = data.publicUrl
+    try {
+      const { data, error } = await supabase.storage.from('headers').getPublicUrl(headerStorage)
+      if (error) { throw error }
+      headerUrl = data.publicUrl
+    } catch (error) {
+      errorFetchingHeader = error
+    }
   }
 
   onMount(() => {
@@ -28,19 +33,23 @@
   $: if (headerStorage) { getHeaderUrl() }
 </script>
 
-<header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
-  <!-- svelte-ignore a11y-missing-content -->
-  <a href='/' id='logo'></a>
-  {#if showMenu}
-    <nav class='tabs'>
-      <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
-      <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
-      <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
-      <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
-      <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
-    </nav>
-  {/if}
-</header>
+{#if errorFetchingHeader}
+  <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
+{:else}
+  <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
+    <!-- svelte-ignore a11y-missing-content -->
+    <a href='/' id='logo'></a>
+    {#if showMenu}
+      <nav class='tabs'>
+        <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
+        <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
+        <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
+        <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
+        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
+      </nav>
+    {/if}
+  </header>
+{/if}
 
 <Lightbox />
 

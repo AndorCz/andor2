@@ -1,8 +1,7 @@
 ---
   import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/characters/CharacterForm.svelte'
-  import { uploadPortrait, getHash } from '@lib/database'
-  import { base64ToBlob } from '@lib/utils'
+  import { base64ToBlob, uploadPortrait, getHash } from '@lib/utils'
 
   const { supabase, user } = Astro.locals
   const id = Astro.url.searchParams.get('id') || ''
@@ -61,7 +60,7 @@
       const newPortrait = data.get('newPortrait')
       if (newPortrait) {
         const blob = base64ToBlob(newPortrait) // convert base64 to a blob
-        const error = await uploadPortrait(character.id, 'characters', blob, supabase)
+        const error = await uploadPortrait(supabase, character.id, 'characters', blob)
         if (error) { throw new Error(error)}
       }
 
