@@ -1,6 +1,5 @@
 ---
-  const { searchParams } = new URL(request.url)
-  const errorMessage = searchParams.get('error')
+  const errorMessage = Astro.url.searchParams.get('error')
 ---
 <html>
   <head>

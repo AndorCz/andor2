@@ -45,6 +45,7 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
     }
     return await next()
   } catch (error) {
-    return new Response('Middleware error: ' + error.message, { status: 500, headers: { 'Content-Type': 'text/html' } })
+    // return error and callstack
+    return new Response('Server error: ' + error.message + '<br>' + error.stack, { status: 500, headers: { 'Content-Type': 'text/html' } })
   }
 }
