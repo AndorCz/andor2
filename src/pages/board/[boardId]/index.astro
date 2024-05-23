@@ -30,9 +30,9 @@
 <Layout title={boardData?.name} headerStorage={boardData?.custom_header ? `board-${boardData.id}.jpg?hash=${boardData.custom_header}` : null}>
   {(hasAccess ? (
     showSettings ? (
-      <BoardSettings data={boardData} {user} {isMod} client:only />
+      <BoardSettings data={boardData} {user} {isMod} client:only='svelte' />
     ) : (
-      <Board data={boardData} {user} {isMod} client:only />
+      <Board data={boardData} {user} {isMod} client:only='svelte' />
     )
   ) : (
     <p>Do této diskuze nemáš přístup</p>

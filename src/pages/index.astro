@@ -19,11 +19,11 @@
 ---
 
 <Layout title='Hlavní strana'>
-  {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only />}
+  {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
-		<NewsSection headline='Nové hry' table='game_list' slug='game' client:only />
-		<NewsSection headline='Nové články' table='work_list' slug='work' client:only />
-		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:only />
+		<NewsSection headline='Nové hry' table='game_list' slug='game' client:only='svelte' />
+		<NewsSection headline='Nové články' table='work_list' slug='work' client:only='svelte' />
+		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:only='svelte' />
 	</main>
 </Layout>
 

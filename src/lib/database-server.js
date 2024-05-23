@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 
 // back-end
 export function getSupabase (cookies, env) {
-  console.log('ENV', env)
   return createServerClient(
     env.PUBLIC_SUPABASE_URL,
     env.PUBLIC_SUPABASE_ANON_KEY,

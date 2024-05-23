@@ -8,7 +8,7 @@
 <Layout title='Chat' headerStatic='/header_chat.jpg'>
 	<main>
     {user.id ? (
-      <Chat {user} client:only />
+      <Chat {user} client:only='svelte' />
     ) : (
       <center>
         Tato sekce je jen pro přihlášené uživatele.

@@ -9,7 +9,7 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
     const refreshToken = cookies.get('sb-refresh-token')?.value
 
     const env = import.meta.env ? import.meta.env : context.locals.runtime.env
-    if (!env) { throw new Error('Missing environment variables') }
+    if (!env && !env.PUBLIC_SUPABASE_URL) { throw new Error('Missing environment variables') }
     const supabase = getSupabase(cookies, env)
 
     if (accessToken && refreshToken) {
@@ -45,6 +45,6 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
     }
     return await next()
   } catch (error) {
-    return new Response('Server error: ' + error.message + '<br>' + error.stack, { status: 302, headers: { 'Content-Type': 'text/html' } })
+    return new Response('Server error: ' + error.message + '<br>' + error.stack, { status: 500, headers: { 'Content-Type': 'text/html' } })
   }
 }

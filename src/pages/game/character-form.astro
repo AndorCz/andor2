@@ -80,5 +80,5 @@
   <a href='javascript:history.back()'>zpět</a>
 
   <h1>{id ? 'Upravit postavu' : 'Vytvořit postavu'}</h1>
-  <CharacterForm {character} {isGameOwner} {isStoryteller} userId={user.id} client:only />
+  <CharacterForm {character} {isGameOwner} {isStoryteller} userId={user.id} client:only='svelte' />
 </Layout>

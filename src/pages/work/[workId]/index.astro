@@ -18,8 +18,8 @@
 
 <Layout title={workData?.name} headerStorage={workData?.custom_header ? `work-${workData.id}.jpg?hash=${workData.custom_header}` : null}>
   {(showSettings ? (
-    <WorkSettings data={workData} {user} client:only />
+    <WorkSettings data={workData} {user} client:only='svelte' />
   ) : (
-    <Work data={workData} {user} client:only />
+    <Work data={workData} {user} client:only='svelte' />
   ))}
 </Layout>

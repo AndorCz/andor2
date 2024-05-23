@@ -5,10 +5,17 @@
   <head>
     <meta charset='utf-8'>
     <title>500 - Server Error</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #201c1b;
+        color: #c4b6ab;
+      }
+    </style>
   </head>
   <body>
     <h1>500 - Internal Server Error</h1>
-    <p>Něco se nepovedlo, prosím mějte trpělivost :)</p>
+    <p>Něco se rozbilo, prosím mějte trpělivost :)</p>
     {errorMessage && <p>Detaily: {errorMessage}</p>}
   </body>
 </html>

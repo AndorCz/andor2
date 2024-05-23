@@ -38,7 +38,7 @@ const { title, headerStatic, headerStorage } = Astro.props
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} client:only />
+        <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
         <div id='content'>
           <slot />
         </div>
@@ -46,7 +46,7 @@ const { title, headerStatic, headerStorage } = Astro.props
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
-        <Sidebar {user} client:only />
+        <Sidebar {user} client:only='svelte' />
       ) : null}
     </div>
   </body>
