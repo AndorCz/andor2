@@ -1,6 +1,6 @@
 ---
 	import Layout from '@layouts/layout.astro'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import BoardForm from '@components/boards/BoardForm.svelte'
 
   const { supabase, user } = Astro.locals
 
@@ -26,64 +26,5 @@
 
 <Layout title='Vytvořit diskuzi'>
   <a href='javascript:history.back()'>zpět</a>
-
-  <h1>Vytvořit diskuzi</h1>
-
-  {user.id ? (
-    <form method='POST' autocomplete='off'>
-      <div class='row'>
-        <div class='labels'><label for='boardName'>Název</label></div>
-        <div class='inputs'><input type='text' id='boardName' name='boardName' maxlength='80' /></div>
-      </div>
-
-      <div class='row'>
-        <div class='labels'><label for='boardAnnotation'>Anotace</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Popis tématu, do seznamu diskuzí a novinek' userId={user.id} id='boardAnnotation' name='boardAnnotation' minHeight={80} maxlength={150} client:load /></div>
-      </div>
-
-      <center>
-        <button type='submit' class='large'>Vytvořit</button>
-      </center>
-    </form>
-  ) : (
-    <div>
-      <p>Pro vytvoření nové diskuze se musíš přihlásit.</p>
-    </div>
-  )}
+  <BoardForm {user} client:only='svelte' />
 </Layout>
-
-<style>
-  form {
-    width: 100%;
-  }
-    .row {
-      display: flex;
-      margin-top: 30px;
-      margin-bottom: 30px;
-    }
-      .labels {
-        width: 15%;
-        padding-top: 15px;
-      }
-      .inputs {
-        flex: 1;
-      }
-        input {
-          width: 100%;
-        }
-        select {
-          width: 400px;
-        }
-  center {
-    margin-top: 20px;
-  }
-  @media (max-width: 860px) {
-    .row {
-      display: block;
-    }
-      .labels {
-        width: 100%;
-        padding-bottom: 20px;
-      }
-  }
-</style>

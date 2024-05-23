@@ -43,7 +43,7 @@
     {/each}
   </div>
 {:catch error}
-  <p style='color: red'>{error.message}</p>
+  <p>{error.message}</p>
 {/await}
 
 <style>
