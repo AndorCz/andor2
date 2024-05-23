@@ -45,7 +45,6 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
     }
     return await next()
   } catch (error) {
-    // return error and callstack
-    return new Response('Server error: ' + error.message + '<br>' + error.stack, { status: 500, headers: { 'Content-Type': 'text/html' } })
+    return new Response('Server error: ' + error.message + '<br>' + error.stack, { status: 302, headers: { 'Content-Type': 'text/html' } })
   }
 }
