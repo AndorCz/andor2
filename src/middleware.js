@@ -23,7 +23,7 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
         cookies.delete('sb-refresh-token')
       }
       if (authData.user) {
-        saveAuthCookies(cookies, authData.session, env)
+        saveAuthCookies(cookies, authData.session)
         locals.user = { id: authData.user.id, email: authData.user.email }
       }
       // user exists, load profile data

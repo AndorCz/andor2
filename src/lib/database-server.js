@@ -16,9 +16,10 @@ export function getSupabase (cookies, env) {
 }
 
 // eslint-disable-next-line camelcase
-export function saveAuthCookies (cookies, { access_token, refresh_token }, env) {
+export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   const maxAge = 100 * 1000 * 60 * 60 * 24 * 365 // 100 years
-  const secure = env.NODE_ENV === 'production' // disable 'secure' flag in development, Safari refuses to set a 'secure' cookie
+  const environment = import.meta.env ? 'development' : 'production' // import.meta.env doesn't exist in production
+  const secure = environment === 'production' // disable 'secure' flag in development, Safari refuses to set a 'secure' cookie
   cookies.set('sb-access-token', access_token, { path: '/', secure, maxAge })
   cookies.set('sb-refresh-token', refresh_token, { path: '/', secure, maxAge })
 }
