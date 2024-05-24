@@ -1,4 +1,3 @@
-
 export const gameCategories = [
   { value: 'anime', label: 'Anime' },
   { value: 'cyberpunk', label: 'Cyberpunk' },

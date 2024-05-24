@@ -4,14 +4,14 @@
   "version": "0.7.3",
   "scripts": {
     "dev": "astro dev",
-    "dev-cloudflare": "wrangler pages dev",
+    "dev-cloudflare": "wrangler pages dev ./dist --live-reload --compatibility-flag=nodejs_compat",
     "build": "astro build",
     "db": "supabase start",
     "functions": "supabase functions serve",
     "sync": "PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -p 54322 -a -f src/db/schema.sql"
   },
   "dependencies": {
-    "astro": "4.8.2",
+    "astro": "4.9.1",
     "@astrojs/cloudflare": "10.2.6",
     "@astrojs/svelte": "5.4.0",
     "@supabase/ssr": "0.3.0",

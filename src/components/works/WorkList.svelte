@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
   import { workTags, workCategoriesText } from '@lib/constants'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
@@ -14,7 +13,15 @@
   let listView = false
   let workListStore
 
-  onMount(() => {
+  // functions to run only in the browser
+  let getHeaderUrl = () => {}
+  let getPortraitUrl = () => {}
+
+  onMount(async () => {
+    const databaseBrowser = await import('@lib/database-browser')
+    getHeaderUrl = databaseBrowser.getHeaderUrl
+    getPortraitUrl = databaseBrowser.getPortraitUrl
+
     workListStore = getSavedStore('works', { listView: false })
     listView = $workListStore.listView
   })
@@ -75,7 +82,7 @@
           <td>
             <a href='./user?id={work.owner_id}' class='user owner'>
               {work.owner_name}
-              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
+              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
             </a>
           </td>
         </tr>
@@ -93,7 +100,7 @@
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
               {work.owner_name}
-              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='portrait' alt={work.owner_name} />{/if}
+              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
             </a>
           </div>
         </div>
@@ -231,7 +238,7 @@
     justify-content: flex-end;
     gap: 10px;
   }
-    .portrait {
+    .icon {
       display: block;
       width: 40px;
       height: 40px;
@@ -266,7 +273,7 @@
     .block .image {
       width: 100%;
     }
-    .portrait {
+    .icon {
       display: none;
     }
   }

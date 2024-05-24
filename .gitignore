@@ -2,6 +2,7 @@
 .astro/
 dist/
 wrangler.toml
+.wrangler/
 
 # node
 node_modules/

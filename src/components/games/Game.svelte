@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { removeURLParam } from '@lib/utils'
+  import { removeURLParam, isFilledArray } from '@lib/utils'
   import { getSavedStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database-browser'
   import Discussion from '@components/Discussion.svelte'
@@ -81,8 +81,8 @@
 </script>
 
 <svelte:head>
-  {#if game.fonts}
-    <link rel='stylesheet' href={`https://fonts.googleapis.com/css2?family=${game.fonts.join('&family=')}&display=swap'`}>
+  {#if isFilledArray(game.fonts)}
+    <link rel='stylesheet' href={`https://fonts.googleapis.com/css2?family=${game.fonts.join('&family=')}&display=swap`}>
   {/if}
 </svelte:head>
 

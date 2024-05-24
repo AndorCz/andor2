@@ -9,7 +9,23 @@ import { defineConfig } from 'astro/config'
 export default defineConfig({
   integrations: [svelte()],
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true
+    }
+    /*
+    routes: {
+      extend: {
+        include: [{ pattern: '/api/*' }]
+      }
+    }
+    */
+  }),
+  vite: {
+    build: {
+      minify: false
+    }
+  },
   prefetch: false
   /* disabled because of issues with cloudflare cache, had to clear it manually
   vite: {

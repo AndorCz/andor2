@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
   import { isFilledArray } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
@@ -11,7 +10,6 @@
   export let showHeadline = false
   export let showTabs = true
 
-  // let sort = 'new'
   let listView = false
   let gameListStore
   let activeTab = 'new'
@@ -19,7 +17,15 @@
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
-  onMount(() => { // get sort parameter from url
+  // functions to run only in the browser
+  let getHeaderUrl = () => {}
+  let getPortraitUrl = () => {}
+
+  onMount(async () => { // get sort parameter from url
+    const databaseBrowser = await import('@lib/database-browser')
+    getHeaderUrl = databaseBrowser.getHeaderUrl
+    getPortraitUrl = databaseBrowser.getPortraitUrl
+
     // const sortParam = new URL(window.location).searchParams.get('sort')
     // if (sortParam) { sort = sortParam }
 
@@ -90,7 +96,7 @@
           <td>
             <a href='./user?id={game.owner_id}' class='user owner'>
               {game.owner_name}
-              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
+              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
             </a>
           </td>
         </tr>
@@ -108,7 +114,7 @@
             <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={game.owner_id}' class='user owner' title='vlastník'>
               {game.owner_name}
-              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='portrait' alt={game.owner_name} />{/if}
+              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
             </a>
           </div>
         </div>
@@ -153,7 +159,7 @@
     justify-content: flex-end;
     gap: 10px;
   }
-    .portrait {
+    .icon {
       display: block;
       width: 40px;
       height: 40px;

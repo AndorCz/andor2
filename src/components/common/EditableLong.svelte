@@ -13,7 +13,7 @@
   export let canEdit = false
   export let allowHtml = false
   export let enterSend = false
-  export let mentionList
+  export let mentionList = null
 
   let isEditing = false
   let originalValue = value

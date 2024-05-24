@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
@@ -13,7 +12,14 @@
   let listView = false
   let boardListStore
 
-  onMount(() => {
+  // functions to run only in the browser
+  let getHeaderUrl = () => {}
+  let getPortraitUrl = () => {}
+
+  onMount(async () => {
+    const databaseBrowser = await import('@lib/database-browser')
+    getHeaderUrl = databaseBrowser.getHeaderUrl
+    getPortraitUrl = databaseBrowser.getPortraitUrl
     boardListStore = getSavedStore('boards', { listView: false })
     listView = $boardListStore.listView
   })
@@ -50,7 +56,7 @@
           <td>
             <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
               {board.owner_name}
-              {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='portrait' alt={board.owner_name} />{/if}
+              {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
             </a>
           </td>
       </tr>
@@ -67,7 +73,7 @@
             {#if ![1, 2, 3].includes(board.id)}
               <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
                 {board.owner_name}
-                {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='portrait' alt={board.owner_name} />{/if}
+                {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
               </a>
             {/if}
           </div>
@@ -108,7 +114,7 @@
     justify-content: flex-end;
     gap: 10px;
   }
-    .portrait {
+    .icon {
       display: block;
       width: 40px;
       height: 40px;
