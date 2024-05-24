@@ -16,8 +16,8 @@ const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res
 
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
-    <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap' rel='stylesheet' onload="this.onload=null; this.rel='stylesheet'">
     <link rel='icon' href='https://www.andor2.cz/favicon.png' type='image/png' />
+    <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap' rel='stylesheet' onload="this.onload=null; this.rel='stylesheet'">
 
     <style type='text/css' set:html={`${obsidian}`}></style>
 
@@ -26,7 +26,7 @@ const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} showMenu={false} />
+        <Header {pathname} {headerStatic} {headerStorage} showMenu={false} client:only='svelte' />
         <div id='content'>
           <slot />
         </div>

@@ -3,7 +3,7 @@ import Layout from '@layouts/layout.astro'
 import Migrate from '@components/user/Migrate.svelte'
 
 const { supabase, user } = Astro.locals
-let  oldUserData = {}
+let oldUserData = {}
 if (user.old_id) {
   const { data, error } = await supabase.from('old_users').select('*').eq('old_id', user.old_id).maybeSingle()
   oldUserData = data
@@ -11,5 +11,5 @@ if (user.old_id) {
 ---
 
 <Layout title='Migrace'>
-    <Migrate {user} {oldUserData} client:load />
+  <Migrate {user} {oldUserData} client:only='svelte' />
 </Layout>
