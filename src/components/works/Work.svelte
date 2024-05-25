@@ -70,6 +70,12 @@
     </div>
   </div>
 
+  {#if data.published === false && user.id === 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f'} <!-- Sargo -->
+    <div class='approve'>
+      <a href='/api/work/approveWork?workId={data.id}&authorId={data.owner.id}' class='button' rel='noreferrer noopener'>Schválit</a>
+    </div>
+  {/if}
+
   <br><br>
   <Discussion {data} {user} thread={data.thread} canModerate={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection={'works'} />
 </main>

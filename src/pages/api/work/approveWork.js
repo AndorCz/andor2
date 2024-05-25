@@ -10,7 +10,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
     if (approveError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Schválení selhalo: ' + approveError.message)) }
 
     const { error: messageError } = await locals.supabase.from('messages').insert({
-      content: 'Tvé dílo bylo právě zveřejněno. Díky a přejeme mnoho laskavých komentářů.',
+      content: 'Tvé dílo bylo právě zveřejněno. Díky za něj a přejeme mnoho laskavých komentářů.',
       sender_user: curatorId,
       recipient_user: authorId
     })

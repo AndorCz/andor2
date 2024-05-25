@@ -81,6 +81,7 @@ alter table public.works enable row level security;
 create policy "READ for everyone" on public.works for select to public using (true);
 create policy "ALL for owners" on public.works for all to authenticated using (owner = (select auth.uid()));
 create policy "INSERT for owners, unpublished" on public.works for insert to authenticated with check (published = false);
+create policy "ALL for works for Sargo" on public.works for all to authenticated using (auth.uid() = 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f');
 
 
 -- GENERAL --------------------------------------------
@@ -103,17 +104,18 @@ create policy "ALL for character owners" on public.posts for all to authenticate
 create policy "INSERT for players or users" on public.posts for insert to authenticated with check (thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id)));
 create policy "INSERT for users to chat" on public.posts for insert to authenticated with check (thread = 1);
 
-  -- games
+  -- game posts
 create policy "READ to everyone in open game and open discussion" on public.posts for select to public using ((thread in (select discussion_thread from games where open_discussion = true)) or (thread in (select game_thread from games where open_game = true)));
 create policy "READ to players in closed game and closed discussion" on public.posts for select to authenticated using (thread in (select discussion_thread from games where open_discussion = false and is_player(id)) or thread in (select game_thread from games where open_game = false and is_player(id)));
 create policy "ALL for storytellers" on public.posts for all to authenticated using (thread in (select discussion_thread from games where is_storyteller(id)) or thread in (select game_thread from games where is_storyteller(id)));
-  -- boards
+  -- board posts
 create policy "READ for users in open boards, except banned" on public.posts for select using (exists (select 1 from boards where boards.open = true and boards.thread = posts.thread and not ((select auth.uid()) = any (boards.bans))));
 create policy "READ to members in closed boards" on public.posts for select using (exists (select 1 from boards where boards.open = false and boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.members) or (select auth.uid()) = any (boards.mods))));
 create policy "ALL for mods and owner in boards" on public.posts for all using (exists (select 1 from boards where boards.thread = posts.thread and ((select auth.uid()) = boards.owner or (select auth.uid()) = any (boards.mods))));
-  -- works
+  -- work posts (discussion)
 create policy "READ to everyone in works" on public.posts for select to public using (thread in (select thread from works));
 create policy "ALL for owners in works" on public.posts for all to authenticated using (thread in (select thread from works where owner = (select auth.uid())));
+
 
 -- Reactions --
 

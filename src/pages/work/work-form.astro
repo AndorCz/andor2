@@ -20,9 +20,9 @@
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
 
-    if (Astro.locals.runtime.env.PROD) {
+    if (Astro.locals.runtime.env.ENV === 'development') {
       const { error: messageError } = await supabase.from('messages').insert({
-        content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a><br><a href='/api/work/approveWork?workId=${data.id}&authorId=${user.id}' class='button' rel='noreferrer noopener'>Schválit</a>`,
+        content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a>`,
         sender_user: user.id,
         recipient_user: 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f' // Sargo
       })
