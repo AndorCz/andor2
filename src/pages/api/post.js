@@ -78,7 +78,7 @@ export const DELETE = async ({ url, request, locals }) => {
   const { data, error } = await locals.supabase.from('posts').delete().eq('id', id).select().single()
   if (data.openai_post && thread) { // delete from open ai thread as well
     // 2DO: STUCK - API doesn't allow to edit content of posts
-    // editPost(thread, data.openai_post, 'deleted')
+    // editPost(openai, thread, data.openai_post, 'deleted')
   }
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
   return new Response('{}')

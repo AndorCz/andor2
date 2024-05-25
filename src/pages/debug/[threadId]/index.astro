@@ -2,7 +2,8 @@
   import { getPosts } from '@lib/openai'
 
   const { threadId } = Astro.params
-  const { data } = await getPosts({ threadId, order: 'desc' })
+  const openai = getOpenAI(Astro.locals.runtime.env)
+  const { data } = await getPosts(openai, { threadId, order: 'desc' })
 ---
 
 <div>
