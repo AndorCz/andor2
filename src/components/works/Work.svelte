@@ -47,7 +47,7 @@
 
 <main>
   {#if data.published === false}
-    <div class='unpublished'><span class='material'>info</span>Toto dílo ještě není vydané, čeká na schválení od Sargo</div>
+    <div class='unpublished'><span class='material'>info</span>Toto dílo ještě není vydané, čeká na schválení</div>
   {/if}
 
   <div class='headline'>
