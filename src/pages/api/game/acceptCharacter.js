@@ -20,8 +20,8 @@ export const GET = async ({ request, url, redirect, locals }) => {
   if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
 
   // update message
-  const {error: messageUpdateError } = await locals.supabase.rpc('update_transfer_message', { character_id: characterId, game_id: gameId, new_content: "<br>Přijato!" })
-  if (messageUpdateError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message))}
+  const { error: messageUpdateError } = await locals.supabase.rpc('update_transfer_message', { character_id: characterId, game_id: gameId, new_content: '<br>Přijato!' })
+  if (messageUpdateError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
 
   // add game bookmark
   const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })

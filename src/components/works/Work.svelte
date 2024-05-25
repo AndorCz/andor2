@@ -45,6 +45,10 @@
 </script>
 
 <main>
+  {#if data.published === false}
+    <div class='unpublished'><span class='material'>info</span>Toto dílo ještě není vydané, čeká na schválení od Sargo</div>
+  {/if}
+
   <div class='headline'>
     <h1>{data.name}</h1>
     {#if user.id}
@@ -71,6 +75,13 @@
 </main>
 
 <style>
+  .unpublished {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    margin-bottom: 40px;
+    background-color: var(--prominent);
+  }
   .headline {
     display: flex;
     justify-content: space-between;
