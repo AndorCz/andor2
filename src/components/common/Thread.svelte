@@ -39,7 +39,7 @@
   onMount(async () => {
     if (isFilledArray($posts)) {
       setupReplyListeners()
-      lastPostId = $posts[$posts.length - 1].id
+      lastPostId = $posts[0].id
     }
     if (user.autorefresh) { refresh() }
   })
@@ -113,9 +113,8 @@
   }
 
   function seen () {
-    console.log('SEEN')
     setRead(user.id, 'thread-' + id)
-    if (isFilledArray($posts)) { lastPostId = $posts[$posts.length - 1].id }
+    if (isFilledArray($posts)) { lastPostId = $posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
       if (bookmark) { bookmark.unread = 0 }
@@ -135,8 +134,7 @@
     frameId = requestAnimationFrame(refresh)
   }
 
-  $: console.log('Thread update fired, lastPostId: ' + lastPostId + ', real last post id: ' + (isFilledArray($posts) ? $posts[$posts.length - 1].id : 'none'))
-  $: if (isFilledArray($posts) && $posts[$posts.length - 1].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
+  $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
 </script>
 
 <main bind:this={threadEl}>

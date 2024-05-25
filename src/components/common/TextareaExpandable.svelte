@@ -35,6 +35,7 @@
     if (allowHtml) {
       tiptap = editorRef.getEditor()
       if (value) { editorRef.setContent(value) } // set html content
+      isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
     }
   })
 

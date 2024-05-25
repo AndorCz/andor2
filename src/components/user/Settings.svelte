@@ -83,7 +83,7 @@
       </tr>
     </table>
 
-    <h2>Automatický refresh příspěvků</h2>
+    <h2>Auto-refresh herních příspěvků</h2>
     <div class='row'>
       <select bind:value={user.autorefresh} id='autorefresh' name='autorefresh'>
         <option value={true}>Zapnuto</option>
