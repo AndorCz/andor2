@@ -113,6 +113,7 @@
   }
 
   function seen () {
+    console.log('SEEN')
     setRead(user.id, 'thread-' + id)
     if (isFilledArray($posts)) { lastPostId = $posts[$posts.length - 1].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {

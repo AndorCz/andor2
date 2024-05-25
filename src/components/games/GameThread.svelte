@@ -114,9 +114,11 @@
     } else {
       await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     }
+    console.log('SUBMITTED')
     textareaValue = ''
     $gameStore.unsent = ''
     await loadPosts()
+    console.log('POSTS LOADED')
     saving = false
     editing = false
   }
