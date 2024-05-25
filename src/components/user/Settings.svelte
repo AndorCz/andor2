@@ -85,8 +85,11 @@
 
     <h2>Automatický refresh příspěvků</h2>
     <div class='row'>
-      <div class='inputs'><input type='checkbox' id='autorefresh' name='autorefresh' bind:checked={user.autorefresh} /></div>
-      <button on:click={updateUser} class='material square' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
+      <select bind:value={user.autorefresh} id='autorefresh' name='autorefresh'>
+        <option value={true}>Zapnuto</option>
+        <option value={false}>Vypnuto</option>
+      </select>
+      <button on:click={updateUser} class='material' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazat účet</h2>
@@ -116,5 +119,8 @@
   .row {
     display: flex;
     gap: 20px;
+  }
+  select {
+    width: 200px;
   }
 </style>

@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { setRead, getReply } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
@@ -26,17 +26,35 @@
   export let iconSize = 70
   export let diceMode = 'none' // 'post', 'icon', 'none'
 
+  let lastPostId
   let threadEl
   let replyPostEl
   let replyPostData
   let lastRefresh = Date.now()
-  let autorefreshRunning
+  let autorefreshRunning = false
+  let frameId
 
   const replies = {}
 
-  if (user.autorefresh && !autorefreshRunning) { refresh() }
+  onMount(async () => {
+    if (isFilledArray($posts)) {
+      setupReplyListeners()
+      lastPostId = $posts[$posts.length - 1].id
+    }
+    if (user.autorefresh) { refresh() }
+  })
 
-  onMount(async () => { if (posts) { setupReplyListeners() } })
+  onDestroy(() => {
+    if (frameId) { cancelAnimationFrame(frameId) }
+    if (isFilledArray($posts)) {
+      const cites = document.querySelectorAll('cite[data-id]')
+      for (const citeEl of cites) {
+        citeEl.removeEventListener('pointerdown', addReply)
+        citeEl.removeEventListener('mouseenter', showReply)
+        citeEl.removeEventListener('mouseleave', hideReply)
+      }
+    }
+  })
 
   async function setupReplyListeners () { // pre-requisite for replies
     // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
@@ -66,7 +84,6 @@
       const container = document.createElement('div')
       container.classList.add('nestedReply')
       event.target.parentNode.insertBefore(container, event.target.nextSibling)
-      // eslint-disable-next-line no-new
       new Post({ target: container, props: { post: replyData, user, iconSize: 0 } })
       setupReplyListeners()
     }
@@ -95,31 +112,34 @@
     threadEl.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // autorefresh every 10 seconds, if enabled in user settings
-  function refresh () {
-    autorefreshRunning = true
-    if (Date.now() - lastRefresh > 10000) {
-      lastRefresh = Date.now()
-      onPaging(page)
-    }
-    requestAnimationFrame(refresh)
-  }
-
   function seen () {
     setRead(user.id, 'thread-' + id)
-    if (contentSection && contentId) {
-      const bookmark = $bookmarks[contentSection]?.find((page) => { return page.id === contentId })
+    if (isFilledArray($posts)) { lastPostId = $posts[$posts.length - 1].id }
+    if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
+      const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
       if (bookmark) { bookmark.unread = 0 }
       $bookmarks = $bookmarks
     }
   }
 
-  $: if (posts && $bookmarks[contentSection]?.length) { seen() } // set read on every change of posts prop (thread re-render)
+  // autorefresh every 10 seconds, if enabled in user settings
+  async function refresh () {
+    if (Date.now() - lastRefresh > 10000) {
+      if (autorefreshRunning) return
+      autorefreshRunning = true
+      lastRefresh = Date.now()
+      await onPaging(page)
+      autorefreshRunning = false
+    }
+    frameId = requestAnimationFrame(refresh)
+  }
+
+  $: if (isFilledArray($posts) && $posts[$posts.length - 1].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
 </script>
 
 <main bind:this={threadEl}>
   {#if isFilledArray($posts)}
-    {#each $posts as post, index}
+    {#each $posts as post, index (post.id, post.updated_at)}
       {#if post.dice}
         {#if diceMode === 'post'}
           <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />

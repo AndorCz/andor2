@@ -203,6 +203,7 @@ create table posts (
   moderated boolean default false,
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
   constraint posts_thread_fkey foreign key (thread) references threads (id) on delete cascade
 );
 
@@ -296,7 +297,7 @@ create or replace view posts_owner as
 
 create or replace view game_posts_owner as
   select
-    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.important,
+    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.updated_at, p.important,
     characters.name as owner_name,
     characters.portrait as owner_portrait,
     games.id as game_id
@@ -1076,6 +1077,7 @@ create or replace trigger add_work_thread before insert on works for each row ex
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
 create or replace trigger update_map_updated_at before update on maps for each row execute procedure update_updated_at();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
+create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 
 
