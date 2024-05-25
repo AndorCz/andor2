@@ -2,6 +2,7 @@
   import { supabase, handleError } from '@lib/database-browser'
   import { showError, showSuccess } from '@lib/toasts'
   import EditableLong from '@components/common/EditableLong.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user
   export let game
@@ -20,14 +21,12 @@
   */
 
   async function generateStory () {
-    if (!confirm('Opravdu chceš vygenerovat nové podklady pro vypravěče? Přepíše obsah pole níže.')) { return }
     game.story = ''
     generatingStory = true
 
     eventSource = new EventSource(`/api/game/generateStory?name=${encodeURIComponent(game.name)}&annotation=${encodeURIComponent(game.annotation)}&prompt=${encodeURIComponent(game.prompt)}&system=${encodeURIComponent(game.system)}&gameId=${game.id}`)
 
     eventSource.onmessage = (event) => {
-      showSuccess('Část příběhu vygenerována')
       if (event.data) {
         game.story += decodeURIComponent(event.data)
       }
@@ -35,7 +34,7 @@
 
     eventSource.addEventListener('success', (event) => {
       generatingStory = false
-      showSuccess('Vygenerováno')
+      showSuccess('Generování dokončeno')
       eventSource.close()
     })
 
@@ -68,7 +67,7 @@
   <EditableLong placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>AI generování podkladů</h2>
-  <EditableLong placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' userId={user.id} bind:value={game.prompt} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
+  <TextareaExpandable placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' bind:value={game.prompt} userId={user.id} />
   <br>
   {#if generatingStory}
     <button on:click={cancelGeneration}>Zrušit generování</button>

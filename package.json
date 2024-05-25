@@ -34,7 +34,7 @@
     "crypto-js": "^4.2.0",
     "luxon": "3.4.4",
     "notyf": "3.10.0",
-    "openai": "4.20.1",
+    "openai": "4.47.1",
     "pixi-filters": "^6.0.0",
     "pixi.js": "^8.0.5",
     "sortablejs": "^1.15.2",
