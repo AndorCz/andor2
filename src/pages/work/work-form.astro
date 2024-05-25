@@ -20,8 +20,7 @@
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
 
-    const environment = import.meta.env ? 'development' : 'production'
-    if (environment === 'production') {
+    if (Astro.locals.runtime.env.PROD) {
       const { error: messageError } = await supabase.from('messages').insert({
         content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a><br><a href='/api/work/approveWork?workId=${data.id}&authorId=${user.id}' class='button' rel='noreferrer noopener'>Schválit</a>`,
         sender_user: user.id,
