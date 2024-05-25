@@ -135,6 +135,7 @@
     frameId = requestAnimationFrame(refresh)
   }
 
+  $: console.log('Thread update fired, lastPostId: ' + lastPostId + ', real last post id: ' + (isFilledArray($posts) ? $posts[$posts.length - 1].id : 'none'))
   $: if (isFilledArray($posts) && $posts[$posts.length - 1].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
 </script>
 
