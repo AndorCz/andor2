@@ -14,20 +14,25 @@
 
     // 2DO: add 'type' for other types of works
     const { data, error } = await supabase.from('works').insert({ owner: user.id, name, category, content, annotation, tags }).select().single()
-    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba vložení díla: ' + error.message)}`) }
 
     // add bookmark
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
-    if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
+    if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba přidání záložky: ' + bookmarkError.message)}`) }
 
-    if (Astro.locals.runtime.env.ENV === 'development') {
-      const { error: messageError } = await supabase.from('messages').insert({
-        content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a>`,
-        sender_user: user.id,
-        recipient_user: 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f' // Sargo
-      })
-      if (messageError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + insertError.message)}`) }
-    }
+    // get thread of board id 999
+    const { data: threadData, error: threadError } = await supabase.from('boards').select('thread').eq('id', 999).single()
+    if (threadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba získání threadu: ' + threadError.message)}`) }
+
+    // add post to approval discussion
+    const { error: postError } = await supabase.from('posts').insert({
+      thread: threadData.thread,
+      owner: user.id,
+      owner_type: 'user',
+      content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a>`,
+      important: true,
+    })
+    if (postError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba v přidání upozornění na dílo: ' + insertError.message)}`) }
 
     return Astro.redirect(`/work/${data.id}?toastType=success&toastText=${encodeURIComponent('Článek byl přidán, čeká na schválení')}`)
   }

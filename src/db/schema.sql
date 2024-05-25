@@ -1116,3 +1116,4 @@ insert into threads (name) values ('Chat'); -- has to be ID 1
 insert into public.boards (name, owner) values ('Nápověda', auth.uid())
 insert into public.boards (name, owner) values ('Správa Andoru', auth.uid())
 insert into public.boards (name, owner) values ('Nahlášení obsahu', auth.uid())
+insert into public.boards (id, name, owner) values (999, 'Tvorba', auth.uid())

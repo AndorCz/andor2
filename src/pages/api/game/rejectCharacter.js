@@ -1,4 +1,3 @@
-
 export const GET = async ({ request, url, redirect, locals }) => {
   const referer = request.headers.get('referer')
   const { gameId, characterId } = Object.fromEntries(url.searchParams)
@@ -10,7 +9,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
   if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
 
   // update message
-  const {error: messageUpdateError } = await locals.supabase.rpc('update_transfer_message', { character_id: characterId, game_id: gameId, new_content: "<br>Odmítnuto!" })
+  const { error: messageUpdateError } = await locals.supabase.rpc('update_transfer_message', { character_id: characterId, game_id: gameId, new_content: '<br>Odmítnuto!' })
   if (messageUpdateError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
 
   if (data) {
