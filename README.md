@@ -6,11 +6,23 @@ The target audience are players of TTRPG games, using the czech language.
 The initial version will be an experimental MVP, with limited functionality.
 
 ## List of features
-  - Authentication with Google
+  - Authentication (Email and Google)
   - List of games
-  - Game thread
-    - AI storyteller
+  - Game
+    - AI storyteller's assistant
     - Player characters, assigned to users
+    - Game thread
+      - Filtering
+      - Whispered posts
+    - Dice
+    - Maps
+    - Codex of game information
+    - Discussion: Meta gaming chat
+  - Works (User submitted short stories, images and music)
+  - Boards (General discussion threads on various topics)
+  - General chat
+  - User DMs
+  - Character DMs
 
 ## Pages
 
@@ -33,7 +45,8 @@ The initial version will be an experimental MVP, with limited functionality.
   ### Back-end
   - [Astro](https://docs.astro.build)
   - [Supabase](https://supabase.com) - database, auth
-  - [OpenAI API](https://openai.com/blog/openai-api/), model GPT-4-turbo
+  - [OpenAI API](https://openai.com/blog/openai-api/), model GPT-4o
+  - [Gemini API](https://ai.google.dev/gemini-api), model Gemini 1.5
 
   ### Front-end
   - [Svelte](https://svelte.dev) for UI components, within Astro
