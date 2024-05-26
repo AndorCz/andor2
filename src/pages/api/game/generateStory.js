@@ -47,7 +47,7 @@ export const GET = async ({ request, url, locals, context }) => {
         // write the basic setting
         if (prompt) {
           await savePost(openai, threadId, `Hrajeme stolní RPG hru jménem: ${decodeURIComponent(name)}
-            Popis pro hráče:
+            Základní popis hry pro hráče:
             ${decodeURIComponent(annotation)}
             ---
             Toto je zadání od vypravěče pro přípravu podkladů:

@@ -113,7 +113,7 @@
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
     {/if}
-    <textarea bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength}></textarea>
+    <textarea bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
   {#if showButton}
     <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle} use:tooltip>
@@ -138,7 +138,7 @@
     textarea {
       width: 100%;
       height: 100%;
-      min-height: 110px;
+      min-height: var(--minHeight);
       display: block;
     }
     .singleLine textarea {
