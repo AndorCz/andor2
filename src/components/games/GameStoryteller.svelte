@@ -2,6 +2,7 @@
   import { supabase, handleError } from '@lib/database-browser'
   import { GoogleGenerativeAI } from '@google/generative-ai'
   import { showSuccess } from '@lib/toasts'
+  import { gatherCodex } from '@lib/ai'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -9,18 +10,22 @@
   export let game
   export let isStoryteller
 
-  let generatingStory = false
+  let generating = false
   const gemini = new GoogleGenerativeAI(import.meta.env.PUBLIC_GEMINI)
   const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-  async function generateStory () {
-    game.story = ''
-    generatingStory = true
+  async function generate () {
+    const codex = await gatherCodex(game.id)
+    // console.log(codex)
 
-    const basePrompt = `Jsi pomocníkem vypravěče pro hru na hrdiny (tabletop RPG hrané textově online).
+    game.story = ''
+    generating = true
+
+    const basePrompt = `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
       Tvá úloha je pro vypravěče napsat podklady pro hru, formátované pomocí HTML 5 značek (důležité!). Ne markdown.
       Hra kterou připravujeme se jmenuje "${decodeURIComponent(game.name)}"
       Základní popis hry zní: "${decodeURIComponent(game.annotation)}"
+      ${codex}
       ---
     `
 
@@ -41,19 +46,19 @@
     const result = await model.generateContentStream(finalPrompt)
 
     for await (const chunk of result.stream) {
-      if (!generatingStory) { break }
+      if (!generating) { break }
       const chunkText = chunk.text()
       game.story += chunkText
     }
-    if (generatingStory) {
+    if (generating) {
       showSuccess('Generování dokončeno')
       updateGameInfo()
     }
-    generatingStory = false
+    generating = false
   }
 
-  async function cancelGeneration () {
-    generatingStory = false
+  async function cancel () {
+    generating = false
     showSuccess('Generování zrušeno')
   }
 
@@ -72,13 +77,13 @@
   <h2>AI generování podkladů</h2>
   <div class='generate'>
     <TextareaExpandable minHeight={50} placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' bind:value={game.prompt} userId={user.id} />
-    {#if generatingStory}
-      <button on:click={cancelGeneration}>Zrušit</button>
+    {#if generating}
+      <button on:click={cancel}>Zrušit</button>
     {:else}
-      <button on:click={generateStory} loading={generatingStory}>Generovat</button>
+      <button on:click={generate} loading={generating}>Generovat</button>
     {/if}
   </div>
-  <EditableLong allowHtml placeholder='Výstup generovaných podkladů' userId={user.id} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generatingStory} />
+  <EditableLong allowHtml placeholder='Výstup generovaných podkladů' userId={user.id} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generating} />
 </main>
 
 <style>

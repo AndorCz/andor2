@@ -10,6 +10,7 @@
   let worksEl
   let sorting = false
   let saving = false
+  let showHandles = false
 
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
@@ -50,7 +51,7 @@
 
 {#if $bookmarks.games.length > 0}
   <h4>Hry</h4>
-  <ul class='games' bind:this={gamesEl} class:saving>
+  <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
     {#each $bookmarks.games as bookmark}
       <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/game/' + bookmark.id + '?tab=game'}>
@@ -59,7 +60,7 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
-        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
           <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
         </svg>
       </li>
@@ -69,7 +70,7 @@
 
 {#if $bookmarks.boards.length > 0}
   <h4>Diskuze</h4>
-  <ul class='boards' bind:this={boardsEl} class:saving>
+  <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
     {#each $bookmarks.boards as bookmark}
       <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/board/' + bookmark.id}>
@@ -78,7 +79,7 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
-        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
           <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
         </svg>
       </li>
@@ -88,7 +89,7 @@
 
 {#if $bookmarks.works.length > 0}
   <h4>Tvorba</h4>
-  <ul class='works' bind:this={worksEl} class:saving>
+  <ul class='works' bind:this={worksEl} class:saving class:showHandles>
     {#each $bookmarks.works as bookmark}
       <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/work/' + bookmark.id}>
@@ -97,7 +98,7 @@
             <span class='unread'>{bookmark.unread}</span>
           {/if}
         </a>
-        <svg class='handle' class:hidden={sorting} width='25px' height='25px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
           <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
         </svg>
       </li>
@@ -107,12 +108,18 @@
 
 {#if bookmarkNumber === 0}
   <div class='empty'>Žádné záložky</div>
+{:else}
+  <button class='reorder' on:click={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
 {/if}
 
 <style>
   .saving {
     opacity: 0.5;
     pointer-events: none;
+  }
+  .reorder {
+    margin: auto;
+    display: block;
   }
   .empty {
     padding: 20px 0px;
@@ -126,11 +133,14 @@
   }
   ul {
     list-style: none;
+    margin: 10px 0px;
+    margin-bottom: 15px;
     padding: 0px;
     padding-left: 10px;
   }
     li {
-      padding: 8px 0px;
+      position: relative;
+      padding: 5px 0px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -145,19 +155,27 @@
         .unread {
           color: var(--new);
         }
-      li.active a {
-        color: var(--text);
-      }
-      .handle {
-        cursor: grab;
-        color: var(--block);
-        min-width: 25px;
-        min-height: 25px;
-      }
-        .handle:hover {
-          color: var(--dim);
+        li.active a {
+          color: var(--text);
         }
-        .handle.hidden {
+        .showHandles .handle {
+          display: block;
+        }
+        .handle {
           display: none;
+          position: absolute;
+          left: -25px;
+          top: 8px;
+          cursor: grab;
+          color: var(--text);
+          opacity: 0.3;
+          min-width: 5px;
+          min-height: 20px;
         }
+          .handle:hover {
+            opacity: 1;
+          }
+          .handle.hidden {
+            display: none;
+          }
 </style>

@@ -22,7 +22,7 @@ export async function getStoryteller (system) {
 }
 
 export async function createAssistant (openai, name, system = 'base') {
-  const { assistant: instructions } = await import(`../ai/${system}.js`)
+  const { assistant: instructions } = await import(`../prompts/${system}.js`)
   const res = await openai.beta.assistants.create({ name, model: 'gpt-4o', instructions }).catch(error => { return error })
   if (res.error) { throw res.error }
   return res.id
