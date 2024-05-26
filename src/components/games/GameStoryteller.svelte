@@ -58,7 +58,7 @@
   }
 
   async function updateGameInfo () {
-    const newData = { notes: game.notes, story: game.story }
+    const newData = { notes: game.notes, prompt: game.prompt, story: game.story }
     const { error } = await supabase.from('games').update(newData).eq('id', game.id)
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
