@@ -1,6 +1,6 @@
 <script>
   import { supabase, handleError } from '@lib/database-browser'
-  import { GoogleGenerativeAI } from '@google/generative-ai'
+  import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
   import { showSuccess } from '@lib/toasts'
   import { gatherCodex } from '@lib/ai'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -11,8 +11,12 @@
   export let isStoryteller
 
   let generating = false
+  const safetySettings = [
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
+  ]
   const gemini = new GoogleGenerativeAI(import.meta.env.PUBLIC_GEMINI)
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash', safetySettings })
 
   async function generate () {
     const codex = await gatherCodex(game.id)

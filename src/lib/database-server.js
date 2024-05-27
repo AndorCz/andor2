@@ -7,6 +7,7 @@ export function getSupabase (cookies, env) {
     env.PUBLIC_SUPABASE_URL,
     env.PUBLIC_SUPABASE_ANON_KEY,
     {
+      auth: { autoRefreshToken: false },
       cookies: {
         get (key) { return cookies.get(key)?.value },
         set (key, value, options) { cookies.set(key, value, options) },
