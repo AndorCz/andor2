@@ -71,7 +71,7 @@
   {gameData.owner.id === user.id ? (
     <main>
       {postData.map((post, index) => (
-        <div key={index} class={`post ${post.audience_names ? 'whispered' : ''}`}>
+        <div key={post.id} class={`post ${post.audience_names ? 'whispered' : ''}`}>
           {post.owner_portrait && (
             <div class='icon' style='--iconSize: 100px'>
               <img data-character-id={post.owner} class='portrait' alt={post.owner_name} />

@@ -1,4 +1,3 @@
-
 export const GET = async ({ url, request, locals }) => {
   const { game } = Object.fromEntries(url.searchParams)
 

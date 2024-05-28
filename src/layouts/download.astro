@@ -1,9 +1,24 @@
 ---
-import Header from '@components/Header.svelte'
+import { getSupabase, blobToBase64 } from '@lib/database-server'
 
 const { pathname } = new URL(Astro.url, Astro.site)
-const { user, bookmarks } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
+
+let headerImage
+try {
+  // get header image
+  const supabase = getSupabase(Astro.cookies, Astro.locals.runtime.env)
+  const { data, error } = await supabase.storage.from('headers').getPublicUrl(headerStorage)
+  if (error) { throw error }
+  const headerUrl = data.publicUrl
+  if (headerUrl) {
+    headerImage = await fetch(headerUrl).then((res) => res.blob())
+    let buffer = Buffer.from(await headerImage.arrayBuffer())
+    headerImage = 'data:' + headerImage.type + ';base64,' + buffer.toString('base64')
+  }
+} catch (error) {
+  console.error(error)
+}
 
 const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res.text())
 ---
@@ -26,7 +41,9 @@ const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res
 	<body>
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} showMenu={false} client:only='svelte' />
+        <header style=`--header-path: url(${headerImage})`>
+          <a href='/' id='logo'></a>
+        </header>
         <div id='content'>
           <slot />
         </div>
@@ -63,6 +80,29 @@ const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res
       text-align: center;
     }
 
+    header {
+      position: relative;
+      height: 226px;
+      background-image: var(--header-path);
+      background-position: center right;
+      background-size: cover;
+    }
+      #logo {
+        position: absolute;
+        display: block;
+        top: 40px;
+        left: 50px;
+        width: 190px;
+        height: 90px;
+        background-image: url('/andor2.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: top;
+      }
+        #logo:hover {
+          background-position: bottom;
+        }
+
   @media (max-width: 1200px) {
     #content {
       padding: 20px 30px 30px 30px;
@@ -80,6 +120,17 @@ const obsidian = await fetch('https://andor2.cz/obsidian.css').then((res) => res
         padding: 15px;
         padding-bottom: 50px;
         min-height: 550px;
+      }
+    header {
+      height: 150px;
+      background-size: cover;
+    }
+      #logo {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(190px * 0.75);
+        height: calc(90px * 0.75);
       }
   }
 </style>
