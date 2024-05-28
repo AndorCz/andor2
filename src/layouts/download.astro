@@ -1,4 +1,5 @@
 ---
+import { Buffer } from 'node:buffer'
 import { getSupabase, blobToBase64 } from '@lib/database-server'
 
 const { pathname } = new URL(Astro.url, Astro.site)

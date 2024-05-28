@@ -24,6 +24,9 @@ export default defineConfig({
   vite: {
     build: {
       minify: false
+    },
+    ssr: {
+      external: ['node:buffer']
     }
   },
   prefetch: false
