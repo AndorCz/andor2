@@ -11,6 +11,7 @@
   import { Reply } from '@lib/editor/reply'
   import { CustomHeading } from '@lib/editor/heading'
   import { CustomTextAlign } from '@lib/editor/alignment'
+  import { FontSize } from '@lib/editor/size'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import TextStyle from '@tiptap/extension-text-style'
@@ -18,9 +19,9 @@
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
-  import Dropdown from '@components/common/Dropdown.svelte'
-  import Colors from '@components/common/Colors.svelte'
   import Mention from '@tiptap/extension-mention'
+  import Colors from '@components/common/Colors.svelte'
+  import Dropdown from '@components/common/Dropdown.svelte'
 
   export let userId
   export let content = ''
@@ -78,6 +79,7 @@
       StarterKit,
       Underline,
       TextStyle,
+      FontSize,
       Reply,
       EnterKeyHandler({ triggerSave, enterSend }),
       FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
@@ -307,15 +309,20 @@
   <div class='bubble' bind:this={bubbleEl}>
     {#if editor}
       <!-- buttons need to have type=button to not submit forms the editor might be in -->
+      <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
+      <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
+      <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
+      <span class='sep'></span>
+      <button type='button' class='material' on:click={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
+      <button type='button' class='material' on:click={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
+      <span class='sep'></span>
       <button type='button' on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
       <button type='button' on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
       <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
       <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
-      <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
-      <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
-      <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
-      <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
       <button type='button' on:click={() => editor.chain().focus().unsetFontFamily().run()} title='Zrušit font' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
+      <span class='sep'></span>
+      <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
       <span class='sep'></span>
       <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
       <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
