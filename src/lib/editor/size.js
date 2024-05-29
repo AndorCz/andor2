@@ -6,9 +6,14 @@ export const FontSize = Extension.create({
   addOptions () {
     return {
       types: ['textStyle'],
-      defaultSize: '20px', // setting default size to match the editor's general default
+      defaultSizes: {
+        paragraph: '20px',
+        heading1: '40px',
+        heading2: '30px',
+        heading3: '23.4px'
+      },
       getStyle: fontSize => `font-size: ${fontSize}`,
-      fontSizeList: ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px']
+      fontSizeList: ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px']
     }
   },
 
@@ -18,7 +23,7 @@ export const FontSize = Extension.create({
         types: this.options.types,
         attributes: {
           fontSize: {
-            default: this.options.defaultSize,
+            default: null,
             parseHTML: element => element.style.fontSize.replace(/['"]+/g, ''),
             renderHTML: attributes => {
               if (!attributes.fontSize) {
@@ -36,14 +41,16 @@ export const FontSize = Extension.create({
 
   addCommands () {
     const getCurrentSize = (state) => {
-      const currentSize = state.selection.$head.marks()
-        .find(mark => mark.type.name === 'textStyle')
-        ?.attrs.fontSize || this.options.defaultSize
-
-      // Find the closest size in the list
-      return this.options.fontSizeList.reduce((prev, curr) =>
-        Math.abs(parseInt(curr.replace('px', '')) - parseInt(currentSize.replace('px', ''))) < Math.abs(parseInt(prev.replace('px', '')) - parseInt(currentSize.replace('px', ''))) ? curr : prev
-      )
+      const attrs = state.selection.$head.marks()
+        .find(mark => mark.type.name === 'textStyle')?.attrs
+      if (attrs && attrs.fontSize) {
+        return attrs.fontSize
+      }
+      const node = state.selection.$head.parent
+      if (node.type.name.startsWith('heading')) {
+        return this.options.defaultSizes[`heading${node.attrs.level}`]
+      }
+      return this.options.defaultSizes.paragraph
     }
 
     return {
@@ -54,7 +61,7 @@ export const FontSize = Extension.create({
       },
       unsetFontSize: () => ({ chain }) => {
         return chain()
-          .setMark('textStyle', { fontSize: this.options.defaultSize })
+          .setMark('textStyle', { fontSize: null })
           .removeEmptyTextStyle()
           .run()
       },
