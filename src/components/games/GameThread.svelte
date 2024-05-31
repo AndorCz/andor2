@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { sendPost } from '@lib/database-browser'
   import { clone, addURLParam } from '@lib/utils'
@@ -54,16 +54,9 @@
   onMount(() => {
     if (user.id) { delete game.unread.gameThread }
     loadPosts()
-    window.addEventListener('pagehide', saveUnsent)
-  })
-
-  onDestroy(() => {
-    saveUnsent()
-    window.removeEventListener('pagehide', saveUnsent)
   })
 
   function changeTool (tool) {
-    if (activeTool === 'post') { saveUnsent() }
     activeTool = tool
     addURLParam('tool', tool)
   }
@@ -76,10 +69,14 @@
     } else { return null } // no character
   }
 
-  async function saveUnsent () {
+  let timeout
+  async function saveUnsent () { // debounced
     if (textareaRef) {
-      const content = await textareaRef.getContent()
-      $gameStore.unsent = textareaValue = content || ''
+      clearTimeout(timeout)
+      timeout = setTimeout(async () => {
+        const content = await textareaRef.getContent()
+        $gameStore.unsent = textareaValue = content || ''
+      }, 500) // Delay in ms, adjust as needed
     }
   }
 
@@ -198,7 +195,7 @@
         {#if game.archived}
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
-          <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
+          <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
           <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
         {/if}

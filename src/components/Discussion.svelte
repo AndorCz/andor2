@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
@@ -53,12 +53,6 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    window.addEventListener('pagehide', saveUnsent)
-  })
-
-  onDestroy(() => {
-    saveUnsent()
-    window.removeEventListener('pagehide', saveUnsent)
   })
 
   async function loadPosts () {
@@ -94,6 +88,7 @@
       await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     }
     textareaValue = ''
+    $discussionStore.unsent = ''
     await loadPosts()
     saving = false
     editing = false
@@ -129,8 +124,14 @@
     textareaRef.addReply(postId, userName, userId)
   }
 
-  async function saveUnsent () {
-    if (textareaRef) { $discussionStore.unsent = await textareaRef.getContent() }
+  let timeout
+  async function saveUnsent () { // debounced
+    if (textareaRef) {
+      clearTimeout(timeout)
+      timeout = setTimeout(async () => {
+        $discussionStore.unsent = await textareaRef.getContent()
+      }, 500) // Delay in ms, adjust as needed
+    }
   }
 </script>
 
@@ -143,7 +144,7 @@
           {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
         </div>
         <div class='addPostWrapper'>
-          <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+          <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
           {#if useIdentities}
             <div class='senderWrapper'>
               <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
@@ -156,7 +157,7 @@
         </div>
       {:else}
         <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-        <TextareaExpandable userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
         {#if useIdentities}
           <h3 class='sender'>Identita</h3>
           <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
