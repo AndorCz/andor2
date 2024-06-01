@@ -3,6 +3,7 @@
   import { redirectWithToast } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
+  import Gemstone from '@components/Gemstone.svelte'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -87,6 +88,7 @@
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
 <aside style='--asideWidth: {user.id && $activeConversation ? 400 : 280}px' class:active={showSidebar}>
   <section>
+    <Gemstone />
     {#if user.name || user.email}
       {#if $activeConversation}
         <Conversation {user} />
@@ -145,7 +147,7 @@
   </section>
 </aside>
 
-<button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
+<button id='sidebarToggle' on:click={() => { showSidebar = !showSidebar }}></button><!--side_navigation-->
 
 <style>
   aside {
@@ -260,7 +262,17 @@
     height: 66px;
     border-radius: 100%;
     box-shadow: 2px 2px 5px #0005;
+    border: none;
+    background-image: url('/menu.png');
+    background-color: #c3c3c3;
+    background-repeat: no-repeat;
+    background-size: 66px 132px;
+    background-position: top center;
   }
+    #sidebarToggle:hover {
+      background-position: bottom center;
+      transform: scale(1.02);
+    }
   aside {
     position: fixed;
     right: -100%;
