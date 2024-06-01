@@ -87,8 +87,8 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
 <aside style='--asideWidth: {user.id && $activeConversation ? 400 : 280}px' class:active={showSidebar}>
+  <Gemstone />
   <section>
-    <Gemstone />
     {#if user.name || user.email}
       {#if $activeConversation}
         <Conversation {user} />

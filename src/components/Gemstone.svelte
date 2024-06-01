@@ -3,16 +3,18 @@
   function goDown () { window.scrollTo(0, document.body.scrollHeight) }
 </script>
 
-<div class='gem'>
-  <button class='plain up' on:click={goUp}></button>
-  <button class='plain down' on:click={goDown}></button>
+<div class='wrapper'>
+  <div class='gem'>
+    <button class='plain up' on:click={goUp}></button>
+    <button class='plain down' on:click={goDown}></button>
+  </div>
 </div>
 
 <style>
   .gem {
     position: fixed;
-    top: 82%;
-    right: 304px;
+    top: 90%;
+    left: 5px;
     width: 32px;
     z-index: 9;
     transform: translateY(-50%);
@@ -40,10 +42,4 @@
         .down:hover {
           background-position: center -113px;
         }
-
-  @media (max-width: 1000px) {
-    .gem {
-      right: 5px;
-    }
-  }
 </style>
