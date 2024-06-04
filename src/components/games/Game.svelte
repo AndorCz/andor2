@@ -186,6 +186,12 @@
         right: 5px;
       }
 
+  @media (max-width: 1200px) {
+    .headline {
+      margin-top: 20px;
+    }
+  }
+
   @media (max-width: 860px) {
     .content {
       padding: 10px;

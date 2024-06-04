@@ -1,10 +1,11 @@
 ---
+import 'tippy.js/dist/tippy.css'
 import { ViewTransitions } from 'astro:transitions'
 import pkg from '../../package.json' assert { type: 'json' }
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/sidebar/Sidebar.svelte'
 import Store from '@components/common/Store.svelte'
-import 'tippy.js/dist/tippy.css'
+import Arrows from '@components/common/Arrows.svelte'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
@@ -37,9 +38,10 @@ const { title, headerStatic, headerStorage } = Astro.props
   </head>
 	<body>
     <div id='wrapper'>
-      <main>
+      <main id='scrollable'>
         <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
         <div id='content'>
+          <Arrows client:only='svelte' />
           <slot />
         </div>
         <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
@@ -54,10 +56,8 @@ const { title, headerStatic, headerStorage } = Astro.props
 
 <style>
   body {
-    margin: 20px;
     margin-top: 0px;
   }
-
   #wrapper {
     max-width: 1400px;
     margin: auto;
@@ -65,8 +65,12 @@ const { title, headerStatic, headerStorage } = Astro.props
   }
     main {
       flex: 1;
+      contain: content;
+      height: 100svh;
+      overflow: auto;
     }
       #content {
+        position: relative;
         padding: 40px 40px 60px 40px;
         background-color: var(--panel);
         border-radius: 0px 0px 10px 10px;
@@ -76,6 +80,19 @@ const { title, headerStatic, headerStorage } = Astro.props
       padding: 20px;
       text-align: center;
     }
+  
+  button.up {
+    position: sticky;
+    top: 0px;
+    right: 0px;
+    z-index: 9;
+    border-radius: 0 0 0 100%;
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+  }
 
   @media (max-width: 1200px) {
     #content {

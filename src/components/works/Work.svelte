@@ -120,4 +120,10 @@
       border-radius: 100%;
       background-color: var(--background);
     }
+  @media (max-width: 1200px) {
+    .headline {
+      margin-top: 20px;
+    }
+  }
+
 </style>

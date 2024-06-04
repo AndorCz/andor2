@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { getImage, cropImageToBlob, getHash } from '@lib/utils'
   import { showError, showSuccess } from '@lib/toasts'
@@ -18,7 +19,12 @@
   let cropModalEl
   let newHeaderEl
   let cropCoords
+  let scrollableEl
   const aspect = 1100 / 226
+
+  onMount(() => {
+    scrollableEl = document.getElementById('scrollable')
+  })
 
   async function processImage () {
     if (files && files[0]) {
@@ -38,7 +44,7 @@
     const { error: error2 } = await supabase.from(section).update({ custom_header: getHash() }).eq('id', data.id)
     if (error2) { return handleError(error2) }
     data.custom_header = getHash()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollableEl.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička byla uložena')
     uploading = false
     $headerPreview = URL.createObjectURL(file)
@@ -54,7 +60,7 @@
     data.custom_header = null
     files = null
     $headerPreview = '/header.jpg'
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollableEl.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička smazána')
   }
 

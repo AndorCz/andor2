@@ -103,4 +103,9 @@
   .owner {
     font-size: 17px;
   }
+  @media (max-width: 1200px) {
+    .headline {
+      margin-top: 20px;
+    }
+  }
 </style>
