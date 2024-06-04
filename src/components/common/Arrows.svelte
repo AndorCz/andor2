@@ -45,6 +45,7 @@
     top: 0px;
     border-radius: 0 0 0 100%;
     line-height: 0;
+    padding-top: 3px;
   }
   .down {
     bottom: 0px;
