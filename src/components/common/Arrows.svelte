@@ -36,20 +36,18 @@
     position: sticky;
     right: 0px;
     z-index: 9;
-    width: 40px;
-    height: 40px;
-    padding: 5px;
+    width: 30px;
+    height: 30px;
+    padding: 7px;
+    font-size: 20px;
   }
   .up {
     top: 0px;
     border-radius: 0 0 0 100%;
-    padding-bottom: 10px;
-    padding-left: 10px;
+    line-height: 0;
   }
   .down {
     bottom: 0px;
     border-radius: 100% 0 0 0;
-    padding-top: 10px;
-    padding-left: 10px;
   }
 </style>
