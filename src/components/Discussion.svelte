@@ -5,7 +5,7 @@
   import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError, sendPost } from '@lib/database-browser'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import { clone } from '@lib/utils'
+  import { clone, isFilledArray, addCharacterNameStyles } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
@@ -31,6 +31,7 @@
   let editing = false
   let page = 0
   let pages
+  let mentionList = []
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -44,7 +45,7 @@
   const identities = getMyCharacters()
   identities.push(userIdentity)
 
-  onMount(() => {
+  onMount(async () => {
     if (user.id) {
       if (data.unread?.gameChat) { delete data.unread.gameChat }
       if (showDiscussion && useIdentities) {
@@ -53,6 +54,10 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
+    mentionList = await loadAllPosters()
+    if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
+      addCharacterNameStyles(data.characters)
+    }
   })
 
   async function loadPosts () {
@@ -71,6 +76,18 @@
 
   function getIdentity () {
     return identities.find((identity) => { return identity.id === $discussionStore.activeIdentity })
+  }
+
+  async function loadAllPosters () {
+    const { data: posters, error } = await supabase.from('posts_owner').select('owner, owner_name, owner_type').eq('thread', thread)
+    if (error) { return handleError(error) }
+    // return unique posters
+    return posters.reduce((acc, poster) => {
+      if (!acc.some((p) => p.id === poster.owner)) {
+        acc.push({ name: poster.owner_name, id: poster.owner, type: poster.owner_type })
+      }
+      return acc
+    }, [])
   }
 
   async function submitPost () {
@@ -144,7 +161,7 @@
           {#if useIdentities}<h3 class='sender'>Identita</h3>{/if}
         </div>
         <div class='addPostWrapper'>
-          <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+          <TextareaExpandable {mentionList} onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
           {#if useIdentities}
             <div class='senderWrapper'>
               <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
@@ -157,7 +174,7 @@
         </div>
       {:else}
         <h3 class='text'>{#if editing}Upravit příspěvek{:else}Přidat příspěvek{/if}</h3>
-        <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
+        <TextareaExpandable {mentionList} onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} showButton disableEmpty />
         {#if useIdentities}
           <h3 class='sender'>Identita</h3>
           <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>

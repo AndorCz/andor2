@@ -18,8 +18,8 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
 
       if (error) {
         console.log('auth error', error.message)
-        cookies.delete('sb-access-token')
-        cookies.delete('sb-refresh-token')
+        // cookies.delete('sb-access-token')
+        // cookies.delete('sb-refresh-token')
       }
 
       if (authData.user) {

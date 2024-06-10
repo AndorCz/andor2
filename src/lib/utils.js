@@ -180,3 +180,11 @@ function hashCode (str) {
 export function stringToColor (str) {
   return `hsl(${hashCode(str) % 360}, 50%, 80%)`
 }
+
+export function addCharacterNameStyles (characters) {
+  // add style with character.color as color for every class named after a character id
+  const nameStyles = document.createElement('style')
+  nameStyles.id = 'nameStyles'
+  characters.forEach(char => { if (char.color) { nameStyles.textContent += `.char_${char.id} { color: ${char.color}; } ` } })
+  document.head.appendChild(nameStyles)
+}

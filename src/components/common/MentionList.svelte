@@ -10,7 +10,7 @@
 
   const selectItem = (index) => {
     const item = items[index]
-    if (item) { command({ label: item.name, id: item.id }) }
+    if (item) { command({ label: item.name, id: item.id, type: item.type }) }
   }
 
   const handleKeydown = (event) => {

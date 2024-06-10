@@ -316,14 +316,14 @@ select {
   color: var(--user);
   text-decoration: none;
 }
-  .user:hover {
+  a.user:hover {
     color: var(--userHover);
     text-decoration: none;
   }
 .character {
   color: var(--character);
 }
-  .character:hover {
+  a.character:hover {
     color: var(--characterHover);
     text-decoration: none;
   }
@@ -580,7 +580,7 @@ select {
 .post .content .user {
   color: var(--user) !important;
 }
-  .post .content .user:hover {
+  .post .content a.user:hover {
     color: var(--userHover) !important;
   }
 .post .content .reply { /* reply */

@@ -2,10 +2,11 @@
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { resizeImage, isFilledArray, getImageUrl } from '@lib/utils'
+  import { resizeImage, getImageUrl } from '@lib/utils'
   import { Editor, mergeAttributes } from '@tiptap/core'
   import { EnterKeyHandler } from '@lib/editor/enter'
-  import { MentionRender } from '@lib/editor/mention'
+  import { MentionRender } from '@lib/editor/mentionRender'
+  import { Mention } from '@lib/editor/mention'
   import { CustomImage } from '@lib/editor/image'
   import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
@@ -19,7 +20,6 @@
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
   import Underline from '@tiptap/extension-underline'
-  import Mention from '@tiptap/extension-mention'
   import Colors from '@components/common/Colors.svelte'
   import Dropdown from '@components/common/Dropdown.svelte'
 
@@ -31,7 +31,7 @@
   export let minHeight = 140
   export let enterSend = false
   export let fonts = null
-  export let mentionList = []
+  export let mentionList = null
 
   let editor
   let editorEl
@@ -123,7 +123,7 @@
       })
     ]
 
-    if (isFilledArray(mentionList)) {
+    if (mentionList) {
       extensions.push(
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
@@ -132,9 +132,13 @@
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {
+            console.log('options', options)
+            console.log('node', node)
+            console.log('HTMLAttributes', HTMLAttributes)
+            const type = node.attrs.type === 'character' ? 'char' : 'user'
             return [
               'span',
-              mergeAttributes({ class: 'char_' + node.attrs.id }, options.HTMLAttributes),
+              mergeAttributes({ class: `mention ${node.attrs.type} ${type}_${node.attrs.id}` }, options.HTMLAttributes),
               `${node.attrs.label}`
             ]
           }

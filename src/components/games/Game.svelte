@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { removeURLParam, isFilledArray } from '@lib/utils'
+  import { removeURLParam, isFilledArray, addCharacterNameStyles } from '@lib/utils'
   import { getSavedStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database-browser'
   import Discussion from '@components/Discussion.svelte'
@@ -28,12 +28,7 @@
     // tabs are persisted for the purpose of saving with redirect (to astro)
     $gameStore.activeTab = new URLSearchParams(window.location.search).get('tab') || $gameStore.activeTab || 'codex'
     removeURLParam('tab')
-
-    // add style with character.color as color for every class named after a character id
-    const nameStyles = document.createElement('style')
-    nameStyles.id = 'nameStyles'
-    game.characters.forEach(char => { if (char.color) { nameStyles.textContent += `.char_${char.id} { color: ${char.color}; } ` } })
-    document.head.appendChild(nameStyles)
+    addCharacterNameStyles(game.characters)
   })
 
   function showSettings () {
