@@ -45,7 +45,7 @@ export const POST = async ({ request, redirect, locals }) => {
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
     return new Response('{}', { status: 200 })
   } else {
-    return new Response(JSON.stringify({ error: 'Nejsi přihlášený. Záloha příspěvku: ' + data.post }), { status: 500 })
+    return new Response(JSON.stringify({ error: 'Přihlášení vypršelo, příspěvek bohužel nelze odeslat' }), { status: 500 })
   }
 }
 
@@ -63,7 +63,7 @@ export const PATCH = async ({ url, request, locals }) => {
       if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
       return new Response('{}', { status: 200 })
     } else {
-      return new Response(JSON.stringify({ error: 'Nejsi přihlášený. Záloha příspěvku: ' + data.post }), { status: 500 })
+      return new Response(JSON.stringify({ error: 'Přihlášení vypršelo, příspěvek bohužel nelze odeslat' }), { status: 500 })
     }
   } else {
     return new Response(JSON.stringify({ error: 'Chybí id příspěvku' }), { status: 500 })

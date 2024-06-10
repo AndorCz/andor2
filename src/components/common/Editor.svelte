@@ -132,9 +132,6 @@
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {
-            console.log('options', options)
-            console.log('node', node)
-            console.log('HTMLAttributes', HTMLAttributes)
             const type = node.attrs.type === 'character' ? 'char' : 'user'
             return [
               'span',
