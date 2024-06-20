@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "dev-cloudflare": "wrangler pages dev ./dist --live-reload --compatibility-flag=nodejs_compat",
     "build": "astro build",
     "db": "supabase start",

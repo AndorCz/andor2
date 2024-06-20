@@ -65,4 +65,9 @@
       border-radius: 0px 0px 0px 10px;
       padding: 8px 10px 5px 11px;
     }
+  @media (max-width: 600px) {
+    #editorial {
+      padding-top: 30px;
+    }
+  }
 </style>
