@@ -67,7 +67,7 @@
     }
   @media (max-width: 600px) {
     #editorial {
-      padding-top: 30px;
+      margin-top: 20px;
     }
   }
 </style>
