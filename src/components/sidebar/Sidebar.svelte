@@ -84,8 +84,8 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
-<aside class:conversation={user.id && $activeConversation} class:active={showSidebar}>
+<div id='veil' class:active={showSidebar || $activeConversation} on:click={() => { showSidebar = false }}></div>
+<aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation}>
   <section>
     {#if user.name || user.email}
       {#if $activeConversation}
