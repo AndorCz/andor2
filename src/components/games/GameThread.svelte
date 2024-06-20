@@ -105,17 +105,20 @@
   async function submitPost () {
     if (saving || textareaValue === '') { return }
     saving = true
+    let response
     const audience = $activeAudienceIds.includes('*') ? null : $activeAudienceIds // clean '*' from audience
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
+      response = await sendPost('PATCH', { id: editing, thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     } else {
-      await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
+      response = await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     }
-    textareaValue = ''
-    $gameStore.unsent = ''
-    await loadPosts()
-    saving = false
-    editing = false
+    if (!response.error) {
+      textareaValue = ''
+      $gameStore.unsent = ''
+      await loadPosts()
+      saving = false
+      editing = false
+    }
   }
 
   async function deletePost (id, dice) {

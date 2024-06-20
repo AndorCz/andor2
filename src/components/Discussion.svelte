@@ -95,20 +95,23 @@
     saving = true
     const identity = useIdentities ? getIdentity() : userIdentity
     let audience = null
+    let response
     if (data.id === 3) { // Special board "Nahlášení obsahu"
       const repliedIds = [...textareaValue.matchAll(/data-user="([^"]+)"/g)].map(match => match[1])
       if (repliedIds.length) { audience = repliedIds }
     }
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
+      response = await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     } else {
-      await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
+      response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     }
-    textareaValue = ''
-    $discussionStore.unsent = ''
-    await loadPosts()
-    saving = false
-    editing = false
+    if (!response.error) {
+      textareaValue = ''
+      $discussionStore.unsent = ''
+      await loadPosts()
+      saving = false
+      editing = false
+    }
   }
 
   async function deletePost (id) {

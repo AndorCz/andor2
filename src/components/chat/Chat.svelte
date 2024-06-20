@@ -83,15 +83,18 @@
   async function submitPost () {
     if (saving || textareaValue === '') { return }
     saving = true
+    let response
     if (editing) {
-      await sendPost('PATCH', { id: editing, thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
+      response = await sendPost('PATCH', { id: editing, thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
     } else {
-      await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
+      response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
     }
-    textareaValue = ''
-    await loadPosts()
-    saving = false
-    editing = false
+    if (!response.error) {
+      textareaValue = ''
+      await loadPosts()
+      saving = false
+      editing = false
+    }
   }
 
   function removeTyping (name) {
