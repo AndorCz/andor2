@@ -85,7 +85,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar} on:click={() => { showSidebar = false }}></div>
-<aside style='--asideWidth: {user.id && $activeConversation ? 400 : 280}px' class:active={showSidebar}>
+<aside class:conversation={user.id && $activeConversation} class:active={showSidebar}>
   <section>
     {#if user.name || user.email}
       {#if $activeConversation}
@@ -152,18 +152,24 @@
 <style>
   aside {
     position: relative;
-    width: calc(var(--asideWidth) + 20px);
+    width: 300px;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
+    aside.conversation {
+      width: 420px;
+    }
     section {
       position: fixed;
       padding-left: 20px;
       padding-right: 20px;
       padding-bottom: 50px;
-      width: calc(var(--asideWidth) + 40px);
+      width: 320px;
       max-height: 100svh;
       overflow-y: auto;
     }
+      aside.conversation section {
+        width: 440px;
+      }
   #tabs {
     height: 76px;
     display: flex;
@@ -270,13 +276,15 @@
   aside {
     position: fixed;
     right: -100%;
-    width: calc(var(--asideWidth) + 40px);
+    width: 320px;
     background-color: var(--background);
     box-shadow: 0px 0px 10px #0005;
     height: 100%;
     overflow-y: auto;
-    padding-bottom: 20px;
   }
+    aside.conversation {
+      width: 440px;
+    }
     aside.active {
       right: 0px;
     }
@@ -287,5 +295,13 @@
     visibility: visible;
     opacity: 1;
   }
+}
+@media (max-width: 420px) {
+  aside.conversation {
+    width: 100%;
+  }
+    aside.conversation section {
+      width: 100%;
+    }
 }
 </style>

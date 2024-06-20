@@ -248,4 +248,10 @@
             text-align: right;
             float: right;
           }
+
+  @media (max-width: 420px) {
+    #conversation {
+      width: calc(100% - 40px);
+    }
+  }
 </style>
