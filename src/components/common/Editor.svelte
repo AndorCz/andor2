@@ -22,6 +22,7 @@
   import Underline from '@tiptap/extension-underline'
   import Colors from '@components/common/Colors.svelte'
   import Dropdown from '@components/common/Dropdown.svelte'
+  import Youtube from '@tiptap/extension-youtube'
 
   export let userId
   export let content = ''
@@ -81,6 +82,7 @@
       TextStyle,
       FontSize,
       Reply,
+      Youtube,
       EnterKeyHandler({ triggerSave, enterSend }),
       FontFamily.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
       Details.configure({ HTMLAttributes: { class: 'details' } }),
