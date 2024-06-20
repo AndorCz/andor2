@@ -170,7 +170,7 @@
     border-radius: 10px;
     padding: 20px;
     width: 400px;
-    height: calc(100vh - 40px);
+    height: calc(100svh - 40px);
     display: flex;
     flex-direction: column;
   }
