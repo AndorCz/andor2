@@ -6,6 +6,7 @@ import Header from '@components/Header.svelte'
 import Sidebar from '@components/sidebar/Sidebar.svelte'
 import Store from '@components/common/Store.svelte'
 import Arrows from '@components/common/Arrows.svelte'
+import Lightbox from '@components/common/Lightbox.svelte'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
@@ -37,6 +38,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     <title>Andor2.cz ― {title}</title>
   </head>
 	<body>
+    <Lightbox client:only='svelte' />
     <div id='wrapper'>
       <main id='scrollable'>
         <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />

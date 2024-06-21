@@ -3,7 +3,6 @@
   import { headerPreview } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
-  import Lightbox from '@components/common/Lightbox.svelte'
 
   export let pathname
   export let headerStatic
@@ -50,8 +49,6 @@
     {/if}
   </header>
 {/if}
-
-<Lightbox />
 
 <style>
   header {
