@@ -6,7 +6,13 @@
   export let table = 'game_list'
 
   async function loadData () {
-    const { data, error } = await supabase.from(table).select('*').eq('published', true).order('created_at', { ascending: false }).limit(5)
+    const query = supabase.from(table).select('*').eq('published', true)
+    if (slug === 'work') {
+      query.not('editorial', 'eq', true)
+    } else if (slug === 'board') {
+      query.eq('open', true)
+    }
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(5)
     if (error) { throw new Error('Nepodařilo se načíst novinky. Důvod: ' + error.message) }
     return data
   }
