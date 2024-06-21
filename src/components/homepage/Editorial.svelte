@@ -56,7 +56,8 @@
       display: inline-block;
     }
     #editorial section {
-      font-size: 18px;
+      font-size: 19px;
+      line-height: 130%;
     }
     #editorial button {
       position: absolute;
