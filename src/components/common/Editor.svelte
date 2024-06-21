@@ -163,16 +163,19 @@
           return false
         },
         handlePaste: function (view, event, slice) { // handle pasting of text and images
-          /*
-          if (event.clipboardData.types.indexOf('text/html') !== -1) { // parse HTML format
-            const html = event.clipboardData.getData('text/html')
-            editor.commands.insertContent(html)
-            event.preventDefault()
-            return true
-          }
-          */
-          if (event.clipboardData.types.indexOf('text/plain') !== -1) { // parse plain text format (possibly with HTML content)
+          // if (event.clipboardData.types.indexOf('text/html') !== -1) { // parse HTML format
+          //   const html = event.clipboardData.getData('text/html')
+          //   editor.commands.insertContent(html)
+          //   event.preventDefault()
+          //   return true
+          // }
+          // parse plain text format (possibly with HTML content)
+          if (event.clipboardData.types.indexOf('text/plain') !== -1) {
             let text = event.clipboardData.getData('text/plain')
+
+            // return false (default handling) if the pasted text is an url, with a regexp
+            if (text.match(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i)) { return false }
+
             text = text.replace(/\n/g, '<br>') // replace newlines with line breaks
             if (editor.isEmpty) {
               editor.commands.insertContentAt(0, text, { parseOptions: { preserveWhitespace: true } })
@@ -182,6 +185,7 @@
             event.preventDefault()
             return true
           }
+          // paste image from clipboard
           if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
             uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
               const { from } = view.state.selection
