@@ -121,20 +121,22 @@
     }
   }
 
-  async function deletePost (id, dice) {
-    if (!window.confirm(dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) { return }
-    const res = await fetch(`/api/post?id=${id}&thread=${game.openai_thread}`, { method: 'DELETE' })
+  async function deletePost (post) {
+    if (!window.confirm(post.dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) { return }
+    const res = await fetch(`/api/post?id=${post.id}&thread=${game.openai_thread}`, { method: 'DELETE' })
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek smazán')
     await loadPosts()
   }
 
-  async function triggerEdit (id, content) {
-    editing = id
-    textareaValue = content
-    textareaRef.triggerEdit(id, content)
+  async function triggerEdit (post) {
+    editing = post.id
+    textareaValue = post.content
+    textareaRef.triggerEdit(post.id, post.content)
     document.getElementsByClassName('toolWrapper')[0].scrollIntoView({ behavior: 'smooth' })
+    $activeAudienceIds = post.audience || ['*']
+    $gameStore.activeCharacterId = post.owner
     // saving is done in submitPost
   }
 

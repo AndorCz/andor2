@@ -79,10 +79,10 @@
           <button on:click={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
         {/if}
         {#if onEdit && isMyPost}
-          <button on:click={() => onEdit($postStore.id, $postStore.content)} class='material edit' title='Upravit' use:tooltip>edit</button>
+          <button on:click={() => onEdit($postStore)} class='material edit' title='Upravit' use:tooltip>edit</button>
         {/if}
         {#if onDelete && canDelete}
-          <button on:click={() => onDelete($postStore.id, $postStore.dice)} class='material delete' title='Smazat' use:tooltip>delete</button>
+          <button on:click={() => onDelete($postStore)} class='material delete' title='Smazat' use:tooltip>delete</button>
         {/if}
         {#if canModerate && !$postStore.moderated}
           <button on:click={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>
