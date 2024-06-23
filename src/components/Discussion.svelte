@@ -64,12 +64,13 @@
     let query
     if (data.id === 3 && !canModerate) { // Special board "Nahlášení obsahu" (see only your posts and responses from mods)
       if (!user.id) { return }
-      query = await supabase.from('posts_owner').select('*', { count: 'exact' }).or(`owner.eq.${user.id},audience.cs.{${user.id}}`).match({ thread }).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+      query = await supabase.rpc('get_discussion_posts_special', { user_id: user.id, _thread: thread, page, _limit: limit })
     } else {
-      query = await supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', thread).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+      query = await supabase.rpc('get_discussion_posts', { user_id: user.id, _thread: thread, page, _limit: limit })
     }
-    const { data: postData, count, error } = await query
+    const { data: rpcData, error } = await query
     if (error) { return handleError(error) }
+    const { postData, count } = rpcData
     $posts = postData
     pages = Math.ceil(count / limit)
   }
@@ -79,7 +80,7 @@
   }
 
   async function loadAllPosters () {
-    const { data: posters, error } = await supabase.from('posts_owner').select('owner, owner_name, owner_type').eq('thread', thread)
+    const { data: posters, error } = await supabase.from('discussion_posts_owner').select('owner, owner_name, owner_type').eq('thread', thread)
     if (error) { return handleError(error) }
     // return unique posters
     return posters.reduce((acc, poster) => {

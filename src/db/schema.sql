@@ -19,6 +19,8 @@ drop type if exists work_tag cascade;
 drop type if exists work_category cascade;
 
 drop view if exists posts_owner;
+drop view if exists discussion_posts_owner;
+drop view if exists game_posts_owner;
 drop view if exists board_list;
 drop view if exists game_list;
 drop view if exists work_list;
@@ -273,6 +275,25 @@ create table subscriptions (
 
 -- VIEWS --------------------------------------------
 
+create or replace view discussion_posts_owner as
+  select
+    p.*,
+    case
+      when p.owner_type = 'user' then profiles.name
+      when p.owner_type = 'character' then characters.name
+    end as owner_name,
+    case
+      when p.owner_type = 'user' then profiles.portrait
+      when p.owner_type = 'character' then characters.portrait
+    end as owner_portrait,
+    reactions.*
+  from
+    posts p
+    left join profiles on p.owner = profiles.id and p.owner_type = 'user'
+    left join characters on p.owner = characters.id and p.owner_type = 'character'
+    left join reactions on p.id = reactions.post_id
+  order by
+    p.created_at desc;
 
 create or replace view posts_owner as
   select
@@ -489,6 +510,81 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function get_discussion_posts(
+  user_id uuid,
+  _thread integer,
+  page integer,
+  _limit int
+)
+returns json as $$
+declare
+  postdata json;
+  total_count int;
+begin
+  -- get the total count of matching records
+  select count(*)
+  into total_count
+  from discussion_posts_owner po
+  where po.thread = _thread;
+  
+  -- get the paginated posts
+  select json_agg(t)
+  into postdata
+  from (
+    select po.*, get_character_names(po.audience) as audience_names
+    from discussion_posts_owner po
+    where po.thread = _thread
+    order by po.created_at desc
+    limit _limit
+    offset page * _limit
+  ) t;
+
+  -- return the result as json
+  return json_build_object(
+    'count', total_count,
+    'postdata', postdata
+  );
+end;
+$$ language plpgsql;
+
+create or replace function get_discussion_posts_special(
+  user_id uuid,
+  _thread integer,
+  page integer,
+  _limit int
+)
+returns json as $$
+declare
+  postdata json;
+  total_count int;
+begin
+  -- get the total count of matching records
+  select count(*)
+  into total_count
+  from discussion_posts_owner po
+  where po.thread = _thread
+    and (po.owner = user_id or user_id = any (po.audience));
+  
+  -- get the paginated posts
+  select json_agg(t)
+  into postdata
+  from (
+    select po.*, get_character_names(po.audience) as audience_names
+    from discussion_posts_owner po
+    where po.thread = _thread
+      and (po.owner = user_id or user_id = any (po.audience))
+    order by po.created_at desc
+    limit _limit
+    offset page * _limit
+  ) t;
+
+  -- return the result as json
+  return json_build_object(
+    'count', total_count,
+    'postdata', postdata
+  );
+end;
+$$ language plpgsql;
 
 create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
   returns json as $$
