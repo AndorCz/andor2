@@ -75,12 +75,10 @@
   }
 
   async function loadPosts () {
-    const query = await supabase.rpc('get_discussion_posts', { user_id: user.id, _thread: 1, page: 0, _limit: 1000 })
+    const query = await supabase.rpc('get_discussion_posts', { user_id: user.id, _thread: 1, page: 0, _limit: 1000, ascending: true })
     const { data: rpcData, error } = await query
-
     if (error) { handleError(error) } else {
-      $posts = rpcData.postData
-      $posts.reverse()
+      $posts = rpcData.postdata
     }
   }
 

@@ -514,7 +514,8 @@ create or replace function get_discussion_posts(
   user_id uuid,
   _thread integer,
   page integer,
-  _limit int
+  _limit int,
+  ascending boolean
 )
 returns json as $$
 declare
@@ -534,7 +535,9 @@ begin
     select po.*, get_character_names(po.audience) as audience_names
     from discussion_posts_owner po
     where po.thread = _thread
-    order by po.created_at desc
+    order by 
+      case when ascending then po.created_at end asc,
+      case when not ascending then po.created_at end desc
     limit _limit
     offset page * _limit
   ) t;

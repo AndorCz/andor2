@@ -66,12 +66,12 @@
       if (!user.id) { return }
       query = await supabase.rpc('get_discussion_posts_special', { user_id: user.id, _thread: thread, page, _limit: limit })
     } else {
-      query = await supabase.rpc('get_discussion_posts', { user_id: user.id, _thread: thread, page, _limit: limit })
+      query = await supabase.rpc('get_discussion_posts', { user_id: user.id, _thread: thread, page, _limit: limit, ascending: false })
     }
     const { data: rpcData, error } = await query
     if (error) { return handleError(error) }
-    const { postData, count } = rpcData
-    $posts = postData
+    const { postdata, count } = rpcData
+    $posts = postdata
     pages = Math.ceil(count / limit)
   }
 
