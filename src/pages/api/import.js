@@ -95,18 +95,22 @@ async function createGame (locals, oldGameData) {
       .eq('game_id', parseInt(oldGameData.id_game, 10))
       .maybeSingle()
 
-    let hpInfo = 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'
-    hpInfo = (hpData && !hpError) ? hpData.content : hpInfo
-
     // Create new game in database
     const { data, error: insertError } = await locals.supabase.from('games').insert({
       owner: locals.user.id,
       name: oldGameData.game_name,
       created_at: oldGameData.created_at,
-      annotation: oldGameData.game_name,
-      info: hpInfo
+      annotation: oldGameData.game_name
     }).select().single()
     if (insertError) throw new Error(`Failed to create game: ${insertError.message}`)
+
+    // Handle homepage
+    let hpInfo = 'Informace o pravidlech, tvorbě postav, náboru nových hráčů, četnosti hraní apod.'
+    hpInfo = (hpData && !hpError) ? hpData.content : hpInfo
+
+    const { error: homepageError } = await locals.supabase
+      .from('codex_pages').update({ content: hpInfo }).eq('game', data.id)
+    if (homepageError) throw new Error(`Failed to add homepage: ${homepageError.message}`)
 
     // Handle bookmark insertion
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({
@@ -186,7 +190,6 @@ async function migrateGame (gameId, locals) {
     // Update game migration status and handle errors
     const { error: updateError } = await locals.supabase.from('old_games').update({ migrating: true }).eq('id_game', gameId)
     if (updateError) throw new Error(`Failed to update game migration status: ${updateError.message}`)
-
     // Proceed with game creation and handle any errors in the process
     const result = await createGame(locals, gameData)
     if (result.error) {
