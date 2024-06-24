@@ -191,7 +191,7 @@
       padding: 10px 15px;
     }
     .withButton {
-      padding-right: 0px;
+      padding-right: 40px;
     }
   }
 </style>

@@ -261,8 +261,8 @@
   #sidebarToggle {
     display: block;
     position: fixed;
-    bottom: 45px;
-    right: 10px;
+    bottom: 10px;
+    right: 30px;
     padding: 20px;
     width: 66px;
     height: 66px;

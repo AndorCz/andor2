@@ -112,4 +112,11 @@
       .edit, .delete {
         padding: 5px;
       }
+  @media (max-width: 500px) {
+    .portrait {
+      min-width: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
 </style>

@@ -112,8 +112,10 @@ const { title, headerStatic, headerStorage } = Astro.props
     }
       #content {
         padding: 15px;
-        padding-bottom: 50px;
-        min-height: 550px;
+        min-height: calc(100svh - 150px);
       }
+    footer {
+      display: none;
+    }
   }
 </style>

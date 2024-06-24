@@ -208,4 +208,15 @@
         border-radius: 10px;
         background-color: var(--block);
       }
+
+  @media (max-width: 500px) {
+    #chat {
+      height: calc(100svh - 180px);
+    }
+    .people {
+      margin-top: 5px;
+      padding-top: 10px;
+      height: 60px;
+    }
+  }
 </style>
