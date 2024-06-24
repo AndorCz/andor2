@@ -510,13 +510,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_discussion_posts(
-  user_id uuid,
-  _thread integer,
-  page integer,
-  _limit int,
-  ascending boolean
-)
+create or replace function get_discussion_posts(_thread integer, page integer, _limit int, ascending boolean)
 returns json as $$
 declare
   postdata json;
@@ -550,12 +544,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_discussion_posts_special(
-  user_id uuid,
-  _thread integer,
-  page integer,
-  _limit int
-)
+create or replace function get_discussion_posts_special(user_id uuid, _thread integer, page integer, _limit int)
 returns json as $$
 declare
   postdata json;
