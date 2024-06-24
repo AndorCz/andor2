@@ -35,7 +35,7 @@
 {#if errorFetchingHeader}
   <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
 {:else}
-  <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
+  <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})" class:chat={pathname === '/chat'}>
     <!-- svelte-ignore a11y-missing-content -->
     <a href='/' id='logo'></a>
     {#if showMenu}
@@ -58,6 +58,9 @@
     background-position: center right;
     background-size: cover;
   }
+    header.chat {
+      height: 48px;
+    }
     #logo {
       position: absolute;
       display: block;

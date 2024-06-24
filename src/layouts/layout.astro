@@ -46,7 +46,7 @@ const { title, headerStatic, headerStorage } = Astro.props
           <Arrows client:only='svelte' />
           <slot />
         </div>
-        <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
+        {pathname !== '/chat' && <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>}
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
@@ -74,7 +74,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     }
       #content {
         position: relative;
-        padding: 40px 40px 60px 40px;
+        padding: 40px;
         background-color: var(--panel);
         border-radius: 0px 0px 10px 10px;
       }

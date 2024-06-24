@@ -168,7 +168,7 @@
 
 <style>
   #chat {
-    height: 1000px;
+    height: calc(100svh - 128px);
     display: flex;
     flex-direction: column;
   }
@@ -211,7 +211,7 @@
 
   @media (max-width: 500px) {
     #chat {
-      height: calc(100svh - 180px);
+      height: calc(100svh - 78px);
     }
     .people {
       margin-top: 5px;
