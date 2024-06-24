@@ -40,7 +40,7 @@ const { title, headerStatic, headerStorage } = Astro.props
 	<body>
     <Lightbox client:only='svelte' />
     <div id='wrapper'>
-      <main id='scrollable'>
+      <main id='scrollable' autofocus>
         <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
         <div id='content'>
           <Arrows client:only='svelte' />
@@ -65,11 +65,12 @@ const { title, headerStatic, headerStorage } = Astro.props
     margin: auto;
     display: flex;
   }
-    main {
+    #scrollable {
       flex: 1;
       contain: content;
       height: 100svh;
       overflow: auto;
+      outline: none;
     }
       #content {
         position: relative;

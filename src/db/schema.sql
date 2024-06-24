@@ -1193,7 +1193,7 @@ execute function supabase_functions.http_request (
 
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-SELECT cron.schedule('0 5 * * *', $$CALL delete_oldest_posts()$$);
+SELECT cron.schedule('trim-chat', '0 5 * * *', $$CALL delete_old_chat_posts()$$);
 
 
 -- STORAGE  --------------------------------------------
