@@ -163,12 +163,13 @@
           return false
         },
         handlePaste: function (view, event, slice) { // handle pasting of text and images
-          // if (event.clipboardData.types.indexOf('text/html') !== -1) { // parse HTML format
-          //   const html = event.clipboardData.getData('text/html')
-          //   editor.commands.insertContent(html)
-          //   event.preventDefault()
-          //   return true
-          // }
+          // parse HTML format
+          if (event.clipboardData.types.indexOf('text/html') !== -1) {
+            const html = event.clipboardData.getData('text/html')
+            editor.commands.insertContent(html)
+            event.preventDefault()
+            return true
+          }
           // parse plain text format (possibly with HTML content)
           if (event.clipboardData.types.indexOf('text/plain') !== -1) {
             let text = event.clipboardData.getData('text/plain')
