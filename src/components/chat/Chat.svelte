@@ -168,7 +168,7 @@
 
 <style>
   #chat {
-    height: calc(100svh - 128px);
+    height: calc(100svh);
     display: flex;
     flex-direction: column;
   }
@@ -186,7 +186,7 @@
       flex: 1;
       overflow-y: scroll;
       padding: 5px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       scrollbar-width: thin;
     }
 
@@ -199,8 +199,8 @@
         left: 5px;
       }
     .people {
-      margin-top: 20px;
       padding-top: 20px;
+      min-height: 60px;
     }
       .person {
         padding: 10px;
@@ -210,9 +210,6 @@
       }
 
   @media (max-width: 500px) {
-    #chat {
-      height: calc(100svh - 78px);
-    }
     .people {
       margin-top: 5px;
       padding-top: 10px;

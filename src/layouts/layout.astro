@@ -42,15 +42,14 @@ const { title, headerStatic, headerStorage } = Astro.props
     <div id='wrapper'>
       <main id='scrollable' autofocus>
         <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
-        <div id='content'>
-          <Arrows client:only='svelte' />
-          <slot />
-        </div>
-        {pathname !== '/chat' && <footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>}
+        {pathname === '/chat'
+          ? <div class='content chat'><slot /></div>
+          : <div class='content'><Arrows client:only='svelte' /><slot /></div><footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
+        }
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
-        <Sidebar {user} client:only='svelte' />
+        <Sidebar {pathname} {user} client:only='svelte' />
       ) : null}
     </div>
   </body>
@@ -72,12 +71,16 @@ const { title, headerStatic, headerStorage } = Astro.props
       overflow: auto;
       outline: none;
     }
-      #content {
+      .content {
         position: relative;
         padding: 40px;
         background-color: var(--panel);
         border-radius: 0px 0px 10px 10px;
       }
+        .chat {
+          padding: 0px 40px !important;
+          border-radius: 0px;
+        }
     footer {
       margin-top: 20px;
       padding: 20px;
@@ -98,7 +101,7 @@ const { title, headerStatic, headerStorage } = Astro.props
   }
 
   @media (max-width: 1200px) {
-    #content {
+    .content {
       padding: 20px 30px 30px 30px;
     }
   }
@@ -110,7 +113,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     main {
       border-radius: 0px;
     }
-      #content {
+      .content {
         padding: 15px;
         min-height: calc(100svh - 150px);
       }

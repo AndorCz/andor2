@@ -15,6 +15,21 @@
 
   let newOwner
   let showTransfer = false
+
+  // buttons
+  let showLeaveButton = false
+  let showClaimButton = false
+  let showRejectButton = false
+  let showFreeButton = false
+  let showTakeOverButton = false
+  let showTransferButton = false
+  let showCancelTransferButton = false
+  let showKillButton = false
+  let showAcceptButton = false
+  let showRejectStorytellerButton = false
+  let showReviveButton = false
+  let showDeleteButton = false
+
   const isPlayer = character.player.id === user.id
 
   async function charactersChanged (event) {
@@ -197,6 +212,21 @@
     if (name.length < 3) { return [] }
     return await userAutocomplete(name)
   }
+
+  $: showLeaveButton = character.state === 'alive' && isPlayer && character.accepted && !isStoryteller
+  $: showClaimButton = character.state === 'alive' && user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.open && character.player.id !== user.id && !character.transfer_to
+  $: showRejectButton = character.state === 'alive' && isPlayer && !character.accepted && !isStoryteller
+  $: showFreeButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id === user.id
+  $: showTakeOverButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id !== user.id
+  $: showTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.player.id === user.id && !character.transfer_to
+  $: showCancelTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.transfer_to
+  $: showKillButton = character.state === 'alive' && isStoryteller && character.accepted && !character.transfer_to
+  $: showAcceptButton = character.state === 'alive' && isStoryteller && !character.accepted
+  $: showRejectStorytellerButton = character.state === 'alive' && isStoryteller && !character.accepted
+  $: showReviveButton = character.state === 'dead' && isStoryteller
+  $: showDeleteButton = character.state === 'dead' && isStoryteller
+
+  $: actionsVisible = showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton
 </script>
 
 <tr class='char'>
@@ -224,59 +254,50 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td class='options' use:clickOutside on:click_outside={handleClickOutside}>
-    <div class='actions' class:visible={actionsVisible}>
-      {#if character.state === 'alive'}
+    {#if actionsVisible}
+      <div class='actions' class:visible={actionsVisible}>
         <!-- active player options -->
-        {#if isPlayer && character.accepted && !isStoryteller }
+        {#if showLeaveButton}
           <button on:click={leaveGame}>odejít</button>
         {/if}
-
-        {#if user.id && (isStoryteller || !character.accepted || character.open) && !game.archived}
-          <!-- recruitment actions -->
-          {#if character.open && character.player.id !== user.id && !character.transfer_to}
-            <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
-          {/if}
-          {#if isPlayer && !character.accepted && !isStoryteller}
-            <button on:click={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
-          {/if}
-          {#if isStoryteller}
-          <!-- storyteller actions -->
-            {#if character.accepted}
-              <!-- free character -->
-              {#if !character.open && character.player.id === user.id}
-                <button on:click={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
-              {/if}
-              <!-- take over character -->
-              {#if !character.open && character.player.id !== user.id}
-                <button on:click={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
-              {/if}
-              <!-- transfer character -->
-              {#if character.player.id === user.id && !character.transfer_to}
-                <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
-              {/if}
-              {#if character.transfer_to}
-                <button on:click={cancelTransfer}>zrušit převod</button>
-              {/if}
-              {#if !character.transfer_to}
-                <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
-              {/if}
-            {:else}
-              <button on:click={acceptCharacter}>přijmout</button>
-              <button on:click={rejectCharacter}>odmítnout</button>
-            {/if}
-          {/if}
+        {#if showClaimButton}
+          <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
         {/if}
+        {#if showRejectButton}
+          <button on:click={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
+        {/if}
+        {#if showFreeButton}
+          <button on:click={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
+        {/if}
+        {#if showTakeOverButton}
+          <button on:click={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
+        {/if}
+        {#if showTransferButton}
+          <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
+        {/if}
+        {#if showCancelTransferButton}
+          <button on:click={cancelTransfer}>zrušit převod</button>
+        {/if}
+        {#if showKillButton}
+          <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+        {/if}
+        {#if showAcceptButton}
+          <button on:click={acceptCharacter}>přijmout</button>
+        {/if}
+        {#if showRejectStorytellerButton}
+          <button on:click={rejectCharacter}>odmítnout</button>
+        {/if}
+        {#if showReviveButton}
+          <button on:click={reviveCharacter}>oživit</button>
+        {/if}
+        {#if showDeleteButton}
+          <button on:click={deleteCharacter}>smazat</button>
+        {/if}
+      </div>
+      {#if $platform === 'mobile'}
+        <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
       {/if}
-      {#if character.state === 'dead' && isStoryteller}
-        <!-- graveyard -->
-        <button on:click={reviveCharacter}>oživit</button>
-        <button on:click={deleteCharacter}>smazat</button>
-      {/if}
-    </div>
-    {#if $platform === 'mobile'}
-      <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
     {/if}
-
     <div class='transferModal' class:visible={showTransfer}>
       <div class='transferText'>Vyber hráče, na kterého chceš postavu převést:</div>
       <div class='row'>
