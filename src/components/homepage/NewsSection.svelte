@@ -7,10 +7,16 @@
 
   async function loadData () {
     const query = supabase.from(table).select('*').eq('published', true)
-    if (slug === 'work') {
-      query.not('editorial', 'eq', true)
-    } else if (slug === 'board') {
-      query.eq('open', true)
+    switch (slug) {
+      case 'game':
+        query.not('recruitment_open', 'eq', false)
+        break
+      case 'work':
+        query.not('editorial', 'eq', true)
+        break
+      case 'board':
+        query.eq('open', true)
+        break
     }
     const { data, error } = await query.order('created_at', { ascending: false }).limit(5)
     if (error) { throw new Error('Nepodařilo se načíst novinky. Důvod: ' + error.message) }

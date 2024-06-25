@@ -12,7 +12,8 @@
 
   let listView = false
   let gameListStore
-  let activeTab = 'new'
+  let activeTab = 'open'
+  let sort = 'new'
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -26,8 +27,8 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
 
-    // const sortParam = new URL(window.location).searchParams.get('sort')
-    // if (sortParam) { sort = sortParam }
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
 
     const tabParam = new URL(window.location).searchParams.get('tab')
     if (tabParam) { activeTab = tabParam }
@@ -41,12 +42,10 @@
     window.location.search = new URLSearchParams({ tab }).toString()
   }
 
-  /*
   function setSort (type) {
     sort = type
     window.location.search = new URLSearchParams({ sort: type }).toString()
   }
-  */
 
   function setListView (val) {
     listView = $gameListStore.listView = val
@@ -57,12 +56,10 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <!--
       <div class='toggle sort'>
         <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
         <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
       </div>
-      -->
       <div class='toggle'>
         <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
@@ -77,8 +74,9 @@
 
 {#if showTabs}
   <nav class='tabs secondary'>
-    <button on:click={() => { activateTab('new') }} class:active={activeTab === 'new'}>Nové</button>
-    <button on:click={() => { activateTab('active') }} class:active={activeTab === 'active'}>Aktivní</button>
+    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírají</button>
+    <button on:click={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
+    <button on:click={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
     <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
   </nav>
 {/if}

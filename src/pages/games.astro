@@ -4,19 +4,34 @@
 
   const { supabase, user } = Astro.locals
   
-  const tab = Astro.url.searchParams.get('tab') || 'new'
-  let query
+  const tab = Astro.url.searchParams.get('tab') || 'open'
+  const sort = Astro.url.searchParams.get('sort') || 'new'
+
+  let query = supabase.from('game_list').select('*')
   switch (tab) {
-    case 'new':
-      query = supabase.from('game_list').select('*').match({ archived: false, published: true }).order('created_at', { ascending: false })
+    case 'open':
+      query.match({ archived: false, published: true, recruitment_open: true })
       break
-    case 'active':
-      query = supabase.from('game_list').select('*').match({ archived: false, published: true }).not('last_post', 'is', null).order('last_post', { ascending: false })
+    case 'public':
+      query.match({ archived: false, published: true, open_game: true })
+      break
+    case 'private':
+      query.match({ archived: false, published: true, open_game: false })
       break
     case 'archive':
-      query = supabase.from('game_list').select('*').match({ archived: true, published: true }).order('last_post', { ascending: false })
+      query.match({ archived: true, published: true })
       break
   }
+
+  switch (sort) {
+    case 'new':
+      query.order('created_at', { ascending: false })
+      break
+    case 'active':
+      query.not('last_post', 'is', null).order('last_post', { ascending: false })
+      break
+  }
+
   const { data: games, error } = await query
   if (error) { console.error(error) }
 ---
