@@ -66,7 +66,7 @@
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
     <div class='author'>
-      Autor: <a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a>
+      <span>Autor: </span><a href={'/user?id=' + data.owner.id} class='user'>{data.owner.name}</a>
       <img src={getPortraitUrl(data.owner.id, data.owner.portrait)} class='portrait' alt={data.owner.name} />
     </div>
   </div>

@@ -140,6 +140,7 @@
   }
 
   $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
+  $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
 </script>
 
 <main bind:this={threadEl}>

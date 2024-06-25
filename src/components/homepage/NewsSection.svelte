@@ -40,7 +40,7 @@
           <div class='details'>
             <span class='date'>{new Date(item.created_at).toLocaleDateString('cs')}</span>
             <a href={'/user?id=' + item.owner} class='user'>
-              {item.owner_name}
+              <span>{item.owner_name}</span>
               {#if item.owner_portrait}
                 <img src={getPortraitUrl(item.owner, item.owner_portrait)} class='portrait' alt={item.owner_name} />
               {/if}
