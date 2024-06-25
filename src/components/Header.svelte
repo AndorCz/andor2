@@ -11,6 +11,7 @@
 
   let headerUrl = headerStatic
   let errorFetchingHeader = false
+  let chatPeople = 0
 
   async function getHeaderUrl () {
     try {
@@ -27,6 +28,13 @@
     initToasts()
     lookForToast()
     document.addEventListener('astro:page-load', () => { lookForToast() })
+    // chat presence
+    const chatChannel = supabase.channel('chat')
+    chatChannel.on('presence', { event: 'sync' }, () => { // sync is called on every presence change
+      const newState = chatChannel.presenceState()
+      chatPeople = Object.keys(newState).length
+    })
+    chatChannel.subscribe()
   })
 
   $: if (headerStorage) { getHeaderUrl() }
@@ -44,7 +52,7 @@
         <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
         <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
         <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
-        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat</a>
+        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat {#if chatPeople}({chatPeople}){/if}</a>
       </nav>
     {/if}
   </header>

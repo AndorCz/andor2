@@ -41,7 +41,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     <Lightbox client:only='svelte' />
     <div id='wrapper'>
       <main id='scrollable' autofocus>
-        <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
+        <Header {user} {pathname} {headerStatic} {headerStorage} client:only='svelte' />
         {pathname === '/chat'
           ? <div class='content chat'><slot /></div>
           : <div class='content'><Arrows client:only='svelte' /><slot /></div><footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
