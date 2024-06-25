@@ -94,7 +94,12 @@
     replyPostData = replies[id]
     if (replyPostData) {
       replyPostEl.style.display = 'block'
-      replyPostEl.style.top = event.target.getBoundingClientRect().top + window.pageYOffset + 30 + 'px'
+      // replyPostEl.style.top = event.target.getBoundingClientRect().top + window.pageYOffset + 30 + 'px'
+      // position below the event target in fixed height scrollable container
+      const scrollTop = document.getElementById('scrollable').scrollTop
+      const offsetTop = event.target.getBoundingClientRect().top
+      const headerSize = 150
+      replyPostEl.style.top = scrollTop - headerSize + offsetTop - 20 + 'px'
     }
   }
 
