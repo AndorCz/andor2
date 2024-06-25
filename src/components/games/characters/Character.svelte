@@ -13,6 +13,7 @@
   export let isStoryteller
   export let actionsVisible = false
 
+  let actionsAvailable = false
   let newOwner
   let showTransfer = false
 
@@ -226,7 +227,7 @@
   $: showReviveButton = character.state === 'dead' && isStoryteller
   $: showDeleteButton = character.state === 'dead' && isStoryteller
 
-  $: actionsVisible = showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton
+  $: actionsAvailable = showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton
 </script>
 
 <tr class='char'>
@@ -254,7 +255,7 @@
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
   <td class='options' use:clickOutside on:click_outside={handleClickOutside}>
-    {#if actionsVisible}
+    {#if actionsAvailable}
       <div class='actions' class:visible={actionsVisible}>
         <!-- active player options -->
         {#if showLeaveButton}
