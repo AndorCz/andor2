@@ -88,7 +88,7 @@
   .wrapper {
     position: relative;
     width: var(--portrait-width, 140px);
-    min-height: var(--portrait-height, 200px);
+    height: var(--portrait-height, 200px);
   }
     .portrait {
       cursor: pointer;
@@ -96,7 +96,7 @@
       object-fit: cover;
       object-position: center 20%;
       width: var(--portrait-width, 140px);
-      min-height: var(--portrait-height, 200px);
+      height: var(--portrait-height, 200px);
       border: 2px solid var(--buttonBg);
       align-items: center;
       justify-content: center;
@@ -123,8 +123,9 @@
       padding: 5px;
       text-align: center;
       border-radius: 0px 10px 0px 10px;
+      font-size: 20px;
     }
       .clear:hover {
-        font-size: 28px;
+        font-size: 24px;
       }
 </style>

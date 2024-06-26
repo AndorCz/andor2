@@ -403,15 +403,14 @@ select {
     height: 50px;
     text-decoration: none;
     font-size: 22px;
-    color: #fff;
-    text-shadow: 2px 2px 2px #0003;
-    opacity: 0.8;
+    color: #eee;
+    text-shadow: 1px 1px 4px #000A;
     background-color: transparent;
     border: none;
     box-shadow: none;
   }
     .tabs a:hover, .tabs button:hover {
-      opacity: 1;          
+      color: var(--maximum); 
     }
 
     .tabs a.active, .tabs button.active {
@@ -421,6 +420,7 @@ select {
       padding: 13px 20px;
       opacity: 1;
       position: relative;
+      text-shadow: none;
     }
       .tabs a.active:before, .tabs a.active:after, .tabs button.active:before, .tabs button.active:after {
         content: '';
@@ -447,6 +447,9 @@ select {
 
   /* SECONDARY TABS */
 
+  .tabs.secondary button {
+    text-shadow: 1px 1px 4px #0003;
+  }
   .tabs.secondary:after {
     content: '';
     width: 100%;

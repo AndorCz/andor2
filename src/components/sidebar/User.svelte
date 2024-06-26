@@ -21,7 +21,7 @@
 </script>
 
 <div id='user'>
-  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
+  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={80} /><br>
   <div id='details'>
     <div id='nameRow'>
       <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>
@@ -39,16 +39,8 @@
     display: flex;
     gap: 10px;
   }
-    #details {
-      flex: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
     #nameRow {
-      flex: 1;
-      display: flex;
-      align-items: center;
+      padding: 10px 0px;
     }
       #name {
         max-width: 140px;
@@ -58,7 +50,6 @@
       }
     #buttons {
       display: flex;
-      flex-direction: column;
       gap: 10px;
     }
       #logout, #settings {
