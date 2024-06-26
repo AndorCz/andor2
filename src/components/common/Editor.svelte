@@ -163,6 +163,16 @@
           return false
         },
         handlePaste: function (view, event, slice) { // handle pasting of text and images
+          // paste image from clipboard
+          if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
+            uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
+              const { from } = view.state.selection
+              const node = view.state.schema.nodes.image.create({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height })
+              const transaction = view.state.tr.insert(from, node)
+              view.dispatch(transaction)
+            })
+            return true
+          }
           // parse HTML format
           if (event.clipboardData.types.indexOf('text/html') !== -1) {
             const html = event.clipboardData.getData('text/html')
@@ -184,16 +194,6 @@
               editor.commands.insertContent(text, { parseOptions: { preserveWhitespace: true } })
             }
             event.preventDefault()
-            return true
-          }
-          // paste image from clipboard
-          if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
-            uploadImage(event.clipboardData.files[0]).then(({ data, img }) => {
-              const { from } = view.state.selection
-              const node = view.state.schema.nodes.image.create({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height })
-              const transaction = view.state.tr.insert(from, node)
-              view.dispatch(transaction)
-            })
             return true
           }
           return false
