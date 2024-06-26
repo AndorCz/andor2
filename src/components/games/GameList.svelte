@@ -60,7 +60,7 @@
         <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
         <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
       </div>
-      <div class='toggle'>
+      <div class='toggle mode'>
         <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
@@ -103,6 +103,11 @@
   {:else}
     {#each games as game}
       <div class='block'>
+        {#if game.custom_header}
+          <div class='col image'>
+            <img src={getHeaderUrl('game', game.id, game.custom_header)} alt='game header' />
+          </div>
+        {/if}
         <div class='col left'>
           <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
           <div class='annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
@@ -116,11 +121,6 @@
             </a>
           </div>
         </div>
-        {#if game.custom_header}
-          <div class='col image'>
-            <img src={getHeaderUrl('game', game.id, game.custom_header)} alt='game header' />
-          </div>
-        {/if}
       </div>
     {/each}
   {/if}
@@ -175,6 +175,7 @@
   .block {
     background-color: var(--block);
     display: flex;
+    flex-direction: row-reverse;
     margin-bottom: 5px;
     min-height: 115px;
   }
@@ -257,20 +258,20 @@
   }
 
   @media (max-width: 860px) {
-    h1 {
-      padding-left: 10px;
-    }
+    h1 { padding-left: 10px }
     .desktop { display: none }
     .mobile { display: block }
-    .button { padding: 10px }
+    .headline .button, .headline button {
+      padding: 10px;
+    }
   }
 
   @media (max-width: 500px) {
-    .block {
-      display: block;
-    }
-    .block .image {
-      width: 100%;
+    .block { display: block }
+    .block .image { width: 100% }
+    .mode { display: none }
+    .headline .button, .headline button {
+      padding: 7px;
     }
   }
 </style>

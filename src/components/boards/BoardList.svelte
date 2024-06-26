@@ -65,6 +65,11 @@
   {:else}
     {#each boards as board}
       <div class='block'>
+        {#if board.custom_header}
+          <div class='col image'>
+            <img src={getHeaderUrl('board', board.id, board.custom_header)} alt='board header' />
+          </div>
+        {/if}
         <div class='col left'>
           <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
           <div class='annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
@@ -78,11 +83,6 @@
             {/if}
           </div>
         </div>
-        {#if board.custom_header}
-          <div class='col image'>
-            <img src={getHeaderUrl('board', board.id, board.custom_header)} alt='board header' />
-          </div>
-        {/if}
       </div>
     {/each}
   {/if}
@@ -132,6 +132,7 @@
   .block {
     background-color: var(--block);
     display: flex;
+    flex-direction: row-reverse;
     margin-bottom: 5px;
     min-height: 115px;
   }
@@ -214,20 +215,20 @@
   }
 
   @media (max-width: 860px) {
-    h1 {
-      padding-left: 10px;
-    }
+    h1 { padding-left: 10px }
     .desktop { display: none }
     .mobile { display: block }
-    .button { padding: 10px }
+    .headline .button, .headline button {
+      padding: 10px;
+    }
   }
 
   @media (max-width: 500px) {
-    .block {
-      display: block;
-    }
-    .block .image {
-      width: 100%;
+    .block { display: block }
+    .block .image { width: 100% }
+    .headline .button, .headline button {
+      padding: 7px;
     }
   }
+
 </style>

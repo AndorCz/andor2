@@ -801,7 +801,7 @@ select {
     justify-content: space-between;
   }
   .tabs.secondary button {
-    padding: 0px;
+    padding: 0px 4px;
   }
     .tabs.secondary button.active {
       padding: 10px;

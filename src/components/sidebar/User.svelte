@@ -21,7 +21,7 @@
 </script>
 
 <div id='user'>
-  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={80} /><br>
+  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
   <div id='details'>
     <div id='nameRow'>
       <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>
@@ -35,12 +35,16 @@
 
 <style>
   #user {
-    padding: 20px 0px;
+    margin: 20px 0px;
     display: flex;
     gap: 10px;
   }
+    #details {
+      display: flex;
+      flex-direction: column;
+    }
     #nameRow {
-      padding: 10px 0px;
+      padding: 15px 0px;
     }
       #name {
         max-width: 140px;
