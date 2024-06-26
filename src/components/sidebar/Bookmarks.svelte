@@ -50,7 +50,7 @@
 </script>
 
 {#if $bookmarks.games.length > 0}
-  <h4>Hry</h4>
+  <a href='/games'><h4>Hry</h4></a>
   <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
     {#each $bookmarks.games as bookmark}
       <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
@@ -68,8 +68,10 @@
   </ul>
 {/if}
 
+<hr>
+
 {#if $bookmarks.boards.length > 0}
-  <h4>Diskuze</h4>
+  <a href='/boards'><h4>Diskuze</h4></a>
   <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
     {#each $bookmarks.boards as bookmark}
       <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
@@ -87,8 +89,10 @@
   </ul>
 {/if}
 
+<hr>
+
 {#if $bookmarks.works.length > 0}
-  <h4>Tvorba</h4>
+  <a href='/works'><h4>Tvorba</h4></a>
   <ul class='works' bind:this={worksEl} class:saving class:showHandles>
     {#each $bookmarks.works as bookmark}
       <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
@@ -127,8 +131,14 @@
     color: var(--dim);
     font-style: italic;
   }
+  hr {
+    margin: 20px -20px;
+    border: none;
+    border-top: 1px solid var(--background);
+  }
   h4 {
     color: var(--dim);
+    font-size: 18px;
     margin: 0px;
   }
   ul {
@@ -140,7 +150,7 @@
   }
     li {
       position: relative;
-      padding: 5px 0px;
+      padding: 4px 0px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -151,6 +161,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        font-size: 19px;
+        font-variation-settings: 'wght' 500;
       }
         .unread {
           color: var(--new);

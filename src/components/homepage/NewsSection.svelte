@@ -39,7 +39,7 @@
           <img src={getHeaderUrl(slug, item.id, item.custom_header)} alt={item.name} class='image' />
         {/if}
         <main>
-          <a href={`/${slug}/${item.id}`} class='name'><h2>{item.name}</h2></a>
+          <a href={`/${slug}/${item.id}`} class='name'>{item.name}</a>
           {#if item.annotation}
             <p class='annotation'>{limitLength(item.annotation, 150)}</p>
           {/if}
@@ -89,15 +89,13 @@
       }
         .name {
           display: block;
+          margin-top: 0px;
+          margin-bottom: 10px;
+          font-size: 20px;
+          line-height: 120%;
         }
-          .name h2 {
-            margin-top: 0px;
-            margin-bottom: 10px;
-            font-size: 22px;
-            line-height: 120%;
-          }
         .annotation {
-          font-size: 17px;
+          font-size: 16px;
           font-style: italic;
           font-variation-settings: 'wght' 400;
           margin: 5px 0px;

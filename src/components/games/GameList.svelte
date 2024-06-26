@@ -186,7 +186,7 @@
       grid-template-columns: 1fr;
     }
       .block .name a {
-        font-size: 24px;
+        font-size: 22px;
       }
       .block .annotation {
         font-style: italic;
