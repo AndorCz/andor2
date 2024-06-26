@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount, onDestroy, afterUpdate } from 'svelte'
   import { setRead, getReply } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
@@ -37,24 +37,29 @@
   const replies = {}
 
   onMount(async () => {
-    if (isFilledArray($posts)) {
-      setupReplyListeners()
-      lastPostId = $posts[0].id
-    }
+    if (isFilledArray($posts)) { lastPostId = $posts[0].id }
     if (user.autorefresh) { refresh() }
   })
 
   onDestroy(() => {
     if (frameId) { cancelAnimationFrame(frameId) }
+  })
+
+  afterUpdate(() => {
     if (isFilledArray($posts)) {
-      const cites = document.querySelectorAll('cite[data-id]')
-      for (const citeEl of cites) {
-        citeEl.removeEventListener('pointerdown', addReply)
-        citeEl.removeEventListener('mouseenter', showReply)
-        citeEl.removeEventListener('mouseleave', hideReply)
-      }
+      removeListeners()
+      setupReplyListeners()
     }
   })
+
+  function removeListeners () {
+    const cites = document.querySelectorAll('cite[data-id]')
+    for (const citeEl of cites) {
+      citeEl.removeEventListener('pointerdown', addReply)
+      citeEl.removeEventListener('mouseenter', showReply)
+      citeEl.removeEventListener('mouseleave', hideReply)
+    }
+  }
 
   async function setupReplyListeners () { // pre-requisite for replies
     // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
@@ -90,6 +95,7 @@
   }
 
   function showReply (event) {
+    console.log('showReply FIRED')
     const id = parseInt(event.target.getAttribute('data-id'))
     replyPostData = replies[id]
     if (replyPostData) {

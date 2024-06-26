@@ -95,7 +95,7 @@
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class='content' on:click={onImageClick}>
-      <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'] } }} />
+      <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
       {#if user && allowReactions}
         <Reactions {user} {postStore} />
       {/if}
