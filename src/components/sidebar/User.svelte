@@ -5,7 +5,6 @@
   import { supabase } from '@lib/database-browser'
   import { tooltip } from '@lib/tooltip'
 
-  const version = '1.0.0'
   export let user = {}
 
   async function onPortraitChange (file) {
@@ -21,9 +20,6 @@
   }
 </script>
 
-
-<link rel='stylesheet' href={'/skins/' + user.skin + '/components/sidebar/user.css?v=' + version }>
-
 <div id='user'>
   <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
   <div id='details'>
@@ -36,3 +32,32 @@
     </div>
   </div>
 </div>
+
+<style>
+  #user {
+    margin: 20px 0px;
+    display: flex;
+    gap: 10px;
+  }
+    #details {
+      display: flex;
+      flex-direction: column;
+    }
+    #nameRow {
+      padding: 15px 0px;
+    }
+      #name {
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    #buttons {
+      display: flex;
+      gap: 10px;
+    }
+      #logout, #settings {
+        padding: 0px;
+        padding: 5px;
+      }
+</style>

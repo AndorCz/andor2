@@ -50,14 +50,14 @@
   font-family: 'Alegreya Sans';
   font-style: normal;
   font-weight: 100 900;
-  src: url('../../fonts/AlegreyaSans.woff2') format('woff2-variations');
+  src: url('../fonts/AlegreyaSans.woff2') format('woff2-variations');
 }
 
 @font-face {
   font-family: 'Alegreya Sans Italic';
   font-style: italic;
   font-weight: 100 900;
-  src: url('../../fonts/AlegreyaSans-Italic.woff2') format('woff2-variations');
+  src: url('../fonts/AlegreyaSans-Italic.woff2') format('woff2-variations');
 }
 
 @font-face {
@@ -65,7 +65,7 @@
   font-display: block;
   font-style: normal;
   font-weight: 100 700;
-  src: url('../../fonts/MaterialSymbolsSharpSubset.woff2') format('woff2');
+  src: url('../fonts/MaterialSymbolsSharpSubset.woff2') format('woff2');
 }
 
 /* BASICS */
