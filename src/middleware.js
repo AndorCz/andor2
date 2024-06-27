@@ -4,7 +4,8 @@ export async function onRequest ({ cookies, locals, redirect, url, context }, ne
   try {
     // default empty user object
     locals.user = {
-      'skin' : 'obsidian'
+      'skin' : 'obsidian',
+      'fontSize' : 'medium'
     } 
 
     const accessToken = cookies.get('sb-access-token')?.value

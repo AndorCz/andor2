@@ -11,6 +11,7 @@
   let newEmail = user.email
   let originalAutorefresh = user.autorefresh
   let originalSkin = user.skin
+  let originalFontSize = user.fontSize
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -48,6 +49,13 @@
     const { error } = await supabase.from('profiles').update({ skin: user.skin }).eq('id', user.id)
     if (error) { return showError(error.message) }
     originalSkin = user.skin
+    showSuccess('Nastavení bylo uloženo')
+  }
+
+  async function updateFontSize () {
+    const { error } = await supabase.from('profiles').update({ fontSize: user.fontSize }).eq('id', user.id)
+    if (error) { return showError(error.message) }
+    originalFontSize = user.fontSize
     showSuccess('Nastavení bylo uloženo')
   }
 </script>
@@ -102,13 +110,23 @@
     </div>
 
 
-    <h2>Skin</h2>
+    <h2>Vzhled</h2>
     <div class='row'>
       <select bind:value={user.skin} id='skin' name='skin'>
         <option value='obsidian'>Obsidian</option>
-        <option value='obsidian_wide'>Obsidian wide</option>
+        <option value='obsidian_wide'>Obsidian široký</option>
       </select>
       <button on:click={updateSkin} class='material' disabled={originalSkin === user.skin} title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Velikost písma</h2>
+    <div class='row'>
+      <select bind:value={user.fontSize} id='fontSize' name='fontSize'>
+        <option value='small'>Malé</option>
+        <option value='medium'>Střední</option>
+        <option value='big'>Velké</option>
+      </select>
+      <button on:click={updateFontSize} class='material' disabled={originalFontSize === user.fontSize} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazat účet</h2>
