@@ -1,3 +1,4 @@
+@import url('./common/obsidian_color.css');
 
 * { box-sizing: border-box }
 
@@ -12,34 +13,8 @@
 
 /* VARIABLES */
 
+
 :root {
-  --error: #E54B4B;
-  --background: #201c1b;
-  --panel: #2b2827;
-  --block: #33302f;
-  --blockLight: #3c3936;
-  --prominent: #3f3431;
-  --overlay: #464342;
-  --text: #c4b6ab;
-  --link: #c48d66;
-  --linkHover: #e9ceba;
-  --linkVisited: #a07150;
-  --dim: #92857a;
-  --maximum: #fff;
-  --accent: #a5a664;
-  --user: #a5a664;
-  --userHover: #edeec7;
-  --character: #968ebd;
-  --characterHover: #d7d3ec;
-  --whisper: #302f33;
-  --new: gold;
-  --buttonBg: #634b41;
-  --buttonBgHover: #705343;
-  --inputBg: #2a2625;
-  --heart: #b66767;
-  --frown: #b68e67;
-  --thumb: #b6b367;
-  --laugh: #83b667;
   --bodyFont: 'Alegreya Sans', Arial, Helvetica, sans-serif;
   --headlineFont: 'Alegreya', 'Times New Roman', Times, serif;
 }
