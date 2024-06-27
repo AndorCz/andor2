@@ -10,6 +10,7 @@
   let password2 = ''
   let newEmail = user.email
   let originalAutorefresh = user.autorefresh
+  let originalSkin = user.skin
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -40,6 +41,14 @@
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     if (error) { return showError(error.message) }
     showSuccess('Ověřovací e-mail byl odeslán na novou adresu, změnu prosím potvrďte odkazem uvnitř')
+  }
+
+
+  async function updateSkin () {
+    const { error } = await supabase.from('profiles').update({ skin: user.skin }).eq('id', user.id)
+    if (error) { return showError(error.message) }
+    originalSkin = user.skin
+    showSuccess('Nastavení bylo uloženo')
   }
 </script>
 
@@ -90,6 +99,16 @@
         <option value={false}>Vypnuto</option>
       </select>
       <button on:click={updateUser} class='material' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
+    </div>
+
+
+    <h2>Skin</h2>
+    <div class='row'>
+      <select bind:value={user.skin} id='skin' name='skin'>
+        <option value='obsidian'>Obsidian</option>
+        <option value='obsidian_wide'>Obsidian wide</option>
+      </select>
+      <button on:click={updateSkin} class='material' disabled={originalSkin === user.skin} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazat účet</h2>
