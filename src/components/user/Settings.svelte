@@ -92,7 +92,7 @@
     <h2>Paleta nástrojů editoru</h2>
     <div class='row'>
       <select bind:value={user.editor_bubble} id='bubbleMenu' name='bubbleMenu'>
-        <option value={true}>Kontextové (po označení textu)</option>
+        <option value={true}>Kontextová (po označení textu)</option>
         <option value={false}>Fixní</option>
       </select>
       <button on:click={updateUser} class='material' disabled={originalEditorBubble === user.editor_bubble} title='Uložit' use:tooltip>check</button>

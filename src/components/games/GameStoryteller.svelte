@@ -20,7 +20,6 @@
 
   async function generate () {
     const codex = await gatherCodex(game.id)
-    // console.log(codex)
 
     game.story = ''
     generating = true
