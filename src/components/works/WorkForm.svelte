@@ -34,13 +34,13 @@
 
     <div class='row'>
       <div class='labels'><label for='workAnnotation'>Anotace</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='Popis díla, do seznamu tvorby a novinek' userId={user.id} id='workAnnotation' name='workAnnotation' minHeight={80} maxlength={150} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='Popis díla, do seznamu tvorby a novinek' {user} id='workAnnotation' name='workAnnotation' minHeight={80} maxlength={150} /></div>
     </div>
 
     <div class='row'>
       <div class='labels'>Obsah</div>
       <div class='inputs'>
-        <TextareaExpandable userId={user.id} bind:this={editorRef} allowHtml minHeight={500} />
+        <TextareaExpandable {user} bind:this={editorRef} allowHtml minHeight={500} />
         <input type='hidden' name='workContent' bind:this={contentInputRef} />
       </div>
     </div>

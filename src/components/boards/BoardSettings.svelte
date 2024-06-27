@@ -98,7 +98,7 @@
 
   <h2>Anotace</h2>
   <div class='row'>
-    <TextareaExpandable userId={user.id} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
+    <TextareaExpandable {user} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
     <button on:click={updateBoard} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 

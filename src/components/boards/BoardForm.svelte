@@ -15,7 +15,7 @@
 
     <div class='row'>
       <div class='labels'><label for='boardAnnotation'>Anotace</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='Popis tématu, do seznamu diskuzí a novinek' userId={user.id} id='boardAnnotation' name='boardAnnotation' minHeight={80} maxlength={150} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='Popis tématu, do seznamu diskuzí a novinek' {user} id='boardAnnotation' name='boardAnnotation' minHeight={80} maxlength={150} /></div>
     </div>
 
     <center>

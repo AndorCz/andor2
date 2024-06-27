@@ -49,6 +49,7 @@ create table profiles (
   last_activity timestamp with time zone,
   old_id int4,
   autorefresh boolean default false,
+  editor_bubble boolean default true,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 
@@ -1051,7 +1052,7 @@ $$ language plpgsql security definer;
 
 create or replace function delete_old_chat_posts () returns void as $$
 begin
-  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100);
+  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thread = 1;
 end;
 $$ language plpgsql;
 

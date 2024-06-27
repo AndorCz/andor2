@@ -24,7 +24,7 @@
   import Dropdown from '@components/common/Dropdown.svelte'
   import Youtube from '@tiptap/extension-youtube'
 
-  export let userId
+  export let user
   export let content = ''
   export let onKeyUp = null
   export let triggerSave = null
@@ -33,10 +33,11 @@
   export let enterSend = false
   export let fonts = null
   export let mentionList = null
+  export let forceBubble = false
 
   let editor
   let editorEl
-  let bubbleEl
+  let menuEl
   let bubbleElImage
   let currentStyle
   let currentAlign = 'left'
@@ -72,10 +73,8 @@
     })
   }
 
-  const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
-  const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
-
   onMount(() => {
+    const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
     const extensions = [
       StarterKit,
       Underline,
@@ -92,19 +91,6 @@
       CustomImage,
       Link.configure({ openOnClick: false }),
       Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
-      BubbleMenuText.configure({
-        pluginKey: 'bubbleMain',
-        element: bubbleEl,
-        tippyOptions: {
-          maxWidth: 'none',
-          onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
-        },
-        shouldShow: ({ editor, view }) => { // don't show for images
-          const { selection } = editor.state
-          const isImage = selection.node && selection.node.type.name === 'image'
-          return !selection.empty && !isImage
-        }
-      }),
       BubbleMenuImage.configure({
         pluginKey: 'bubbleImage',
         element: bubbleElImage,
@@ -124,6 +110,25 @@
         alignments: ['left', 'center', 'right', 'justify']
       })
     ]
+
+    if (forceBubble || user.editor_bubble) {
+      const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
+      extensions.push(
+        BubbleMenuText.configure({
+          pluginKey: 'bubbleMain',
+          element: menuEl,
+          tippyOptions: {
+            maxWidth: 'none',
+            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+          },
+          shouldShow: ({ editor, view }) => { // don't show for images
+            const { selection } = editor.state
+            const isImage = selection.node && selection.node.type.name === 'image'
+            return !selection.empty && !isImage
+          }
+        })
+      )
+    }
 
     if (mentionList) {
       extensions.push(
@@ -295,7 +300,7 @@
       const resizedBlob = await resizeImage(img, 2000, 2000, 'image/jpeg')
       file = new File([resizedBlob], file.name, { type: 'image/jpeg' }) // blob to file
     }
-    const { data, error } = await supabase.storage.from('posts').upload(`${userId}/${new Date().getTime()}.png`, file)
+    const { data, error } = await supabase.storage.from('posts').upload(`${user.id}/${new Date().getTime()}.png`, file)
     if (error) { handleError(error) }
     return { data, img }
   }
@@ -318,10 +323,10 @@
 
 <!-- <div id='debug' style='white-space: pre-wrap'>{debug}</div> -->
 
-<div class='wrapper' class:isFocused>
+<div class:isFocused class={forceBubble || user.editor_bubble ? 'inner bubbleMenu' : 'inner fixedMenu'} >
   <Colors />
-  <!-- Main bubble menu -->
-  <div class='bubble' bind:this={bubbleEl}>
+  <!-- Main menu (fixed or bubble) -->
+  <div class='menu' bind:this={menuEl} class:bubble={forceBubble || user.editor_bubble}>
     {#if editor}
       <!-- buttons need to have type=button to not submit forms the editor might be in -->
       <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
@@ -372,7 +377,7 @@
 </div>
 
 <style>
-  .wrapper {
+  .inner {
     position: relative;
     border-bottom: 3px var(--buttonBg) solid;
     background-color: var(--inputBg);
@@ -382,11 +387,16 @@
     .isFocused {
       outline: 2px var(--buttonBg) solid;
     }
-  .wrapper, .editor {
+  .inner, .editor {
     height: 100%;
   }
   label {
     padding: 5px;
+  }
+  .fixedMenu .menu {
+    position: absolute;
+    top: -50px;
+    left: 0px;
   }
   .bubble {
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
@@ -409,10 +419,10 @@
       box-shadow: 2px 2px 2px #0003;
     }
     */
-    .bubble button, .bubble span {
+    .bubble button, .bubble span, .menu button, .menu span {
       margin: 3px;
     }
-    .bubble button, .toolbelt button {
+    .bubble button, .toolbelt button, .menu button {
       padding: 5px;
     }
   .toolbelt {

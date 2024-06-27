@@ -55,7 +55,7 @@
 
       {#if character.storyteller_notes || isStoryteller}
         <h2>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
-        <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} userId={user.id} value={character.storyteller_notes} allowHtml />
+        <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} {user} value={character.storyteller_notes} allowHtml />
       {/if}
 
       {#if isStoryteller}
