@@ -1051,7 +1051,7 @@ $$ language plpgsql security definer;
 
 create or replace function delete_old_chat_posts () returns void as $$
 begin
-  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100);
+  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thead = 1;
 end;
 $$ language plpgsql;
 
