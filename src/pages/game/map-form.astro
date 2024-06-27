@@ -64,7 +64,7 @@
 <Layout title={edit ? 'Upravit mapu' : 'Přidat mapu'}>
   <a href='javascript:history.back()'>zpět</a>
   {user.id && gameId && isStoryteller ? (
-    <MapForm {map} {game} userId={user.id} client:only='svelte' />
+    <MapForm {map} {game} {user} client:only='svelte' />
   ) : (
     <center>Tato stránka je jen pro vypravěče hry</center>
   )}

@@ -81,7 +81,7 @@
 
     <h2>Anotace</h2>
     <div class='row'>
-      <TextareaExpandable userId={user.id} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
+      <TextareaExpandable {user} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
       <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 

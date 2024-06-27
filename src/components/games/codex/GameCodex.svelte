@@ -102,7 +102,7 @@
       {#await loadIndex()}
         Načítám úvod
       {:then}<!-- single section only -->
-        <EditableLong userId={user.id} bind:value={indexPageContent} placeholder='Úvodní stránka kodexu. Informace pro hráče o pravidlech, světě, postavách, příběhu apod. Více sekcí a stránek lze přidat v nastavení.' onSave={updateIndex} canEdit={isStoryteller} {mentionList} allowHtml />
+        <EditableLong {user} bind:value={indexPageContent} placeholder='Úvodní stránka kodexu. Informace pro hráče o pravidlech, světě, postavách, příběhu apod. Více sekcí a stránek lze přidat v nastavení.' onSave={updateIndex} canEdit={isStoryteller} {mentionList} allowHtml />
       {/await}
       <br><br>
       Správce hry: {game.owner.name}

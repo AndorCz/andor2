@@ -4,7 +4,7 @@
   import Editor from '@components/common/Editor.svelte'
   import Loading from '@components/common/Loading.svelte'
 
-  export let userId
+  export let user
   export let id = null
   export let value = ''
   export let onSave = null
@@ -25,6 +25,7 @@
   export let placeholder = ''
   export let fonts = null
   export let mentionList = null
+  export let forceBubble = false
 
   let isEmpty = true
   let editorRef
@@ -106,9 +107,9 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class='wrapper' class:singleLine>
+<div class='wrapper' class:singleLine class:fixedMenu={allowHtml && !(forceBubble || user.editor_bubble)}>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {userId} {fonts} {mentionList} />
+    <Editor bind:this={editorRef} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
@@ -135,6 +136,9 @@
     position: relative;
     width: 100%;
   }
+    .wrapper.fixedMenu {
+      margin-top: 50px;
+    }
     textarea {
       width: 100%;
       height: 100%;

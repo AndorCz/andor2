@@ -10,6 +10,7 @@
   let password2 = ''
   let newEmail = user.email
   let originalAutorefresh = user.autorefresh
+  let originalEditorBubble = user.editor_bubble
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -21,9 +22,14 @@
   }
 
   async function updateUser () {
-    const { error } = await supabase.from('profiles').update({ autorefresh: user.autorefresh }).eq('id', user.id)
+    const data = {
+      autorefresh: user.autorefresh,
+      editor_bubble: user.editor_bubble
+    }
+    const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
     if (error) { return showError(error.message) }
     originalAutorefresh = user.autorefresh
+    originalEditorBubble = user.editor_bubble
     showSuccess('Nastavení bylo uloženo')
   }
 
@@ -83,6 +89,15 @@
       </tr>
     </table>
 
+    <h2>Paleta nástrojů editoru</h2>
+    <div class='row'>
+      <select bind:value={user.editor_bubble} id='bubbleMenu' name='bubbleMenu'>
+        <option value={true}>Kontextové (po označení textu)</option>
+        <option value={false}>Fixní</option>
+      </select>
+      <button on:click={updateUser} class='material' disabled={originalEditorBubble === user.editor_bubble} title='Uložit' use:tooltip>check</button>
+    </div>
+
     <h2>Auto-refresh herních příspěvků</h2>
     <div class='row'>
       <select bind:value={user.autorefresh} id='autorefresh' name='autorefresh'>
@@ -121,6 +136,7 @@
     gap: 20px;
   }
   select {
-    width: 200px;
+    width: fit-content;
+    padding-right: 50px;
   }
 </style>

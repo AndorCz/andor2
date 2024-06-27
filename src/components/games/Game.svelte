@@ -145,7 +145,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding-bottom: 20px;
     gap: 10px;
   }
     h1 {

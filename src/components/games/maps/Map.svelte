@@ -185,7 +185,7 @@
 {/if}
 
 <br><br>
-<EditableLong onSave={updateMapDescription} canEdit={isStoryteller} userId={user.id} value={map.description} allowHtml />
+<EditableLong onSave={updateMapDescription} canEdit={isStoryteller} {user} value={map.description} allowHtml />
 
 {#if isStoryteller}
   <td class='options row'>

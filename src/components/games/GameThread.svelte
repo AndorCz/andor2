@@ -200,7 +200,7 @@
         {#if game.archived}
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
-          <TextareaExpandable onTyping={saveUnsent} userId={user.id} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
+          <TextareaExpandable onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
           <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
         {/if}
@@ -242,7 +242,7 @@
   */
   .tools {
     margin-top: 20px;
-    margin-bottom: 10px;
+    padding-bottom: 10px;
   }
     .tools button {
       display: inline-flex;

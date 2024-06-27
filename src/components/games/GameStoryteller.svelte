@@ -76,18 +76,18 @@
 
 <main>
   <h2>Poznámky</h2>
-  <EditableLong placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' userId={user.id} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
+  <EditableLong placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' {user} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>AI generování podkladů</h2>
   <div class='generate'>
-    <TextareaExpandable minHeight={50} placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' bind:value={game.prompt} userId={user.id} />
+    <TextareaExpandable minHeight={50} placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' bind:value={game.prompt} {user} />
     {#if generating}
       <button on:click={cancel}>Zrušit</button>
     {:else}
       <button on:click={generate} loading={generating}>Generovat</button>
     {/if}
   </div>
-  <EditableLong allowHtml placeholder='Výstup generovaných podkladů' userId={user.id} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generating} />
+  <EditableLong allowHtml placeholder='Výstup generovaných podkladů' {user} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generating} />
 </main>
 
 <style>

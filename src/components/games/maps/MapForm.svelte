@@ -7,7 +7,7 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let map = { name: '', description: '' }
-  export let userId
+  export let user
   export let game
 
   const mapName = map.name
@@ -47,7 +47,7 @@
       const response = await fetch('/api/game/generateMap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: map.description, userId })
+        body: JSON.stringify({ description: map.description, userId: user.id })
       })
       const generatedJson = await response.json() // returns 1024x1024 image
       if (generatedJson.error) { throw generatedJson.error }
@@ -99,7 +99,7 @@
       <label for='mapDescription'>Popis mapy</label>
     </div>
     <div class='inputs'>
-      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} allowHtml />
+      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} {user} allowHtml />
       <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
     </div>
   </div>
