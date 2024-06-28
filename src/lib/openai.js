@@ -108,7 +108,7 @@ export async function generatePost (openai, thread, prompt, system) {
 export async function generatePortrait (openai, appearance, user) {
   const image = await openai.images.generate({
     model: 'dall-e-3',
-    prompt: `Digital painting, no text, RPG character in full-length and background environment: ${appearance}`,
+    prompt: `Digital painting, RPG character in full-length and background environment (no text, no interface, only the character): ${appearance}`,
     size: '1024x1024',
     response_format: 'url',
     user // for cases of inappropriate content

@@ -100,7 +100,7 @@
         height: calc(90px * 0.75);
       }
 
-  @media (max-width: 500px) {
+  @media (max-width: 510px) {
       nav {
         left: 0px;
         display: flex;

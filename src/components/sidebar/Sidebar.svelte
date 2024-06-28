@@ -153,13 +153,16 @@
 </aside>
 
 {#if !$activeConversation}
-  <button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
+  <div id='toggleWrapper'>
+    <button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
+  </div>
 {/if}
 
 <style>
   aside {
     position: relative;
     width: 300px;
+    z-index: 999;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
     aside.conversation {
@@ -254,7 +257,7 @@
   }
 
   /* mobile elements */
-  #sidebarToggle {
+  #toggleWrapper, #sidebarToggle {
     display: none;
   }
   #veil {
@@ -270,35 +273,54 @@
   }
 
 @media (max-width: 1000px) {
-  #sidebarToggle {
+  #toggleWrapper {
     display: block;
-    position: fixed;
-    bottom: 10px;
-    right: 30px;
-    padding: 20px;
-    width: 66px;
-    height: 66px;
-    border-radius: 100%;
-    box-shadow: 2px 2px 5px #0005;
+    position: sticky;
+    top: calc(100vh - 30px);
+    right: 10px;
+    width: 0px;
+    height: 0px;
   }
-    #sidebarToggle:hover {
-      background-position: bottom center;
-      transform: scale(1.02);
+    #sidebarToggle {
+      position: absolute;
+      right: 0px;
+      bottom: 0px;
+      display: block;
+      padding: 20px;
+      width: 66px;
+      height: 66px;
+      border-radius: 100%;
+      box-shadow: 2px 2px 5px #0005;
     }
+      #sidebarToggle:hover {
+        background-position: bottom center;
+        transform: scale(1.02);
+      }
   aside {
-    position: fixed;
-    right: -100%;
-    width: 320px;
-    background-color: var(--background);
-    box-shadow: 0px 0px 10px #0005;
-    height: 100%;
-    overflow-y: auto;
+    position: sticky;
+    top: 0px;
+    right: 0px;
+    width: 0px;
+    height: 0px;
   }
+    aside section {
+      position: absolute;
+      top: 0px;
+      right: 0;
+      width: 320px;
+      background-color: var(--background);
+      box-shadow: 0px 0px 10px #0005;
+      max-height: 100svh;
+      overflow-y: auto;
+      transform: translateX(320px);
+      transition: transform 0.2s ease-in-out;
+    }
+
     aside.conversation {
       width: 440px;
     }
-    aside.active {
-      right: 0px;
+    aside.active section {
+      transform: translateX(0px);
     }
     section {
       position: relative;
