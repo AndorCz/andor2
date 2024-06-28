@@ -276,7 +276,7 @@
   #toggleWrapper {
     display: block;
     position: sticky;
-    top: calc(100vh - 30px);
+    top: calc(100svh - 30px);
     right: 10px;
     width: 0px;
     height: 0px;
