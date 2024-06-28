@@ -25,6 +25,7 @@ drop view if exists board_list;
 drop view if exists game_list;
 drop view if exists work_list;
 drop view if exists last_posts;
+drop view if exists game_messages;
 
 
 -- ENUMS --------------------------------------------
@@ -352,6 +353,23 @@ create or replace view work_list as
     left join posts p on t.id = p.thread
   group by w.id, pr.id, pr.name
   order by w.created_at desc;
+
+create or replace view game_messages as
+select
+  messages.id,
+  messages.sender_user,
+  messages.recipient_user,
+  messages.content,
+  messages.read,
+  messages.moderated,
+  messages.created_at,
+  messages.sender_character,
+  messages.recipient_character
+from
+  messages
+where
+  messages.sender_character is not null
+  and messages.recipient_character is not null;
 
 --create or replace view last_posts as
 --  select p.id, p.content, p.created_at,
@@ -763,13 +781,37 @@ select exists (
 $$ language sql security definer;
 
 
+create or replace function get_game_messages_for_user()
+returns table (
+  id integer,
+  sender_character uuid,
+  recipient_character uuid,
+  content text,
+  read boolean,
+  moderated boolean,
+  created_at timestamptz,
+  sender_user uuid,
+  recipient_user uuid
+) as $$
+declare
+  user_id uuid := auth.uid();
+begin
+  return query
+  select gm.id, gm.sender_character, gm.recipient_character, gm.content, gm.read, gm.moderated, gm.created_at, gm.sender_user, gm.recipient_user
+  from game_messages gm
+  where gm.sender_user = user_id or gm.recipient_user = user_id;
+end;
+$$ language plpgsql;
+
 create or replace function get_characters () returns json as $$
+declare
+  user_id uuid := auth.uid();
 begin
   return (
     with user_games as (
       select c.game
       from characters c
-      where c.player = auth.uid() and c.game is not null
+      where c.player = user_id and c.game is not null
       group by c.game
     ),
     all_characters as (
@@ -806,8 +848,8 @@ begin
                 'state', other_c.state,
                 'unread', coalesce((
                   select count(*)
-                  from messages m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = auth.uid()
+                  from get_game_messages_for_user() m
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = user_id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by other_c.name
@@ -816,22 +858,22 @@ begin
             where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
             and (other_c.state = 'alive' or (other_c.state = 'dead' and (
               select count(*)
-              from messages m
+              from get_game_messages_for_user() m
               where (m.sender_character = other_c.id and m.recipient_character = c.id and m.recipient_user = c.player) 
                 or (m.sender_character = c.id and m.recipient_character = other_c.id and m.sender_user = c.player) 
             ) > 0))
           ) as contacts
         from characters c
-        where c.player = auth.uid() and c.state != 'deleted'
+        where c.player = user_id and c.state != 'deleted'
       ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
+      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
-      where c.player = auth.uid() and c.game is null and c.state != 'deleted'
+      where c.player = user_id and c.game is null and c.state != 'deleted'
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
