@@ -1,11 +1,11 @@
 ---
-	import Layout from '@layouts/layout.astro'
+	import LayoutChat from '@layouts/layoutChat.astro'
   import Chat from '@components/chat/Chat.svelte'
 
   const { user } = Astro.locals
 ---
 
-<Layout title='Chat' headerStatic='/header_chat.jpg'>
+<LayoutChat title='Chat' headerStatic='/header_chat.jpg'>
 	<main>
     {user.id ? (
       <Chat {user} client:only='svelte' />
@@ -15,7 +15,7 @@
       </center>
     )}
 	</main>
-</Layout>
+</LayoutChat>
 
 <style>
 	center {

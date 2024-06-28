@@ -10,7 +10,7 @@
   import User from '@components/sidebar/User.svelte'
 
   export let user = {}
-  export let pathname = ''
+  // export let pathname = ''
 
   let showSidebar = false
   let loginInProgress = false
@@ -96,16 +96,6 @@
       {:else}
         <User {user} />
 
-        {#if pathname === '/chat'}
-          <ul id='sideMenu'>
-            <li><a href='/'><span class='material'>star</span>Novinky</a></li>
-            <li><a href='/games'><span class='material'>casino</span>Hry</a></li>
-            <li><a href='/works'><span class='material'>edit</span>Tvorba</a></li>
-            <li><a href='/boards'><span class='material'>forum</span>Diskuze</a></li>
-            <li><a href='/chat' class='active'><span class='material'>chat</span>Chat</a></li>
-          </ul>
-        {/if}
-
         {#if $userStore?.activePanel}
           <div id='tabs'>
             <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
@@ -186,35 +176,6 @@
       aside.conversation section {
         width: 440px;
       }
-  #sideMenu {
-    margin: 0px;
-    margin-bottom: 20px;
-    padding: 10px;
-    list-style-type: none;
-    background-color: var(--panel);
-    border-radius: 10px;
-  }
-    #sideMenu li {
-      padding: 10px;
-    }
-      #sideMenu a {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-family: 'Alegreya Sans';
-        font-variation-settings: 'wght' 600;
-        font-size: 22px;
-        color: var(--text);
-        text-shadow: 2px 2px 2px #0003;
-        opacity: 0.8;
-        text-decoration: none;
-      }
-        #sideMenu a:hover {
-          opacity: 1;
-        }
-        #sideMenu a.active {
-          color: var(--maximum);
-        }
 
   #tabs {
     height: 76px;
