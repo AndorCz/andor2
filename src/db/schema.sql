@@ -803,8 +803,6 @@ $$ language plpgsql;
 
 create or replace function get_characters () returns json as $$
 begin
-  DROP TABLE IF EXISTS tmp_game_messages;
-  CREATE TEMP TABLE tmp_game_messages AS SELECT * FROM get_game_messages_for_user();
   return (
     with user_games as (
       select c.game
@@ -846,7 +844,7 @@ begin
                 'state', other_c.state,
                 'unread', coalesce((
                   select count(*)
-                  from tmp_game_messages m
+                  from get_game_messages_for_user() m
                   where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = auth.uid()
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
@@ -856,7 +854,7 @@ begin
             where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
             and (other_c.state = 'alive' or (other_c.state = 'dead' and (
               select count(*)
-              from tmp_game_messages m
+              from get_game_messages_for_user() m
               where (m.sender_character = other_c.id and m.recipient_character = c.id and m.recipient_user = c.player) 
                 or (m.sender_character = c.id and m.recipient_character = other_c.id and m.sender_user = c.player) 
             ) > 0))
@@ -868,7 +866,7 @@ begin
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from tmp_game_messages m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
+      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
       where c.player = auth.uid() and c.game is null and c.state != 'deleted'
