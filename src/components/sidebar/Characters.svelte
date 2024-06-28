@@ -74,6 +74,7 @@
             {/each}
           {/if}
         </ul>
+        <hr>
       {/each}
     {:else}
       <div class='empty'>Žádné postavy</div>
@@ -107,14 +108,16 @@
 {:else}
   <div class='empty'>Žádné postavy</div>
 {/if}
-{#if selected}
-  <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
-{:else}
-  <div class='row'>
+<div class='bottom'>
+  {#if selected}
     <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
-    <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
-  </div>
-{/if}
+  {:else}
+    <div class='row'>
+      <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
+      <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
+    </div>
+  {/if}
+</div>
 
 <style>
   .row {
@@ -126,6 +129,11 @@
     text-align: center;
     color: var(--dim);
     font-style: italic;
+  }
+  hr {
+    margin: 20px -20px;
+    border: none;
+    border-top: 1px solid var(--background);
   }
   h4 {
     color: var(--dim);
@@ -144,7 +152,7 @@
     list-style: none;
     padding: 0px;
     margin: 0px;
-    margin-bottom: 30px;
+    margin-bottom: 0px;
   }
     ul button {
       position: relative;
@@ -217,8 +225,11 @@
         width: 100%;
         font-size: 25px;
       }
-      .newChar {
-        display: block;
-        width: fit-content;
+      .bottom {
+        padding-top: 20px;
       }
+        .newChar {
+          display: block;
+          width: fit-content;
+        }
 </style>

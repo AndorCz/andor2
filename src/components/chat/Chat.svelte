@@ -200,7 +200,7 @@
       }
     .people {
       padding-top: 20px;
-      min-height: 60px;
+      min-height: 80px;
     }
       .person {
         padding: 10px;

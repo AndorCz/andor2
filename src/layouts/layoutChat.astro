@@ -44,7 +44,9 @@ const { title, headerStatic, headerStorage } = Astro.props
           <li><a href='/boards'><span class='material'>forum</span><span>Diskuze</span></a></li>
           <li><a href='/chat' class='active'><span class='material'>chat</span><span>Chat</span></a></li>
         </ul>        
-        <div class='content chat'><slot /></div>
+        <div class='content chat'>
+          <slot />
+        </div>
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
@@ -62,6 +64,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     max-width: 1400px;
     margin: auto;
     display: flex;
+    contain: content;
   }
     #scrollable {
       contain: content;
@@ -133,6 +136,10 @@ const { title, headerStatic, headerStorage } = Astro.props
   }
 
   @media (max-width: 860px) {
+    #header {
+      justify-content: space-between;
+      gap: 0px;
+    }
     body {
       margin: 0px;
     }
@@ -144,6 +151,12 @@ const { title, headerStatic, headerStorage } = Astro.props
         min-height: calc(100svh - 150px);
       }
     footer {
+      display: none;
+    }
+  }
+
+  @media (max-width: 530px) {
+    #header li .material {
       display: none;
     }
   }

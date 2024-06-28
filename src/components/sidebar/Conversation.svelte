@@ -164,12 +164,12 @@
 
 <style>
   #conversation {
-    position: fixed;
-    top: 20px;
+    position: relative;
     background-color: var(--panel);
     border-radius: 10px;
     padding: 20px;
-    width: 400px;
+    margin-top: 20px;
+    width: 100%;
     height: calc(100svh - 40px);
     display: flex;
     flex-direction: column;
@@ -248,10 +248,4 @@
             text-align: right;
             float: right;
           }
-
-  @media (max-width: 420px) {
-    #conversation {
-      width: calc(100% - 40px);
-    }
-  }
 </style>

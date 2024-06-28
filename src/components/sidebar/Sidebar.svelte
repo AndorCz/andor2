@@ -160,29 +160,27 @@
 
 <style>
   aside {
-    position: relative;
-    width: 300px;
+    position: sticky;
+    top: 0;
+    height: fit-content;
     z-index: 999;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
-    aside.conversation {
-      width: 420px;
-    }
     section {
+      width: 300px;
       padding-left: 20px;
-      padding-right: 20px;
       padding-bottom: 50px;
-      width: 320px;
     }
       /* chat only */
       aside.chat section {
-        position: fixed;
         max-height: 100svh;
         overflow-y: auto;
+        scrollbar-width: none;
       }
       /* conversation only */
       aside.conversation section {
-        width: 440px;
+        width: 420px;
+        max-width: 100vw;
       }
 
   #tabs {
@@ -271,13 +269,17 @@
     background-color: #0005;
     transition: opacity 0.4s ease-in-out;
   }
+    #veil.active {
+      visibility: visible;
+      opacity: 1;
+    }
 
 @media (max-width: 1000px) {
   #toggleWrapper {
     display: block;
     position: sticky;
-    top: calc(100svh - 30px);
-    right: 10px;
+    top: calc(100svh - 10px);
+    right: 20px;
     width: 0px;
     height: 0px;
   }
@@ -293,9 +295,9 @@
       box-shadow: 2px 2px 5px #0005;
     }
       #sidebarToggle:hover {
-        background-position: bottom center;
-        transform: scale(1.02);
+        background-color: var(--buttonBgHover);
       }
+
   aside {
     position: sticky;
     top: 0px;
@@ -303,39 +305,26 @@
     width: 0px;
     height: 0px;
   }
+    aside.active section {
+      transform: translateX(0px);
+    }
     aside section {
       position: absolute;
       top: 0px;
-      right: 0;
+      right: 0px;
       width: 320px;
+      padding-right: 20px;
       background-color: var(--background);
       box-shadow: 0px 0px 10px #0005;
-      max-height: 100svh;
+      height: 100svh;
       overflow-y: auto;
       transform: translateX(320px);
       transition: transform 0.2s ease-in-out;
     }
-
-    aside.conversation {
-      width: 440px;
-    }
-    aside.active section {
-      transform: translateX(0px);
-    }
-    section {
-      position: relative;
-    }
-  #veil.active {
-    visibility: visible;
-    opacity: 1;
-  }
 }
 @media (max-width: 420px) {
-  aside.conversation {
-    width: 100%;
+  aside.conversation section {
+    width: 100vw;
   }
-    aside.conversation section {
-      width: 100%;
-    }
 }
 </style>

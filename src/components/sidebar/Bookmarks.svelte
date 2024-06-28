@@ -68,9 +68,8 @@
   </ul>
 {/if}
 
-<hr>
-
 {#if $bookmarks.boards.length > 0}
+  <hr>
   <a href='/boards'><h4>Diskuze</h4></a>
   <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
     {#each $bookmarks.boards as bookmark}
@@ -89,9 +88,8 @@
   </ul>
 {/if}
 
-<hr>
-
 {#if $bookmarks.works.length > 0}
+  <hr>
   <a href='/works'><h4>Tvorba</h4></a>
   <ul class='works' bind:this={worksEl} class:saving class:showHandles>
     {#each $bookmarks.works as bookmark}

@@ -99,20 +99,20 @@
         width: calc(190px * 0.75);
         height: calc(90px * 0.75);
       }
+  }
 
-  @media (max-width: 510px) {
-      nav {
-        left: 0px;
-        display: flex;
-        justify-content: space-evenly;
-        width: 100%;
-      }
-        nav a {
-          padding: 10px 0px;
-        }
-        nav a.active {
-          padding: 10px 15px;
-        }
+  @media (max-width: 530px) {
+    nav {
+      left: 0px;
+      display: flex;
+      justify-content: space-evenly;
+      width: 100%;
     }
+      nav a {
+        padding: 10px 0px;
+      }
+      nav a.active {
+        padding: 10px 15px;
+      }
   }
 </style>
