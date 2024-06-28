@@ -1,15 +1,21 @@
 <script>
-  import { onMount } from 'svelte'
+  // let scrollable, content
 
-  let scrollable, content
-
+  /*
   onMount(() => {
     scrollable = document.getElementById('scrollable')
     content = document.getElementById('content')
   })
+  */
 
-  function scrollUp () { scrollable.scrollTo(0, 0) }
-  function scrollDown () { scrollable.scrollTo(0, content.scrollHeight) }
+  function scrollUp () {
+    // scrollable.scrollTo(0, 0) // backup: scrollable container
+    window.scrollTo(0, 0)
+  }
+  function scrollDown () {
+    // scrollable.scrollTo(0, content.scrollHeight) // backup: scrollable container
+    window.scrollTo(0, document.body.scrollHeight)
+  }
 </script>
 
 <main>

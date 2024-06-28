@@ -10,7 +10,7 @@
   import User from '@components/sidebar/User.svelte'
 
   export let user = {}
-  // export let pathname = ''
+  export let pathname = ''
 
   let showSidebar = false
   let loginInProgress = false
@@ -88,7 +88,8 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id='veil' class:active={showSidebar || $activeConversation} on:click={() => { showSidebar = false }}></div>
-<aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation}>
+
+<aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:chat={pathname === '/chat'}>
   <section>
     {#if user.name || user.email}
       {#if $activeConversation}
@@ -165,14 +166,18 @@
       width: 420px;
     }
     section {
-      position: fixed;
       padding-left: 20px;
       padding-right: 20px;
       padding-bottom: 50px;
       width: 320px;
-      max-height: 100svh;
-      overflow-y: auto;
     }
+      /* chat only */
+      aside.chat section {
+        position: fixed;
+        max-height: 100svh;
+        overflow-y: auto;
+      }
+      /* conversation only */
       aside.conversation section {
         width: 440px;
       }

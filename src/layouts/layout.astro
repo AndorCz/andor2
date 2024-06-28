@@ -40,12 +40,15 @@ const { title, headerStatic, headerStorage } = Astro.props
 	<body>
     <Lightbox client:only='svelte' />
     <div id='wrapper'>
-      <main id='scrollable' autofocus>
+      <main>
         <Header {user} {pathname} {headerStatic} {headerStorage} client:only='svelte' />
-        {pathname === '/chat'
-          ? <div class='content chat'><slot /></div>
-          : <div class='content'><Arrows client:only='svelte' /><slot /></div><footer><a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a></footer>
-        }
+        <div class='content'>
+          <Arrows client:only='svelte' />
+          <slot />
+        </div>
+        <footer>
+          <a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a>
+        </footer>
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
@@ -63,13 +66,10 @@ const { title, headerStatic, headerStorage } = Astro.props
     max-width: 1400px;
     margin: auto;
     display: flex;
+    contain: content;
   }
-    #scrollable {
+    main {
       flex: 1;
-      contain: content;
-      height: 100svh;
-      overflow: auto;
-      outline: none;
     }
       .content {
         position: relative;
