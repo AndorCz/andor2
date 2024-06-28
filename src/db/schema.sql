@@ -793,11 +793,13 @@ returns table (
   sender_user uuid,
   recipient_user uuid
 ) as $$
+declare
+  user_id uuid := auth.uid();
 begin
   return query
   select gm.id, gm.sender_character, gm.recipient_character, gm.content, gm.read, gm.moderated, gm.created_at, gm.sender_user, gm.recipient_user
   from game_messages gm
-  where gm.sender_user = auth.uid() or gm.recipient_user = auth.uid();
+  where gm.sender_user = user_id or gm.recipient_user = user_id;
 end;
 $$ language plpgsql;
 
