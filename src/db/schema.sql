@@ -802,12 +802,14 @@ end;
 $$ language plpgsql;
 
 create or replace function get_characters () returns json as $$
+declare
+  user_id uuid := auth.uid();
 begin
   return (
     with user_games as (
       select c.game
       from characters c
-      where c.player = auth.uid() and c.game is not null
+      where c.player = user_id and c.game is not null
       group by c.game
     ),
     all_characters as (
@@ -845,7 +847,7 @@ begin
                 'unread', coalesce((
                   select count(*)
                   from get_game_messages_for_user() m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = auth.uid()
+                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = user_id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by other_c.name
@@ -860,7 +862,7 @@ begin
             ) > 0))
           ) as contacts
         from characters c
-        where c.player = auth.uid() and c.state != 'deleted'
+        where c.player = user_id and c.state != 'deleted'
       ) c on c.game = ug.game
       join games g on g.id = c.game
       group by g.id, g.name
@@ -869,7 +871,7 @@ begin
       select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
       as characters
       from characters c
-      where c.player = auth.uid() and c.game is null and c.state != 'deleted'
+      where c.player = user_id and c.game is null and c.state != 'deleted'
     )
     select json_build_object(
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
