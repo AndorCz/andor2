@@ -119,6 +119,7 @@
       .toggle button.secondary.active, .toggle button.secondary:hover {
         box-shadow: none;
         color: var(--text);
+        background-color: initial;
       }
   ul {
     list-style: none;

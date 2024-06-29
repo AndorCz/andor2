@@ -187,7 +187,6 @@
       overflow-y: scroll;
       padding: 5px;
       margin-bottom: 20px;
-      scrollbar-width: thin;
     }
 
     #textareaWrapper {

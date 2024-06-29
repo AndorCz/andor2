@@ -269,10 +269,6 @@
     background-color: #0005;
     transition: opacity 0.4s ease-in-out;
   }
-    #veil.active {
-      visibility: visible;
-      opacity: 1;
-    }
 
 @media (max-width: 1000px) {
   #toggleWrapper {
@@ -321,6 +317,10 @@
       transform: translateX(320px);
       transition: transform 0.2s ease-in-out;
     }
+  #veil.active {
+    visibility: visible;
+    opacity: 1;
+  }
 }
 @media (max-width: 420px) {
   aside.conversation section {
