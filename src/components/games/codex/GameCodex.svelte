@@ -143,6 +143,7 @@
     display: flex;
     justify-content: center;
     flex: 1;
+    flex-wrap: wrap;
     margin-top: 0px;
     margin-bottom: 20px;
   }

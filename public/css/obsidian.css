@@ -347,6 +347,14 @@ select {
   margin: 0px;
 }
 
+.editableLong ol {
+  margin: 0px;
+}
+
+  .editableLong ol p, .editableLong ul p {
+    padding: 0px;
+  }
+
 .editableLong h1:first-child {
   margin-top: 0px;
 }
@@ -630,6 +638,9 @@ select {
 .ProseMirror p {
   margin: 10px 0px;
 }
+  .ProseMirror ol p, .ProseMirror ul p {
+    margin: 0px;
+  }
 .ProseMirror .details {
   display: flex;
   align-items: center;
