@@ -810,6 +810,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function get_characters () returns json as $$
 declare
   user_id uuid := auth.uid();

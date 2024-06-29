@@ -54,37 +54,34 @@
     </p>
 
     <h2>Nastavit heslo</h2>
-    <table>
-      <tr>
-        <td class='label'><label for='password'>Nové heslo</label></td>
-        <td class='value'><input type='password' id='password' size='30' bind:value={password} /></td>
-      </tr>
-      <tr>
-        <td class='label'><label for='password2'>Potvrzení hesla</label></td>
-        <td class='value'>
-          <div class='row'>
-            <input type='password' id='password2' size='30' bind:value={password2} />
-            <button on:click={setPassword} class='material' disabled={password === '' || password2 === '' || password !== password2}>check</button>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <div class='row'>
+      <div class='label'><label for='password'>Nové heslo</label></div>
+      <div class='value'><input type='password' id='password' size='30' bind:value={password} /></div>
+    </div>
+    <br>
+    <div class='row'>
+      <div class='label'><label for='password2'>Potvrzení hesla</label></div>
+      <div class='value'>
+        <div class='rowInner'>
+          <input type='password' id='password2' size='30' bind:value={password2} />
+          <button on:click={setPassword} class='material' disabled={password === '' || password2 === '' || password !== password2}>check</button>
+        </div>
+      </div>
+    </div>
 
     <h2>Změnit e-mail</h2>
-    <table>
-      <tr>
-        <td class='label'><label for='email'>Nový e-mail</label></td>
-        <td class='value'>
-          <div class='row'>
-            <input type='email' id='email' size='30' bind:value={newEmail} />
-            <button on:click={setEmail} class='material' disabled={user.email === newEmail}>check</button>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <div class='row'>
+      <div class='label'><label for='email'>Nový e-mail</label></div>
+      <div class='value'>
+        <div class='rowInner'>
+          <input type='email' id='email' size='30' bind:value={newEmail} />
+          <button on:click={setEmail} class='material' disabled={user.email === newEmail}>check</button>
+        </div>
+      </div>
+    </div>
 
     <h2>Auto-refresh herních příspěvků</h2>
-    <div class='row'>
+    <div class='rowInner'>
       <select bind:value={user.autorefresh} id='autorefresh' name='autorefresh'>
         <option value={true}>Zapnuto</option>
         <option value={false}>Vypnuto</option>
@@ -108,19 +105,28 @@
   h2 {
     margin-top: 50px;
   }
-  td {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-  }
   .label {
     padding-right: 20px;
     width: 150px;
   }
-  .row {
+  .row, .rowInner {
     display: flex;
     gap: 20px;
+    align-items: center;
+  }
+  .rowInner {
+    align-items: center;
   }
   select {
-    width: 200px;
+    width: 100%;
+  }
+  @media (max-width: 600px) {
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .label, .value {
+      max-width: 100%;
+    }
   }
 </style>
