@@ -119,4 +119,14 @@
   .col {
     flex: 1;
   }
+  @media (max-width: 800px) {
+    main, .row {
+      flex-direction: column;
+      max-width: 100vw;
+    }
+  }
+  h1, aside {
+    margin-top: 0px;
+    text-align: center;
+  }
 </style>

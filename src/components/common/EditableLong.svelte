@@ -61,6 +61,7 @@
 <style>
   .wrapper {
     position: relative;
+    text-align: left;
   }
     main {
       width: 100%;
