@@ -147,6 +147,9 @@
     margin-top: 0px;
     margin-bottom: 20px;
   }
+    .codex button {
+      text-shadow: none;
+    }
     .section {
       display: inline-flex;
       gap: 10px;
