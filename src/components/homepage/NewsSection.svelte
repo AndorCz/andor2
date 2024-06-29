@@ -9,7 +9,7 @@
     const query = supabase.from(table).select('*').eq('published', true)
     switch (slug) {
       case 'game':
-        query.eq('recruitment_open', 'eq', true)
+        query.eq('recruitment_open', true)
         break
       case 'work':
         query.not('editorial', 'eq', true)
