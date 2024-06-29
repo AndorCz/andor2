@@ -749,6 +749,13 @@ end;
 $$ language plpgsql;
 
 
+create or replace function is_mod (board_id int4) returns boolean as $$
+begin
+  return exists(select 1 from boards where id = board_id and owner = auth.uid() or mods @> array[auth.uid()]);
+end;
+$$ language plpgsql;
+
+
 create or replace function is_storyteller (game_id int4) returns boolean as $$
 begin
   return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid() and storyteller);
@@ -1224,7 +1231,7 @@ execute function supabase_functions.http_request (
 
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-SELECT cron.schedule('trim-chat', '0 5 * * *', $$CALL delete_old_chat_posts()$$);
+SELECT cron.schedule('trim-chat', '0 5 * * *', $$SELECT delete_old_chat_posts()$$);
 
 
 -- STORAGE  --------------------------------------------

@@ -27,6 +27,7 @@ alter table public.boards enable row level security;
 
 create policy "READ for everyone" on public.boards for select using (true);
 create policy "ALL for owner" on public.boards for all to authenticated using (owner = (select auth.uid()));
+create policy "UPDATE for mods" on public.boards for update to authenticated using (is_mod(id));
 
 
 -- GAMES --------------------------------------------
