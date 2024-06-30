@@ -493,6 +493,7 @@ select {
 
   .tabs.tertiary button {
     color: var(--link);
+    text-shadow: none;
   }
     .tabs.tertiary button:first-child {
       padding-left: 0px;

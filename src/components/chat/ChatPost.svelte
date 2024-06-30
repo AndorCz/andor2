@@ -20,29 +20,33 @@
 
 <div class='postRow {isMine ? 'mine' : 'theirs'}'>
   {#if isMine}
+    <div class='rowInner'>
+      <div class='toolbar' bind:this={toolbarRef}>
+        {formatDate(post.created_at)}
+        <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
+        <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+      </div>
+      <div class='post' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
+        <div class='content'><Render html={post.content} /></div>
+      </div>
+      {#if post.owner_portrait}
+        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+      {/if}
+    </div>
     <Reactions {user} {postStore} />
-    <div class='toolbar' bind:this={toolbarRef}>
-      {formatDate(post.created_at)}
-      <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
-      <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
-    </div>
-    <div class='post' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
-      <div class='content'><Render html={post.content} /></div>
-    </div>
-    {#if post.owner_portrait}
-      <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
-    {/if}
   {:else}
-    {#if post.owner_portrait}
-      <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
-    {/if}
-    <div class='toolbar' bind:this={toolbarRef}>
-      {formatDate(post.created_at)}
-      <ReactionInput {user} {postStore} />
-    </div>
-    <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
-      <div class='name'>{post.owner_name}</div>
-      <div class='content'><Render html={post.content} /></div>
+    <div class='rowInner'>
+      {#if post.owner_portrait}
+        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+      {/if}
+      <div class='toolbar' bind:this={toolbarRef}>
+        {formatDate(post.created_at)}
+        <ReactionInput {user} {postStore} />
+      </div>
+      <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
+        <div class='name'>{post.owner_name}</div>
+        <div class='content'><Render html={post.content} /></div>
+      </div>
     </div>
     <ReactionDisplay {postStore} />
   {/if}
@@ -50,18 +54,28 @@
 
 <style>
   .postRow {
-    position: relative;
     display: flex;
     gap: 10px;
-    align-items: flex-end;
     margin: 10px 0px;
   }
-    .theirs {
-      justify-content: flex-start;
+    .rowInner {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
     }
-    .mine {
-      justify-content: flex-end;
-    }
+      .theirs {
+        flex-direction: row;
+      }
+      .theirs .rowInner {
+        justify-content: flex-start;
+      }
+      .mine {
+        flex-direction: row-reverse;
+      }
+      .mine .rowInner {
+        justify-content: flex-end;
+      }
       .post {
         position: relative;
         max-width: 88%;
@@ -70,6 +84,9 @@
       }
         .name {
           font-weight: bold;
+        }
+        .content {
+          text-align: left;
         }
         .portrait {
           display: block;
@@ -117,6 +134,10 @@
       min-width: 50px;
       width: 50px;
       height: 50px;
+    }
+    .postRow {
+      flex-direction: column;
+      gap: 0px;
     }
   }
 </style>

@@ -83,4 +83,10 @@
         font-size: 22px;
         font-weight: bold;
       }
+  @media (max-width: 500px) {
+    .reactions {
+      width: 100%;
+      margin: 0px;
+    }
+  }
 </style>
