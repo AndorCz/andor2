@@ -16,6 +16,7 @@
   let originalName
   let originalCategory
   let originalOpenDiscussion
+  let originalOpenChars
   let originalRecruitmentOpen
   let originalOpenGame
   let originalOpenCodex
@@ -43,6 +44,7 @@
     originalSystem = game.system
     originalCategory = game.category
     originalOpenDiscussion = game.open_discussion
+    originalOpenChars = game.open_chars
     originalRecruitmentOpen = game.recruitment_open
     originalAnnotation = game.annotation
     originalOpenGame = game.open_game
@@ -53,7 +55,7 @@
   async function updateGame () {
     saving = true
     const welcomeMessage = await welcomeMessageRef.getContent()
-    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game, fonts: game.fonts }).eq('id', game.id)
+    const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_chars: game.open_chars, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game, fonts: game.fonts }).eq('id', game.id)
     if (error) { return handleError(error) }
     setOriginal()
     // update AI storyteller if system changed
@@ -221,6 +223,15 @@
           <option value={true}>Veřejná</option>
         </select>
         <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === game.open_discussion)} class='material square' title='Uložit' use:tooltip>check</button>
+      </div>
+
+      <h2>Viditelnost postav</h2>
+      <div class='row'>
+        <select id='gameOpenChars' name='gameOpenChars' bind:value={game.open_chars}>
+          <option value={false}>Soukromá</option>
+          <option value={true}>Veřejná</option>
+        </select>
+        <button on:click={updateGame} disabled={saving || (originalOpenChars === game.open_chars)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Viditelnost kodexu</h2>

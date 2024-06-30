@@ -42,7 +42,7 @@ create policy "ALL for owner" on public.games for all to authenticated using (ow
 
 alter table public.characters enable row level security;
 
-create policy "READ for everyone in open game" on public.characters for select to public using (game in (select id from games where open_game = true));
+create policy "READ for everyone in open game" on public.characters for select to public using (game in (select id from games where open_game = true or open_chars = true));
 create policy "READ for players in closed game" on public.characters for select to authenticated using (is_player(game));
 create policy "READ for open characters" on public.characters for select to public using (open = true);
 create policy "ALL to user's characters" on public.characters for all to authenticated using (player = (select auth.uid()));

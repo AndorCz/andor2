@@ -24,7 +24,7 @@
   characters.playing.sort((a, b) => a.name.localeCompare(b.name))
 </script>
 
-{#if game.open_game || isStoryteller || isPlayer}
+{#if game.open_game || isStoryteller || isPlayer || game.open_chars}
   <h2>Vypravěči</h2>
   <table class='characters'>
     {#if isFilledArray(characters.storytellers)}
