@@ -75,6 +75,7 @@ create table games (
   open_codex boolean not null default true,
   open_game boolean not null default true,
   open_discussion boolean not null default false,
+  open_chars boolean not null default true,
   game_thread int4,
   openai_thread text,
   openai_storyteller text,
