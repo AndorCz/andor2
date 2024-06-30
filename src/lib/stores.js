@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store'
 
+export const headerCrop = writable({})
 export const headerPreview = writable(null)
 export const activeConversation = writable(null)
 export const bookmarks = writable({ games: [], boards: [], works: [] })

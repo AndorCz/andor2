@@ -7,6 +7,7 @@ import Sidebar from '@components/sidebar/Sidebar.svelte'
 import Store from '@components/common/Store.svelte'
 import Arrows from '@components/common/Arrows.svelte'
 import Lightbox from '@components/common/Lightbox.svelte'
+import HeaderCrop from '@components/common/HeaderCrop.svelte'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
@@ -39,6 +40,7 @@ const { title, headerStatic, headerStorage } = Astro.props
   </head>
 	<body>
     <Lightbox client:only='svelte' />
+    <HeaderCrop client:only='svelte' />
     <div id='wrapper'>
       <main>
         <Header {user} {pathname} {headerStatic} {headerStorage} client:only='svelte' />
