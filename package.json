@@ -40,7 +40,7 @@
     "pixi-filters": "^6.0.0",
     "pixi.js": "^8.0.5",
     "sortablejs": "^1.15.2",
-    "svelte": "4.0.0",
+    "svelte": "4.2.18",
     "svelte-easy-crop": "2.0.3",
     "svelte-select": "5.8.3",
     "tippy.js": "6.3.7"
