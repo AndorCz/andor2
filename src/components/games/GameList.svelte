@@ -42,11 +42,6 @@
     window.location.search = new URLSearchParams({ tab }).toString()
   }
 
-  function setSort (type) {
-    sort = type
-    window.location.search = new URLSearchParams({ sort: type }).toString()
-  }
-
   function setListView (val) {
     listView = $gameListStore.listView = val
   }
@@ -56,10 +51,6 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <div class='toggle sort'>
-        <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
-        <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
-      </div>
       <div class='toggle mode'>
         <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
@@ -74,10 +65,11 @@
 
 {#if showTabs}
   <nav class='tabs secondary'>
-    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírají</button>
+    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírající</button>
     <button on:click={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
     <button on:click={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
     <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
+    <button on:click={() => { activateTab('all') }} class:active={activeTab === 'all'}>Vše</button>
   </nav>
 {/if}
 
@@ -101,6 +93,9 @@
       {/each}
     </table>
   {:else}
+    <div class='sort'>
+      <th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th class='owner'>vlastník</th>
+    </div>
     {#each games as game}
       <div class='block'>
         {#if game.custom_header}

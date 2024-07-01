@@ -21,6 +21,9 @@
     case 'archive':
       query.match({ archived: true, published: true })
       break
+    case 'all':
+      query.match({ published: true })
+      break
   }
 
   switch (sort) {
