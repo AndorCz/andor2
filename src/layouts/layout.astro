@@ -108,6 +108,12 @@ const { title, headerStatic, headerStorage } = Astro.props
     }
   }
 
+  @media (max-width: 1000px) {
+    #wrapper {
+      contain: content;
+    }
+  }
+
   @media (max-width: 860px) {
     body {
       margin: 0px;
