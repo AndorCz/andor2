@@ -45,33 +45,37 @@
     document.getElementById($userStore.activePanel)?.classList.add('active')
 
     if (pathname !== '/chat') {
-      window.addEventListener('scroll', () => {
-        heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
-        sectionTop = window.pageYOffset + sectionEl.getBoundingClientRect().top
-        scrollDelta = window.pageYOffset - lastScrollOffset
+      heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
+      if (heightOverflow < 0) {
+        stickTop = true
+      } else {
+        window.addEventListener('scroll', () => {
+          sectionTop = window.pageYOffset + sectionEl.getBoundingClientRect().top
+          scrollDelta = window.pageYOffset - lastScrollOffset
 
-        if (scrollDelta > 0) { // Scrolling down
-          // Clear stickTop
-          if (stickTop) {
-            stickTop = false
-            sectionEl.style.top = sectionTop + 'px'
-          } else if (window.pageYOffset > sectionTop + heightOverflow) {
-            sectionEl.style.top = 'initial'
-            stickBottom = true
+          if (scrollDelta > 0) { // Scrolling down
+            // Clear stickTop
+            if (stickTop) {
+              stickTop = false
+              sectionEl.style.top = sectionTop + 'px'
+            } else if (window.pageYOffset > sectionTop + heightOverflow) {
+              sectionEl.style.top = 'initial'
+              stickBottom = true
+            }
           }
-        }
-        if (scrollDelta < 0) { // Scrolling up
-          // Clear stickBottom
-          if (stickBottom) {
-            stickBottom = false
-            sectionEl.style.top = window.pageYOffset - heightOverflow + 'px'
-          } else if (window.pageYOffset < sectionTop) {
-            sectionEl.style.top = 0
-            stickTop = true
+          if (scrollDelta < 0) { // Scrolling up
+            // Clear stickBottom
+            if (stickBottom) {
+              stickBottom = false
+              sectionEl.style.top = window.pageYOffset - heightOverflow + 'px'
+            } else if (window.pageYOffset < sectionTop) {
+              sectionEl.style.top = 0
+              stickTop = true
+            }
           }
-        }
-        lastScrollOffset = window.pageYOffset
-      })
+          lastScrollOffset = window.pageYOffset
+        })
+      }
     }
   })
 
