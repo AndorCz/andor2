@@ -155,10 +155,8 @@
       padding: 20px;
       padding-bottom: 10px;
       flex: 1;
-      /*
       display: grid;
       grid-template-columns: 1fr;
-      */
     }
       .block .name a {
         font-size: 24px;
@@ -274,6 +272,9 @@
     .block .image { width: 100% }
     .headline .button, .headline button {
       padding: 7px;
+    }
+    .block .left {
+      display: block;
     }
   }
 </style>

@@ -95,7 +95,6 @@
   }
 
   function showReply (event) {
-    console.log('showReply FIRED')
     const id = parseInt(event.target.getAttribute('data-id'))
     replyPostData = replies[id]
     if (replyPostData) {
