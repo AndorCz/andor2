@@ -22,7 +22,7 @@
   let lastScrollOffset = 0
   let scrollDelta = 0
   let sectionEl
-  let stickTop = true
+  let stickTop = false
   let stickBottom = false
 
   // bookmarks
@@ -72,9 +72,9 @@
 
   function removeDynamicScroll () {
     if (scrollingRegistered) {
-      stickTop = true
-      stickBottom = false
       sectionEl.style.top = 'initial'
+      stickTop = false
+      stickBottom = false
       window.removeEventListener('scroll', dynamicScroll)
       scrollingRegistered = false
     }
@@ -161,7 +161,7 @@
 <div id='veil' class:active={showSidebar || $activeConversation} on:click={() => { showSidebar = false }}></div>
 
 <aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:chat={pathname === '/chat'}>
-  <section id='sectionTest' bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
+  <section bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
     {#if user.name || user.email}
       {#if $activeConversation}
         <Conversation {user} />

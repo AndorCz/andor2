@@ -273,5 +273,8 @@
     .headline .button, .headline button {
       padding: 7px;
     }
+    .block .left {
+      display: block;
+    }
   }
 </style>
