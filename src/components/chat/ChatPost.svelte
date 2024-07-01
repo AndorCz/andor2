@@ -87,6 +87,7 @@
         }
         .content {
           text-align: left;
+          overflow-wrap: anywhere;
         }
         .portrait {
           display: block;

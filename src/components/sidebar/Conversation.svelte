@@ -233,6 +233,7 @@
           position: relative;
           max-width: 90%;
           padding: 10px 20px;
+          overflow-wrap: anywhere;
         }
           .theirs {
             border-radius: 20px 20px 20px 0px;
