@@ -206,7 +206,7 @@
       <div class='login email'>
         <input type='email' class='w100' placeholder='E-mail' bind:value={email} />
         <div class='row'>
-          <input type='password' placeholder='Heslo' bind:value={password} />
+          <input type='password' placeholder='Heslo' bind:value={password} on:keydown={(event) => { if (event.key === 'Enter') signInWithEmail() }} />
           <button type='submit' class='material confirm' on:click={signInWithEmail} disabled={loginInProgress}>login</button>
         </div>
         <div class='row links'>

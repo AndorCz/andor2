@@ -118,7 +118,7 @@
   function triggerPaging (newPage) {
     page = newPage
     onPaging(page)
-    // threadEl.scrollIntoView({ behavior: 'smooth' })
+    threadEl.scrollIntoView({ behavior: 'smooth' })
   }
 
   function seen () {
