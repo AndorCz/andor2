@@ -15,6 +15,15 @@
   let showSidebar = false
   let loginInProgress = false
 
+  // layout
+  let sectionTop = 0
+  let heightOverflow = 0
+  let lastScrollOffset = 0
+  let scrollDelta = 0
+  let sectionEl
+  let stickTop = false
+  let stickBottom = false
+
   // bookmarks
   let bookmarkUnreadTotal = 0
 
@@ -34,6 +43,36 @@
     userStore = getSavedStore('user')
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
+
+    if (pathname !== '/chat') {
+      window.addEventListener('scroll', () => {
+        heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
+        sectionTop = window.pageYOffset + sectionEl.getBoundingClientRect().top
+        scrollDelta = window.pageYOffset - lastScrollOffset
+
+        if (scrollDelta > 0) { // Scrolling down
+          // Clear stickTop
+          if (stickTop) {
+            stickTop = false
+            sectionEl.style.top = sectionTop + 'px'
+          } else if (window.pageYOffset > sectionTop + heightOverflow) {
+            sectionEl.style.top = 'initial'
+            stickBottom = true
+          }
+        }
+        if (scrollDelta < 0) { // Scrolling up
+          // Clear stickBottom
+          if (stickBottom) {
+            stickBottom = false
+            sectionEl.style.top = window.pageYOffset - heightOverflow + 'px'
+          } else if (window.pageYOffset < sectionTop) {
+            sectionEl.style.top = 0
+            stickTop = true
+          }
+        }
+        lastScrollOffset = window.pageYOffset
+      })
+    }
   })
 
   function activate (panel) {
@@ -90,7 +129,7 @@
 <div id='veil' class:active={showSidebar || $activeConversation} on:click={() => { showSidebar = false }}></div>
 
 <aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:chat={pathname === '/chat'}>
-  <section>
+  <section bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
     {#if user.name || user.email}
       {#if $activeConversation}
         <Conversation {user} />
@@ -160,16 +199,18 @@
 
 <style>
   aside {
-    position: sticky;
-    top: 0;
-    height: fit-content;
     z-index: 999;
+    width: 300px;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
+    aside.chat {
+      height: fit-content;
+    }
     section {
+      position: absolute;
       width: 300px;
       padding-left: 20px;
-      padding-bottom: 50px;
+      padding-bottom: 20px;
     }
       /* chat only */
       aside.chat section {
@@ -181,6 +222,15 @@
       aside.conversation section {
         width: 420px;
         max-width: 100vw;
+      }
+
+      section.stickBottom {
+        position: fixed;
+        bottom: 0px;
+      }
+      section.stickTop {
+        position: fixed;
+        top: 0px;
       }
 
   #tabs {
