@@ -235,6 +235,9 @@
     width: 300px;
     transition: right 0.2s ease-in-out, width 0.2s ease-in-out;
   }
+    aside.conversation {
+      width: 420px;
+    }
     aside.chat {
       height: fit-content;
     }
@@ -383,6 +386,9 @@
     width: 0px;
     height: 0px;
   }
+    aside.conversation {
+      width: 0px;
+    }
     aside.active section {
       transform: translateX(0px);
     }
