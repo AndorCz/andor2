@@ -71,9 +71,9 @@
   }
 
   function removeDynamicScroll () {
+    stickTop = true
     if (scrollingRegistered) {
       sectionEl.style.top = 'initial'
-      stickTop = false
       stickBottom = false
       window.removeEventListener('scroll', dynamicScroll)
       scrollingRegistered = false
@@ -387,7 +387,7 @@
       transform: translateX(0px);
     }
     aside section {
-      position: absolute;
+      position: absolute !important;
       top: 0px;
       right: 0px;
       width: 320px;
