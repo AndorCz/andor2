@@ -155,10 +155,8 @@
       padding: 20px;
       padding-bottom: 10px;
       flex: 1;
-      /*
       display: grid;
       grid-template-columns: 1fr;
-      */
     }
       .block .name a {
         font-size: 24px;
