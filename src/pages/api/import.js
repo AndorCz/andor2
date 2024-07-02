@@ -1,7 +1,7 @@
 async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
   try {
     let pageIndex = 0
-    const pageSize = 1000
+    const pageSize = 100
     let results = []
     let hasMore = true
 
