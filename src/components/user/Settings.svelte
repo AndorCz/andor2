@@ -87,10 +87,10 @@
     </div>
 
     <h2>Paleta nástrojů editoru</h2>
-    <div class='row'>
+    <div class='rowInner'>
       <select bind:value={user.editor_bubble} id='bubbleMenu' name='bubbleMenu'>
-        <option value={true}>Kontextová (po označení textu)</option>
-        <option value={false}>Fixní</option>
+        <option value={true}>Kontextová bublina</option>
+        <option value={false}>Fixní řádek</option>
       </select>
       <button on:click={updateUser} class='material' disabled={originalEditorBubble === user.editor_bubble} title='Uložit' use:tooltip>check</button>
     </div>
@@ -133,7 +133,9 @@
     align-items: center;
   }
   select {
-    width: 100%;
+    width: fit-content;
+    min-width: 320px;
+    padding-right: 50px;
   }
   @media (max-width: 600px) {
     .row {
@@ -142,6 +144,15 @@
     }
     .label, .value {
       max-width: 100%;
+    }
+  }
+  @media (max-width: 400px) {
+    .rowInner {
+      width: 100%;
+    }
+    select {
+      min-width: initial;
+      flex: 1;
     }
   }
 </style>
