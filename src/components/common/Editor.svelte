@@ -24,7 +24,7 @@
   import Dropdown from '@components/common/Dropdown.svelte'
   import Youtube from '@tiptap/extension-youtube'
 
-  export let userId
+  export let user
   export let content = ''
   export let onKeyUp = null
   export let triggerSave = null
@@ -33,10 +33,12 @@
   export let enterSend = false
   export let fonts = null
   export let mentionList = null
+  export let forceBubble = false
 
   let editor
   let editorEl
-  let bubbleEl
+  let menuEl
+  let isBubble = true
   let bubbleElImage
   let currentStyle
   let currentAlign = 'left'
@@ -72,10 +74,8 @@
     })
   }
 
-  const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
-  const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
-
   onMount(() => {
+    const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
     const extensions = [
       StarterKit,
       Underline,
@@ -92,19 +92,6 @@
       CustomImage,
       Link.configure({ openOnClick: false }),
       Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
-      BubbleMenuText.configure({
-        pluginKey: 'bubbleMain',
-        element: bubbleEl,
-        tippyOptions: {
-          maxWidth: 'none',
-          onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
-        },
-        shouldShow: ({ editor, view }) => { // don't show for images
-          const { selection } = editor.state
-          const isImage = selection.node && selection.node.type.name === 'image'
-          return !selection.empty && !isImage
-        }
-      }),
       BubbleMenuImage.configure({
         pluginKey: 'bubbleImage',
         element: bubbleElImage,
@@ -124,6 +111,28 @@
         alignments: ['left', 'center', 'right', 'justify']
       })
     ]
+
+    if (forceBubble || user.editor_bubble) {
+      isBubble = true
+      const BubbleMenuText = BubbleMenu.extend({ name: 'bubbleMenuText' })
+      extensions.push(
+        BubbleMenuText.configure({
+          pluginKey: 'bubbleMain',
+          element: menuEl,
+          tippyOptions: {
+            maxWidth: 'none',
+            onMount (instance) { instance.popper.querySelector('.tippy-box').classList.add('tippy-box-bubble') }
+          },
+          shouldShow: ({ editor, view }) => { // don't show for images
+            const { selection } = editor.state
+            const isImage = selection.node && selection.node.type.name === 'image'
+            return !selection.empty && !isImage
+          }
+        })
+      )
+    } else {
+      isBubble = false
+    }
 
     if (mentionList) {
       extensions.push(
@@ -295,7 +304,7 @@
       const resizedBlob = await resizeImage(img, 2000, 2000, 'image/jpeg')
       file = new File([resizedBlob], file.name, { type: 'image/jpeg' }) // blob to file
     }
-    const { data, error } = await supabase.storage.from('posts').upload(`${userId}/${new Date().getTime()}.png`, file)
+    const { data, error } = await supabase.storage.from('posts').upload(`${user.id}/${new Date().getTime()}.png`, file)
     if (error) { handleError(error) }
     return { data, img }
   }
@@ -318,34 +327,36 @@
 
 <!-- <div id='debug' style='white-space: pre-wrap'>{debug}</div> -->
 
-<div class='wrapper' class:isFocused>
-  <Colors />
-  <!-- Main bubble menu -->
-  <div class='bubble' bind:this={bubbleEl}>
-    {#if editor}
-      <!-- buttons need to have type=button to not submit forms the editor might be in -->
-      <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
-      <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
-      <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
-      <span class='sep'></span>
-      <button type='button' class='material' on:click={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
-      <button type='button' class='material' on:click={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
-      <span class='sep'></span>
-      <button type='button' on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
-      <button type='button' on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
-      <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
-      <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
-      <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
-      <span class='sep'></span>
-      <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
-      <span class='sep'></span>
-      <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
-      <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
-      <span class='sep'></span>
-      <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
-      <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
-    {/if}
-  </div>
+<Colors />
+
+<!-- Main menu (fixed or bubble) -->
+<div class='menu' class:bubble={isBubble} bind:this={menuEl}>
+  {#if editor}
+    <!-- buttons need to have type=button to not submit forms the editor might be in -->
+    <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
+    <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
+    <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
+    <span class='sep'></span>
+    <button type='button' class='material' on:click={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
+    <button type='button' class='material' on:click={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
+    <span class='sep'></span>
+    <button type='button' on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
+    <button type='button' on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
+    <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
+    <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
+    <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
+    <span class='sep'></span>
+    <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
+    <span class='sep'></span>
+    <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color} title='Barva' />
+    <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
+    <span class='sep'></span>
+    <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
+    <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
+  {/if}
+</div>
+
+<div class:isFocused class='inner' class:useBubble={isBubble}>
   <!-- Image bubble menu -->
   <div class='bubble' bind:this={bubbleElImage}>
     {#if editor}
@@ -372,22 +383,35 @@
 </div>
 
 <style>
-  .wrapper {
+  .inner {
     position: relative;
     border-bottom: 3px var(--buttonBg) solid;
     background-color: var(--inputBg);
     box-shadow: inset 1px 1px 6px #0006;
     border-radius: 10px;
   }
+    .useBubble {
+      height: 100%;
+    }
     .isFocused {
       outline: 2px var(--buttonBg) solid;
     }
-  .wrapper, .editor {
+  .editor {
     height: 100%;
   }
   label {
     padding: 5px;
   }
+
+  .menu {
+    white-space: nowrap;
+    height: 50px;
+    overflow-x: auto;
+    align-items: center;
+    display: flex;
+    width: 100%;
+  }
+
   .bubble {
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;
@@ -409,10 +433,10 @@
       box-shadow: 2px 2px 2px #0003;
     }
     */
-    .bubble button, .bubble span {
+    .bubble button, .bubble span, .menu button, .menu span {
       margin: 3px;
     }
-    .bubble button, .toolbelt button {
+    .bubble button, .toolbelt button, .menu button {
       padding: 5px;
     }
   .toolbelt {

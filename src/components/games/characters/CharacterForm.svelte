@@ -8,7 +8,7 @@
 
   export let isStoryteller
   export let isGameOwner
-  export let userId
+  export let user
   export let character = {}
 
   let formEl
@@ -16,7 +16,7 @@
   let bioTextareaEl
   let generatingPortrait = false
   let newPortraitBase64
-  const isCharacterOwner = userId === character.player
+  const isCharacterOwner = user.id === character.player
 
   async function generatePortrait () {
     try {
@@ -24,7 +24,7 @@
       const response = await fetch('/api/game/generatePortrait', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appearance: character.appearance, userId })
+        body: JSON.stringify({ appearance: character.appearance, userId: user.id })
       })
       const generatedBlob = await response.blob() // returns 1024x1024 image
       const generatedImage = await getImage(generatedBlob)
@@ -59,7 +59,7 @@
   }
 </script>
 
-{#if userId && ((character.player === userId) || !character.id)}
+{#if user.id && ((character.player === user.id) || !character.id)}
   <form method='POST' autocomplete='off' bind:this={formEl}>
     <div class='row'>
       <div class='labels'><label for='charName'>Jméno *</label></div>
@@ -67,7 +67,7 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled</label></div>
-      <div class='inputs'><TextareaExpandable {userId} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
+      <div class='inputs'><TextareaExpandable {user} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charIcon'>Portrét</label></div>
@@ -84,7 +84,7 @@
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
       <div class='inputs'>
-        <TextareaExpandable bind:this={bioTextareaEl} {userId} id='charBio' value={character.bio} allowHtml />
+        <TextareaExpandable bind:this={bioTextareaEl} {user} id='charBio' value={character.bio} allowHtml />
         <input type='hidden' bind:this={bioInputEl} name='charBio' />
       </div>
     </div>

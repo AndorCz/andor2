@@ -56,7 +56,7 @@
 </script>
 
 <div class='content'>
-  <EditableLong userId={user.id} bind:value={page.content} onSave={updatePage} canEdit={isStoryteller} {mentionList} allowHtml />
+  <EditableLong {user} bind:value={page.content} onSave={updatePage} canEdit={isStoryteller} {mentionList} allowHtml />
 </div>
 <footer>
   <div class='meta'>

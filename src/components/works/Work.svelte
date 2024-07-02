@@ -62,7 +62,7 @@
     {/if}
   </div>
 
-  <EditableLong userId={user.id} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
     <div class='author'>
@@ -93,7 +93,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding-bottom: 20px;
     gap: 10px;
   }
     h1 {

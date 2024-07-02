@@ -52,7 +52,7 @@
     {:else}
       <!-- Base section content -->
       <div class='content'>
-        <EditableLong userId={user.id} bind:value={activeSection.content} onSave={updateSection} canEdit={isStoryteller} {mentionList} allowHtml />
+        <EditableLong {user} bind:value={activeSection.content} onSave={updateSection} canEdit={isStoryteller} {mentionList} allowHtml />
       </div>
     {/if}
   </main>

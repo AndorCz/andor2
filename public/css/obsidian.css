@@ -2,7 +2,7 @@
 * { box-sizing: border-box }
 
 /* Scrollbars */
-::-webkit-scrollbar { width: 4px }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent }
 ::-webkit-scrollbar-thumb {
   background: #8885;
@@ -257,6 +257,7 @@ textarea, .ProseMirror {
   }
   input[type=color] {
     width: 36px;
+    min-width: 36px;
     height: 36px;
     padding: 0px;
     appearance: none;

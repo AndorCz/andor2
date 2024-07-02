@@ -1,5 +1,7 @@
 import { getOpenAI, createAssistant, createThread, processRun, savePost } from '@lib/openai'
 
+// DEPRECATED, using GEMINI
+
 export const maxDuration = 600 // 10 minutes
 
 async function cleanup (openai, threadId, assistantId) {
