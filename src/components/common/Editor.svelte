@@ -356,7 +356,7 @@
   {/if}
 </div>
 
-<div class:isFocused class='inner'>
+<div class:isFocused class='inner' class:useBubble={isBubble}>
   <!-- Image bubble menu -->
   <div class='bubble' bind:this={bubbleElImage}>
     {#if editor}
@@ -390,10 +390,13 @@
     box-shadow: inset 1px 1px 6px #0006;
     border-radius: 10px;
   }
+    .useBubble {
+      height: 100%;
+    }
     .isFocused {
       outline: 2px var(--buttonBg) solid;
     }
-  .inner, .editor {
+  .editor {
     height: 100%;
   }
   label {

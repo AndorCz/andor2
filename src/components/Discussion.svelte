@@ -213,6 +213,7 @@
     }
     .senderWrapper select {
       width: 200px;
+      height: 100%;
     }
   .headlines {
     display: flex;
