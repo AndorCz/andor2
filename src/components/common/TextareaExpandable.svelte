@@ -135,10 +135,8 @@
   .wrapper {
     position: relative;
     width: 100%;
+    min-width: 0px;
   }
-    .wrapper.fixedMenu {
-      margin-top: 50px;
-    }
     textarea {
       width: 100%;
       height: 100%;

@@ -42,20 +42,20 @@
         {defaultLabel}
       {/if}
     </button>
-    {#if isOpen}
-      <div class='options'>
-        {#each getUnselectedOptions() as option}
-          <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
-            {#if iconsOnly}
-              {option.icon}
-            {:else}
-              {@html option.label}
-            {/if}
-          </button>
-        {/each}
-      </div>
-    {/if}
   </span>
+  {#if isOpen}
+    <div class='options'>
+      {#each getUnselectedOptions() as option}
+        <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
+          {#if iconsOnly}
+            {option.icon}
+          {:else}
+            {@html option.label}
+          {/if}
+        </button>
+      {/each}
+    </div>
+  {/if}
 {/key}
 
 <style>
@@ -67,7 +67,8 @@
   }
   .options {
     position: absolute;
-    left: -12px;
+    top: 20px;
+    left: 20px;
     z-index: 10;
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;
