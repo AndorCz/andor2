@@ -455,9 +455,5 @@
     .bubble {
       display: block;
     }
-    .sep {
-      width: 40px;
-      background-color: transparent;
-    }
   }
 </style>
