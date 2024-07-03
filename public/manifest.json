@@ -1,0 +1,21 @@
+{
+  "short_name": "Andor",
+  "name": "Andor2.cz",
+  "icons": [
+    {
+      "src": "icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#201c1b",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#a5a664"
+}
