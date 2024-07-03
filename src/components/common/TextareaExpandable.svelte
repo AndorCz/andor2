@@ -165,6 +165,9 @@
         top: 0px;
         border-radius: 0px 10px 0px 10px;
       }
+      .fixedMenu .cancel {
+        top: 50px;
+      }
       .singleLine .save, .singleLine .cancel {
         right: 5px;
         bottom: 5px;
