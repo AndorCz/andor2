@@ -51,6 +51,7 @@
     }
     .portrait {
       border-radius: 10px;
+      max-height: 300px;
     }
     ul {
       list-style: none;
