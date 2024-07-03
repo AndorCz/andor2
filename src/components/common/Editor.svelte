@@ -8,7 +8,8 @@
   import { MentionRender } from '@lib/editor/mentionRender'
   import { Mention } from '@lib/editor/mention'
   import { CustomImage } from '@lib/editor/image'
-  import { Color } from '@tiptap/extension-color'
+  import { CustomColor } from '@lib/editor/color'
+  // import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
   import { CustomHeading } from '@lib/editor/heading'
   import { CustomTextAlign } from '@lib/editor/alignment'
@@ -91,7 +92,7 @@
       Image.configure(),
       CustomImage,
       Link.configure({ openOnClick: false }),
-      Color.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
+      CustomColor.configure({ types: ['textStyle', 'bold', 'italic', 'underline', 'strike', 'heading', 'paragraph'] }),
       BubbleMenuImage.configure({
         pluginKey: 'bubbleImage',
         element: bubbleElImage,
@@ -325,7 +326,7 @@
 {/if}
 -->
 
-<!-- <div id='debug' style='white-space: pre-wrap'>{debug}</div> -->
+<!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
 
 <Colors />
 
