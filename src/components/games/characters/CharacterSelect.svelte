@@ -60,6 +60,7 @@
   @media (max-width: 500px) {
     select {
       padding: 0px;
+      font-size: 14px;
     }
   }
 </style>

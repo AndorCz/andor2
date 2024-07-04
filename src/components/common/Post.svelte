@@ -5,6 +5,7 @@
   import { formatDate } from '@lib/utils'
   import { lightboxImage } from '@lib/stores'
   import { tooltip } from '@lib/tooltip'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import Reactions from '@components/common/Reactions.svelte'
 
   export let post
@@ -46,16 +47,18 @@
   }
 </script>
 
-<div class='post' class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
-  <div class='icon' style='--iconSize: {iconSize}px'>
-    {#if $postStore.owner_portrait}
-      <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
-    {:else if $postStore.owner_type === 'character'}
-      <img src='/default_char.jpg' class='portrait' alt={$postStore.owner_name} />
-    {:else}
-      <img src='/default_user.jpg' class='portrait' alt={$postStore.owner_name} />
-    {/if}
-  </div>
+<div class={'post ' + $platform} class:moderated={$postStore.moderated} class:hidden={$postStore.moderated && !expanded} class:unread={unread} class:whispered={$postStore.audience_names} class:important={$postStore.important}>
+  {#if $platform === 'desktop'}
+    <div class='icon' style='--iconSize: {iconSize}px'>
+      {#if $postStore.owner_portrait}
+        <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
+      {:else if $postStore.owner_type === 'character'}
+        <img src='/default_char.jpg' class='portrait' alt={$postStore.owner_name} />
+      {:else}
+        <img src='/default_user.jpg' class='portrait' alt={$postStore.owner_name} />
+      {/if}
+    </div>
+  {/if}
   {#if unread}
     <span class='badge'></span>
   {/if}
@@ -95,7 +98,18 @@
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class='content' on:click={onImageClick}>
-      <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+      {#if $platform === 'mobile'}
+        <div class='icon' style='--iconSize: {iconSize}px'>
+          {#if $postStore.owner_portrait}
+            <img src={getPortraitUrl($postStore.owner, $postStore.owner_portrait)} class='portrait' alt={$postStore.owner_name} />
+          {:else if $postStore.owner_type === 'character'}
+            <img src='/default_char.jpg' class='portrait' alt={$postStore.owner_name} />
+          {:else}
+            <img src='/default_user.jpg' class='portrait' alt={$postStore.owner_name} />
+          {/if}
+        </div>
+      {/if}
+        <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
       {#if user && allowReactions}
         <Reactions {user} {postStore} />
       {/if}
@@ -128,17 +142,29 @@
       }
 
     .icon {
-      min-width: var(--iconSize);
+      width: var(--iconSize);
       overflow: hidden;
       position: relative;
     }
       .icon img {
+        display: block;
+      }
+      .desktop .icon img {
         position: absolute;
         top: 0px;
         left: 0px;
         width: 100%;
         display: block;
-        /* box-shadow: 2px 2px 3px #0002; */
+      }
+      .mobile .icon {
+        border: 1px solid var(--panel);
+        float: left;
+        /*
+        margin-top: -16px;
+        margin-left: -15px;
+        */
+        margin-right: 15px;
+        margin-bottom: 15px;
       }
 
   .body {
