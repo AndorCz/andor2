@@ -5,12 +5,16 @@
 
   export let characters = { allGrouped: [], myStranded: [] }
   export let openConversation
+  export let userStore
 
   let selected // { character, gameIndex, characterIndex }
-  let showDead = false
 
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
+  }
+
+  function containsCharacters (characters) {
+    return $userStore.showDead ? isFilledArray(characters) : characters.some(character => character.state !== 'dead')
   }
 </script>
 
@@ -26,7 +30,7 @@
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
         <h4>Kontakty</h4>
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
-          {#if character.state !== 'dead' || showDead}
+          {#if character.state !== 'dead' || $userStore.showDead}
             <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
               {#if character.portrait}
                 <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
@@ -54,7 +58,7 @@
         <ul class='characters'>
           {#if isFilledArray(characters)}
             {#each characters as character, characterIndex}
-              {#if character.state !== 'dead' || showDead}
+              {#if character.state !== 'dead' || $userStore.showDead}
                 <li class='mine'>
                   <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
                     {#if character.portrait}
@@ -80,40 +84,42 @@
       <div class='empty'>Žádné postavy</div>
     {/if}
 
-    {#if isFilledArray(characters.myStranded)}
-      <h4>Bez hry</h4>
-      <ul class='characters'>
-        {#each characters.myStranded as character}
-          {#if character.state !== 'dead' || showDead}
-            <li class='mine'>
-              <button on:click={openProfile(character)}>
-                {#if character.portrait}
-                  {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
-                {:else}
-                  <span class='portrait gap'></span>
-                {/if}
-                <span class='name character' class:dead={character.state === 'dead'}>
-                  {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
-                  {#if character.state === 'dead'}<span class='material skull' title='Mrtvolka'>skull</span>{/if}
-                  {character.name}
-                </span>
-                {#if character.active}<span class='status'></span>{/if}
-              </button>
-            </li>
-          {/if}
-        {/each}
-      </ul>
-    {/if}
+    {#key $userStore.showDead}
+      {#if containsCharacters(characters.myStranded)}
+        <h4>Bez hry</h4>
+        <ul class='characters'>
+          {#each characters.myStranded as character}
+            {#if character.state !== 'dead' || $userStore.showDead}
+              <li class='mine'>
+                <button on:click={openProfile(character)}>
+                  {#if character.portrait}
+                    {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                  {:else}
+                    <span class='portrait gap'></span>
+                  {/if}
+                  <span class='name character' class:dead={character.state === 'dead'}>
+                    {#if character.storyteller}<span class='material star' title='Vypravěč'>star</span>{/if}
+                    {#if character.state === 'dead'}<span class='material skull' title='Mrtvolka'>skull</span>{/if}
+                    {character.name}
+                  </span>
+                  {#if character.active}<span class='status'></span>{/if}
+                </button>
+              </li>
+            {/if}
+          {/each}
+        </ul>
+      {/if}
+    {/key}
   {/if}
 {:else}
   <div class='empty'>Žádné postavy</div>
 {/if}
 <div class='bottom'>
   {#if selected}
-    <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
+    <button class='showDead material square' class:active={$userStore.showDead} on:click={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
   {:else}
     <div class='row'>
-      <button class='showDead material square' class:active={showDead} on:click={() => { showDead = !showDead }} title={ showDead ? 'Zobrazit mrtvé' : 'Skrýt mrtvé' } use:tooltip>skull</button>
+      <button class='showDead material square' class:active={$userStore.showDead} on:click={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
       <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
     </div>
   {/if}

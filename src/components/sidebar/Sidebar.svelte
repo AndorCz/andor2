@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate, tick } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { redirectWithToast } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
@@ -24,6 +24,7 @@
   let sectionEl
   let stickTop = false
   let stickBottom = false
+  let resizeObserver
 
   // bookmarks
   let bookmarkUnreadTotal = 0
@@ -45,14 +46,25 @@
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
     window.addEventListener('resize', updateHeight) // update height on window resize
+    setupResizeObserver()
   })
 
-  afterUpdate(async () => {
-    await tick() // wait for DOM update
-    updateHeight()
-  })
+  onDestroy(() => { resizeObserver.disconnect() })
+
+  // afterUpdate(async () => {
+  //   await tick() // wait for DOM update
+  //   updateHeight()
+  // })
+
+  function setupResizeObserver () {
+    resizeObserver = new ResizeObserver(entries => {
+      entries.forEach(() => updateHeight())
+    })
+    if (sectionEl) { resizeObserver.observe(sectionEl) }
+  }
 
   function updateHeight () {
+    console.log('updateHeight fired')
     if (pathname !== '/chat') {
       heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
       if (heightOverflow > 0) {
@@ -195,7 +207,7 @@
             {:else if $userStore.activePanel === 'people'}
               <People {users} {openConversation} />
             {:else if $userStore.activePanel === 'characters'}
-              <Characters {characters} {openConversation} />
+              <Characters {userStore} {characters} {openConversation} />
             {/if}
           {:catch error}
             <p>Chyba načítání panelu: {error.message}</p>

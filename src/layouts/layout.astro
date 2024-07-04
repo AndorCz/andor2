@@ -44,7 +44,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     <HeaderCrop client:only='svelte' />
     <div id='wrapper'>
       <main>
-        <Header {user} {pathname} {headerStatic} {headerStorage} client:only='svelte' />
+        <Header {pathname} {headerStatic} {headerStorage} client:only='svelte' />
         <div class='content'>
           <Arrows client:only='svelte' />
           <slot />
