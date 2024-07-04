@@ -64,7 +64,6 @@
   }
 
   function updateHeight () {
-    console.log('updateHeight fired')
     if (pathname !== '/chat') {
       heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
       if (heightOverflow > 0) {

@@ -295,8 +295,7 @@ create or replace view discussion_posts_owner as
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
     left join reactions on p.id = reactions.post_id
-  order by
-    p.created_at desc;
+  order by p.created_at desc;
 
 create or replace view posts_owner as
   select
@@ -316,8 +315,7 @@ create or replace view posts_owner as
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
     left join reactions on p.id = reactions.post_id
-  order by
-    p.created_at desc;
+  order by p.created_at desc;
 
 create or replace view game_posts_owner as
   select
@@ -840,7 +838,7 @@ begin
             'unread', (select coalesce(sum((contact->>'unread')::int), 0) from json_array_elements(c.contacts) as contact),
             'contacts', c.contacts,
             'accepted', c.accepted
-          ) order by c.name
+          ) order by lower(c.name)
         ) as characters
       from user_games ug
       join (
@@ -862,7 +860,7 @@ begin
                   where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = user_id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
-              ) order by other_c.name
+              ) order by lower(other_c.name)
             )
             from characters other_c
             where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
@@ -880,7 +878,7 @@ begin
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by c.name)
+      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by lower(c.name))
       as characters
       from characters c
       where c.player = user_id and c.game is null and c.state != 'deleted'
@@ -929,7 +927,7 @@ begin
          or p.id in (select id from active_users)
          or p.id in (select id from contacted_users)
       group by p.id
-      order by unread desc, active desc, p.name
+      order by unread desc, active desc, lower(p.name)
     )
     select json_agg(c) from combined_users c
   );
