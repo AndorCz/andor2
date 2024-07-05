@@ -3,6 +3,7 @@
   import { isFilledArray } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import { tooltip } from '@lib/tooltip'
 
   export let user = {}
@@ -13,7 +14,12 @@
   let listView = false
   let gameListStore
   let activeTab = 'open'
-  let sort = 'new'
+
+  let sortName = false
+  let sortCategory = false
+  let sortSystem = false
+  let sortCount = false
+  let sortOwner = false
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -26,9 +32,6 @@
     const databaseBrowser = await import('@lib/database-browser')
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
-
-    const sortParam = new URL(window.location).searchParams.get('sort')
-    if (sortParam) { sort = sortParam }
 
     const tabParam = new URL(window.location).searchParams.get('tab')
     if (tabParam) { activeTab = tabParam }
@@ -51,10 +54,12 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <div class='toggle mode'>
-        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
-      </div>
+      {#if $platform === 'desktop'}
+        <div class='toggle mode'>
+          <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+          <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
+        </div>
+      {/if}
       {#if user.id}
         <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
         <a href='./game/game-form' class='button mobile material'>add</a>
@@ -74,9 +79,9 @@
 {/if}
 
 {#if isFilledArray(games)}
-  {#if listView}
+  {#if listView && $platform === 'desktop'}
     <table class='list'>
-      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th class='owner'>vlastník</th></tr>
+      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr>
       {#each games as game}
         <tr class='gameLine'>
           <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
@@ -93,8 +98,12 @@
       {/each}
     </table>
   {:else}
-    <div class='sort'>
-      <th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th class='owner'>vlastník</th>
+    <div class='sortHeader'>
+      <button class='plain' class:active={sortName}><span class='material'>arrow_drop_down</span>název</button>
+      <button class='plain' class:active={sortCategory}><span class='material'>arrow_drop_down</span>kategorie</button>
+      <button class='plain' class:active={sortSystem}><span class='material'>arrow_drop_down</span>systém</button>
+      <button class='plain' class:active={sortCount}><span class='material'>arrow_drop_down</span>příspěvků</button>
+      <button class='plain' class:active={sortOwner}><span class='material'>arrow_drop_down</span>vlastník</button>
     </div>
     {#each games as game}
       <div class='block'>
@@ -166,6 +175,26 @@
   }
 
   /* blocks */
+
+  .sortHeader {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    padding-top: 10px;
+  }
+    .sortHeader button {
+      display: flex;
+      gap: 5px;
+      color: var(--dim);
+    }
+      .sortHeader button:hover {
+        color: var(--text);
+      }
+      .sortHeader button.active {
+        color: var(--text);
+        background-color: initial;
+        box-shadow: none;
+      }
 
   .block {
     background-color: var(--block);
