@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import { isFilledArray } from '@lib/utils'
+  import { isFilledArray, addURLParam } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import { tooltip } from '@lib/tooltip'
 
   export let user = {}
@@ -27,11 +28,11 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
 
-    const sortParam = new URL(window.location).searchParams.get('sort')
-    if (sortParam) { sort = sortParam }
-
     const tabParam = new URL(window.location).searchParams.get('tab')
     if (tabParam) { activeTab = tabParam }
+
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
 
     gameListStore = getSavedStore('boards', { listView: false })
     listView = $gameListStore.listView
@@ -39,16 +40,17 @@
 
   function activateTab (tab) {
     activeTab = tab
-    window.location.search = new URLSearchParams({ tab }).toString()
-  }
-
-  function setSort (type) {
-    sort = type
-    window.location.search = new URLSearchParams({ sort: type }).toString()
+    const newUrl = addURLParam('tab', tab, true)
+    window.location.href = newUrl
   }
 
   function setListView (val) {
     listView = $gameListStore.listView = val
+  }
+
+  function setSort (val) {
+    const newUrl = addURLParam('sort', val.target.value, true)
+    window.location.href = newUrl
   }
 </script>
 
@@ -56,14 +58,21 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <div class='toggle sort'>
-        <button on:click={() => { setSort('new') }} class:active={sort === 'new'}>Nové</button>
-        <button on:click={() => { setSort('active') }} class:active={sort === 'active'}>Aktivní</button>
-      </div>
-      <div class='toggle mode'>
-        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
-      </div>
+      <select bind:value={sort} on:change={setSort}>
+        <option value='new'>Nové</option>
+        <option value='active'>Aktivní</option>
+        <option value='name'>Název</option>
+        <option value='category'>Kategorie</option>
+        <option value='system'>Systém</option>
+        <option value='count'>Příspěvků</option>
+        <option value='owner'>Vlastník</option>
+      </select>
+      {#if $platform === 'desktop'}
+        <div class='toggle mode'>
+          <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+          <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
+        </div>
+      {/if}
       {#if user.id}
         <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
         <a href='./game/game-form' class='button mobile material'>add</a>
@@ -74,17 +83,18 @@
 
 {#if showTabs}
   <nav class='tabs secondary'>
-    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírají</button>
+    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírající</button>
     <button on:click={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
     <button on:click={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
     <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
+    <button on:click={() => { activateTab('all') }} class:active={activeTab === 'all'}>Vše</button>
   </nav>
 {/if}
 
 {#if isFilledArray(games)}
-  {#if listView}
+  {#if listView && $platform === 'desktop'}
     <table class='list'>
-      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th class='owner'>vlastník</th></tr>
+      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr>
       {#each games as game}
         <tr class='gameLine'>
           <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
@@ -143,6 +153,12 @@
     display: flex;
     gap: 20px;
   }
+    .buttons select {
+      width: fit-content;
+      padding: 10px;
+      padding-right: 35px;
+      font-size: 16px;
+    }
   .name a:first-letter {
     text-transform: uppercase;
   }
