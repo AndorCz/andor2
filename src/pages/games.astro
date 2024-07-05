@@ -7,8 +7,6 @@
   const tab = Astro.url.searchParams.get('tab') || 'open'
   const sort = Astro.url.searchParams.get('sort') || 'new'
 
-  console.log('fired', sort, tab)
-
   let query = supabase.from('game_list').select('*')
   switch (tab) {
     case 'open': query.match({ archived: false, published: true, recruitment_open: true }); break
@@ -19,6 +17,7 @@
   }
 
   switch (sort) {
+    case 'name': query.order('name'); break
     case 'new': query.order('created_at', { ascending: false }); break
     case 'active': query.not('last_post', 'is', null).order('last_post', { ascending: false }); break
     case 'category': query.order('category'); break
