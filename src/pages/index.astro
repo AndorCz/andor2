@@ -1,7 +1,8 @@
 ---
 	import Layout from '@layouts/layout.astro'
 	import Editorial from '@components/homepage/Editorial.svelte'
-	import NewsSection from '@components/homepage/NewsSection.svelte'
+	import News from '@components/homepage/News.svelte'
+	import NewsFeed from '@components/homepage/NewsFeed.svelte'
 
 	let editorialError, lastEditorial
 
@@ -21,9 +22,12 @@
 <Layout title='Hlavní strana'>
   {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
-		<NewsSection headline='Nové hry' table='game_list' slug='game' client:only='svelte' />
-		<NewsSection headline='Nové články' table='work_list' slug='work' client:only='svelte' />
-		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:only='svelte' />
+		<aside>
+			<News client:only='svelte' />
+		</aside>
+		<content>
+			<NewsFeed client:only='svelte' />
+		</content>
 	</main>
 </Layout>
 
@@ -32,10 +36,19 @@
 		display: flex;
 		gap: 20px;
 	}
-
-	@media (max-width: 800px) {
-    main {
-			flex-direction: column;
+		aside {
+			width: 40%;
 		}
+		content {
+			width: 60%;
+		}
+
+	@media (max-width: 500px) {
+    main {
+			display: block;
+		}
+			aside, content {
+				width: 100%;
+			}
   }
 </style>
