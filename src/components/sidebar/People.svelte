@@ -72,9 +72,9 @@
   {/if}
 {:else}
   {#if contactGroup.length}
-    <ul class='offline'>
+    <ul class='contacts'>
       {#each contactGroup as user}
-        <li>
+        <li class:offline={!user.active}>
           <button on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
               <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
@@ -125,7 +125,7 @@
     padding: 0px;
     margin: 0px;
   }
-    ul.offline {
+    li.offline {
       opacity: 0.5;
     }
     ul.unread {
