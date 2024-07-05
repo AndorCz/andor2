@@ -75,7 +75,7 @@
 
 <main>
   <h2>Poznámky</h2>
-  <EditableLong placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' {user} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
+  <EditableLong allowHtml placeholder='Poznámky a zápisky ke hře, záznamy o hraní, plány apod.' {user} bind:value={game.notes} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} />
 
   <h2>AI generování podkladů</h2>
   <div class='generate'>
