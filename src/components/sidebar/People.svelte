@@ -4,21 +4,20 @@
   export let users = []
   export let openConversation
 
-  let showOffline = false
+  let showContacts = false
 
   const unreadGroup = []
   const activeGroup = []
-  const offlineGroup = []
+  const contactGroup = []
 
   function updateGroups () {
     // group users by unread, friends, active
     users.forEach(user => {
       if (user.unread) {
         unreadGroup.push(user)
-      } else if (user.active) {
-        activeGroup.push(user)
       } else {
-        offlineGroup.push(user)
+        if (user.active) { activeGroup.push(user) }
+        if (user.contacted) { contactGroup.push(user) }
       }
     })
   }
@@ -47,11 +46,11 @@
 {/if}
 
 <h4 class='toggle'>
-  <button on:click={() => { showOffline = false }} class='secondary' class:active={!showOffline}>Online</button>
-  <button on:click={() => { showOffline = true }} class='secondary' class:active={showOffline}>Offline</button>
+  <button on:click={() => { showContacts = false }} class='secondary' class:active={!showContacts}>Online</button>
+  <button on:click={() => { showContacts = true }} class='secondary' class:active={showContacts}>Kontakty</button>
 </h4>
 
-{#if !showOffline}
+{#if !showContacts}
   {#if activeGroup.length}
     <ul class='active'>
       {#each activeGroup as user}
@@ -72,9 +71,9 @@
     <div class='empty'>Nikdo není online</div>
   {/if}
 {:else}
-  {#if offlineGroup.length}
+  {#if contactGroup.length}
     <ul class='offline'>
-      {#each offlineGroup as user}
+      {#each contactGroup as user}
         <li>
           <button on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}

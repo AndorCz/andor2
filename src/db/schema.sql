@@ -919,7 +919,7 @@ begin
     combined_users as (
       select p.id, p.name, p.portrait,
         (p.id in (select id from unread_users)) as has_unread,
-        (p.id in (select id from contacted_users) or p.id in (select id from active_users)) as contacted_or_active,
+        (p.id in (select id from contacted_users)) as contacted,
         (p.last_activity > (now() - interval '5 minutes')) as active,
         (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = auth.uid() and m.read = false and sender_character is null and recipient_character is null) as unread
       from profiles p
