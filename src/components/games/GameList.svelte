@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { isFilledArray } from '@lib/utils'
+  import { isFilledArray, addURLParam } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
   import { gameCategories, gameSystems } from '@lib/constants'
   import { platform } from '@components/common/MediaQuery.svelte'
@@ -14,12 +14,7 @@
   let listView = false
   let gameListStore
   let activeTab = 'open'
-
-  let sortName = false
-  let sortCategory = false
-  let sortSystem = false
-  let sortCount = false
-  let sortOwner = false
+  let sort = 'new'
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -36,17 +31,26 @@
     const tabParam = new URL(window.location).searchParams.get('tab')
     if (tabParam) { activeTab = tabParam }
 
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
+
     gameListStore = getSavedStore('boards', { listView: false })
     listView = $gameListStore.listView
   })
 
   function activateTab (tab) {
     activeTab = tab
-    window.location.search = new URLSearchParams({ tab }).toString()
+    const newUrl = addURLParam('tab', tab, true)
+    window.location.href = newUrl
   }
 
   function setListView (val) {
     listView = $gameListStore.listView = val
+  }
+
+  function setSort (val) {
+    const newUrl = addURLParam('sort', val.target.value, true)
+    window.location.href = newUrl
   }
 </script>
 
@@ -54,6 +58,15 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
+      <select bind:value={sort} on:change={setSort}>
+        <option value='new'>Nové</option>
+        <option value='active'>Aktivní</option>
+        <option value='name'>Název</option>
+        <option value='category'>Kategorie</option>
+        <option value='system'>Systém</option>
+        <option value='count'>Příspěvků</option>
+        <option value='owner'>Vlastník</option>
+      </select>
       {#if $platform === 'desktop'}
         <div class='toggle mode'>
           <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
@@ -98,13 +111,6 @@
       {/each}
     </table>
   {:else}
-    <div class='sortHeader'>
-      <button class='plain' class:active={sortName}><span class='material'>arrow_drop_down</span>název</button>
-      <button class='plain' class:active={sortCategory}><span class='material'>arrow_drop_down</span>kategorie</button>
-      <button class='plain' class:active={sortSystem}><span class='material'>arrow_drop_down</span>systém</button>
-      <button class='plain' class:active={sortCount}><span class='material'>arrow_drop_down</span>příspěvků</button>
-      <button class='plain' class:active={sortOwner}><span class='material'>arrow_drop_down</span>vlastník</button>
-    </div>
     {#each games as game}
       <div class='block'>
         {#if game.custom_header}
@@ -147,6 +153,12 @@
     display: flex;
     gap: 20px;
   }
+    .buttons select {
+      width: fit-content;
+      padding: 10px;
+      padding-right: 35px;
+      font-size: 16px;
+    }
   .name a:first-letter {
     text-transform: uppercase;
   }
@@ -175,26 +187,6 @@
   }
 
   /* blocks */
-
-  .sortHeader {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    padding-top: 10px;
-  }
-    .sortHeader button {
-      display: flex;
-      gap: 5px;
-      color: var(--dim);
-    }
-      .sortHeader button:hover {
-        color: var(--text);
-      }
-      .sortHeader button.active {
-        color: var(--text);
-        background-color: initial;
-        box-shadow: none;
-      }
 
   .block {
     background-color: var(--block);

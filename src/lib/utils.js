@@ -143,21 +143,24 @@ export function createSlug (name) {
 }
 
 export function addURLParam (param, value) {
-  const urlParams = new URLSearchParams(window.location.search)
-  urlParams.set(param, value)
-  window.history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`)
+  const url = new URL(window.location)
+  url.searchParams.set(param, value)
+  window.history.pushState({}, '', `${window.location.pathname}?${url.searchParams.toString()}`)
+  return url.toString()
+}
+
+export function updateURLParam (key, value, replace = false) {
+  const url = new URL(window.location)
+  url.searchParams.set(key, value)
+  replace ? window.history.replaceState({}, '', url) : window.history.pushState({}, '', url)
+  return url.toString()
 }
 
 export function removeURLParam (param) {
-  const urlParams = new URLSearchParams(window.location.search)
-  urlParams.delete(param)
-  window.history.replaceState({}, '', `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`)
-}
-
-export function updateURLParam (key, value) {
   const url = new URL(window.location)
-  url.searchParams.set(key, value)
-  window.history.pushState({}, '', url)
+  url.searchParams.delete(param)
+  window.history.replaceState({}, '', `${window.location.pathname}${removeURLParam.toString() ? '?' + removeURLParam.toString() : ''}`)
+  return url.toString()
 }
 
 export function redirectWithToast ({ url, toastType, toastText }) {

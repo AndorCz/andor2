@@ -7,32 +7,24 @@
   const tab = Astro.url.searchParams.get('tab') || 'open'
   const sort = Astro.url.searchParams.get('sort') || 'new'
 
+  console.log('fired', sort, tab)
+
   let query = supabase.from('game_list').select('*')
   switch (tab) {
-    case 'open':
-      query.match({ archived: false, published: true, recruitment_open: true })
-      break
-    case 'public':
-      query.match({ archived: false, published: true, open_game: true })
-      break
-    case 'private':
-      query.match({ archived: false, published: true, open_game: false })
-      break
-    case 'archive':
-      query.match({ archived: true, published: true })
-      break
-    case 'all':
-      query.match({ published: true })
-      break
+    case 'open': query.match({ archived: false, published: true, recruitment_open: true }); break
+    case 'public': query.match({ archived: false, published: true, open_game: true }); break
+    case 'private': query.match({ archived: false, published: true, open_game: false }); break
+    case 'archive': query.match({ archived: true, published: true }); break
+    case 'all': query.match({ published: true }); break
   }
 
   switch (sort) {
-    case 'new':
-      query.order('created_at', { ascending: false })
-      break
-    case 'active':
-      query.not('last_post', 'is', null).order('last_post', { ascending: false })
-      break
+    case 'new': query.order('created_at', { ascending: false }); break
+    case 'active': query.not('last_post', 'is', null).order('last_post', { ascending: false }); break
+    case 'category': query.order('category'); break
+    case 'system': query.order('system'); break
+    case 'count': query.order('post_count', { ascending: false }); break
+    case 'owner': query.order('owner_name'); break
   }
 
   const { data: games, error } = await query
