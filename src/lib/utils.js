@@ -160,7 +160,6 @@ export function removeURLParam (param) {
   const url = new URL(window.location)
   url.searchParams.delete(param)
   window.history.replaceState({}, '', `${window.location.pathname}${removeURLParam.toString() ? '?' + removeURLParam.toString() : ''}`)
-  return url.toString()
 }
 
 export function redirectWithToast ({ url, toastType, toastText }) {
