@@ -87,6 +87,10 @@ create policy "ALL for works for Sargo and Hitomi" on public.works for all to au
 
 -- GENERAL --------------------------------------------
 
+-- News --
+
+alter table public.news enable row level security;
+create policy "READ for everyone" on public.news for select to public using (true);
 
 -- Threads --
 
@@ -168,6 +172,7 @@ create policy "UPDATE posts for game owner" on "public"."old_posts" as PERMISSIV
 alter table public.old_works enable row level security;
 create policy "READ for migrated work author" on "public"."old_works" as PERMISSIVE for SELECT to authenticated using (owner = (SELECT old_id FROM profiles WHERE id = auth.uid()));
 create policy "UPDATE for migrated work author" on "public"."old_works" as PERMISSIVE for UPDATE to authenticated using (owner = (SELECT old_id FROM profiles WHERE id = auth.uid()));
+
 -- STORAGE --------------------------------------------
 
 -- Headers

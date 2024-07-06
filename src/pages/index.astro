@@ -1,19 +1,21 @@
 ---
 	import Layout from '@layouts/layout.astro'
 	import Editorial from '@components/homepage/Editorial.svelte'
-	import News from '@components/homepage/News.svelte'
+	import Latest from '@components/homepage/Latest.svelte'
 	import NewsFeed from '@components/homepage/NewsFeed.svelte'
 
-	let editorialError, lastEditorial
+	let editorialError, lastEditorial, news
 
 	try {
 		const { supabase, user } = Astro.locals
+
 		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
 
-		// const { data: lastPosts, error: error2 } = await supabase.from('last_posts').select('*').limit(10)
-		// if (error2) { console.error('error loading last posts', error2) }
+		const res2 = await supabase.from('news').select('*').eq('published', true).order('created_at', { ascending: false }).limit(14)
+		if (res2.error) { throw res2.error }
+		news = res2.data
 	} catch (error) {
 		editorialError = 'Chyba načtení editorialu: ' + error.message
 	}
@@ -23,10 +25,10 @@
   {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
 		<aside>
-			<News client:only='svelte' />
+			<Latest client:only='svelte' />
 		</aside>
 		<content>
-			<NewsFeed client:only='svelte' />
+			<NewsFeed {news} client:only='svelte' />
 		</content>
 	</main>
 </Layout>
@@ -37,10 +39,10 @@
 		gap: 20px;
 	}
 		aside {
-			width: 40%;
+			width: 20%;
 		}
 		content {
-			width: 60%;
+			width: 80%;
 		}
 
 	@media (max-width: 500px) {
