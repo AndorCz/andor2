@@ -104,7 +104,7 @@
             <div class='tags' title='tagy'>{getTags(work.tags)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
-              {work.owner_name}
+              <span>{work.owner_name}</span>
               {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
             </a>
           </div>

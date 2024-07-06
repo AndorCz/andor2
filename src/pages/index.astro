@@ -13,7 +13,7 @@
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
 
-		const res2 = await supabase.from('news').select('*').eq('published', true).order('created_at', { ascending: false }).limit(14)
+		const res2 = await supabase.from('news').select('id, title, content_type, content_id, image_url, subheadline, content, published, owner(id, name, portrait), character, character_name, button_text, url, created_at').eq('published', true).order('created_at', { ascending: false }).limit(14)
 		if (res2.error) { throw res2.error }
 		news = res2.data
 	} catch (error) {
@@ -47,7 +47,7 @@
 
 	@media (max-width: 500px) {
     main {
-			display: block;
+			flex-direction: column-reverse;
 		}
 			aside, content {
 				width: 100%;
