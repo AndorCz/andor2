@@ -1,18 +1,21 @@
 ---
 	import Layout from '@layouts/layout.astro'
 	import Editorial from '@components/homepage/Editorial.svelte'
-	import NewsSection from '@components/homepage/NewsSection.svelte'
+	import Latest from '@components/homepage/Latest.svelte'
+	import NewsFeed from '@components/homepage/NewsFeed.svelte'
 
-	let editorialError, lastEditorial
+	let editorialError, lastEditorial, news
 
 	try {
 		const { supabase, user } = Astro.locals
+
 		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
 
-		// const { data: lastPosts, error: error2 } = await supabase.from('last_posts').select('*').limit(10)
-		// if (error2) { console.error('error loading last posts', error2) }
+		const res2 = await supabase.from('news').select('id, title, content_type, content_id, image_url, subheadline, content, published, owner(id, name, portrait), character, character_name, button_text, url, created_at').eq('published', true).order('created_at', { ascending: false }).limit(14)
+		if (res2.error) { throw res2.error }
+		news = res2.data
 	} catch (error) {
 		editorialError = 'Chyba načtení editorialu: ' + error.message
 	}
@@ -21,9 +24,12 @@
 <Layout title='Hlavní strana'>
   {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
-		<NewsSection headline='Nové hry' table='game_list' slug='game' client:only='svelte' />
-		<NewsSection headline='Nové články' table='work_list' slug='work' client:only='svelte' />
-		<NewsSection headline='Nové diskuze' table='board_list' slug='board' client:only='svelte' />
+		<aside>
+			<Latest client:only='svelte' />
+		</aside>
+		<content>
+			<NewsFeed {news} client:only='svelte' />
+		</content>
 	</main>
 </Layout>
 
@@ -32,10 +38,19 @@
 		display: flex;
 		gap: 20px;
 	}
-
-	@media (max-width: 800px) {
-    main {
-			flex-direction: column;
+		aside {
+			width: 20%;
 		}
+		content {
+			width: 80%;
+		}
+
+	@media (max-width: 500px) {
+    main {
+			flex-direction: column-reverse;
+		}
+			aside, content {
+				width: 100%;
+			}
   }
 </style>

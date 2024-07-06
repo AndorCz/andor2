@@ -64,7 +64,7 @@
   }
 
   function updateHeight () {
-    if (pathname !== '/chat') {
+    if (pathname !== '/chat' && sectionEl) {
       heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
       if (heightOverflow > 0) {
         addDynamicScroll()

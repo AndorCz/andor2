@@ -14,7 +14,7 @@
   let listView = false
   let gameListStore
   let activeTab = 'open'
-  let sort = 'new'
+  let sortSelectEl
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -32,7 +32,7 @@
     if (tabParam) { activeTab = tabParam }
 
     const sortParam = new URL(window.location).searchParams.get('sort')
-    if (sortParam) { sort = sortParam }
+    if (sortParam) { sortSelectEl.value = sortParam } // using direct value setting to avoid issue with bind on SSR
 
     gameListStore = getSavedStore('boards', { listView: false })
     listView = $gameListStore.listView
@@ -48,8 +48,8 @@
     listView = $gameListStore.listView = val
   }
 
-  function setSort (val) {
-    const newUrl = addURLParam('sort', val.target.value, true)
+  function setSort (e) {
+    const newUrl = addURLParam('sort', e.target.value, true)
     window.location.href = newUrl
   }
 </script>
@@ -58,7 +58,7 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <select bind:value={sort} on:change={setSort}>
+      <select on:change={setSort} bind:this={sortSelectEl}>
         <option value='new'>Nové</option>
         <option value='active'>Aktivní</option>
         <option value='name'>Název</option>
@@ -103,7 +103,7 @@
           <td><div class='count'>{game.post_count}</div></td>
           <td>
             <a href='./user?id={game.owner_id}' class='user owner'>
-              {game.owner_name}
+              <span>{game.owner_name}</span>
               {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
             </a>
           </td>

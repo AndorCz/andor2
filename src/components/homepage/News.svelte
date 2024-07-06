@@ -90,11 +90,6 @@
     flex-direction: column;
     gap: 20px;
   }
-    /*
-    .item {
-      box-shadow: 2px 2px 3px #0002;
-    }
-    */
     .item img {
       max-width: 100%;
       display: block;
@@ -102,7 +97,6 @@
       object-fit: cover;
     }
     main {
-      background-color: var(--block);
       padding: 20px;
     }
       .item a {

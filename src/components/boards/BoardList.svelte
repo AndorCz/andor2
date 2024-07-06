@@ -77,7 +77,7 @@
             <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
             {#if ![1, 2, 3].includes(board.id)}
               <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
-                {board.owner_name}
+                <span>{board.owner_name}</span>
                 {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
               </a>
             {/if}
