@@ -164,6 +164,7 @@
       }
         .unread {
           color: var(--new);
+          white-space: nowrap;
         }
         li.active a {
           color: var(--text);
