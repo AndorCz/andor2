@@ -4,6 +4,7 @@
   import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'
+  import { getPortraitUrl } from '@lib/database-browser'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSection from '@components/games/codex/CodexSection.svelte'
 
@@ -105,7 +106,13 @@
         <EditableLong {user} bind:value={indexPageContent} placeholder='Úvodní stránka kodexu. Informace pro hráče o pravidlech, světě, postavách, příběhu apod. Více sekcí a stránek lze přidat v nastavení.' onSave={updateIndex} canEdit={isStoryteller} {mentionList} allowHtml />
       {/await}
       <br><br>
-      Správce hry: {game.owner.name}
+      <div class='row details'>
+        <span>Správce hry:</span>
+        <a href='./user?id={game.owner.id}' class='user owner'>
+          <span>{game.owner.name}</span>
+          {#if game.owner.portrait}<img src={getPortraitUrl(game.owner.id, game.owner.portrait)} class='icon' alt={game.owner.name} />{/if}
+        </a>
+      </div>
     {:else if activeSection.slug === 'search'}
       <!-- search -->
       <div class='searchBox'>
@@ -181,6 +188,25 @@
     gap: 10px;
     justify-content: center;
   }
+
+  .details {
+    gap: 20px;
+  }
+  .owner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+    .icon {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background-color: var(--background);
+    }
 
   @media (max-width: 1000px) {
     main {

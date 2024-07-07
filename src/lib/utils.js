@@ -157,9 +157,9 @@ export function updateURLParam (key, value, replace = false) {
 }
 
 export function removeURLParam (param) {
-  const url = new URL(window.location)
-  url.searchParams.delete(param)
-  window.history.replaceState({}, '', `${window.location.pathname}${removeURLParam.toString() ? '?' + removeURLParam.toString() : ''}`)
+  const urlParams = new URLSearchParams(window.location.search)
+  urlParams.delete(param)
+  window.history.replaceState({}, '', `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`)
 }
 
 export function redirectWithToast ({ url, toastType, toastText }) {
