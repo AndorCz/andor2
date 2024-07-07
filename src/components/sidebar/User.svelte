@@ -21,7 +21,7 @@
 </script>
 
 <div id='user'>
-  <PortraitInput {onPortraitChange} identity={user} table='profiles' displayWidth={70} displayHeight={100} /><br>
+  <PortraitInput {onPortraitChange} identity={user} showDelete={false} table='profiles' displayWidth={70} displayHeight={100} /><br>
   <div id='details'>
     <div id='nameRow'>
       <a href={'/user?id=' + user.id} id='name' class='user'>{user.name || user.email}</a>

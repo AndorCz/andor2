@@ -13,6 +13,7 @@
   export let displayHeight = 140
   export let saveWidth = 140
   export let saveMinHeight = 140
+  export let showDelete = true
 
   let files
   let fileInputEl
@@ -78,7 +79,7 @@
     {/if}
     <input type='file' accept='image/*' bind:this={fileInputEl} bind:files on:change={processPortrait} disabled={uploading} />
   </label>
-  {#if identity.portrait}
+  {#if identity.portrait && showDelete}
     <button class='clear material clean' on:click={clearPortrait} title='Smazat' use:tooltip>delete</button>
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
