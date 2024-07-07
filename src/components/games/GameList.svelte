@@ -14,7 +14,7 @@
   let listView = false
   let gameListStore
   let activeTab = 'open'
-  let sortSelectEl
+  let sort = 'new'
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -32,7 +32,7 @@
     if (tabParam) { activeTab = tabParam }
 
     const sortParam = new URL(window.location).searchParams.get('sort')
-    if (sortParam) { sortSelectEl.value = sortParam } // using direct value setting to avoid issue with bind on SSR
+    if (sortParam) { sort = sortParam }
 
     gameListStore = getSavedStore('boards', { listView: false })
     listView = $gameListStore.listView
@@ -58,7 +58,7 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <select on:change={setSort} bind:this={sortSelectEl}>
+      <select bind:value={sort} on:change={setSort}>
         <option value='new'>Nové</option>
         <option value='active'>Aktivní</option>
         <option value='name'>Název</option>
