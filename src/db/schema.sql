@@ -51,7 +51,7 @@ create table profiles (
   last_activity timestamp with time zone,
   old_id int4,
   autorefresh boolean default false,
-  editor_bubble boolean default true,
+  editor_bubble boolean default false,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 

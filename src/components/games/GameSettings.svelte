@@ -174,7 +174,7 @@
 
       <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
       <div class='row'>
-        <TextareaExpandable forceBubble bind:this={welcomeMessageRef} {user} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
+        <TextareaExpandable bind:this={welcomeMessageRef} {user} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
         <button on:click={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
 

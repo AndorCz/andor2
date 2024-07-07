@@ -9,7 +9,6 @@
   import { Mention } from '@lib/editor/mention'
   import { CustomImage } from '@lib/editor/image'
   import { CustomColor } from '@lib/editor/color'
-  // import { Color } from '@tiptap/extension-color'
   import { Reply } from '@lib/editor/reply'
   import { CustomHeading } from '@lib/editor/heading'
   import { CustomTextAlign } from '@lib/editor/alignment'
