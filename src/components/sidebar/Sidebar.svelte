@@ -92,30 +92,32 @@
   }
 
   function dynamicScroll () {
-    sectionTop = window.pageYOffset + sectionEl.getBoundingClientRect().top
-    scrollDelta = window.pageYOffset - lastScrollOffset
+    if (sectionEl) {
+      sectionTop = window.pageYOffset + sectionEl.getBoundingClientRect().top
+      scrollDelta = window.pageYOffset - lastScrollOffset
 
-    if (scrollDelta > 0) { // Scrolling down
-      // Clear stickTop
-      if (stickTop) {
-        stickTop = false
-        sectionEl.style.top = sectionTop + 'px'
-      } else if (window.pageYOffset > sectionTop + heightOverflow) {
-        sectionEl.style.top = 'initial'
-        stickBottom = true
+      if (scrollDelta > 0) { // Scrolling down
+        // Clear stickTop
+        if (stickTop) {
+          stickTop = false
+          sectionEl.style.top = sectionTop + 'px'
+        } else if (window.pageYOffset > sectionTop + heightOverflow) {
+          sectionEl.style.top = 'initial'
+          stickBottom = true
+        }
       }
-    }
-    if (scrollDelta < 0) { // Scrolling up
-      // Clear stickBottom
-      if (stickBottom) {
-        stickBottom = false
-        sectionEl.style.top = window.pageYOffset - heightOverflow + 'px'
-      } else if (window.pageYOffset < sectionTop) {
-        sectionEl.style.top = 0
-        stickTop = true
+      if (scrollDelta < 0) { // Scrolling up
+        // Clear stickBottom
+        if (stickBottom) {
+          stickBottom = false
+          sectionEl.style.top = window.pageYOffset - heightOverflow + 'px'
+        } else if (window.pageYOffset < sectionTop) {
+          sectionEl.style.top = 0
+          stickTop = true
+        }
       }
+      lastScrollOffset = window.pageYOffset
     }
-    lastScrollOffset = window.pageYOffset
   }
 
   function activate (panel) {
