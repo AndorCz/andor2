@@ -79,7 +79,7 @@
     <input type='file' accept='image/*' bind:this={fileInputEl} bind:files on:change={processPortrait} disabled={uploading} />
   </label>
   {#if identity.portrait}
-    <button class='clear material clean' on:click={clearPortrait} title='Smazat' use:tooltip>close</button>
+    <button class='clear material clean' on:click={clearPortrait} title='Smazat' use:tooltip>delete</button>
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
 </div>
