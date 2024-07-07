@@ -90,8 +90,8 @@
     {#if item.image_url}
       <img class='image' src={item.image_url} alt='Upoutávka' />
     {/if}
-    {#if subHeadline[item.content_type] || item.subheadline}
-      <h4 class='subheadline'>{subHeadline[item.content_type] || item.subheadline}</h4>
+    {#if item.subheadline || subHeadline[item.content_type]}
+      <h4 class='subheadline'>{item.subheadline || subHeadline[item.content_type]}</h4>
     {/if}
     {#if item.content_id}
       <a href={path[item.content_type] + item.content_id}><h2 class='headline'>{item.title}</h2></a>
