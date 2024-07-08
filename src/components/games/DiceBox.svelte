@@ -303,4 +303,16 @@
       display: none;
     }
   }
+
+  @media (max-width: 600px) {
+    .tools {
+      gap: 5px;
+    }
+    .addLarge {
+      font-size: 1.5rem;
+      height: 50px;
+      width: 50px;
+      top: -50px;
+    }
+  }
 </style>
