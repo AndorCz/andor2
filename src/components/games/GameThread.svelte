@@ -35,7 +35,7 @@
 
   const activeAudienceIds = writable()
   const posts = writable([])
-  const limit = 50
+  const limit = unread ? Math.min(unread, 500) : 50
   const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
   const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
   let otherCharacters = []
@@ -113,6 +113,7 @@
       response = await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     }
     if (!response.error) {
+      page = 0
       textareaValue = ''
       $gameStore.unsent = ''
       await loadPosts()

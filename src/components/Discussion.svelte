@@ -20,7 +20,7 @@
   export let useIdentities = false
 
   const posts = writable([])
-  const limit = 50
+  const limit = unread ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
