@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
+  import { showSuccess } from '@lib/toasts'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import { resizeImage, getImageUrl } from '@lib/utils'
   import { Editor, mergeAttributes } from '@tiptap/core'
@@ -22,6 +23,7 @@
   import Underline from '@tiptap/extension-underline'
   import Colors from '@components/common/Colors.svelte'
   import Dropdown from '@components/common/Dropdown.svelte'
+  import DropdownSlot from '@components/common/DropdownSlot.svelte'
   import Youtube from '@tiptap/extension-youtube'
 
   export let user
@@ -187,6 +189,7 @@
             const html = event.clipboardData.getData('text/html')
             editor.commands.insertContent(html)
             event.preventDefault()
+            showSuccess('Vložen obsah s formátovám dle zdrojové stránky. Pro čistý text použij ctrl/cmd + shift + v')
             return true
           }
           // parse plain text format (possibly with HTML content)
@@ -271,25 +274,24 @@
     }
   }
 
-  /*
-  function addImage () {
-    const url = window.prompt('Veřejná cesta k obrázku:')
-    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
-      editor.chain().focus().setImage({ src: url }).run()
-    } else {
-      return window.alert('Obrázek musí být veřejně dostupný')
-    }
-  }
-  */
-
-  async function addImage () {
-    const fileInputEl = document.getElementById('addImage')
+  async function addImageStored () {
+    console.log('FIRED')
+    const fileInputEl = document.getElementById('addImageStored')
     const file = fileInputEl.files[0]
     if (file) {
       const { data, img } = await uploadImage(file)
       editor.chain().focus().setImage({ src: getImageUrl(supabase, data.path, 'posts'), width: img.width, height: img.height }).run()
     }
     fileInputEl.value = ''
+  }
+
+  function addImageUrl () {
+    const url = window.prompt('Veřejná cesta k obrázku:')
+    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+      editor.chain().focus().setImage({ src: url }).run()
+    } else {
+      return window.alert('Obrázek musí být veřejně dostupný')
+    }
   }
 
   export function addReply (postId, name, user) {
@@ -346,6 +348,11 @@
     <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
     <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
     <span class='sep'></span>
+    <DropdownSlot title='Obrázek' defaultLabel='image' left={200}>
+      <label class='button text' for='addImageStored'>Nahrát z počítače</label>
+      <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
+      <button on:click={addImageUrl} class='text'>Cesta z internetu</button>
+    </DropdownSlot>
     <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
     <span class='sep'></span>
     <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color || '#c4b6ab'} title='Barva' />
@@ -374,8 +381,6 @@
   <div class='clear'></div>
   {#if wasFocused}
     <div class='toolbelt'>
-      <label for='addImage' class='material button' title='Obrázek'>image</label>
-      <input on:change={addImage} accept='image/*' type='file' id='addImage'>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
     </div>
@@ -420,24 +425,14 @@
     display: flex;
     align-items: center;
   }
-    /*
-    .bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -12px;
-      left: 50%;
-      width: 12px;
-      height: 12px;
-      transform: translate(-50%, -50%) rotate(45deg);
-      background-color: color-mix(in srgb, var(--panel), #FFF 5%);
-      box-shadow: 2px 2px 2px #0003;
-    }
-    */
-    .bubble button, .bubble span, .menu button, .menu span {
+    .bubble button, .bubble span, .menu button, .menu .button, .menu span, .bubble .button {
       margin: 3px;
     }
     .bubble button, .toolbelt button, .menu button {
       padding: 5px;
+    }
+    button.text, label.text {
+      padding: 10px;
     }
   .toolbelt {
     position: absolute;
@@ -446,7 +441,7 @@
     display: flex;
     gap: 10px;
   }
-  #addImage {
+  #addImageStored {
     display: none;
   }
 

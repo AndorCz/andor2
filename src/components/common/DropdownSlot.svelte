@@ -4,41 +4,46 @@
   export let defaultLabel
   export let title
   export let openUp = false
+  export let width = 200
 
   let isOpen = false
+  let openerEl
   let dropdownEl
+  let left = 0
 
   onMount(() => { document.addEventListener('click', handleClickOutside) })
   onDestroy(() => { document.removeEventListener('click', handleClickOutside) })
 
   function handleClickOutside (event) {
-    if (dropdownEl && !dropdownEl.contains(event.target)) { isOpen = false }
+    if (openerEl && !openerEl.contains(event.target)) {
+      setTimeout(() => { isOpen = false }, 10) // give time for the click event to propagate
+    }
   }
 
-  function toggleDropdown () { isOpen = !isOpen }
+  function toggleDropdown (e) {
+    const rect = e.target.getBoundingClientRect()
+    left = rect.left - (rect.width / 2) - width / 2
+    isOpen = !isOpen
+  }
 </script>
 
-<span class='dropdown' bind:this={dropdownEl} class:openUp>
-  <button type='button' class='dropdown-toggle material' on:click={toggleDropdown} aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
-    {defaultLabel}
-  </button>
-  {#if isOpen}
-    <div class='options'>
-      <slot />
-    </div>
-  {/if}
-</span>
+<button type='button' bind:this={openerEl} on:click={toggleDropdown} class='dropdown-toggle material' aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
+  {defaultLabel}
+</button>
+{#if isOpen}
+  <div class='options' bind:this={dropdownEl} class:openUp style='left: {left}px; top: {top}px'>
+    <slot />
+  </div>
+{/if}
 
 <style>
-  .dropdown {
-    position: relative;
-  }
   button {
     padding: 5px;
+    margin: 3px;
   }
   .options {
     position: absolute;
-    left: -50%;
+    top: 40px;
     z-index: 10;
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;
@@ -46,9 +51,9 @@
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
   }
-  .openUp .options {
+  .openUp {
     bottom: 40px;
   }
 </style>
