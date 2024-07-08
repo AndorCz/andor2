@@ -109,6 +109,7 @@
       response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     }
     if (!response.error) {
+      page = 0
       textareaValue = ''
       $discussionStore.unsent = ''
       await loadPosts()
