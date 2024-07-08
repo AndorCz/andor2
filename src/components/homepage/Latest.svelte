@@ -2,13 +2,13 @@
   import { supabase, handleError } from '@lib/database-browser'
 
   async function loadData () {
-    const { data: games, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(3)
+    const { data: games, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(5)
     if (gameError) { handleError(gameError) }
 
-    const { data: works, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(3)
+    const { data: works, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(5)
     if (workError) { handleError(workError) }
 
-    const { data: boards, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(3)
+    const { data: boards, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(5)
     if (boardError) { handleError(boardError) }
 
     return { games, works, boards }
@@ -18,7 +18,7 @@
 {#await loadData() then last}
   <div id='latest'>
     <div class='group'>
-      <h4>Hry</h4>
+      <a href='/games' class='headline'><h4>Nové hry</h4></a>
       {#each last.games as game}
         <div class='item'>
           <main>
@@ -30,7 +30,7 @@
       {/each}
     </div>
     <div class='group'>
-      <h4>Tvorba</h4>
+      <a href='/works' class='headline'><h4>Nová tvorba</h4></a>
       {#each last.works as work}
         <div class='item'>
           <main>
@@ -42,7 +42,7 @@
       {/each}
     </div>
     <div class='group'>
-      <h4>Diskuze</h4>
+      <a href='/boards' class='headline'><h4>Nové diskuze</h4></a>
       {#each last.boards as board}
         <div class='item'>
           <main>
@@ -62,6 +62,12 @@
     flex-direction: column;
     gap: 20px;
   }
+    .headline {
+      color: var(--text);
+    }
+      .headline:hover {
+        color: var(--maximum);
+      }
     h4 {
       margin: 0px;
       margin-bottom: 10px;
