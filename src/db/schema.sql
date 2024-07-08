@@ -28,6 +28,14 @@ drop view if exists work_list;
 drop view if exists last_posts;
 drop view if exists game_messages;
 
+-- EXTENSIONS --------------------------------------------
+
+
+create extension if not exists pg_cron;
+select cron.schedule('trim-chat', '0 5 * * *', $$select delete_old_chat_posts()$$);
+
+create extension if not exists citext;
+
 
 -- ENUMS --------------------------------------------
 
@@ -45,7 +53,7 @@ create type work_category as enum ('prose', 'poetry', 'game', 'other');
 
 create table profiles (
   id uuid not null primary key,
-  name text unique not null,
+  name citext unique not null,
   portrait text,
   created_at timestamp with time zone default current_timestamp,
   last_activity timestamp with time zone,
@@ -1245,13 +1253,6 @@ create trigger notify after insert on public.posts for each row
 execute function supabase_functions.http_request (
   'https://zwclrcefxleqmzhhfcte.supabase.co/functions/v1/notify', 'POST', '{ "Content-Type":"application/json" }', '{}', '1000'
 );
-
-
--- CRON --------------------------------------------
-
-
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-SELECT cron.schedule('trim-chat', '0 5 * * *', $$SELECT delete_old_chat_posts()$$);
 
 
 -- STORAGE  --------------------------------------------

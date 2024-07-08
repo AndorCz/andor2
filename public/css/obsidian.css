@@ -571,6 +571,12 @@ select {
   min-height: 30px;
   line-height: 130%;
 }
+.post .content ol, .post .content ul {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  padding-left: 20px;
+}
 .post .content img, .post .content iframe {
   max-width: 100%;
   object-fit: contain;

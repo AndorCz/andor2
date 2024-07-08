@@ -67,6 +67,7 @@
     if (allowHtml) {
       editorRef.getEditor().commands.setContent(content)
       originalValue = await tiptap.getHTML()
+      onChange()
     }
   }
 
