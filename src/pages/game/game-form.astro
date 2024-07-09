@@ -12,10 +12,11 @@
     const category = formData.get('gameCategory')
     const annotation = formData.get('gameAnnotation')
 
-    const openai = getOpenAI(Astro.locals.runtime.env)
-    const openAiThread = await createThread(openai)
-    const openAiStoryteller = await getStoryteller(system)
-    const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation, openai_thread: openAiThread, openai_storyteller: openAiStoryteller }).select().single()
+    // const openai = getOpenAI(Astro.locals.runtime.env)
+    // const openAiThread = await createThread(openai)
+    // const openAiStoryteller = await getStoryteller(system)
+    // openai_thread: openAiThread, openai_storyteller: openAiStoryteller
+    const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // add bookmark
