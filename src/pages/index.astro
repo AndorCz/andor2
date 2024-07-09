@@ -13,7 +13,11 @@
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
 
-		const res2 = await supabase.from('news').select('id, title, content_type, content_id, image_url, subheadline, content, published, owner(id, name, portrait), character, character_name, button_text, url, created_at').eq('published', true).order('created_at', { ascending: false }).limit(14)
+		// preview unpublished news
+		let publishedOnly = true
+		const preview = Astro.url.searchParams.get('preview')
+		if (preview) { publishedOnly = false }
+		const res2 = await supabase.from('news').select('id, title, content_type, content_id, image_url, subheadline, content, published, owner(id, name, portrait), character, character_name, button_text, url, created_at').eq('published', publishedOnly).order('created_at', { ascending: false }).limit(14)
 		if (res2.error) { throw res2.error }
 		news = res2.data
 	} catch (error) {
