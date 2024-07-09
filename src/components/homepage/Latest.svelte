@@ -34,23 +34,25 @@
 
 {#await loadData() then last}
   <div id='latest'>
-    <div class='group'>
-      <div class='row'>
-        <select bind:value={$userStore.hpGameSort} on:change={onGameSortChange}>
-          <option value='latestGames'>Nové hry</option>
-          <option value='activeGames'>Aktivní hry</option>
-        </select>
-      </div>
-      {#each last.games as game}
-        <div class='item'>
-          <main>
-            <a href={`/game/${game.id}`}>
-              <h3>{game.name}</h3>
-            </a>
-          </main>
+    {#key $userStore.hpGameSort}
+      <div class='group'>
+        <div class='row'>
+          <select bind:value={$userStore.hpGameSort} on:change={onGameSortChange}>
+            <option value='latestGames'>Nové hry</option>
+            <option value='activeGames'>Aktivní hry</option>
+          </select>
         </div>
-      {/each}
-    </div>
+        {#each last.games as game}
+          <div class='item'>
+            <main>
+              <a href={`/game/${game.id}`}>
+                <h3>{game.name}</h3>
+              </a>
+            </main>
+          </div>
+        {/each}
+      </div>
+    {/key}
     <div class='group'>
       <a href='/works' class='headline'><h4>Nová tvorba</h4></a>
       {#each last.works as work}

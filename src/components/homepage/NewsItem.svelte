@@ -77,7 +77,7 @@
         </div>
         <div class='row details'>
           {#if item.content_type === 'post' && item.url}
-          <a href={item.url} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
+            <a href={item.url} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {:else if item.content_id}
             <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {/if}
