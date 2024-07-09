@@ -76,7 +76,11 @@
           {/if}
         </div>
         <div class='row details'>
-          <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
+          {#if item.content_type === 'post' && item.url}
+          <a href={item.url} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
+          {:else if item.content_id}
+            <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
+          {/if}
           {#if item.owner}
             <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
               <span>{item.owner.name}</span>
