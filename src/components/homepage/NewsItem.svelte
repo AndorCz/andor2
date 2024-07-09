@@ -39,7 +39,9 @@
     {#if subHeadline[item.content_type] || item.subheadline}
       <h4 class='subheadline'>{subHeadline[item.content_type] || item.subheadline}</h4>
     {/if}
-    {#if item.content_id}
+    {#if item.content_type === 'post' && item.url}
+      <a href={item.url}><h2 class='headline'>{item.title}</h2></a>
+    {:else if item.content_id}
       <a href={path[item.content_type] + item.content_id}><h2 class='headline'>{item.title}</h2></a>
     {:else}
       <h2 class='headline'>{item.title}</h2>
