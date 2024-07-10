@@ -28,7 +28,7 @@
   }
 </script>
 
-{#if isPlayer || isStoryteller}
+{#if isPlayer || isStoryteller || character.open}
   <main>
     <aside>
       {#if character.portrait}
