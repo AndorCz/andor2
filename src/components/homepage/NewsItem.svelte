@@ -101,8 +101,10 @@
     {/if}
     {#if item.content_id}
       <a href={path[item.content_type] + item.content_id}><h2 class='headline'>{item.title}</h2></a>
-    {:else}
+    {:else if item.url}
       <a href={item.url}><h2 class='headline'>{item.title}</h2></a>
+    {:else}
+      <h2 class='headline'>{item.title}</h2>
     {/if}
     <div class='content' class:trimmed bind:this={textEl}>
       <Render html={item.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
