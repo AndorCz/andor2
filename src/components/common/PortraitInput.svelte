@@ -1,6 +1,6 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
-  import { resizePortrait, getHash } from '@lib/utils'
+  import { resizePortrait, getHash, getBase64 } from '@lib/utils'
   import { showError } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
 
@@ -11,8 +11,9 @@
 
   export let displayWidth = 140
   export let displayHeight = 140
+  export let minWidth = 100
   export let saveWidth = 140
-  export let saveMinHeight = 140
+  export let saveMinHeight = 100
   export let showDelete = true
 
   let files
@@ -26,23 +27,33 @@
       img.src = URL.createObjectURL(files[0])
       await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
 
-      // calculate new height
-      const imgRatio = img.naturalWidth / img.naturalHeight
-      const saveHeight = saveWidth / imgRatio
+      let file
+      let saveHeight
+      if (img.naturalWidth > saveWidth) {
+        const imgRatio = img.naturalWidth / img.naturalHeight
+        saveHeight = saveWidth / imgRatio
+      } else {
+        saveHeight = img.naturalHeight
+      }
 
       if (img.naturalWidth > img.naturalHeight) {
         return showError('Výška nesmí být nižší než šířka')
-      } else if (img.naturalWidth < saveWidth || saveHeight < saveMinHeight) {
-        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${saveWidth}×${saveMinHeight} pixelů`)
+      } else if (img.naturalWidth < minWidth || saveHeight < saveMinHeight) {
+        return showError(`Obrázek je příliš malý, minimální rozměry jsou ${minWidth}×${saveMinHeight} pixelů`)
       } else if (saveHeight > 600) {
         return showError(`Obrázek je příliš vysoký, limit je ${maxHeight}px`)
       }
 
-      displayHeight = saveHeight * (displayWidth / saveWidth)
-      const resized = await resizePortrait(img, saveWidth, saveHeight, 'image/jpeg')
-      const file = new File([resized.blob], files[0].name, { type: 'image/jpeg' }) // blob to file
+      if (img.naturalWidth > saveWidth) { // resize if too big
+        displayHeight = saveHeight * (displayWidth / saveWidth)
+        const resized = await resizePortrait(img, saveWidth, saveHeight, 'image/jpeg')
+        file = new File([resized.blob], files[0].name, { type: 'image/jpeg' }) // blob to file
+        newPortraitBase64 = resized.base64 // for form submission (only way to pass modified file to the server with formdata)
+      } else {
+        file = files[0]
+        newPortraitBase64 = await getBase64(file)
+      }
 
-      newPortraitBase64 = resized.base64 // for form submission (only way to pass modified file to the server with formdata)
       if (onPortraitChange) { // for immediate upload
         uploading = true
         await onPortraitChange(file)

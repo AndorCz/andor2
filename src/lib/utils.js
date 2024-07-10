@@ -47,6 +47,15 @@ export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/jpeg
   })
 }
 
+export function getBase64 (file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error('Chyba při čtení souboru'))
+    reader.readAsDataURL(file)
+  })
+}
+
 export function resizeImage (img, maxWidth, maxHeight, mimeType = 'image/jpeg') {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
