@@ -5,7 +5,7 @@
   import { tooltip } from '@lib/tooltip'
 
   let userStore
-  let latestData = { games: [], works: [], boards: [] }
+  let latestData = { games: [], works: [], boards: [], characters: [] }
   let loading = true
 
   onMount(async () => {
@@ -32,7 +32,10 @@
     const { data: boards, error: boardError } = await supabase.from('board_list').select('*').match({ published: true }).order('created_at', { ascending: false }).limit(5)
     if (boardError) { handleError(boardError) }
 
-    latestData = { games, works, boards }
+    const { data: characters, error: characterError } = await supabase.from('characters').select('*').match({ open: true, state: 'alive' }).is('transfer_to', null).order('name')
+    if (characterError) { handleError(characterError) }
+
+    latestData = { games, works, boards, characters }
     loading = false
   }
 
@@ -96,6 +99,19 @@
         </div>
       {/each}
     </div>
+    {#if latestData.characters.length > 0}
+      <div class='group'>
+        <h4>Volné postavy</h4>
+        {#each latestData.characters as character}
+          <a href={`/game/character?id=${character.id}`} class='item'>
+            {#if character.portrait}
+              <img src={getPortraitUrl(character.id, character.portrait)} class='icon' alt={character.name} />
+            {/if}
+            <h3>{character.name}</h3>
+          </a>
+        {/each}
+      </div>
+    {/if}
   </div>
 {/if}
 
