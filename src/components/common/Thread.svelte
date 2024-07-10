@@ -9,6 +9,7 @@
   export let id
   export let user
   export let posts
+  export let loading
   export let contentId
   export let contentSection
   export let unread = 0
@@ -148,7 +149,9 @@
 </script>
 
 <main bind:this={threadEl}>
-  {#if isFilledArray($posts)}
+  {#if loading}
+    <p class='info'>Načítám příspěvky...</p>
+  {:else if isFilledArray($posts)}
     {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
       {#if post.dice}
         {#if diceMode === 'post'}
@@ -202,6 +205,13 @@
     .dicePost:hover {
       opacity: 1;
     }
+
+  .info {
+    margin: 60px 0px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
 
   .pagination {
     text-align: left;

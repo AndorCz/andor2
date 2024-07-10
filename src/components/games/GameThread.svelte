@@ -220,11 +220,7 @@
   <!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
   {#if activeTool !== 'maps'}
-    {#if loading}
-      <p class='info'>Načítám příspěvky...</p>
-    {:else}
-      <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
-    {/if}
+    <Thread {loading} {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
   {/if}
 {:else}
   <div class='info'><span class='material'>info</span>Hra je soukromá</div>
