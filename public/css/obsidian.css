@@ -470,7 +470,7 @@ select {
     box-shadow: 2px 2px 2px #0001;
   }
     .tabs.secondary button:not(.active) {
-      color: var(--linkVisited);
+      color: var(--link);
       opacity: 1;
     }
       .tabs.secondary button:not(.active):hover {
@@ -498,6 +498,9 @@ select {
   }
     .tabs.tertiary button:first-child {
       padding-left: 0px;
+    }
+    .tabs.tertiary button:not(.active):hover {
+      color: var(--text);
     }
 
 /* MISC */

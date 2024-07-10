@@ -351,7 +351,7 @@
     <DropdownSlot title='Obrázek' defaultLabel='image' left={200}>
       <label class='button text' for='addImageStored'>Nahrát z počítače</label>
       <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
-      <button on:click={addImageUrl} class='text'>Cesta z internetu</button>
+      <button type='button' on:click={addImageUrl} class='text'>Cesta z internetu</button>
     </DropdownSlot>
     <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
     <span class='sep'></span>
