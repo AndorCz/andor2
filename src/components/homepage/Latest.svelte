@@ -139,7 +139,7 @@
       margin-bottom: 10px;
       border: none;
       box-shadow: none;
-      background-color: transparent;
+      background-color: var(--panel);
       background-position: right 10px center;
       background-size: 24px 24px;
       background-repeat: no-repeat;
