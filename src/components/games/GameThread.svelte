@@ -27,6 +27,7 @@
   let filterActive = false
   let page = 0
   let pages
+  let loading = true
   let searchTerms = ''
   let diceMode = 'icon'
   // let generatingPost = false
@@ -81,6 +82,7 @@
   }
 
   async function loadPosts () {
+    loading = true
     let res
     if (searchTerms) {
       res = await fetch(`/api/post?thread=${game.game_thread}&game=${game.id}&offset=${page * limit}&limit=${limit}&search=${searchTerms}`, { method: 'GET' })
@@ -100,6 +102,7 @@
     if (res.error || json.error) { return showError(res.error || json.error) }
     posts.set(json.posts)
     pages = Math.ceil(json.count / limit)
+    loading = false
   }
 
   async function submitPost () {
@@ -150,15 +153,15 @@
     } else { return ['*'] } // no character
   }
 
-  function onAudienceSelect () {
+  async function onAudienceSelect () {
     if ($activeAudienceIds.includes('*')) { $activeAudienceIds = ['*'] } // set all
-    loadPosts() // filter posts based on audience selection
+    await loadPosts() // filter posts based on audience selection
   }
 
-  function handleSearch () {
+  async function handleSearch () {
     if (searchEl?.value) {
       searchTerms = searchEl.value
-      loadPosts()
+      await loadPosts()
     }
   }
 
@@ -210,14 +213,18 @@
   </main>
 
   {#if searchTerms}
-    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={() => { searchTerms = ''; loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={async () => { searchTerms = ''; await loadPosts() }}>close</button></h2>
   {:else if filterActive}
-    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={() => { $activeAudienceIds = ['*']; loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={async () => { $activeAudienceIds = ['*']; await loadPosts() }}>close</button></h2>
   {/if}
   <!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
   {#if activeTool !== 'maps'}
-    <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
+    {#if loading}
+      <p class='info'>Načítám příspěvky...</p>
+    {:else}
+      <Thread {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection={'games'} contentId={game.id} />
+    {/if}
   {/if}
 {:else}
   <div class='info'><span class='material'>info</span>Hra je soukromá</div>
