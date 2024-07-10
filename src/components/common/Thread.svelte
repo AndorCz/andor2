@@ -149,7 +149,7 @@
 </script>
 
 <main bind:this={threadEl}>
-  {#if loading}
+  {#if loading && !user.autorefresh}
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray($posts)}
     {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
