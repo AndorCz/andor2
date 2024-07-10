@@ -52,9 +52,6 @@
   h3 {
     margin: 15px 0px;
   }
-  select {
-    min-height: 150px;
-  }
   @media (max-width: 860px) {
     .headlineWrapper, .selectWrapper {
       gap: 10px;
