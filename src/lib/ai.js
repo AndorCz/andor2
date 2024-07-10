@@ -7,7 +7,6 @@ export async function gatherCodex (gameId) {
 
   const { data: codexPages, error: pagesError } = await supabase.from('codex_pages').select('*').eq('game', gameId)
   if (pagesError) { return handleError(pagesError) }
-  console.log('Codex pages loaded:', codexPages)
 
   // Aggregate the codex data into a single string, with pages grouped into sections
   let codexString = '<h1>Informace o hře</h1>\n'
