@@ -348,11 +348,6 @@
     <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
     <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
     <span class='sep'></span>
-    <DropdownSlot title='Obrázek' defaultLabel='image' left={200}>
-      <label class='button text' for='addImageStored'>Nahrát z počítače</label>
-      <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
-      <button type='button' on:click={addImageUrl} class='text'>Cesta z internetu</button>
-    </DropdownSlot>
     <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
     <span class='sep'></span>
     <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color || '#c4b6ab'} title='Barva' />
@@ -381,6 +376,11 @@
   <div class='clear'></div>
   {#if wasFocused}
     <div class='toolbelt'>
+      <DropdownSlot title='Obrázek' defaultLabel='image' openUp>
+        <label class='button text' for='addImageStored'>Nahrát z počítače</label>
+        <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
+        <button type='button' on:click={addImageUrl} class='text'>Cesta z internetu</button>
+      </DropdownSlot>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
       <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
     </div>
