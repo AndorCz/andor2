@@ -117,7 +117,7 @@
     <div class='row details'>
       {#if item.content_id}
         <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
-      {:else}
+      {:else if item.url}
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
       {#if item.owner}
