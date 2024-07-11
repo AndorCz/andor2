@@ -134,7 +134,15 @@
       <CodexSection {user} {game} {activeSection} {isStoryteller} />
     {/if}
   {:else}
-    <div class='info'><span class='material'>info</span>Kodex této hry není veřejný</div>
+    <div class='info'><span class='material'>info</span>Kodex této hry není veřejný</div>      <br><br>
+    <div class='row details'>
+      <span>Správce hry:</span>
+      <a href='/user?id={game.owner.id}' class='user owner'>
+        <span>{game.owner.name}</span>
+        {#if game.owner.portrait}<img src={getPortraitUrl(game.owner.id, game.owner.portrait)} class='icon' alt={game.owner.name} />{/if}
+      </a>
+    </div>
+
   {/if}
 </main>
 
