@@ -14,6 +14,7 @@
   export let allowHtml = false
   export let enterSend = false
   export let mentionList = null
+  export let fonts = null
 
   let isEditing = false
   let originalValue = value
@@ -43,7 +44,7 @@
 
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
+    <TextareaExpandable {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
   {:else}
     {#if loading}
       <Loading />
