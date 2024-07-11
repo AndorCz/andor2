@@ -11,6 +11,7 @@
   let newEmail = user.email
   let originalAutorefresh = user.autorefresh
   let originalEditorBubble = user.editor_bubble
+  let originalTheme = user.theme
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -21,16 +22,19 @@
     password2 = ''
   }
 
-  async function updateUser () {
+  async function updateUser (theme = false) {
     const data = {
       autorefresh: user.autorefresh,
-      editor_bubble: user.editor_bubble
+      editor_bubble: user.editor_bubble,
+      theme: user.theme
     }
     const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
     if (error) { return showError(error.message) }
     originalAutorefresh = user.autorefresh
     originalEditorBubble = user.editor_bubble
+    originalTheme = user.theme
     showSuccess('Nastavení bylo uloženo')
+    if (theme) { window.location.href = '/settings' }
   }
 
   async function deleteUser () {
@@ -84,6 +88,15 @@
           <button on:click={setEmail} class='material' disabled={user.email === newEmail}>check</button>
         </div>
       </div>
+    </div>
+
+    <h2>Vizuální styl</h2>
+    <div class='rowInner'>
+      <select bind:value={user.theme} id='theme' name='theme'>
+        <option value='obsidian'>Obsidián (výchozí)</option>
+        <option value='onyx'>Onyx (A1)</option>
+      </select>
+      <button on:click={updateUser} class='material' disabled={originalTheme === user.theme} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Paleta nástrojů editoru</h2>
