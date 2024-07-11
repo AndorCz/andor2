@@ -375,9 +375,9 @@
   <div class='clear'></div>
   {#if wasFocused}
     <div class='toolbelt'>
+      <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
       <DropdownSlot title='Obrázek' defaultLabel='image' openUp>
         <label class='button text' for='addImageStored'>Nahrát z počítače</label>
-        <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
         <button type='button' on:click={addImageUrl} class='text'>Cesta z internetu</button>
       </DropdownSlot>
       <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>

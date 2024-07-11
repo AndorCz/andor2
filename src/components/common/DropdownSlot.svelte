@@ -33,7 +33,6 @@
 <style>
   button {
     padding: 5px;
-    margin: 3px;
   }
   .options {
     position: absolute;
