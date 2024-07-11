@@ -85,14 +85,14 @@
           {:else if item.content_id}
             <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {/if}
+          {#if item.owner_id !== user.id}
+            <Reactions {user} itemStore={newStore} type='news' />
+          {/if}
           {#if item.owner}
             <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
               <span>{item.owner.name}</span>
               {#if item.owner.portrait}<img src={getPortraitUrl(item.owner.id, item.owner.portrait)} class='icon' alt={item.owner.name} />{/if}
             </a>
-          {/if}
-          {#if item.owner_id !== user.id}
-            <Reactions {user} itemStore={newStore} type='news' />
           {/if}
         </div>
       </div>
@@ -127,14 +127,14 @@
       {:else if item.url}
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
+      {#if item.owner_id !== user.id}
+        <Reactions {user} itemStore={newStore} type='news' />
+      {/if}
       {#if item.owner_id}
         <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
           <span>{item.owner_name}</span>
           {#if item.owner_portrait}<img src={getPortraitUrl(item.owner_id, item.owner_portrait)} class='icon' alt={item.owner_name} />{/if}
         </a>
-      {/if}
-      {#if item.owner_id !== user.id}
-        <Reactions {user} itemStore={newStore} type='news' />
       {/if}
     </div>
   </div>
