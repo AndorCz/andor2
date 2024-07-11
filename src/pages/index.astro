@@ -4,11 +4,10 @@
 	import Latest from '@components/homepage/Latest.svelte'
 	import NewsFeed from '@components/homepage/NewsFeed.svelte'
 
-	let editorialError, lastEditorial, news
+	let newsError, lastEditorial, news
+	const { supabase, user } = Astro.locals
 
 	try {
-		const { supabase, user } = Astro.locals
-
 		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
@@ -17,22 +16,22 @@
 		let publishedOnly = true
 		const preview = Astro.url.searchParams.get('preview')
 		if (preview) { publishedOnly = false }
-		const res2 = await supabase.from('news').select('id, title, content_type, content_id, image_url, subheadline, content, published, owner(id, name, portrait), character, character_name, button_text, url, created_at').eq('published', publishedOnly).order('created_at', { ascending: false }).limit(14)
+		const res2 = await supabase.from('news_reactions').select('*').eq('published', publishedOnly).order('created_at', { ascending: false }).limit(14)
 		if (res2.error) { throw res2.error }
 		news = res2.data
 	} catch (error) {
-		editorialError = 'Chyba načtení editorialu: ' + error.message
+		newsError = 'Chyba načtení novinek: ' + error.message
 	}
 ---
 
 <Layout title='Hlavní strana'>
-  {editorialError ? <p>{editorialError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
+  {newsError ? <p>{newsError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
 		<aside>
 			<Latest client:only='svelte' />
 		</aside>
 		<content>
-			<NewsFeed {news} client:only='svelte' />
+			<NewsFeed {user} {news} client:only='svelte' />
 		</content>
 	</main>
 </Layout>

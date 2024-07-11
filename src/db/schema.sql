@@ -222,14 +222,14 @@ create table posts (
 );
 
 create table reactions (
-  post_id int4 not null,
+  item_id int4 not null,
+  item_type text not null check (item_type in ('post', 'news')),
   thumbs uuid[] default '{}'::uuid[],
   frowns uuid[] default '{}'::uuid[],
   shocks uuid[] default '{}'::uuid[],
   hearts uuid[] default '{}'::uuid[],
   laughs uuid[] default '{}'::uuid[],
-  constraint public_reactions_post_id_fkey foreign key (post_id) references posts (id) on delete cascade,
-  constraint unique_post_id unique (post_id)
+  constraint unique_item unique (item_id, item_type)
 );
 
 create table messages (
@@ -305,6 +305,14 @@ create table news (
 
 -- VIEWS --------------------------------------------
 
+create or replace view news_reactions as
+  select n.id, n.title, n.content_type, n.content_id, n.image_url, n.subheadline, n.button_text, n.url, n.content, n.published, n.owner, p.id as owner_id, p.name as owner_name, p.portrait as owner_portrait, n.character, n.character_name, n.created_at, r.thumbs, r.frowns, r.shocks, r.hearts, r.laughs
+  from news n
+  left join reactions r 
+  on n.id = r.item_id and r.item_type = 'news'
+  left join profiles p 
+  on n.owner = p.id;
+
 create or replace view discussion_posts_owner as
   select
     p.*,
@@ -321,7 +329,7 @@ create or replace view discussion_posts_owner as
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
-    left join reactions on p.id = reactions.post_id
+    left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
   order by p.created_at desc;
 
 create or replace view posts_owner as
@@ -341,7 +349,7 @@ create or replace view posts_owner as
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
-    left join reactions on p.id = reactions.post_id
+    left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
   order by p.created_at desc;
 
 create or replace view game_posts_owner as
@@ -672,22 +680,23 @@ end;
 $$ language plpgsql;
 
 
-create or replace function update_reaction (post int4, reaction_type text, action text) returns setof reactions as $$
+create or replace function update_reaction (i_id int4, i_type text, reaction_type text, action text) returns setof reactions as $$
 declare
   user_id uuid := auth.uid();
 begin
   if action = 'add' then
     return query
-    insert into reactions (post_id, thumbs, frowns, shocks, hearts, laughs)
+    insert into reactions (item_id, item_type, thumbs, frowns, shocks, hearts, laughs)
     values (
-      post,
+      i_id,
+      i_type,
       case when reaction_type = 'thumbs' then array[user_id] else '{}' end,
       case when reaction_type = 'frowns' then array[user_id] else '{}' end,
       case when reaction_type = 'shocks' then array[user_id] else '{}' end,
       case when reaction_type = 'hearts' then array[user_id] else '{}' end,
       case when reaction_type = 'laughs' then array[user_id] else '{}' end
     )
-    on conflict (post_id) do update
+    on conflict (item_id, item_type) do update
     set thumbs = case when reaction_type = 'thumbs' and not (user_id = any(reactions.thumbs)) then array_append(reactions.thumbs, user_id) else reactions.thumbs end,
         frowns = case when reaction_type = 'frowns' and not (user_id = any(reactions.frowns)) then array_append(reactions.frowns, user_id) else reactions.frowns end,
         shocks = case when reaction_type = 'shocks' and not (user_id = any(reactions.shocks)) then array_append(reactions.shocks, user_id) else reactions.shocks end,
@@ -696,14 +705,13 @@ begin
     returning *;
   elsif action = 'remove' then
     return query
-    insert into reactions (post_id, thumbs, frowns, shocks, hearts, laughs)
-    values (post, '{}', '{}', '{}', '{}', '{}')
-    on conflict (post_id) do update
+    update reactions
     set thumbs = case when reaction_type = 'thumbs' then array_remove(reactions.thumbs, user_id) else reactions.thumbs end,
         frowns = case when reaction_type = 'frowns' then array_remove(reactions.frowns, user_id) else reactions.frowns end,
         shocks = case when reaction_type = 'shocks' then array_remove(reactions.shocks, user_id) else reactions.shocks end,
         hearts = case when reaction_type = 'hearts' then array_remove(reactions.hearts, user_id) else reactions.hearts end,
         laughs = case when reaction_type = 'laughs' then array_remove(reactions.laughs, user_id) else reactions.laughs end
+    where reactions.item_id = i_id and reactions.item_type = i_type
     returning *;
   end if;
 end;

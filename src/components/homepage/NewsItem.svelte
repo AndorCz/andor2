@@ -1,15 +1,19 @@
 <script>
   import { onMount } from 'svelte'
+  import { writable } from 'svelte/store'
   import { getPortraitUrl } from '@lib/database-browser'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
+  import Reactions from '@components/common/Reactions.svelte'
 
-  export let item = []
+  export let item = {}
+  export let user = {}
 
   let trimmed = true
   let textEl
 
+  const newStore = writable(item)
   const iconSize = 70
   const textMaxHeight = 200
 
@@ -87,6 +91,9 @@
               {#if item.owner.portrait}<img src={getPortraitUrl(item.owner.id, item.owner.portrait)} class='icon' alt={item.owner.name} />{/if}
             </a>
           {/if}
+          {#if item.owner_id !== user.id}
+            <Reactions {user} itemStore={newStore} type='news' />
+          {/if}
         </div>
       </div>
     </div>
@@ -120,11 +127,14 @@
       {:else if item.url}
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
-      {#if item.owner}
+      {#if item.owner_id}
         <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
-          <span>{item.owner.name}</span>
-          {#if item.owner.portrait}<img src={getPortraitUrl(item.owner.id, item.owner.portrait)} class='icon' alt={item.owner.name} />{/if}
+          <span>{item.owner_name}</span>
+          {#if item.owner_portrait}<img src={getPortraitUrl(item.owner_id, item.owner_portrait)} class='icon' alt={item.owner_name} />{/if}
         </a>
+      {/if}
+      {#if item.owner_id !== user.id}
+        <Reactions {user} itemStore={newStore} type='news' />
       {/if}
     </div>
   </div>
@@ -286,6 +296,13 @@
       }
     .post .content {
       padding: 15px;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .item .details {
+      gap: 10px;
+      flex-wrap: wrap;
     }
   }
 </style>

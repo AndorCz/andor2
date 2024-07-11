@@ -33,7 +33,7 @@
         <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
       {/if}
     </div>
-    <Reactions {user} {postStore} />
+    <Reactions {user} itemStore={postStore} type='post' />
   {:else}
     <div class='rowInner'>
       {#if post.owner_portrait}
@@ -41,7 +41,7 @@
       {/if}
       <div class='toolbar' bind:this={toolbarRef}>
         {formatDate(post.created_at)}
-        <ReactionInput {user} {postStore} />
+        <ReactionInput {user} {postStore} type='post' />
       </div>
       <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
         <div class='name'>{post.owner_name}</div>

@@ -110,8 +110,8 @@
         </div>
       {/if}
         <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
-      {#if user && allowReactions}
-        <Reactions {user} {postStore} />
+      {#if allowReactions}
+        <Reactions {user} itemStore={postStore} type='post' />
       {/if}
       <div class='clear'></div>
     </div>

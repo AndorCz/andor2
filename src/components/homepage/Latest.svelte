@@ -58,11 +58,13 @@
       </div>
       {#each latestData.games as game}
         <div class='item'>
-          {#if game.owner_portrait}
-            <a href='./user?id={game.owner_id}' class='user owner' title={game.owner_name} use:tooltip>
+          <a href='./user?id={game.owner_id}' class='user owner' title={game.owner_name} use:tooltip>
+            {#if game.owner_portrait}
               <img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />
-            </a>
-          {/if}
+            {:else}
+              <img src='/default_user.jpg' class='icon' alt={game.owner_name} />
+            {/if}
+          </a>
           <a href={`/game/${game.id}`}>
             <h3>{game.name}</h3>
           </a>
@@ -73,11 +75,13 @@
       <a href='/works' class='headline'><h4>Nová tvorba</h4></a>
       {#each latestData.works as work}
         <div class='item'>
-          {#if work.owner_portrait}
-            <a href='./user?id={work.owner_id}' class='user owner' title={work.owner_name} use:tooltip>
+          <a href='./user?id={work.owner_id}' class='user owner' title={work.owner_name} use:tooltip>
+            {#if work.owner_portrait}
               <img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />
-            </a>
-          {/if}
+            {:else}
+              <img src='/default_user.jpg' class='icon' alt={work.owner_name} />
+            {/if}
+          </a>
           <a href={`/work/${work.id}`}>
             <h3>{work.name}</h3>
           </a>
@@ -88,11 +92,13 @@
       <a href='/boards' class='headline'><h4>Nové diskuze</h4></a>
       {#each latestData.boards as board}
         <div class='item'>
-          {#if board.owner_portrait}
-            <a href='./user?id={board.owner_id}' class='user owner' title={board.owner_name} use:tooltip>
+          <a href='./user?id={board.owner_id}' class='user owner' title={board.owner_name} use:tooltip>
+            {#if board.owner_portrait}
               <img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />
-            </a>
-          {/if}
+            {:else}
+              <img src='/default_user.jpg' class='icon' alt={board.owner_name} />
+            {/if}
+          </a>
           <a href={`/board/${board.id}`}>
             <h3>{board.name}</h3>
           </a>
@@ -106,6 +112,8 @@
           <a href={`/game/character?id=${character.id}`} class='item'>
             {#if character.portrait}
               <img src={getPortraitUrl(character.id, character.portrait)} class='icon' alt={character.name} />
+            {:else}
+              <img src='/default_char.jpg' class='icon' alt={character.name} />
             {/if}
             <h3>{character.name}</h3>
           </a>
