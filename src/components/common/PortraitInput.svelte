@@ -19,7 +19,7 @@
   let files
   let fileInputEl
   let uploading = false
-  const maxHeight = 600
+  const maxHeight = 1000
 
   async function processPortrait () {
     if (files && files[0]) {
