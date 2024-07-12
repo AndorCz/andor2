@@ -121,8 +121,9 @@
     .toolbar {
       padding: 5px;
       display: flex;
-      gap: 10px;
+      flex-direction: column;
       align-items: center;
+      gap: 5px;
     }
       .time {
         white-space: nowrap;
@@ -145,10 +146,6 @@
     .postRow {
       flex-direction: column;
       gap: 0px;
-    }
-    .toolbar {
-      flex-direction: column;
-      gap: 5px;
     }
       .mine .toolbar {
         right: 0px;
