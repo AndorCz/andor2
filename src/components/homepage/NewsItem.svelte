@@ -89,9 +89,9 @@
             <Reactions {user} itemStore={newStore} type='news' />
           {/if}
           {#if item.owner}
-            <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
+            <a href='./user?id={item.owner_id}' class='owner user' title='autor'>
               <span>{item.owner.name}</span>
-              {#if item.owner.portrait}<img src={getPortraitUrl(item.owner.id, item.owner.portrait)} class='icon' alt={item.owner.name} />{/if}
+              {#if item.owner.portrait}<img src={getPortraitUrl(item.owner_id, item.owner.portrait)} class='icon' alt={item.owner.name} />{/if}
             </a>
           {/if}
         </div>
@@ -131,7 +131,7 @@
         <Reactions {user} itemStore={newStore} type='news' />
       {/if}
       {#if item.owner_id}
-        <a href='./user?id={item.owner.id}' class='owner user' title='autor'>
+        <a href='./user?id={item.owner_id}' class='owner user' title='autor'>
           <span>{item.owner_name}</span>
           {#if item.owner_portrait}<img src={getPortraitUrl(item.owner_id, item.owner_portrait)} class='icon' alt={item.owner_name} />{/if}
         </a>
