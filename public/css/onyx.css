@@ -47,7 +47,7 @@
   --frown: #b68e67;
   --thumb: #b6b367;
   --laugh: #83b667;
-  --fontSizeBase: 0.9rem;
+  --fontSizeBase: 1rem;
   --fontSizeBaseLh: 1.5;
   --fontSizeInput: max(var(--fontSizeBase), 16px);
   --bodyFont: 'Alegreya Sans', Arial, Helvetica, sans-serif;
@@ -640,7 +640,7 @@ select {
 
 .ProseMirror {
   font-family: 'Alegreya Sans', Arial, Helvetica, sans-serif;
-  font-size: var(--font-size);
+  font-size: var(--fontSizeInput);
   border: none;
   color: var(--text);
   height: 100%;
