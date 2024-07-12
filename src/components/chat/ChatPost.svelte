@@ -23,8 +23,10 @@
     <div class='rowInner'>
       <div class='toolbar' bind:this={toolbarRef}>
         <span class='time'>{formatDate(post.created_at)}</span>
-        <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
-        <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+        <div class='buttons'>
+          <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
+          <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+        </div>
       </div>
       <div class='post' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
         <div class='content'><Render html={post.content} /></div>
@@ -144,5 +146,18 @@
       flex-direction: column;
       gap: 0px;
     }
+    .toolbar {
+      flex-direction: column;
+      gap: 5px;
+    }
+      .mine .toolbar {
+        right: 0px;
+      }
+      .theirs .toolbar {
+        left: 0px;
+      }
+      .edit, .delete {
+        padding: 5px;
+      }
   }
 </style>
