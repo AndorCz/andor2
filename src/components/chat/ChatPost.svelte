@@ -22,7 +22,7 @@
   {#if isMine}
     <div class='rowInner'>
       <div class='toolbar' bind:this={toolbarRef}>
-        {formatDate(post.created_at)}
+        <span class='time'>{formatDate(post.created_at)}</span>
         <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
         <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
       </div>
@@ -40,8 +40,8 @@
         <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
       {/if}
       <div class='toolbar' bind:this={toolbarRef}>
-        {formatDate(post.created_at)}
-        <ReactionInput {user} {postStore} type='post' />
+        <span class='time'>{formatDate(post.created_at)}</span>
+        <ReactionInput {user} itemStore={postStore} type='post' />
       </div>
       <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
         <div class='name'>{post.owner_name}</div>
@@ -117,10 +117,14 @@
               background-color: color-mix(in srgb, var(--prominent) 95%, #fff 5%);
             }
     .toolbar {
+      padding: 5px;
       display: flex;
       gap: 10px;
       align-items: center;
     }
+      .time {
+        white-space: nowrap;
+      }
       .mine .toolbar {
         right: 0px;
       }
