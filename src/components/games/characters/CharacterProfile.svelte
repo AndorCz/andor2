@@ -28,60 +28,62 @@
   }
 </script>
 
-{#if isPlayer || isStoryteller || character.open}
-  <main>
-    <aside>
-      {#if character.portrait}
-        <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
-      {/if}
-    </aside>
+<main>
+  <aside>
+    {#if character.portrait}
+      <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
+    {/if}
+  </aside>
 
-    <div class='wide'>
-      <h1>{character.name}</h1>
+  <div class='wide'>
+    <h1>{character.name}</h1>
 
-      <h2>Vzhled</h2>
-      <p class='content appearance'>{character.appearance || ''}</p>
+    <h2>Veřejný vzhled</h2>
+    <p class='content appearance'>{character.appearance || ''}</p>
 
-      <h2>Životopis</h2>
-      <p class='content bio'>
+    <h2>Životopis</h2>
+    <p class='content bio'>
+      {#if isPlayer || isStoryteller || character.open}
         <Render html={character.bio || ''} />
-      </p>
-
-      {#if isPlayer}
-        <center>
-          <a href={`/game/character-form?id=${character.id}`} class='button large' title='Upravit'>Upravit postavu</a>
-        </center>
+      {:else}
+        <p>Jen vlastník postavy a vypravěč může číst životopis</p>
       {/if}
+    </p>
 
+    {#if isPlayer}
+      <center>
+        <a href={`/game/character-form?id=${character.id}`} class='button large' title='Upravit'>Upravit postavu</a>
+      </center>
+    {/if}
+
+    {#if isPlayer || isStoryteller}
       {#if character.storyteller_notes || isStoryteller}
         <h2>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
         <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} {user} value={character.storyteller_notes} allowHtml />
       {/if}
+    {/if}
 
-      {#if isStoryteller}
-        <div class='row'>
-          <div class='col'>
-            <h2>Status vypravěče</h2>
-            <div class='rowCenter'>
-              <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' bind:checked={character.storyteller} /></div>
-              <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller} title='Uložit' use:tooltip>check</button>
-            </div>
-          </div>
-          <div class='col'>
-            <h2>Barva jména</h2>
-            <div class='rowCenter'>
-              <input type='color' id='nameColor' name='nameColor' bind:value={character.color} />
-              <input type='text' bind:value={character.color}>
-              <button on:click={updateCharacter} class='material square' disabled={originalColor === character.color} title='Uložit' use:tooltip>check</button>
-            </div>
+    {#if isStoryteller}
+      <div class='row'>
+        <div class='col'>
+          <h2>Status vypravěče</h2>
+          <div class='rowCenter'>
+            <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' bind:checked={character.storyteller} /></div>
+            <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller} title='Uložit' use:tooltip>check</button>
           </div>
         </div>
-      {/if}
-    </div>
-  </main>
-{:else}
-  <p>Jen vypravěč může vidět podrobnosti o postavě</p>
-{/if}
+        <div class='col'>
+          <h2>Barva jména</h2>
+          <div class='rowCenter'>
+            <input type='color' id='nameColor' name='nameColor' bind:value={character.color} />
+            <input type='text' bind:value={character.color}>
+            <button on:click={updateCharacter} class='material square' disabled={originalColor === character.color} title='Uložit' use:tooltip>check</button>
+          </div>
+        </div>
+      </div>
+    {/if}
+  </div>
+</main>
 
 <style>
   main {

@@ -40,7 +40,7 @@
         return showError('Výška nesmí být nižší než šířka')
       } else if (img.naturalWidth < minWidth || saveHeight < saveMinHeight) {
         return showError(`Obrázek je příliš malý, minimální rozměry jsou ${minWidth}×${saveMinHeight} pixelů`)
-      } else if (saveHeight > 600) {
+      } else if (saveHeight > maxHeight) {
         return showError(`Obrázek je příliš vysoký, limit je ${maxHeight}px`)
       }
 
