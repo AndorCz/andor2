@@ -1,20 +1,30 @@
 <script>
-  export let postStore
+  import { tooltipContent } from '@lib/tooltip'
+  import ReactionInput from '@components/common/ReactionInput.svelte'
+
+  export let itemStore
+  export let user = {}
+  export let type
+
+  let toolbarRef
 </script>
 
-<span class='reactions'>
-  {#if $postStore.frowns?.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{$postStore.frowns.length}</span></span>{/if}
-  {#if $postStore.laughs?.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{$postStore.laughs.length}</span></span>{/if}
-  {#if $postStore.shocks?.length}<span class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'><span class='count'>{$postStore.shocks.length}</span></span>{/if}
-  {#if $postStore.hearts?.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{$postStore.hearts.length}</span></span>{/if}
-  {#if $postStore.thumbs?.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{$postStore.thumbs.length}</span></span>{/if}
+<div class='toolbar' bind:this={toolbarRef}>
+  <ReactionInput {user} {itemStore} {type} />
+</div>
+<span class='reactions' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
+  {#if $itemStore.frowns?.length}<span class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'><span class='count'>{$itemStore.frowns.length}</span></span>{/if}
+  {#if $itemStore.laughs?.length}<span class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'><span class='count'>{$itemStore.laughs.length}</span></span>{/if}
+  {#if $itemStore.shocks?.length}<span class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'><span class='count'>{$itemStore.shocks.length}</span></span>{/if}
+  {#if $itemStore.hearts?.length}<span class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'><span class='count'>{$itemStore.hearts.length}</span></span>{/if}
+  {#if $itemStore.thumbs?.length}<span class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'><span class='count'>{$itemStore.thumbs.length}</span></span>{/if}
 </span>
 
 <style>
   .reactions {
+    cursor: pointer;
     display: flex;
-    margin-top: 20px;
-    margin-left: -5px;
+    align-items: center;
   }
     .reaction {
       position: relative;
@@ -34,4 +44,11 @@
         font-size: 22px;
         font-weight: bold;
       }
+  .toolbar {
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
 </style>

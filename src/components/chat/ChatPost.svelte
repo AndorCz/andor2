@@ -50,7 +50,7 @@
         <div class='content'><Render html={post.content} /></div>
       </div>
     </div>
-    <ReactionDisplay {postStore} />
+    <ReactionDisplay {user} itemStore={postStore} type='post' />
   {/if}
 </div>
 
