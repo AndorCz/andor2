@@ -80,7 +80,6 @@
       }
       .post {
         position: relative;
-        max-width: 88%;
         padding: 10px 20px;
         cursor: pointer;
       }
