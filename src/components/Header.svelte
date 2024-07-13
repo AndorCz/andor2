@@ -8,6 +8,7 @@
   export let headerStatic
   export let headerStorage
   export let showMenu = true
+  export let chatUnread = false
 
   let headerUrl = headerStatic
   let errorFetchingHeader = false
@@ -52,7 +53,11 @@
         <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
         <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
         <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
-        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>Chat {#if chatPeople}({chatPeople}){/if}</a>
+        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>
+          <span>Chat</span>
+          {#if chatPeople}({chatPeople}){/if}
+          {#if chatUnread}<span class='unread badge'></span>{/if}
+        </a>
       </nav>
     {/if}
   </header>
@@ -86,6 +91,10 @@
       bottom: -1px;
       left: 30px;
     }
+  .badge {
+    top: 10px;
+    right: 5px;
+  }
 
   @media (max-width: 860px) {
     header {

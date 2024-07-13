@@ -1,13 +1,14 @@
 <script>
   import { writable } from 'svelte/store'
   import { tick, onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, sendPost } from '@lib/database-browser'
+  import { supabase, handleError, sendPost, setRead } from '@lib/database-browser'
   import { throttle } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import ChatPost from '@components/chat/ChatPost.svelte'
 
   export let user = {}
+  export let unread = 0
 
   let previousPostsLength = 0
   let textareaValue = ''
@@ -58,6 +59,10 @@
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
+  async function seen () {
+    await setRead(user.id, 'thread-1')
+  }
+
   function onEdit (id, content) {
     editing = id
     textareaValue = content
@@ -80,6 +85,7 @@
     if (error) { handleError(error) } else {
       $posts = rpcData.postdata
     }
+    await seen()
   }
 
   async function submitPost () {
@@ -135,8 +141,8 @@
     {:then}
       <div class='posts' bind:this={postsEl}>
         {#if $posts.length > 0}
-          {#each $posts as post}
-            <ChatPost {user} {post} {onEdit} {onDelete} />
+          {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
+            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>
@@ -149,7 +155,7 @@
             {Object.keys($typing).join('píše..., ')} píše...
           </div>
         {/if}
-        <TextareaExpandable {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
@@ -157,6 +163,7 @@
     <!-- names of present people -->
     {#if Object.keys($people).length > 0}
       <div class='people'>
+        Unread: {unread}
         Právě přítomní:
         {#each Object.values($people) as person}
           <span class='person user'>{person[0].user}</span>

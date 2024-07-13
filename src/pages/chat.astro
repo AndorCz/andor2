@@ -1,14 +1,26 @@
 ---
 	import LayoutChat from '@layouts/layoutChat.astro'
   import Chat from '@components/chat/Chat.svelte'
+  import { getSupabase } from '@lib/database-server'
 
   const { user } = Astro.locals
+  let unread = 0
+  if (user.id) {
+    const env = import.meta.env ? import.meta.env : context.locals.runtime.env
+    const supabase = getSupabase(Astro.cookies, env)
+    const { data, error } = await supabase.rpc('get_thread_unread', { thread: 1 })
+    if (error) {
+      console.error('get_thread_unread for chat failed', error)
+    } else {
+      unread = data
+    }
+  }
 ---
 
 <LayoutChat title='Chat' headerStatic='/header_chat.jpg'>
 	<main>
     {user.id ? (
-      <Chat {user} client:only='svelte' />
+      <Chat {user} {unread} client:only='svelte' />
     ) : (
       <center>
         Tato sekce je jen pro přihlášené uživatele.

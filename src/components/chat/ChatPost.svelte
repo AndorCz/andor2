@@ -12,13 +12,14 @@
   export let post
   export let onEdit
   export let onDelete
+  export let unread = false
 
   let toolbarRef
   const isMine = post.owner === user.id
   const postStore = writable(post)
 </script>
 
-<div class='postRow {isMine ? 'mine' : 'theirs'}'>
+<div class='postRow {isMine ? 'mine' : 'theirs'}' class:unread={unread}>
   {#if isMine}
     <div class='rowInner'>
       <div class='toolbar' bind:this={toolbarRef}>
@@ -46,6 +47,9 @@
         <ReactionInput {user} itemStore={postStore} type='post' />
       </div>
       <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
+        {#if unread}
+          <span class='badge'></span>
+        {/if}
         <div class='name'>{post.owner_name}</div>
         <div class='content'><Render html={post.content} /></div>
       </div>
@@ -136,6 +140,9 @@
       .edit, .delete {
         padding: 5px;
       }
+    .badge {
+      left: 0px;
+    }
   @media (max-width: 500px) {
     .portrait {
       min-width: 50px;

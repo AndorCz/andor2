@@ -1008,7 +1008,6 @@ declare
   unread_count int;
   numeric_id int;
   user_characters uuid[];
-
 begin
   numeric_id := substring(slug_alias from '\d+$')::int; -- Extract numeric part
   if slug_alias like 'thread-%' then

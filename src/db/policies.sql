@@ -107,6 +107,7 @@ alter table public.posts enable row level security;
 create policy "ALL for owners" on public.posts for all to authenticated using (owner = (select auth.uid()));
 create policy "ALL for character owners" on public.posts for all to authenticated using (is_players_character(owner));
 create policy "INSERT for players or users" on public.posts for insert to authenticated with check (thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id)));
+create policy "READ for users to chat" on public.posts for select to authenticated using (thread = 1);
 create policy "INSERT for users to chat" on public.posts for insert to authenticated with check (thread = 1);
 
   -- game posts
