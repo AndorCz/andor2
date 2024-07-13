@@ -14,7 +14,6 @@
   }
 
   async function toggleReaction (reaction) {
-    console.log('type', type)
     const { data, error } = await supabase.rpc('update_reaction', { i_id: $itemStore.id, i_type: type, reaction_type: reaction, action: hasReacted(reaction) ? 'remove' : 'add' }).single()
     if (error) { return handleError(error) }
     $itemStore.frowns = data.frowns

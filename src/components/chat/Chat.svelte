@@ -163,7 +163,6 @@
     <!-- names of present people -->
     {#if Object.keys($people).length > 0}
       <div class='people'>
-        Unread: {unread}
         Právě přítomní:
         {#each Object.values($people) as person}
           <span class='person user'>{person[0].user}</span>
