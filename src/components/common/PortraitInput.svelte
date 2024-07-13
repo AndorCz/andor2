@@ -108,6 +108,7 @@
       object-fit: cover;
       object-position: center 10%;
       width: var(--portrait-width, 140px);
+      min-height: 90px;
       max-height: var(--portrait-height, 200px);
       border: 2px solid var(--buttonBg);
       align-items: center;
