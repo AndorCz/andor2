@@ -33,14 +33,18 @@
         <div class='content'><Render html={post.content} /></div>
       </div>
       {#if post.owner_portrait}
-        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        <a href={'/user?id=' + post.owner} class='user'>
+          <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        </a>
       {/if}
     </div>
     <Reactions {user} itemStore={postStore} type='post' />
   {:else}
     <div class='rowInner'>
       {#if post.owner_portrait}
-        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        <a href={'/user?id=' + post.owner} class='user'>
+          <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        </a>
       {/if}
       <div class='toolbar' bind:this={toolbarRef}>
         <span class='time'>{formatDate(post.created_at)}</span>
