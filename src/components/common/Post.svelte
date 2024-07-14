@@ -164,7 +164,7 @@
         margin-left: -15px;
         */
         margin-right: 15px;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
       }
 
   .body {
