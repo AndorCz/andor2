@@ -643,8 +643,11 @@ select {
   overflow-wrap: break-word;
   word-break: break-word;
 }
-.ProseMirror img {
+.ProseMirror img, .ProseMirror iframe {
   max-width: 100%;
+}
+.ProseMirror iframe {
+  max-height: 100px;
 }
 .ProseMirror p {
   margin: 10px 0px;

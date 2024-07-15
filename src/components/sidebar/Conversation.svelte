@@ -143,7 +143,7 @@
                   {#if !message.read && message[senderColumn] !== us.id}
                     <div class='badge'></div>
                   {/if}
-                  <Render html={message.content} />
+                  <Render html={message.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
                 </div>
               </div>
               <div class='clear'></div>
