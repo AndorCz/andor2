@@ -66,8 +66,8 @@
       <div class='inputs'><input type='text' id='charName' name='charName' maxlength='49' bind:value={character.name} /></div>
     </div>
     <div class='row'>
-      <div class='labels'><label for='charLooks'>Vzhled</label></div>
-      <div class='inputs'><TextareaExpandable {user} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} /></div>
+      <div class='labels'><label for='charLooks'>Vzhled (veřejný)</label></div>
+      <div class='inputs'><TextareaExpandable {user} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} allowHtml /></div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charIcon'>Portrét</label></div>
