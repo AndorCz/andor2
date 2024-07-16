@@ -39,7 +39,9 @@
     <h1>{character.name}</h1>
 
     <h2>Veřejný vzhled</h2>
-    <p class='content appearance'>{character.appearance || ''}</p>
+    <p class='content appearance'>
+      <Render html={character.appearance || ''} />
+    </p>
 
     <h2>Životopis</h2>
     <p class='content bio'>

@@ -14,6 +14,8 @@
   let formEl
   let bioInputEl
   let bioTextareaEl
+  let looksInputEl
+  let looksTextareaEl
   let generatingPortrait = false
   let newPortraitBase64
   const isCharacterOwner = user.id === character.player
@@ -54,6 +56,7 @@
 
   async function submitForm () {
     bioInputEl.value = await bioTextareaEl.getContent()
+    looksInputEl.value = await looksTextareaEl.getContent()
     this.disabled = true
     this.form.submit()
   }
@@ -67,13 +70,16 @@
     </div>
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled (veřejný)</label></div>
-      <div class='inputs'><TextareaExpandable {user} id='charLooks' name='charLooks' bind:value={character.appearance} loading={generatingPortrait} allowHtml /></div>
+      <div class='inputs'>
+        <TextareaExpandable bind:this={looksTextareaEl} value={character.appearance} {user} id='charLooks' name='charLooks' loading={generatingPortrait} allowHtml />
+        <input type='hidden' bind:this={looksInputEl} name='charLooks' />
+      </div>
     </div>
     <div class='row'>
       <div class='labels'><label for='charIcon'>Portrét</label></div>
       <div class='inputs'>
         <div class='portrait'>
-          <PortraitInput identity={character} {newPortraitBase64} table='characters' />
+          <PortraitInput identity={character} {newPortraitBase64} displayHeight={200} table='characters' />
           <span class='flex'>
             <ButtonLoading label='Vygenerovat portrét' handleClick={generatePortrait} loading={generatingPortrait} disabled={!character.appearance || character.appearance?.length < 20} />
             <span class='info'>Dle popisu vzhledu (alespoň 20 znaků)</span>
@@ -84,7 +90,7 @@
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
       <div class='inputs'>
-        <TextareaExpandable bind:this={bioTextareaEl} {user} id='charBio' value={character.bio} allowHtml />
+        <TextareaExpandable bind:this={bioTextareaEl} value={character.bio} {user} id='charBio' allowHtml />
         <input type='hidden' bind:this={bioInputEl} name='charBio' />
       </div>
     </div>
