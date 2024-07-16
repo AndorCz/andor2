@@ -9,7 +9,7 @@
   export let isStoryteller
   export let isGameOwner
   export let user
-  export let character = {}
+  export let character = { appearance: '', bio: '' }
 
   let formEl
   let bioInputEl
@@ -21,13 +21,12 @@
   const isCharacterOwner = user.id === character.player
 
   async function generatePortrait () {
-    const appearance = await looksTextareaEl.getContent()
     try {
       generatingPortrait = true
       const response = await fetch('/api/game/generatePortrait', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appearance, userId: user.id })
+        body: JSON.stringify({ appearance: character.appearance, userId: user.id })
       })
       const generatedBlob = await response.blob() // returns 1024x1024 image
       const generatedImage = await getImage(generatedBlob)
@@ -72,7 +71,7 @@
     <div class='row'>
       <div class='labels'><label for='charLooks'>Vzhled (veřejný)</label></div>
       <div class='inputs'>
-        <TextareaExpandable bind:this={looksTextareaEl} value={character.appearance} {user} id='charLooks' name='charLooks' loading={generatingPortrait} allowHtml />
+        <TextareaExpandable bind:this={looksTextareaEl} bind:value={character.appearance} {user} id='charLooks' name='charLooks' loading={generatingPortrait} allowHtml />
         <input type='hidden' bind:this={looksInputEl} name='charLooks' />
       </div>
     </div>

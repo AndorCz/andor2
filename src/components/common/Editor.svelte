@@ -27,7 +27,7 @@
   import Youtube from '@tiptap/extension-youtube'
 
   export let user
-  export let content = ''
+  export let value = ''
   export let onKeyUp = null
   export let triggerSave = null
   export let onChange = null
@@ -46,6 +46,7 @@
   let currentAlign = 'left'
   let isFocused = false
   let wasFocused = false
+  let timeout
   // let debug = ''
 
   const styleOptions = [
@@ -158,7 +159,7 @@
 
     const config = {
       element: editorEl,
-      content,
+      // content: value,
       // ProseMirror events
       editorProps: {
         handleDrop: function (view, event, slice, moved) { // handle dropping of images
@@ -227,14 +228,24 @@
       onBlur () { isFocused = false },
       onUpdate () {
         if (onKeyUp) { onKeyUp() }
-        if (onChange) { onChange() }
-        content = editor.state.doc.textContent
+        if (onChange) {
+          setValue() // update content after a delay
+          onChange()
+        }
+        // value = editor.state.doc.textContent
         // debug = JSON.stringify(editor.getJSON(), null, '\t')
       }
     }
     editor = new Editor(config)
     editorEl.querySelector('.ProseMirror').style.minHeight = minHeight + 'px'
   })
+
+  function setValue () {
+    clearTimeout(timeout)
+    timeout = setTimeout(async () => {
+      value = await editor.getHTML()
+    }, 200) // Delay in ms, adjust as needed
+  }
 
   onDestroy(() => { if (editor) { editor.destroy() } })
 

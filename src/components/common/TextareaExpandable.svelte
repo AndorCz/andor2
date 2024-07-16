@@ -48,8 +48,8 @@
   }
 
   async function cancelEdit () {
-    const currentValue = allowHtml ? await tiptap.getHTML() : value
-    if (currentValue !== originalValue) {
+    // const currentValue = allowHtml ? await tiptap.getHTML() : value
+    if (value !== originalValue) {
       if (!window.confirm('Opravdu zrušit úpravu?')) { return }
     }
     editing = false
@@ -59,22 +59,22 @@
 
   export function getIsEmpty () { return isEmpty }
 
-  export async function getContent () {
-    return allowHtml ? await tiptap.getHTML() : value
+  export async function getContent () { // 2DO: Remove
+    return value
   }
 
   export async function triggerEdit (id, content) {
     editing = id
     if (allowHtml) {
       editorRef.getEditor().commands.setContent(content)
-      originalValue = await tiptap.getHTML()
+      originalValue = value
       onChange()
     }
   }
 
   async function triggerSave (html) {
     if (allowHtml) {
-      value = await tiptap.getHTML() // get html from editor
+      // value = await tiptap.getHTML() // get html from editor
       if (value) {
         await onSave()
         tiptap.commands.clearContent(true)
@@ -111,7 +111,7 @@
 
 <div class='wrapper' class:singleLine class:fixedMenu={allowHtml && !(forceBubble || user.editor_bubble)}>
   {#if allowHtml}
-    <Editor bind:this={editorRef} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
+    <Editor bind:value={value} bind:this={editorRef} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
