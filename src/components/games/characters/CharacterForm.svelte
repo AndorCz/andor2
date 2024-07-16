@@ -21,12 +21,13 @@
   const isCharacterOwner = user.id === character.player
 
   async function generatePortrait () {
+    const appearance = await looksTextareaEl.getContent()
     try {
       generatingPortrait = true
       const response = await fetch('/api/game/generatePortrait', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appearance: character.appearance, userId: user.id })
+        body: JSON.stringify({ appearance, userId: user.id })
       })
       const generatedBlob = await response.blob() // returns 1024x1024 image
       const generatedImage = await getImage(generatedBlob)
