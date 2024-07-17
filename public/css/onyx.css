@@ -634,6 +634,10 @@ select {
     color: var(--userHover);
   }
 
+#chat .post .content {
+  padding: 0px;
+}
+  
 #lastPosts .content {
   max-height: 300px;
   overflow: auto;
