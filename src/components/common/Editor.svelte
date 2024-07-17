@@ -244,7 +244,7 @@
     clearTimeout(timeout)
     timeout = setTimeout(async () => {
       value = await editor.getHTML()
-    }, 20) // Delay in ms, adjust as needed
+    }, 50) // Delay in ms, adjust as needed
   }
 
   onDestroy(() => { if (editor) { editor.destroy() } })

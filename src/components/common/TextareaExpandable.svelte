@@ -74,11 +74,9 @@
 
   async function triggerSave (html) {
     if (allowHtml) {
-      // value = await tiptap.getHTML() // get html from editor
-      if (value) {
-        await onSave()
-        tiptap.commands.clearContent(true)
-      }
+      value = await tiptap.getHTML() // get latest html from editor
+      await onSave()
+      tiptap.commands.clearContent(true)
     } else {
       onSave() // otherwise the binded textarea value is used
     }

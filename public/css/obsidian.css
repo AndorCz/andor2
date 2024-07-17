@@ -347,17 +347,17 @@ select {
   padding: 10px 0px;
   margin: 0px;
 }
-
 .editableLong ol {
   margin: 0px;
 }
-
   .editableLong ol p, .editableLong ul p {
     padding: 0px;
   }
-
 .editableLong h1:first-child {
   margin-top: 0px;
+}
+.editableLong img {
+  max-width: 100%;
 }
 
 /* SVELTE-SELECT */
