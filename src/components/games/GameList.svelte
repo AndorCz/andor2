@@ -62,7 +62,7 @@
         <option value='new'>Dle data</option>
         <option value='active'>Dle aktivity</option>
         <option value='name'>Dle názvu</option>
-        <option value='category'>Dle jategorie</option>
+        <option value='category'>Dle kategorie</option>
         <option value='system'>Dle systému</option>
         <option value='count'>Dle příspěvků</option>
         <option value='owner'>Dle vlastníka</option>
