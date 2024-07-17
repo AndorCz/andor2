@@ -224,7 +224,11 @@
   }
 
   @media (max-width: 500px) {
-    .block { display: block }
+    .block {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .block .left { padding: 15px 10px }
     .block .image { width: 100% }
     .headline .button, .headline button {
       padding: 7px;

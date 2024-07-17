@@ -59,13 +59,13 @@
     <h1>Hry</h1>
     <div class='buttons'>
       <select bind:value={sort} on:change={setSort}>
-        <option value='new'>Nové</option>
-        <option value='active'>Aktivní</option>
-        <option value='name'>Název</option>
-        <option value='category'>Kategorie</option>
-        <option value='system'>Systém</option>
-        <option value='count'>Příspěvků</option>
-        <option value='owner'>Vlastník</option>
+        <option value='new'>Dle data</option>
+        <option value='active'>Dle aktivity</option>
+        <option value='name'>Dle názvu</option>
+        <option value='category'>Dle jategorie</option>
+        <option value='system'>Dle systému</option>
+        <option value='count'>Dle příspěvků</option>
+        <option value='owner'>Dle vlastníka</option>
       </select>
       {#if $platform === 'desktop'}
         <div class='toggle mode'>
@@ -83,7 +83,7 @@
 
 {#if showTabs}
   <nav class='tabs secondary'>
-    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nabírající</button>
+    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nábor</button>
     <button on:click={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
     <button on:click={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
     <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
@@ -283,7 +283,11 @@
   }
 
   @media (max-width: 500px) {
-    .block { display: block }
+    .block {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .block .left { padding: 15px 10px }
     .block .image { width: 100% }
     .mode { display: none }
     .headline .button, .headline button {

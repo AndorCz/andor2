@@ -23,7 +23,7 @@
     <h4 class='row selected'>
       <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
       <a href={`${window.location.origin}/game/character?id=${selected.character.id}`} class='character profile'>
-        <div class='name character'>{selected.character.name}</div>
+        <div class='name'>{selected.character.name}</div>
       </a>
     </h4>
     <ul class='characters'>

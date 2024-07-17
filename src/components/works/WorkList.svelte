@@ -268,13 +268,17 @@
   }
 
   @media (max-width: 500px) {
-    .block { display: block }
-    .block .image { width: 100% }
-    .headline .button, .headline button {
-      padding: 7px;
+    .block {
+      display: block;
+      margin-bottom: 10px;
     }
     .block .left {
       display: block;
+      padding: 15px 10px;
+    }
+    .block .image { width: 100% }
+    .headline .button, .headline button {
+      padding: 7px;
     }
   }
 </style>
