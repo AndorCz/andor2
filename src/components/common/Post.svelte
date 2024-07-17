@@ -173,7 +173,6 @@
   }
     .content {
       background-color: var(--block);
-      padding: 20px;
       overflow-wrap: anywhere;
       /* box-shadow: 2px 2px 3px #0002; */
     }

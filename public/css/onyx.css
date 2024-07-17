@@ -576,11 +576,14 @@ select {
 /* Post content */
 
 .post .content {
+  white-space: pre;
+  padding: 0px 20px;
   font-size: var(--fontSizeBase);
   font-weight: 375;
 }
 .post .content p {
   margin: 0px;
+  padding: 5px 0px;
   min-height: 30px;
   line-height: 130%;
 }
