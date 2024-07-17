@@ -48,6 +48,7 @@
   .reactions {
     display: flex;
     align-items: center;
+    margin: -10px 0px;
   }
     .reaction {
       position: relative;
