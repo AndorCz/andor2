@@ -17,6 +17,7 @@
   let channel
   let editing = false
   let saving = false
+  let shouldAutoScroll = true
 
   const people = writable({})
   const typing = writable({})
@@ -53,7 +54,21 @@
     })
   })
 
-  onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
+  onDestroy(() => {
+    if (channel) { supabase.removeChannel(channel) }
+  })
+
+  function handlePostsScroll (node) {
+    function onScroll () {
+      const { scrollTop, scrollHeight, clientHeight } = postsEl
+      const scrollBottom = scrollHeight - scrollTop - clientHeight
+      shouldAutoScroll = scrollBottom < 50 // consider "near bottom" if within 50px of the bottom
+    }
+    node.addEventListener('scroll', onScroll)
+    return {
+      destroy () { node.removeEventListener('scroll', onScroll) }
+    }
+  }
 
   async function waitForAnimation () {
     return new Promise(resolve => setTimeout(resolve, 200))
@@ -125,9 +140,11 @@
     } else if (previousPostsLength < $posts.length) {
       // Smooth scroll for subsequent updates (new messages)
       tick().then(() => {
-        // Smooth scroll to the bottom
-        setTimeout(() => { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }, 10)
-        previousPostsLength = $posts.length // update count
+        if (shouldAutoScroll) {
+          // Smooth scroll to the bottom
+          setTimeout(() => { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }, 10)
+          previousPostsLength = $posts.length // update count
+        }
       })
     }
     previousPostsLength = $posts.length // Update the length after scrolling
@@ -139,7 +156,7 @@
     {#await loadPosts()}
       <span class='loading'>Načítám...</span>
     {:then}
-      <div class='posts' bind:this={postsEl}>
+      <div class='posts' bind:this={postsEl} use:handlePostsScroll>
         {#if $posts.length > 0}
           {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
             <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} />
@@ -204,12 +221,15 @@
         left: 5px;
       }
     .people {
+      overflow: auto;
       padding-top: 20px;
       min-height: 80px;
     }
       .person {
+        display: inline-block;
         padding: 10px;
         margin-left: 5px;
+        margin-bottom: 5px;
         border-radius: 10px;
         background-color: var(--block);
       }
