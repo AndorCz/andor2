@@ -32,6 +32,7 @@
     "@tiptap/extension-text-style": "2.5.1",
     "@tiptap/extension-underline": "2.5.1",
     "@tiptap/extension-youtube": "2.5.1",
+    "@tiptap/extension-heading": "2.5.1",
     "astro": "4.9.1",
     "crypto-js": "4.2.0",
     "luxon": "3.4.4",
