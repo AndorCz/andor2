@@ -169,7 +169,7 @@
         <!-- names of present people -->
         {#if Object.keys($typing).length > 0}
           <div class='typing'>
-            {Object.keys($typing).join('píše..., ')} píše...
+            {Object.keys($typing).join(' píše, ')} píše
           </div>
         {/if}
         <TextareaExpandable autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
@@ -219,6 +219,9 @@
         position: absolute;
         top: -35px;
         left: 5px;
+        background-color: var(--panel);
+        border-radius: 10px;
+        padding: 5px;
       }
     .people {
       overflow: auto;
