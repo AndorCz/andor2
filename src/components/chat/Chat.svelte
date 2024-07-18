@@ -95,11 +95,10 @@
   }
 
   async function loadPosts () {
-    const query = await supabase.rpc('get_discussion_posts', { _thread: 1, page: 0, _limit: 1000, ascending: false })
+    const query = await supabase.rpc('get_discussion_posts', { _thread: 1, page: 0, _limit: 2000, ascending: true })
     const { data: rpcData, error } = await query
     if (error) { handleError(error) } else {
       $posts = rpcData.postdata
-      $posts.reverse()
     }
     await seen()
   }
