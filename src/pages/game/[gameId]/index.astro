@@ -12,9 +12,13 @@
 ---
 
 <Layout title={game?.name} headerStorage={game?.custom_header ? `game-${game.id}.jpg?hash=${game.custom_header}` : null}>
-  {(showSettings ? (
-    <GameSettings {game} {user} client:only='svelte' />
+  {(game ? (
+    showSettings ? (
+      <GameSettings {game} {user} client:only='svelte' />
+    ) : (
+      <Game {game} {user} client:only='svelte' />
+    )
   ) : (
-    <Game {game} {user} client:only='svelte' />
+    <p>Hra nenalezena</p>
   ))}
 </Layout>

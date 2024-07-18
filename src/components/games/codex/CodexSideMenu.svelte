@@ -1,8 +1,10 @@
 <script>
+  import { afterUpdate } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { showError, showSuccess } from '@lib/toasts'
+  import Sortable from 'sortablejs'
 
   export let game
   export let pages
@@ -10,6 +12,19 @@
   export let activePage
   export let isStoryteller
   export let visiblePageCount = 0
+
+  let pageListEl
+  let isSortable = false
+  let sorting = false
+  let saving = false
+  let showHandles = false
+
+  afterUpdate(() => {
+    if (pages.length && isSortable === false) {
+      new Sortable(pageListEl, { animation: 150, handle: '.handle', onStart, onEnd })
+      isSortable = true
+    }
+  })
 
   async function addPage () {
     const name = window.prompt('Název nové stránky').trim()
@@ -23,6 +38,26 @@
     showSuccess('Stránka byla přidána')
   }
 
+  function onStart (event) {
+    sorting = true
+  }
+
+  async function onEnd (sort) {
+    sorting = false
+    if (sort.oldIndex === sort.newIndex) { return }
+    saving = true
+    for (const [index, child] of Array.from(sort.from.children).entries()) {
+      const pageId = child.dataset.id
+      await updateIndex(pageId, index)
+    }
+    saving = false
+  }
+
+  async function updateIndex (pageId, newIndex) {
+    const { error } = await supabase.from('codex_pages').update({ index: newIndex }).eq('id', pageId)
+    if (error) { handleError(error) }
+  }
+
   function activatePage (page) {
     activePage = page
     page ? updateURLParam('codex_page', page.slug) : removeURLParam('codex_page')
@@ -30,30 +65,37 @@
 
   $: if (Array.isArray(pages)) {
     visiblePageCount = isStoryteller ? pages.length : pages.filter((p) => { return !p.hidden }).length
-    pages.sort((a, b) => a.name.localeCompare(b.name)) // sort pages by name
   }
 </script>
 
 <div class='menu' class:empty={visiblePageCount === 0}>
   {#if visiblePageCount > 0}
-    <ul>
+    <ul id='pageGeneral'>
       <li class:active={!activePage}>
         <button on:click={() => { activatePage(null) }} class='name plain'>Obecné</button>
       </li>
+    </ul>
+    <ul id='pageList' bind:this={pageListEl} class:showHandles class:saving>
       {#each pages as item}
         {#if !item.hidden || isStoryteller}
-          <li class:active={item.id === activePage?.id}>
+          <li class:active={item.id === activePage?.id} data-id={item.id}>
             <button on:click={() => { activatePage(item) }} class='name plain' class:hidden={item.hidden}>
               {#if item.hidden}<span class='material square' title='Hráčům skryté' use:tooltip>visibility_off</span>{/if}
               <span>{item.name}</span>
             </button>
+            <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+              <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+            </svg>
           </li>
         {/if}
       {/each}
     </ul>
   {/if}
   {#if isStoryteller}
-    <div class='add'><button on:click={addPage}>Přidat podstránku</button></div>
+    <div class='operations'>
+      <button class='reorder' on:click={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
+      <button on:click={addPage}>Přidat</button>
+    </div>
   {/if}
 </div>
 
@@ -70,6 +112,16 @@
       padding: 20px;
       width: 100%;
     }
+      #pageGeneral {
+        padding-bottom: 0px;
+      }
+      #pageList {
+        padding-top: 0px;
+      }
+      ul.saving {
+        opacity: 0.5;
+        pointer-events: none;
+      }
       li {
         margin: 0px;
         padding: 0px;
@@ -95,8 +147,34 @@
         li .material {
           font-size: 18px;
         }
-      .add {
-        padding: 20px;
+        .showHandles {
+          padding-left: 30px;
+        }
+        .showHandles .handle {
+          display: block;
+        }
+        .handle {
+          display: none;
+          position: absolute;
+          left: -20px;
+          top: 8px;
+          cursor: grab;
+          color: var(--text);
+          opacity: 0.3;
+          min-width: 5px;
+          min-height: 20px;
+        }
+          .handle:hover {
+            opacity: 1;
+          }
+          .handle.hidden {
+            display: none;
+          }
+      .operations {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding-bottom: 20px;
         text-align: center;
       }
       .hidden {

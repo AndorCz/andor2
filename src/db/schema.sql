@@ -124,6 +124,7 @@ create table codex_pages (
   name text not null,
   slug text not null,
   content text,
+  index smallint default 0,
   hidden boolean not null default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
