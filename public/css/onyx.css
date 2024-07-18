@@ -573,6 +573,10 @@ select {
   background-color: var(--accent);
 }
 
+.content img, .content iframe {
+  max-width: 100%;
+}
+
 /* Post content */
 
 .post .content {
