@@ -580,13 +580,15 @@ select {
 /* Post content */
 
 .post .content {
-  white-space: break-spaces;
-  padding: 0px 20px;
+  /*
+  white-space: break-spaces; fixes multiple spaces, breaks imported posts
+  */
+  padding: 20px;
   font-size: var(--fontSizeBase);
   font-weight: 375;
-  line-height: 120%;
 }
 .post .content p {
+  line-height: 120%;
   margin: 0px;
   padding: 5px 0px;
   min-height: 30px;
