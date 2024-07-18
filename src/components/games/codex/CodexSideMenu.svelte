@@ -1,5 +1,5 @@
 <script>
-  import { afterUpdate } from 'svelte'
+  import { beforeUpdate, afterUpdate } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
@@ -18,6 +18,12 @@
   let sorting = false
   let saving = false
   let showHandles = false
+
+  beforeUpdate(() => {
+    if (pages.length) {
+      pages.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
+    }
+  })
 
   afterUpdate(() => {
     if (pages.length && isSortable === false) {

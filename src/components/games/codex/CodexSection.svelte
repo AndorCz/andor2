@@ -17,7 +17,7 @@
   const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
 
   async function loadData () {
-    const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id }).order('index')
+    const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id })
     if (error) { return handleError(error) }
     pages = pagesData
 
