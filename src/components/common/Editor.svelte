@@ -425,6 +425,10 @@
     align-items: center;
     display: flex;
     width: 100%;
+    position: sticky;
+    top: 0px;
+    z-index: 9;
+    background-color: var(--panel);
   }
 
   .bubble {
