@@ -342,30 +342,32 @@
 <Colors />
 
 <!-- Main menu (fixed or bubble) -->
-<div class='menu' class:bubble={isBubble} bind:this={menuEl}>
-  {#if editor}
-    <!-- buttons need to have type=button to not submit forms the editor might be in -->
-    <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
-    <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
-    <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
-    <span class='sep'></span>
-    <button type='button' class='material' on:click={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
-    <button type='button' class='material' on:click={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
-    <span class='sep'></span>
-    <button type='button' on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
-    <button type='button' on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
-    <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
-    <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
-    <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
-    <span class='sep'></span>
-    <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
-    <span class='sep'></span>
-    <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color || '#c4b6ab'} title='Barva' />
-    <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
-    <span class='sep'></span>
-    <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
-    <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
-  {/if}
+<div id='menuWrapper'>
+  <div class='menu' class:bubble={isBubble} bind:this={menuEl}>
+    {#if editor}
+      <!-- buttons need to have type=button to not submit forms the editor might be in -->
+      <span><Dropdown selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
+      <span><Dropdown selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
+      <span><Dropdown selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
+      <span class='sep'></span>
+      <button type='button' class='material' on:click={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
+      <button type='button' class='material' on:click={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
+      <span class='sep'></span>
+      <button type='button' on:click={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
+      <button type='button' on:click={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
+      <button type='button' on:click={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
+      <button type='button' on:click={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
+      <button type='button' on:click={resetTextStyle} title='Reset stylů textu' class='material' disabled={!editor.getAttributes('textStyle').fontFamily}>format_clear</button>
+      <span class='sep'></span>
+      <button type='button' on:click={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
+      <span class='sep'></span>
+      <input type='color' class='button' list='presetColors' on:input={event => editor.chain().focus().setColor(event.target.value).run()} value={editor.getAttributes('textStyle').color || '#c4b6ab'} title='Barva' />
+      <button type='button' on:click={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
+      <span class='sep'></span>
+      <button type='button' on:click={setLink} class='material' title='Odkaz'>link</button>
+      <button type='button' on:click={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
+    {/if}
+  </div>
 </div>
 
 <div class:isFocused class='inner' class:useBubble={isBubble}>
@@ -418,6 +420,12 @@
     padding: 5px;
   }
 
+  #menuWrapper {
+    position: sticky;
+    top: 0px;
+    z-index: 9;
+  }
+
   .menu {
     white-space: nowrap;
     height: 50px;
@@ -425,11 +433,6 @@
     align-items: center;
     display: flex;
     width: 100%;
-    /*
-    position: sticky;
-    top: 0px;
-    z-index: 9;
-    */
     background-color: var(--panel);
   }
 
