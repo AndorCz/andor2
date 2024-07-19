@@ -34,15 +34,22 @@ export function cropPortrait (img, ratio) {
   return canvas
 }
 
-export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/jpeg') {
+export function resizePortrait (img, newWidth, newHeight, mimeType = 'image/png') {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     canvas.width = newWidth
     canvas.height = newHeight
+    ctx.clearRect(0, 0, newWidth, newHeight)
     ctx.drawImage(img, 0, 0, newWidth, newHeight)
     canvas.toBlob(blob => {
-      blob ? resolve({ blob, base64: canvas.toDataURL(mimeType) }) : reject(new Error('Konverze canvasu do blobu selhala'))
+      if (blob) { // Convert canvas to base64
+        const reader = new FileReader()
+        reader.onloadend = () => { resolve({ blob, base64: reader.result }) }
+        reader.readAsDataURL(blob)
+      } else {
+        reject(new Error('Canvas conversion failed'))
+      }
     }, mimeType)
   })
 }

@@ -46,8 +46,8 @@
 
       if (img.naturalWidth > saveWidth) { // resize if too big
         displayHeight = saveHeight * (displayWidth / saveWidth)
-        const resized = await resizePortrait(img, saveWidth, saveHeight, 'image/jpeg')
-        file = new File([resized.blob], files[0].name, { type: 'image/jpeg' }) // blob to file
+        const resized = await resizePortrait(img, saveWidth, saveHeight, 'image/png')
+        file = new File([resized.blob], files[0].name, { type: 'image/png' }) // blob to file
         newPortraitBase64 = resized.base64 // for form submission (only way to pass modified file to the server with formdata)
       } else {
         file = files[0]
