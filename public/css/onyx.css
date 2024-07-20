@@ -1,6 +1,5 @@
-@import url('common/base.css');
-
 /* VARIABLES */
+
 :root {
   --scroll-bar-color: #8885;
   --scroll-bar-color-hover: #888;
@@ -45,8 +44,7 @@
   --headlineFont: 'Alegreya', 'Times New Roman', Times, serif;
 }
 
-
-/* Component overrides */
+/* COMPONENT OVERRIDES */
 
 /*
 #newsCategorySelect button {
@@ -78,31 +76,30 @@
   align-items: center;
 }
 
-
 /* MOBILE */
 
 @media (max-width: 768px) {}
-
 @media (max-width: 500px) {}
 
 /* OVERRIDES */
-#editorial p{
+
+#editorial p {
   font-size: var(--fontSizeBase) !important;
 }
 
-
-aside #tabs button span.label{
+aside #tabs button span.label {
   font-size: var(--fontSizeBase) !important;
 }
 
-aside #panels h4{
+aside #panels h4 {
   font-size: calc(1.2 * var(--fontSizeBase)) !important;
 }
 
-aside #panels ul{
+aside #panels ul {
   padding-left: 0px !important;
 }
-aside #panels a{
+
+aside #panels a {
   font-size: var(--fontSizeBase) !important;
   font-variation-settings: 'wght' 400 !important;
 }

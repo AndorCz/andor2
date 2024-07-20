@@ -1,6 +1,5 @@
-@import url('common/base.css');
-
 /* VARIABLES */
+
 :root {
   --scroll-bar-color: #8885;
   --scroll-bar-color-hover: #888;
@@ -38,19 +37,14 @@
 }
 
 /* BASICS */
+
 code {
   font-size: 17px;
   background: black;
   color: #AAA;
 }
 
-
 /* FORM */
-
-button, .button {
-  font-size: 20px;
-}
-
 
 input[type=text], input[type=email], input[type=password], textarea, input[type=checkbox] {
   font-size: 20px;
@@ -64,18 +58,19 @@ select {
   font-size: 18px;
 }
 
-
 /* SVELTE-SELECT */
+
 .svelte-select {
   --font-size: 20px;
 }
 
 /* TABS */
-  .tabs a, .tabs button {
-    font-size: 22px;
-  }
 
-/* Post content */
+.tabs a, .tabs button {
+  font-size: 22px;
+}
+
+/* POST CONTENT */
 
 .post .content {
   font-size: 20px;
@@ -87,27 +82,7 @@ select {
   font-size: 20px;
 }
 
-
-
-/* Component overrides */
-
-/*
-#newsCategorySelect button {
-  background: none;
-  padding: 10px 30px 10px 0px;
-  position: relative;
-  border: none;
-  box-shadow: none;
-  font-family: inherit;
-  font-size: inherit;
-  white-space: nowrap;
-}
-  #newsCategorySelect button.dropdown-toggle::after {
-    content: '⧨';
-    position: absolute;
-    right: 0px;
-  }
-*/
+/* COMPONENT OVERRIDES */
 
 .headline.pinned {
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
@@ -121,18 +96,19 @@ select {
   align-items: center;
 }
 
-/* MOBILE overrides */
+/* MOBILE OVERRIDES */
+
 @media (max-width: 768px) {
-  body, a {font-size: 18px;}
-  h1 {font-size: 30px;}
+  body, a { font-size: 18px }
+  h1 { font-size: 30px }
 
   .tabs a.active, .tabs button.active {
-      font-size: 20px;
+    font-size: 20px;
   }
 }
 
 @media (max-width: 500px) {
   .tabs a, .tabs button {
-      font-size: 21px;
+    font-size: 21px;
   }
 }
