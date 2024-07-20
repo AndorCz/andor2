@@ -570,6 +570,7 @@ returns json as $$
 declare
   postdata json;
   total_count int;
+  username text;
 begin
   -- get the total count of matching records
   select count(*)
@@ -577,20 +578,61 @@ begin
   from discussion_posts_owner po
   where po.thread = _thread;
   
-  -- get the paginated posts
-  select json_agg(t)
-  into postdata
-  from (
-    select po.*, get_character_names(po.audience) as audience_names
-    from discussion_posts_owner po
-    where po.thread = _thread
-    order by 
-      case when ascending then po.created_at end asc,
-      case when not ascending then po.created_at end desc
-    limit _limit
-    offset page * _limit
-  ) t;
-
+  IF _thread = 1 THEN
+    SELECT name
+	  INTO username
+	  FROM profiles
+	 WHERE (id = auth.uid())
+	;
+    -- get posts for chat with username highlight
+    select json_agg(t)
+    into postdata
+    from (
+      select 
+     po.id
+   , po.thread
+   , po.owner
+   , po.owner_type
+   , REGEXP_REPLACE(po.content, '@'||username, '<span class="highlight">' ||username||'</span>', 'g') as content
+   , po.audience
+   , po.openai_post
+   , po.moderated
+   , po.dice
+   , po.created_at
+   , po.important
+   , po.updated_at
+   , po.owner_name
+   , po.owner_portrait
+   , po.post_id
+   , po.thumbs
+   , po.frowns
+   , po.shocks
+   , po.hearts
+   , po.laughs
+   , get_character_names(po.audience) as audience_names
+      from discussion_posts_owner po
+      where po.thread = _thread
+      order by 
+        case when ascending then po.created_at end asc,
+        case when not ascending then po.created_at end desc
+      limit _limit
+      offset page * _limit
+    ) t;
+  ELSE
+    -- get the paginated posts
+    select json_agg(t)
+    into postdata
+    from (
+      select po.*, get_character_names(po.audience) as audience_names
+      from discussion_posts_owner po
+      where po.thread = _thread
+      order by 
+        case when ascending then po.created_at end asc,
+        case when not ascending then po.created_at end desc
+      limit _limit
+      offset page * _limit
+    ) t;
+  END IF;
   -- return the result as json
   return json_build_object(
     'count', total_count,
