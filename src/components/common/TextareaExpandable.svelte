@@ -146,7 +146,7 @@
     }
     .singleLine textarea {
       min-height: 30px !important;
-      overflow: hidden;
+      overflow: auto;
     }
     .withButton {
       padding-right: 80px;
