@@ -1,4 +1,3 @@
-
 import { Notyf } from 'notyf'
 import { removeURLParam } from '@lib/utils'
 import 'notyf/notyf.min.css'
@@ -9,16 +8,16 @@ export const initToasts = () => {
     position: { x: 'center', y: 'top' },
     ripple: false,
     types: [
-      { type: 'success', className: 'success', background: 'var(--maximum)', icon: false },
+      { type: 'success', className: 'success', background: 'var(--maximum)', icon: false, dismissible: true },
       { type: 'error', className: 'error', background: 'var(--error)', icon: false, duration: 99999, dismissible: true }
     ]
   })
-  window.showSuccess = (text) => {
-    window.notyf.success(text)
+  window.showSuccess = (text, duration = 3000) => {
+    window.notyf.success({ message: text, duration })
   }
-  window.showError = (text) => {
+  window.showError = (text, duration = 10000) => {
     console.error(text)
-    window.notyf.error(text)
+    window.notyf.error({ message: text, duration })
   }
 }
 
@@ -36,10 +35,10 @@ export const lookForToast = () => {
   }, 100)
 }
 
-export const showSuccess = (text) => {
-  if (window) { window.notyf.success(text) }
+export const showSuccess = (text, duration = 20000) => {
+  if (window) { window.notyf.success({ message: text, duration }) }
 }
 
-export const showError = (text) => {
-  if (window) { window.notyf.error(text) }
+export const showError = (text, duration = 10000) => {
+  if (window) { window.notyf.success({ message: text, duration }) }
 }
