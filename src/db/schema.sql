@@ -593,7 +593,11 @@ begin
    , po.thread
    , po.owner
    , po.owner_type
-   , REGEXP_REPLACE(po.content, '@'||username, '<span class="highlight">' ||username||'</span>', 'g') as content
+   , CASE WHEN po.created_at = po.updated_at THEN
+       REGEXP_REPLACE(po.content, '@'||username, '<span class="highlight">' ||username||'</span>', 'g')
+	 ELSE
+	   REGEXP_REPLACE(po.content, '@'||username, '<span class="highlight">' ||username||'</span>', 'g') || ' <font size = "2" color="#92857a">' || '(edited)' || '</font>' 
+     END as content
    , po.audience
    , po.openai_post
    , po.moderated
