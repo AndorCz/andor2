@@ -198,6 +198,7 @@
         width: 70px;
         height: 70px;
         object-fit: cover;
+        object-position: center 10%;
         border-radius: 10px;
         box-shadow: 2px 2px 3px #0003;
       }

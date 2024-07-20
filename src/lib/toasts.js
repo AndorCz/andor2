@@ -35,7 +35,7 @@ export const lookForToast = () => {
   }, 100)
 }
 
-export const showSuccess = (text, duration = 20000) => {
+export const showSuccess = (text, duration = 2000) => {
   if (window) { window.notyf.success({ message: text, duration }) }
 }
 
