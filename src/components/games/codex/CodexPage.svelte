@@ -1,7 +1,8 @@
 <script>
+  import { writable } from 'svelte/store'
+  import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
   import { formatDate, createSlug, updateURLParam, removeURLParam } from '@lib/utils'
-  import { showSuccess, showError } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
   import EditableLong from '@components/common/EditableLong.svelte'
 
@@ -11,7 +12,8 @@
   export let isStoryteller
   export let onPageChange
 
-  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
+  const mentionList = writable([])
+  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
 
   async function updatePage () {
     const { error } = await supabase.from('codex_pages').update({ content: page.content }).eq('id', page.id)

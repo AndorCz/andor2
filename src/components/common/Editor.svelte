@@ -138,12 +138,13 @@
       isBubble = false
     }
 
-    if (mentionList) {
+    console.log('mentionList', $mentionList)
+    if ($mentionList) {
       extensions.push(
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
           suggestion: {
-            items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
+            items: ({ query }) => { return $mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {

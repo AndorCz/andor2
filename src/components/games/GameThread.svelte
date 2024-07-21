@@ -37,10 +37,12 @@
   const activeAudienceIds = writable()
   const posts = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
-  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
+
+  const mentionList = writable([])
+  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
+
   const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
   let otherCharacters = []
-
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },

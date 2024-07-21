@@ -19,7 +19,7 @@
   let saving = false
   let shouldAutoScroll = true
 
-  const mentionList = writable() // Set of unique posters
+  const mentionList = writable([])
   const people = writable({})
   const typing = writable({})
   const posts = writable([])
@@ -32,18 +32,18 @@
       })
       .on('presence', { event: 'sync' }, () => { // sync is called on every presence change
         const newState = channel.presenceState()
+        Object.keys(newState).forEach((key) => {
+          addPoster({ id: key, name: newState[key][0].user, type: 'user' })
+        })
         $people = newState
-        // add people to the mentionList
-        Object.keys(newState).forEach((key) => { $mentionList.add(key) })
       })
       .on('broadcast', { event: 'typing' }, (data) => { // triggered when someone is typing
         $typing[data.payload.user] = true
         removeTyping(data.payload.user)
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        // console.log('somebody joined', key, newPresences)
-        $mentionList.add(key)
-      })
+      // .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      //   // console.log('somebody joined', key, newPresences)
+      // })
       // .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
       //   // console.log('somebody left', key, leftPresences)
       // })
@@ -61,10 +61,22 @@
     if (channel) { supabase.removeChannel(channel) }
   })
 
+  function addPoster (poster) {
+    if (!$mentionList.some((p) => p.id === poster.id)) {
+      $mentionList.push(poster)
+    }
+  }
+
   async function loadAllPosters () {
     const { data: posters, error } = await supabase.from('discussion_posts_owner').select('owner, owner_name, owner_type').eq('thread', 1)
     if (error) { return handleError(error) }
-    return new Set(posters.map(poster => poster.owner_name))
+    // return unique posters
+    return posters.reduce((acc, poster) => {
+      if (!acc.some((p) => p.id === poster.owner)) {
+        acc.push({ name: poster.owner_name, id: poster.owner, type: poster.owner_type })
+      }
+      return acc
+    }, [])
   }
 
   function handlePostsScroll (node) {
@@ -181,7 +193,7 @@
             {Object.keys($typing).join(' píše, ')} píše
           </div>
         {/if}
-        <TextareaExpandable forceBubble allowHtml mentionList={Array.from($mentionList)} autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
