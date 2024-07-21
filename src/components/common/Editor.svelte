@@ -36,6 +36,7 @@
   export let fonts = null
   export let mentionList = null
   export let forceBubble = false
+  export let singleLine = false
 
   let editor
   let editorEl
@@ -384,9 +385,9 @@
       <button type='button' on:click={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
     {/if}
   </div>
-  <div class='editor' bind:this={editorEl}></div>
+  <div class='editor' bind:this={editorEl} class:singleLine></div>
   <div class='clear'></div>
-  {#if wasFocused}
+  {#if wasFocused && !singleLine}
     <div class='toolbelt'>
       <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
       <DropdownSlot title='Obrázek' defaultLabel='image' openUp>
@@ -430,6 +431,7 @@
   .menu {
     white-space: nowrap;
     height: 50px;
+    overflow-y: hidden;
     overflow-x: auto;
     align-items: center;
     display: flex;

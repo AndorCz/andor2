@@ -619,6 +619,12 @@ select {
 	overflow-wrap: break-word;
 	word-break: break-word;
 }
+	.singleLine .ProseMirror {
+		padding: 15px;
+		padding-top: 8px;
+		padding-bottom: 5px;
+		min-height: 30px !important;
+	}
 .ProseMirror, .ProseMirror iframe {
 	max-width: 100%;
 }
