@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { writable } from 'svelte/store'
   import { supabase, handleError } from '@lib/database-browser'
   import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
@@ -19,7 +20,9 @@
   let searchEl
   let searchPhrase = ''
   let searchResults = []
-  const mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
+
+  const mentionList = writable([])
+  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
 
   onMount(() => {
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }

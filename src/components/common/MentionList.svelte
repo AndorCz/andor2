@@ -47,7 +47,7 @@
     .mentionList button {
       text-align: left;
     }
-      .mentionList button.selected {
+      .mentionList button:hover, .mentionList button.selected {
         color: var(--maximum);
       }
 </style>

@@ -32,6 +32,7 @@
   let editorRef
   let tiptap
   let originalValue = value
+  let height = '60px'
 
   onMount(() => {
     if (allowHtml) {
@@ -44,7 +45,8 @@
   function setHeight (node) { // textarea only
     const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
-    textareaRef.style.height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
+    height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
+    textareaRef.style.height = height
   }
 
   async function cancelEdit () {
@@ -109,7 +111,7 @@
 
 <div class='wrapper' class:singleLine class:fixedMenu={allowHtml && !(forceBubble || user.editor_bubble)}>
   {#if allowHtml}
-    <Editor bind:value={value} bind:this={editorRef} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
+    <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - value.length}</span>
@@ -144,10 +146,13 @@
       min-height: var(--minHeight);
       display: block;
     }
-    .singleLine textarea {
-      min-height: 30px !important;
-      overflow: auto;
-    }
+      .singleLine textarea {
+        min-height: 30px !important;
+        overflow-y: auto;
+        padding: 0px;
+        padding-left: 15px;
+        padding-top: 15px;
+      }
     .withButton {
       padding-right: 80px;
     }

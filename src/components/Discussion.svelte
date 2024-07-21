@@ -20,6 +20,7 @@
   export let useIdentities = false
 
   const posts = writable([])
+  const mentionList = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
@@ -31,7 +32,6 @@
   let editing = false
   let page = 0
   let pages
-  let mentionList = []
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -54,8 +54,8 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    mentionList = await loadAllPosters()
-    if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
+    $mentionList = await loadAllPosters()
+    if (isFilledArray($mentionList) && isFilledArray(data.characters)) {
       addCharacterNameStyles(data.characters)
     }
   })

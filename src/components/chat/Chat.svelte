@@ -19,11 +19,12 @@
   let saving = false
   let shouldAutoScroll = true
 
+  const mentionList = writable([])
   const people = writable({})
   const typing = writable({})
   const posts = writable([])
 
-  onMount(() => {
+  onMount(async () => {
     channel = supabase.channel('chat', { config: { presence: { key: user.id } } })
     channel
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
@@ -31,21 +32,23 @@
       })
       .on('presence', { event: 'sync' }, () => { // sync is called on every presence change
         const newState = channel.presenceState()
+        Object.keys(newState).forEach((key) => {
+          addPoster({ id: key, name: newState[key][0].user, type: 'user' })
+        })
         $people = newState
       })
       .on('broadcast', { event: 'typing' }, (data) => { // triggered when someone is typing
         $typing[data.payload.user] = true
         removeTyping(data.payload.user)
       })
-      /*
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('somebody joined', key, newPresences)
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('somebody left', key, leftPresences)
-      })
-      */
+      // .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      //   // console.log('somebody joined', key, newPresences)
+      // })
+      // .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      //   // console.log('somebody left', key, leftPresences)
+      // })
 
+    $mentionList = await loadAllPosters()
     const userStatus = { user: user.name, online_at: new Date().toISOString() }
 
     channel.subscribe(async (status) => {
@@ -57,6 +60,24 @@
   onDestroy(() => {
     if (channel) { supabase.removeChannel(channel) }
   })
+
+  function addPoster (poster) {
+    if (!$mentionList.some((p) => p.id === poster.id)) {
+      $mentionList.push(poster)
+    }
+  }
+
+  async function loadAllPosters () {
+    const { data: posters, error } = await supabase.from('discussion_posts_owner').select('owner, owner_name, owner_type').eq('thread', 1)
+    if (error) { return handleError(error) }
+    // return unique posters
+    return posters.reduce((acc, poster) => {
+      if (!acc.some((p) => p.id === poster.owner)) {
+        acc.push({ name: poster.owner_name, id: poster.owner, type: poster.owner_type })
+      }
+      return acc
+    }, [])
+  }
 
   function handlePostsScroll (node) {
     function onScroll () {
@@ -92,6 +113,10 @@
     if (res.error || json.error) { return showError(res.error || json.error) }
     showSuccess('Příspěvek smazán')
     await loadPosts()
+  }
+
+  async function triggerReply (postId, userName, userId) {
+    textareaRef.addReply(postId, userName, userId)
   }
 
   async function loadPosts () {
@@ -159,7 +184,7 @@
       <div class='posts' bind:this={postsEl} use:handlePostsScroll>
         {#if $posts.length > 0}
           {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
-            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} />
+            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} onReply={triggerReply} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>
@@ -172,7 +197,7 @@
             {Object.keys($typing).join(' píše, ')} píše
           </div>
         {/if}
-        <TextareaExpandable autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>

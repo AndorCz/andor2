@@ -36,6 +36,7 @@
   export let fonts = null
   export let mentionList = null
   export let forceBubble = false
+  export let singleLine = false
 
   let editor
   let editorEl
@@ -137,21 +138,21 @@
       isBubble = false
     }
 
-    if (mentionList) {
+    console.log('mentionList', $mentionList)
+    if ($mentionList) {
       extensions.push(
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
           suggestion: {
-            items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
+            items: ({ query }) => { return $mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {
             const type = node.attrs.type === 'character' ? 'char' : 'user'
-            return [
-              'span',
-              mergeAttributes({ class: `mention ${node.attrs.type} ${type}_${node.attrs.id}` }, options.HTMLAttributes),
-              `${node.attrs.label}`
-            ]
+            const url = node.attrs.type === 'character' ? `/game/character?id=${node.attrs.id}` : `/user?id=${node.attrs.id}`
+            const label = node.attrs.type === 'character' ? node.attrs.label : '@' + node.attrs.label
+            const classes = `mention ${node.attrs.type} ${type}_${node.attrs.id}`
+            return ['a', mergeAttributes({ href: url, class: classes }, options.HTMLAttributes), label]
           }
         })
       )
@@ -384,9 +385,9 @@
       <button type='button' on:click={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
     {/if}
   </div>
-  <div class='editor' bind:this={editorEl}></div>
+  <div class='editor' bind:this={editorEl} class:singleLine></div>
   <div class='clear'></div>
-  {#if wasFocused}
+  {#if wasFocused && !singleLine}
     <div class='toolbelt'>
       <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
       <DropdownSlot title='Obrázek' defaultLabel='image' openUp>
@@ -430,6 +431,7 @@
   .menu {
     white-space: nowrap;
     height: 50px;
+    overflow-y: hidden;
     overflow-x: auto;
     align-items: center;
     display: flex;
