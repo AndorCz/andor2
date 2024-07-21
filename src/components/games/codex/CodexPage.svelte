@@ -13,7 +13,7 @@
   export let onPageChange
 
   const mentionList = writable([])
-  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id } })
+  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
 
   async function updatePage () {
     const { error } = await supabase.from('codex_pages').update({ content: page.content }).eq('id', page.id)

@@ -115,6 +115,10 @@
     await loadPosts()
   }
 
+  async function triggerReply (postId, userName, userId) {
+    textareaRef.addReply(postId, userName, userId)
+  }
+
   async function loadPosts () {
     const query = await supabase.rpc('get_discussion_posts', { _thread: 1, page: 0, _limit: 2000, ascending: true })
     const { data: rpcData, error } = await query
@@ -180,7 +184,7 @@
       <div class='posts' bind:this={postsEl} use:handlePostsScroll>
         {#if $posts.length > 0}
           {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
-            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} />
+            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} onReply={triggerReply} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>

@@ -149,11 +149,10 @@
           },
           renderHTML ({ options, node, HTMLAttributes }) {
             const type = node.attrs.type === 'character' ? 'char' : 'user'
-            return [
-              'span',
-              mergeAttributes({ class: `mention ${node.attrs.type} ${type}_${node.attrs.id}` }, options.HTMLAttributes),
-              `${node.attrs.label}`
-            ]
+            const url = node.attrs.type === 'character' ? `/game/character?id=${node.attrs.id}` : `/user?id=${node.attrs.id}`
+            const label = node.attrs.type === 'character' ? node.attrs.label : '@' + node.attrs.label
+            const classes = `mention ${node.attrs.type} ${type}_${node.attrs.id}`
+            return ['a', mergeAttributes({ href: url, class: classes }, options.HTMLAttributes), label]
           }
         })
       )

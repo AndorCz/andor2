@@ -13,6 +13,7 @@
   export let onEdit
   export let onDelete
   export let unread = false
+  export let onReply
 
   let toolbarRef
   const isMine = post.owner === user.id
@@ -48,7 +49,10 @@
       {/if}
       <div class='toolbar' bind:this={toolbarRef}>
         <span class='time'>{formatDate(post.created_at)}</span>
-        <ReactionInput {user} itemStore={postStore} type='post' />
+        <div class='rowInner'>
+          <ReactionInput {user} itemStore={postStore} type='post' />
+          <button on:click={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
+        </div>
       </div>
       <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
         {#if unread}
@@ -141,7 +145,7 @@
       .theirs .toolbar {
         left: 0px;
       }
-      .edit, .delete {
+      .edit, .delete, .reply {
         padding: 5px;
       }
     .badge {

@@ -561,7 +561,10 @@ select {
 .post .content a {
 	text-decoration: underline;
 }
-.post .content a:visited {
+.post .content a.mention {
+	text-decoration: none;
+}
+.post .content a:not(.mention):visited {
 	color: var(--linkVisited);
 }
 .post .content a.button {
