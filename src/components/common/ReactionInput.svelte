@@ -68,6 +68,7 @@
     .reaction img {
       width: 20px;
       fill: var(--dim);
+      max-width: initial;
     }
       .reaction .count {
         padding-left: 5px;

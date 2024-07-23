@@ -279,7 +279,7 @@ select {
 
 /* #region COMMON */
 .highlight {
-	color: var(--new);
+	color: var(--new) !important;
 	font-weight: bold;
 }
 
@@ -574,7 +574,7 @@ select {
 .post .content a.button:visited {
 	color: var(--text);
 }
-.post .content .user {
+.post .content .user:not(.highlight) {
 	color: var(--user) !important;
 }
 .post .content a.user:hover {

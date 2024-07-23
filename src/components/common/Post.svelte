@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { writable } from 'svelte/store'
   import { Render } from '@jill64/svelte-sanitize'
@@ -25,6 +26,11 @@
 
   const postStore = writable(post)
   let expanded = false
+  let contentEl
+
+  onMount(() => {
+    checkMeMentioned()
+  })
 
   function onHeaderClick () {
     if ($postStore.moderated) { expanded = !expanded }
@@ -44,6 +50,17 @@
     $postStore.important = important
     const { error } = await supabase.from('posts').update({ important }).eq('id', $postStore.id)
     if (error) { return handleError(error) }
+  }
+
+  function checkMeMentioned () {
+    const mentions = contentEl.querySelectorAll('.mention')
+    mentions.forEach(mention => {
+      if (mention.textContent === '@' + user.name) { mention.classList.add('highlight') }
+    })
+    const replies = contentEl.querySelectorAll('cite')
+    replies.forEach(reply => {
+      if (reply.textContent === user.name + ':') { reply.classList.add('highlight') }
+    })
   }
 </script>
 
@@ -97,7 +114,7 @@
       </span>
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-    <div class='content' on:click={onImageClick}>
+    <div class='content' on:click={onImageClick} bind:this={contentEl}>
       {#if $platform === 'mobile'}
         <div class='icon' style='--iconSize: {iconSize}px'>
           {#if $postStore.owner_portrait}
@@ -109,7 +126,8 @@
           {/if}
         </div>
       {/if}
-        <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+      <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+      {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
       <div class='clear'></div>
       {#if allowReactions}
         <Reactions {user} itemStore={postStore} type='post' />

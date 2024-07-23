@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
@@ -15,23 +16,42 @@
   export let unread = false
   export let onReply
 
-  let toolbarRef
+  let toolbarEl
+  let contentEl
   const isMine = post.owner === user.id
   const postStore = writable(post)
+
+  onMount(() => {
+    checkMeMentioned()
+  })
+
+  function checkMeMentioned () {
+    const mentions = contentEl.querySelectorAll('.mention')
+    mentions.forEach(mention => {
+      if (mention.textContent === '@' + user.name) { mention.classList.add('highlight') }
+    })
+    const replies = contentEl.querySelectorAll('cite')
+    replies.forEach(reply => {
+      if (reply.textContent === user.name + ':') { reply.classList.add('highlight') }
+    })
+  }
 </script>
 
 <div class='postRow {isMine ? 'mine' : 'theirs'}' class:unread={unread}>
   {#if isMine}
     <div class='rowInner'>
-      <div class='toolbar' bind:this={toolbarRef}>
+      <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='buttons'>
           <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
           <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
         </div>
       </div>
-      <div class='post' use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
-        <div class='content'><Render html={post.content} /></div>
+      <div class='post' use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
+        <div class='content' bind:this={contentEl}>
+          <Render html={post.content} />
+          {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
+        </div>
       </div>
       {#if post.owner_portrait}
         <a href={'/user?id=' + post.owner} class='user'>
@@ -47,19 +67,22 @@
           <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
         </a>
       {/if}
-      <div class='toolbar' bind:this={toolbarRef}>
+      <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='rowInner'>
           <ReactionInput {user} itemStore={postStore} type='post' />
           <button on:click={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
         </div>
       </div>
-      <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarRef, trigger: 'click' }}>
+      <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
         {#if unread}
           <span class='badge'></span>
         {/if}
         <div class='name'>{post.owner_name}</div>
-        <div class='content'><Render html={post.content} /></div>
+        <div class='content' bind:this={contentEl}>
+          <Render html={post.content} />
+          {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
+        </div>
       </div>
     </div>
     <ReactionDisplay {user} itemStore={postStore} type='post' />
@@ -150,6 +173,10 @@
       }
     .badge {
       left: 0px;
+    }
+    .edited {
+      font-size: 12px;
+      color: var(--dim);
     }
   @media (max-width: 500px) {
     .portrait {

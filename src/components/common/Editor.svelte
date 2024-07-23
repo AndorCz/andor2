@@ -138,7 +138,6 @@
       isBubble = false
     }
 
-    console.log('mentionList', $mentionList)
     if ($mentionList) {
       extensions.push(
         Mention.configure({
