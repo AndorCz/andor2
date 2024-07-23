@@ -1,8 +1,8 @@
 <script>
   import { writable } from 'svelte/store'
-  import { tick, onMount, onDestroy } from 'svelte'
-  import { supabase, handleError, sendPost, setRead } from '@lib/database-browser'
-  import { throttle } from '@lib/utils'
+  import { throttle, isFilledArray } from '@lib/utils'
+  import { tick, onMount, onDestroy, afterUpdate } from 'svelte'
+  import { supabase, handleError, sendPost, setRead, getReply } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import ChatPost from '@components/chat/ChatPost.svelte'
@@ -12,8 +12,10 @@
 
   let previousPostsLength = 0
   let textareaValue = ''
-  let textareaRef
+  let textareaEl
   let postsEl
+  let replyPostEl
+  let replyPostData
   let channel
   let editing = false
   let saving = false
@@ -23,6 +25,7 @@
   const people = writable({})
   const typing = writable({})
   const posts = writable([])
+  const replies = {}
 
   onMount(async () => {
     channel = supabase.channel('chat', { config: { presence: { key: user.id } } })
@@ -57,9 +60,75 @@
     })
   })
 
+  afterUpdate(() => {
+    if (isFilledArray($posts)) {
+      removeListeners()
+      setupReplyListeners()
+    }
+  })
+
   onDestroy(() => {
     if (channel) { supabase.removeChannel(channel) }
   })
+
+  function removeListeners () {
+    const cites = document.querySelectorAll('cite[data-id]')
+    for (const citeEl of cites) {
+      citeEl.removeEventListener('pointerdown', addReply)
+      citeEl.removeEventListener('mouseenter', showReply)
+      citeEl.removeEventListener('mouseleave', hideReply)
+    }
+  }
+
+  async function setupReplyListeners () { // pre-requisite for replies
+    // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
+    const cites = document.querySelectorAll('cite[data-id]')
+    for (const citeEl of cites) {
+      const id = parseInt(citeEl.getAttribute('data-id'))
+      // for each cite, load the post from supabase and save it's data
+      replies[id] = await getReply($posts, id)
+      citeEl.addEventListener('pointerdown', addReply)
+      citeEl.addEventListener('mouseenter', showReply)
+      citeEl.addEventListener('mouseleave', hideReply)
+    }
+  }
+
+  function addReply (event) {
+    const postId = parseInt(event.target.getAttribute('data-id'))
+    const replyData = replies[postId]
+    if (!replyData) return
+
+    // check if the container already exists
+    const existingContainer = event.target.nextElementSibling
+    const isReplyContainer = existingContainer && existingContainer.classList.contains('nestedReply')
+
+    if (isReplyContainer) { // if the container exists, remove it (toggle reply visibility)
+      event.target.parentNode.removeChild(existingContainer)
+    } else { // create a new container for the reply
+      const container = document.createElement('div')
+      container.classList.add('nestedReply')
+      event.target.parentNode.insertBefore(container, event.target.nextSibling)
+      new ChatPost({ target: container, props: { post: replyData, user, iconSize: 0 } })
+      setupReplyListeners()
+    }
+  }
+
+  function showReply (event) {
+    const id = parseInt(event.target.getAttribute('data-id'))
+    replyPostData = replies[id]
+    if (replyPostData) {
+      replyPostEl.style.display = 'block'
+      // get number of pixels the content is scrolled from the top
+      const scrollTop = window.scrollY
+      const offsetTop = event.target.getBoundingClientRect().top
+      const headerSize = 150
+      replyPostEl.style.top = scrollTop - headerSize + offsetTop - 20 + 'px'
+    }
+  }
+
+  function hideReply () {
+    replyPostEl.style.display = 'none'
+  }
 
   function addPoster (poster) {
     if (!$mentionList.some((p) => p.id === poster.id)) {
@@ -102,7 +171,7 @@
   function onEdit (id, content) {
     editing = id
     textareaValue = content
-    textareaRef.triggerEdit(id, content)
+    textareaEl.triggerEdit(id, content)
     document.getElementById('textareaWrapper').scrollIntoView({ behavior: 'smooth' })
     // saving is done in submitPost
   }
@@ -116,7 +185,7 @@
   }
 
   async function triggerReply (postId, userName, userId) {
-    textareaRef.addReply(postId, userName, userId)
+    textareaEl.addReply(postId, userName, userId)
   }
 
   async function loadPosts () {
@@ -197,7 +266,7 @@
             {Object.keys($typing).join(' píše, ')} píše
           </div>
         {/if}
-        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaRef} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
@@ -210,6 +279,13 @@
           <span class='person user'>{person[0].user}</span>
         {/each}
       </div>
+    {/if}
+  </div>
+  <div id='replyPreview' bind:this={replyPostEl}>
+    {#if replyPostData}
+      {#key replyPostData}
+        <ChatPost {user} post={replyPostData} {onEdit} {onDelete} onReply={triggerReply} />
+      {/key}
     {/if}
   </div>
 {/await}
@@ -262,6 +338,22 @@
         background-color: var(--block);
       }
 
+  #replyPreview {
+    position: absolute;
+    left: 20px;
+    min-width: 50vw;
+    display: none;
+    transform: scale(0.75);
+    transform-origin: top left;
+    padding: 20px;
+    background-color: var(--panel);
+    box-shadow: 0px 0px 10px var(--background);
+  }
+  @media (max-width: 860px) {
+    #replyPreview {
+      width: 150%;
+    }
+  }
   @media (max-width: 500px) {
     .people {
       margin-top: 5px;
