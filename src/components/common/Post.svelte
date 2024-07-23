@@ -262,6 +262,10 @@
       background-color: var(--prominent);
       border-left: 5px solid var(--linkVisited);
     }
+    .edited {
+      font-size: 12px;
+      color: var(--dim);
+    }
 
   @media (max-width: 860px) {
     .post {
