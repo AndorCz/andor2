@@ -59,6 +59,7 @@
       citeEl.removeEventListener('pointerdown', addReply)
       citeEl.removeEventListener('mouseenter', showReply)
       citeEl.removeEventListener('mouseleave', hideReply)
+      window.removeEventListener('scroll', hideReply)
     }
   }
 
@@ -72,6 +73,7 @@
       citeEl.addEventListener('pointerdown', addReply)
       citeEl.addEventListener('mouseenter', showReply)
       citeEl.addEventListener('mouseleave', hideReply)
+      window.addEventListener('scroll', hideReply)
     }
   }
 
@@ -234,6 +236,7 @@
     padding: 20px;
     background-color: var(--panel);
     box-shadow: 0px 0px 10px var(--background);
+    z-index: 110;
   }
   @media (max-width: 860px) {
     #replyPreview {
