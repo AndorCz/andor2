@@ -49,7 +49,7 @@
       </div>
       <div class='post' use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
         <div class='content' bind:this={contentEl}>
-          <Render html={post.content} />
+          <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
           {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
         </div>
       </div>
