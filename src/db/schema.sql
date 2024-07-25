@@ -28,6 +28,7 @@ drop view if exists work_list;
 drop view if exists last_posts;
 drop view if exists game_messages;
 
+
 -- EXTENSIONS --------------------------------------------
 
 
@@ -61,6 +62,7 @@ create table profiles (
   theme text default 'obsidian',
   autorefresh boolean default false,
   editor_bubble boolean default false,
+  colors text[] default '{}',
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 

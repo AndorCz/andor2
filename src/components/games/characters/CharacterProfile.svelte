@@ -1,6 +1,7 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import { showSuccess } from '@lib/toasts'
+  import { getHex } from '@lib/utils'
   import { Render } from '@jill64/svelte-sanitize'
   import { tooltip } from '@lib/tooltip'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -12,6 +13,9 @@
   const isPlayer = user.id === character.player
   let originalStoryteller = character.storyteller
   let originalColor = character.color
+
+  let hexColor = getHex(character.color) // Initialize hexColor with the current color
+  $: hexColor = getHex(character.color) // Update hexColor whenever character.color changes
 
   async function updateStorytellerNotes (notes) {
     const { error } = await supabase.from('characters').update({ storyteller_notes: notes }).eq('id', character.id)
@@ -77,7 +81,7 @@
         <div class='col'>
           <h2>Barva jména</h2>
           <div class='rowCenter'>
-            <input type='color' id='nameColor' name='nameColor' bind:value={character.color} />
+            <input type='color' id='nameColor' name='nameColor' value={hexColor} on:input={(e) => { character.color = getHex(e.target.value) }} />
             <input type='text' bind:value={character.color}>
             <button on:click={updateCharacter} class='material square' disabled={originalColor === character.color} title='Uložit' use:tooltip>check</button>
           </div>

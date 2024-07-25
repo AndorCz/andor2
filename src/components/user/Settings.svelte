@@ -3,6 +3,7 @@
   import { activeConversation } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
   import { tooltip } from '@lib/tooltip'
+  import { getHex } from '@lib/utils'
 
   export let user
 
@@ -12,6 +13,7 @@
   let originalAutorefresh = user.autorefresh
   let originalEditorBubble = user.editor_bubble
   let originalTheme = user.theme
+  let newColor = ''
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -26,7 +28,8 @@
     const data = {
       autorefresh: user.autorefresh,
       editor_bubble: user.editor_bubble,
-      theme: user.theme
+      theme: user.theme,
+      colors: user.colors
     }
     const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
     if (error) { return showError(error.message) }
@@ -50,6 +53,20 @@
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     if (error) { return showError(error.message) }
     showSuccess('Ověřovací e-mail byl odeslán na novou adresu, změnu prosím potvrďte odkazem uvnitř')
+  }
+
+  function addColor () {
+    if (newColor === '') { return }
+    user.colors.push(newColor)
+    user.colors = user.colors // trigger reactivity
+    updateUser()
+    newColor = ''
+  }
+
+  function removeColor (color) {
+    user.colors = user.colors.filter(c => c !== color)
+    user.colors = user.colors // trigger reactivity
+    updateUser()
   }
 </script>
 
@@ -108,6 +125,26 @@
       <button on:click={updateUser} class='material' disabled={originalEditorBubble === user.editor_bubble} title='Uložit' use:tooltip>check</button>
     </div>
 
+    <h2>Vlastní barvy</h2>
+    <ul>
+      {#each user.colors as color}
+        <li>
+          <div class='rowInner'>
+            <input type='color' id='color' name='color' value={getHex(color)} on:input={(e) => { color = getHex(e.target.value) }} />
+            <input type='text' bind:value={color}>
+            <button on:click={updateUser} class='material square' title='Uložit' use:tooltip>check</button>
+            <button on:click={() => { removeColor(color) }} class='material square' title='Smazat' use:tooltip>delete</button>
+          </div>
+        </li>
+      {/each}
+    </ul>
+    <h3>Přidat barvu</h3>
+    <div class='row'>
+      <input type='color' id='nameColor' name='nameColor' bind:value={newColor} />
+      <input type='text' bind:value={newColor}>
+      <button on:click={addColor} class='material square' title='Uložit' use:tooltip>check</button>
+    </div>
+
     <h2>Auto-refresh herních příspěvků</h2>
     <div class='rowInner'>
       <select bind:value={user.autorefresh} id='autorefresh' name='autorefresh'>
@@ -150,6 +187,15 @@
     min-width: 320px;
     padding-right: 50px;
   }
+  ul {
+    padding: 0px;
+  }
+    li {
+      padding: 10px 20px;
+      margin-bottom: 2px;
+      list-style-type: none;
+      background: var(--block);
+    }
   @media (max-width: 600px) {
     .row {
       flex-direction: column;

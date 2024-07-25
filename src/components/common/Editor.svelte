@@ -339,7 +339,7 @@
 
 <!--<div id='debug' style='white-space: pre-wrap'>{debug}</div>-->
 
-<Colors />
+<Colors {user} />
 
 <!-- Main menu (fixed or bubble) -->
 <div id='menuWrapper'>

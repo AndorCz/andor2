@@ -206,3 +206,13 @@ export function addCharacterNameStyles (characters) {
   characters.forEach(char => { if (char.color) { nameStyles.textContent += `.char_${char.id} { color: ${char.color}; } ` } })
   document.head.appendChild(nameStyles)
 }
+
+export function getHex (color) {
+  if (color[0] === '#') { return color }
+  const span = document.createElement('span')
+  span.style.color = color
+  document.body.appendChild(span)
+  const hex = window.getComputedStyle(span).color.replace(/[^\d,]/g, '').split(',').map(c => parseInt(c).toString(16).padStart(2, '0')).join('')
+  document.body.removeChild(span)
+  return '#' + hex
+}

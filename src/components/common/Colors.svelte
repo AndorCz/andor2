@@ -1,4 +1,14 @@
+<script>
+  import { getHex } from '@lib/utils'
+
+  export let user = {}
+</script>
+
 <datalist id='presetColors'>
+  {#each user.colors as color}
+    <option>{getHex(color)}</option>
+  {/each}
+
   <!-- Gray -->
   <option>#000000</option><!-- black -->
   <option>#444444</option><!-- dark gray -->
