@@ -77,6 +77,7 @@
       citeEl.removeEventListener('pointerdown', addReply)
       citeEl.removeEventListener('mouseenter', showReply)
       citeEl.removeEventListener('mouseleave', hideReply)
+      postsEl.removeEventListener('scroll', hideReply)
     }
   }
 
@@ -90,6 +91,7 @@
       citeEl.addEventListener('pointerdown', addReply)
       citeEl.addEventListener('mouseenter', showReply)
       citeEl.addEventListener('mouseleave', hideReply)
+      postsEl.addEventListener('scroll', hideReply)
     }
   }
 
