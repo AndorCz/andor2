@@ -46,7 +46,7 @@
   $: {
     otherCharacters = [
       { id: '*', name: 'Všem' },
-      ...game.characters.filter((char) => char.accepted && char.id !== $gameStore?.activeCharacterId && char.state === 'alive')
+      ...game.characters.filter((char) => char.accepted && char.state === 'alive')
     ]
   }
 
