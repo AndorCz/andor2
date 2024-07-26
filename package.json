@@ -14,7 +14,7 @@
     "@3d-dice/dice-box-threejs": "0.0.12",
     "@astrojs/cloudflare": "10.2.6",
     "@astrojs/svelte": "5.4.0",
-    "@google/generative-ai": "0.14.1",
+    "@google/generative-ai": "0.16.0",
     "@jill64/svelte-sanitize": "1.2.4",
     "@supabase/ssr": "0.4.0",
     "@supabase/supabase-js": "2.43.4",
