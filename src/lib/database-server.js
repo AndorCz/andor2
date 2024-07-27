@@ -1,22 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
 import { getImageUrl } from '@lib/utils'
 
-// back-end
-export function getSupabase (cookies, env) {
-  return createServerClient(
-    env.PUBLIC_SUPABASE_URL,
-    env.PUBLIC_SUPABASE_ANON_KEY,
-    {
-      auth: { autoRefreshToken: false },
-      cookies: {
-        get (key) { return cookies.get(key)?.value },
-        set (key, value, options) { cookies.set(key, value, options) },
-        remove (key, options) { cookies.delete(key, options) }
-      }
-    }
-  )
-}
-
+// deprecated
 // eslint-disable-next-line camelcase
 export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   const maxAge = 100 * 1000 * 60 * 60 * 24 * 365 // 100 years

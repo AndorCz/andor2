@@ -1,6 +1,5 @@
 ---
 import { Buffer } from 'node:buffer'
-import { getSupabase, blobToBase64 } from '@lib/database-server'
 
 const { pathname } = new URL(Astro.url, Astro.site)
 const { title, headerStatic, headerStorage } = Astro.props
@@ -8,8 +7,7 @@ const { title, headerStatic, headerStorage } = Astro.props
 let headerImage
 try {
   // get header image
-  const supabase = getSupabase(Astro.cookies, Astro.locals.runtime.env)
-  const { data, error } = await supabase.storage.from('headers').getPublicUrl(headerStorage)
+  const { data, error } = await Astro.locals.supabase.storage.from('headers').getPublicUrl(headerStorage)
   if (error) { throw error }
   const headerUrl = data.publicUrl
   if (headerUrl) {

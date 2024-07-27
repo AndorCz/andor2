@@ -8,17 +8,15 @@ import Arrows from '@components/common/Arrows.svelte'
 import Lightbox from '@components/common/Lightbox.svelte'
 import HeaderCrop from '@components/common/HeaderCrop.svelte'
 import { ViewTransitions } from 'astro:transitions'
-import { getSupabase } from '@lib/database-server'
 
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
-const { user } = Astro.locals
+const { user, supabase } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
 
 let chatUnread = false
 if (user.id) {
   const env = import.meta.env ? import.meta.env : context.locals.runtime.env
-  const supabase = getSupabase(Astro.cookies, env)
   const { data: count, error } = await supabase.rpc('get_thread_unread', { thread: 1 })
   if (error) {
     console.error('get_thread_unread for chat failed', error)
@@ -85,6 +83,7 @@ if (user.id) {
   }
   #wrapper {
     max-width: 1400px;
+    min-height: 800px;
     margin: auto;
     display: flex;
   }
