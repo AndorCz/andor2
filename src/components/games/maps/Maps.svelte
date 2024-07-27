@@ -42,12 +42,12 @@
   {#if isFilledArray(game.maps)}
     {#each game.maps as map}
       {#if (!map.hidden || isStoryteller)}
-        <h2>
+        <h3>
           <button on:click={() => { map.isOpen = !map.isOpen }} class='plain'>
             <span class='material arrow' class:isOpen={map.isOpen}>arrow_drop_down</span>
             <span class='name'>{#if map.hidden}<span class='material'>visibility_off</span>{/if}{map.name}</span>
           </button>
-        </h2>
+        </h3>
         {#if map.isOpen}
           <Map {user} {game} {map} {isStoryteller} onDeleteMap={deleteMap} />
         {/if}
@@ -63,7 +63,7 @@
 
 <style>
   center { padding: 40px }
-  h2 {
+  h3 {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -75,7 +75,7 @@
       align-items: center;
       gap: 10px;
     }
-    h2 button {
+    h3 button {
       display: flex;
       align-items: center;
       width: 100%;

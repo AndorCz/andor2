@@ -1,6 +1,5 @@
 import { supabase, handleError } from '@lib/database-browser'
 import { getHash } from '@lib/utils'
-import { showSuccess } from '@lib/toasts'
 
 // database operations for map
 
@@ -23,12 +22,6 @@ export async function saveProposition (map, character, x, y) {
   const newPropositions = { ...map.propositions, [character.id]: { x, y } }
   const { error } = await supabase.from('maps').update({ propositions: newPropositions }).eq('id', map.id)
   if (error) { handleError(error) }
-}
-
-export async function updateMapDescription (map, description) {
-  const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
-  if (error) { handleError(error) }
-  showSuccess('Popis mapy byl upraven')
 }
 
 export async function clearProposition (map, id) {

@@ -1,5 +1,5 @@
 <script>
-  import { clearCharacter, updateMapDescription, saveTransfrom } from '@lib/map/db'
+  import { clearCharacter, saveTransfrom } from '@lib/map/db'
   import { supabase, handleError } from '@lib/database-browser'
   import { stringToColor, getHash } from '@lib/utils'
   import { onMount, onDestroy } from 'svelte'
@@ -41,6 +41,12 @@
   })
 
   onDestroy(() => { vtt.destroy() })
+
+  export async function updateDescription (description) {
+    const { error } = await supabase.from('maps').update({ description }).eq('id', map.id)
+    if (error) { handleError(error) }
+    showSuccess('Popis mapy byl upraven')
+  }
 
   async function renderCharacter (characterData, transform) {
     const character = new Character({ app: vtt.app, scene: vtt.scene, map, transform, characterData, tokenDiameter })
@@ -185,7 +191,7 @@
 {/if}
 
 <br><br>
-<EditableLong onSave={updateMapDescription} canEdit={isStoryteller} {user} value={map.description} allowHtml />
+<EditableLong onSave={updateDescription} canEdit={isStoryteller} {user} value={map.description} allowHtml />
 
 {#if isStoryteller}
   <td class='options row'>
