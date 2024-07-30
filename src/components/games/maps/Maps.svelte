@@ -81,6 +81,9 @@
       width: 100%;
       gap: 10px;
     }
+    h3 button:hover {
+      color: var(--buttonTxHover);
+    }
     .arrow {
       transform: rotate(0deg);
       transition: transform 0.3s;
