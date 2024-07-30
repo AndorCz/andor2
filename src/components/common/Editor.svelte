@@ -82,8 +82,8 @@
     const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
     const extensions = [
       StarterKit,
-      Underline,
       TextStyle,
+      Underline,
       FontSize,
       Reply,
       Youtube,

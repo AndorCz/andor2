@@ -376,6 +376,7 @@
     right: 20px;
     width: 0px;
     height: 0px;
+    z-index: 9999;
   }
     #sidebarToggle {
       position: absolute;
