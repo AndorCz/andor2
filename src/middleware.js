@@ -21,41 +21,41 @@ export async function onRequest ({ request, cookies, locals, redirect, url, cont
     )
     locals.supabase = supabase
 
-    const { data: authData, error: sessionError } = await supabase.auth.getUser()
-    if (sessionError) { console.error('auth error', sessionError.message) }
-    // const accessToken = cookies.get('sb-access-token')?.value
-    // const refreshToken = cookies.get('sb-refresh-token')?.value
-    // console.log('accessToken', accessToken)
-    // console.log('refreshToken', refreshToken)
+    let authData = {}
+    const { data, error: sessionError } = await supabase.auth.getUser()
+    if (sessionError) { console.error('Auth error, getting user: ', sessionError.message) }
+    authData = data
 
-    if (authData) {
-      // console.log('authData', authData)
-      // const { data: authData, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-      if (authData.user) {
-        // saveAuthCookies(cookies, authData.session)
-        locals.user = { id: authData.user.id, email: authData.user.email }
-      }
-
-      // Load user-specific data if user is authenticated
-      if (locals.user?.id) {
-        const { data: profileData, error: profileError } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
-        if (profileError) { console.error('Error loading user profile: ', profileError.message) }
-
-        if (profileData?.name) {
-          locals.user = { ...profileData, ...locals.user }
-          // console.log('User profile set:', locals.user)
-
-          const { error: activityError } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
-          if (activityError) { console.error(activityError) }
-        } else if (url.pathname !== '/onboarding') {
-          // go finish profile first
-          return redirect(`/onboarding${url.search}`)
-        }
+    if (!authData.user) {
+      // Try to restore the user's session from cookies
+      const accessToken = cookies.get('sb-access-token')?.value
+      const refreshToken = cookies.get('sb-refresh-token')?.value
+      if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        if (error) { console.error('Error setting session:', error.message) }
+        if (!error) { authData = data }
       }
     }
-    // else {
-    //   console.log('No auth data')
-    // }
+
+    if (authData.user) {
+      locals.user = { id: authData.user.id, email: authData.user.email }
+    }
+
+    // Load user-specific data if user is authenticated
+    if (locals.user?.id) {
+      const { data: profileData, error: profileError } = await supabase.from('profiles').select('*').eq('id', locals.user.id).maybeSingle()
+      if (profileError) { console.error('Error loading user profile: ', profileError.message) }
+
+      if (profileData?.name) {
+        locals.user = { ...profileData, ...locals.user }
+
+        const { error: activityError } = await locals.supabase.from('profiles').update({ last_activity: new Date() }).eq('id', locals.user.id)
+        if (activityError) { console.error(activityError) }
+      } else if (url.pathname !== '/onboarding') {
+        // go finish profile first
+        return redirect(`/onboarding${url.search}`)
+      }
+    }
 
     return await next()
   } catch (error) {
