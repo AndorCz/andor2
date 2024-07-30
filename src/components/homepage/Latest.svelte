@@ -181,6 +181,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
+    min-width: 30px;
   }
     .icon {
       display: block;
