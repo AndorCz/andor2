@@ -4,21 +4,26 @@
 	import Latest from '@components/homepage/Latest.svelte'
 	import NewsFeed from '@components/homepage/NewsFeed.svelte'
 
-	let newsError, lastEditorial, news
+	let newsError, lastEditorial, news, maxPage
 	const { supabase, user } = Astro.locals
+	const params = Object.fromEntries(Astro.url.searchParams)
 
 	try {
 		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
+	} catch (error) {
+		newsError = 'Chyba načtení editorialu: ' + error.message
+	}
 
-		// preview unpublished news
-		let publishedOnly = true
-		const preview = Astro.url.searchParams.get('preview')
-		if (preview) { publishedOnly = false }
-		const res2 = await supabase.from('news_reactions').select('*').eq('published', publishedOnly).order('created_at', { ascending: false }).limit(14)
+	const publishedOnly = params.preview ? false : true // preview unpublished news
+	const page = params.page ? parseInt(params.page) : 0
+	const limit = 5
+	try {
+		const res2 = await supabase.from('news_reactions').select('*', { count: 'exact' }).eq('published', publishedOnly).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
 		if (res2.error) { throw res2.error }
 		news = res2.data
+		maxPage = Math.ceil(res2.count / limit) - 1
 	} catch (error) {
 		newsError = 'Chyba načtení novinek: ' + error.message
 	}
@@ -31,7 +36,7 @@
 			<Latest client:only='svelte' />
 		</aside>
 		<content>
-			<NewsFeed {user} {news} client:only='svelte' />
+			<NewsFeed {user} {news} {page} {maxPage} client:only='svelte' />
 		</content>
 	</main>
 </Layout>

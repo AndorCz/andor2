@@ -4,6 +4,12 @@
 
   export let news = []
   export let user = {}
+  export let page = 0
+  export let maxPage = 2
+
+  function triggerPaging (newPage) {
+    window.location = `/?page=${newPage}`
+  }
 </script>
 
 <div id='news'>
@@ -11,6 +17,14 @@
   {#each news as item}
     <NewsItem {user} {item} />
   {/each}
+  <div class='pagination'>
+    {#if page > 0}
+      <button on:click={() => { triggerPaging(page - 1) } }>Novější</button>
+    {/if}
+    {#if page < maxPage}
+      <button on:click={() => { triggerPaging(page + 1) } }>Starší</button>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -18,5 +32,12 @@
     margin-top: 0px;
     display: flex;
     justify-content: space-between;
+  }
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
   }
 </style>
