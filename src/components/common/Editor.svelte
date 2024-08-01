@@ -81,8 +81,8 @@
   onMount(() => {
     const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
     const extensions = [
-      StarterKit,
       TextStyle,
+      StarterKit,
       Underline,
       FontSize,
       Reply,
