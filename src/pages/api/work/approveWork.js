@@ -6,7 +6,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
 
   if (curatorIds.includes(locals.user.id)) {
     // approve work
-    const { error: approveError } = await locals.supabase.from('works').update({ published: true }).eq('id', workId)
+    const { error: approveError } = await locals.supabase.from('works').update({ published: true, created_at: (new Date()).toISOString() }).eq('id', workId)
     if (approveError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Schválení selhalo: ' + approveError.message)) }
 
     const { error: messageError } = await locals.supabase.from('messages').insert({
