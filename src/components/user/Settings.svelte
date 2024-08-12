@@ -11,7 +11,7 @@
   let password2 = ''
   let newEmail = user.email
   let originalAutorefresh = user.autorefresh
-  let originalEditorBubble = user.editor_bubble
+  // let originalEditorBubble = user.editor_bubble
   let originalTheme = user.theme
   let newColor = ''
 
@@ -27,14 +27,14 @@
   async function updateUser (theme = false) {
     const data = {
       autorefresh: user.autorefresh,
-      editor_bubble: user.editor_bubble,
+      // editor_bubble: user.editor_bubble,
       theme: user.theme,
       colors: user.colors
     }
     const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
     if (error) { return showError(error.message) }
     originalAutorefresh = user.autorefresh
-    originalEditorBubble = user.editor_bubble
+    // originalEditorBubble = user.editor_bubble
     originalTheme = user.theme
     showSuccess('Nastavení bylo uloženo')
     if (theme) { window.location.href = '/settings' }
@@ -115,7 +115,7 @@
       </select>
       <button on:click={updateUser} class='material' disabled={originalTheme === user.theme} title='Uložit' use:tooltip>check</button>
     </div>
-
+    <!--
     <h2>Paleta nástrojů editoru</h2>
     <div class='rowInner'>
       <select bind:value={user.editor_bubble} id='bubbleMenu' name='bubbleMenu'>
@@ -124,6 +124,7 @@
       </select>
       <button on:click={updateUser} class='material' disabled={originalEditorBubble === user.editor_bubble} title='Uložit' use:tooltip>check</button>
     </div>
+    -->
 
     <h2>Vlastní barvy</h2>
     <ul>

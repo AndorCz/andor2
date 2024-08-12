@@ -7,6 +7,8 @@
   export let defaultLabel
   export let title
 
+  let y = 20
+  let x = 20
   let isOpen = false
   let dropdownEl
   const dispatch = createEventDispatcher()
@@ -24,7 +26,11 @@
     if (dropdownEl && !dropdownEl.contains(event.target)) { isOpen = false }
   }
 
-  function toggleDropdown () { isOpen = !isOpen }
+  function toggleDropdown (e) {
+    y = e.target.offsetTop
+    x = e.target.offsetLeft
+    isOpen = !isOpen
+  }
   function findSelectedOption () { return options.find(option => option.value === selected) }
   function getUnselectedOptions () { return options.filter(option => option.value !== selected) }
 </script>
@@ -44,7 +50,7 @@
     </button>
   </span>
   {#if isOpen}
-    <div class='options'>
+    <div class='options' style={`top: ${y + 30}px; left: ${x - 10}px;`}>
       {#each getUnselectedOptions() as option}
         <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
           {#if iconsOnly}
@@ -59,16 +65,11 @@
 {/key}
 
 <style>
-  .dropdown {
-    position: relative;
-  }
   button {
     padding: 5px;
   }
   .options {
     position: absolute;
-    top: 20px;
-    left: 20px;
     z-index: 10;
     background-color: color-mix(in srgb, var(--panel), #FFF 5%);
     box-shadow: 2px 2px 2px #0003;

@@ -109,7 +109,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class='wrapper' class:singleLine class:fixedMenu={allowHtml && !(forceBubble || user.editor_bubble)}>
+<div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble}>
   {#if allowHtml}
     <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
@@ -168,12 +168,12 @@
         border-bottom: 3px var(--buttonBg) solid;
       }
       .cancel {
-        top: 0px;
+        top: 50px;
         border-radius: 0px 10px 0px 10px;
       }
       .singleLine .save, .singleLine .cancel {
         right: 5px;
-        bottom: 5px;
+        bottom: 50px;
         background: none;
         border: none;
         border-radius: 10px;
@@ -183,8 +183,8 @@
           top: unset;
           right: 50px;
         }
-      .fixedMenu .save {
-        bottom: 50px;
+      .bubbleMenu .save {
+        bottom: 5px;
       }
     .counter {
       position: absolute;
@@ -195,6 +195,14 @@
   @media (max-width: 860px) {
     button {
       padding: 10px 15px;
+    }
+  }
+  @media (max-width: 720px) {
+    .cancel {
+      top: 0px;
+    }
+    .save {
+      bottom: 50px;
     }
   }
   @media (max-width: 500px) {

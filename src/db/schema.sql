@@ -61,7 +61,7 @@ create table profiles (
   old_id int4,
   theme text default 'obsidian',
   autorefresh boolean default false,
-  editor_bubble boolean default false,
+  -- editor_bubble boolean default false,
   colors text[] default '{}',
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
