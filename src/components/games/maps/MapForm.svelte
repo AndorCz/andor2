@@ -18,6 +18,7 @@
   let imageGeneratedUrl
   let imageReady = false
   let generatingMap = false
+  let formEl
   let img
 
   onMount(async () => {
@@ -61,7 +62,7 @@
   async function submitForm () {
     descriptionInputEl.value = await descriptionTextareaEl.getContent()
     this.disabled = true
-    this.form.submit()
+    formEl.submit()
   }
 </script>
 
@@ -73,7 +74,7 @@
   {/if}
 </h1>
 
-<form method='POST' autocomplete='off' enctype='multipart/form-data'>
+<form method='POST' autocomplete='off' enctype='multipart/form-data' bind:this={formEl}>
   <div class='row'>
     <div class='labels'>
       <label for='mapName'>Název mapy *</label>
@@ -118,7 +119,7 @@
   </div>
 
   <center>
-    <button class='large' on:click={submitForm} disabled={!(imageReady && map.name)}>
+    <button type='button' class='large' on:click={submitForm} disabled={!(imageReady && map.name)}>
       {#if map.id}Uložit mapu{:else}Přidat mapu{/if}
     </button>
   </center>

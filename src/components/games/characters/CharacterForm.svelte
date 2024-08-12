@@ -58,7 +58,7 @@
     bioInputEl.value = await bioTextareaEl.getContent()
     looksInputEl.value = await looksTextareaEl.getContent()
     this.disabled = true
-    this.form.submit()
+    formEl.submit()
   }
 </script>
 
@@ -90,7 +90,7 @@
     <div class='row'>
       <div class='labels'><label for='charBio'>Životopis</label></div>
       <div class='inputs'>
-        <TextareaExpandable bind:this={bioTextareaEl} value={character.bio} {user} id='charBio' allowHtml />
+        <TextareaExpandable bind:this={bioTextareaEl} bind:value={character.bio} {user} id='charBio' allowHtml />
         <input type='hidden' bind:this={bioInputEl} name='charBio' />
       </div>
     </div>
@@ -101,7 +101,7 @@
       </div>
     {/if}
     <center>
-      <button on:click={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button type='button' on:click={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 
