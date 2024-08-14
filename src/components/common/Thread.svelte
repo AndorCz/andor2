@@ -111,7 +111,9 @@
   }
 
   function hideReply () {
-    replyPostEl.style.display = 'none'
+    if (replyPostEl) {
+      replyPostEl.style.display = 'none'
+    }
   }
 
   function isMyPost (id) {

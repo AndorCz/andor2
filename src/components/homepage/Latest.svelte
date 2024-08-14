@@ -35,7 +35,9 @@
     const { data: characters, error: characterError } = await supabase.from('characters').select('*').match({ open: true, state: 'alive' }).is('transfer_to', null).order('name')
     if (characterError) { handleError(characterError) }
 
-    latestData = { games, works, boards, characters }
+    if (games && works && boards && characters) {
+      latestData = { games, works, boards, characters }
+    }
     loading = false
   }
 
