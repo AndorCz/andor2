@@ -26,7 +26,7 @@ export const CustomImage = Image.extend({
     const imageWidth = node.attrs.width < this.editor.view.dom.offsetWidth ? node.attrs.width : this.editor.view.dom.offsetWidth
     // const aspectRatio = node.attrs.height / node.attrs.width
     const width = imageWidth ? `width: ${imageWidth * node.attrs.size / 100}px;` : ''
-    const sizeStyle = `${width} height: fit-content; object-fit: contain; max-width: 100%;`
+    const sizeStyle = `${width} object-fit: contain; max-width: 100%;` // height: fit-content is problematic in safari
     const style = `${alignmentStyle} ${sizeStyle}`
     return ['img', { ...HTMLAttributes, style }]
   },
