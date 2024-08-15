@@ -21,24 +21,24 @@ export async function onRequest ({ request, cookies, locals, redirect, url, cont
     )
     locals.supabase = supabase
 
-    let authData = {}
-    const { data, error: sessionError } = await supabase.auth.getUser()
+    let sessionData = {}
+    const { data, error: sessionError } = await supabase.auth.getSession()
     if (sessionError) { console.error('Auth error, getting user: ', sessionError.message) }
-    authData = data
+    sessionData = data.session
 
-    if (!authData.user) {
+    if (!sessionData.user) {
       // Try to restore the user's session from cookies
       const accessToken = cookies.get('sb-access-token')?.value
       const refreshToken = cookies.get('sb-refresh-token')?.value
       if (accessToken && refreshToken) {
-        const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-        if (error) { console.error('Error setting session:', error.message) }
-        if (!error) { authData = data }
+        const { data: newSession, error: newError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        if (newError) { console.error('Error setting session: ', newError.message) }
+        if (!newError) { sessionData = newSession }
       }
     }
 
-    if (authData.user) {
-      locals.user = { id: authData.user.id, email: authData.user.email }
+    if (sessionData.user) {
+      locals.user = { id: sessionData.user.id, email: sessionData.user.email }
     }
 
     // Load user-specific data if user is authenticated
