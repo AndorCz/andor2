@@ -21,13 +21,12 @@ export async function onRequest ({ request, cookies, locals, redirect, url, cont
     )
     locals.supabase = supabase
 
-    let sessionData = {}
     const { data, error: sessionError } = await supabase.auth.getSession()
     if (sessionError) { console.error('Auth error, getting user: ', sessionError.message) }
-    sessionData = data.session
+    let sessionData = data.session || {}
 
+    // Try to restore the user's session from cookies
     if (!sessionData.user) {
-      // Try to restore the user's session from cookies
       const accessToken = cookies.get('sb-access-token')?.value
       const refreshToken = cookies.get('sb-refresh-token')?.value
       if (accessToken && refreshToken) {
