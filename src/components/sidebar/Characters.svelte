@@ -8,6 +8,7 @@
   export let userStore
 
   let selected // { character, gameIndex, characterIndex }
+  const expandedLists = {}
 
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
@@ -15,6 +16,10 @@
 
   function containsCharacters (characters) {
     return $userStore.showDead ? isFilledArray(characters) : characters.some(character => character.state !== 'dead')
+  }
+
+  function toggleList (gameIndex) {
+    expandedLists[gameIndex] = !expandedLists[gameIndex]
   }
 </script>
 
@@ -26,9 +31,9 @@
         <div class='name'>{selected.character.name}</div>
       </a>
     </h4>
+    <h4 class='header spaced'>Kontakty</h4>
     <ul class='characters'>
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
-        <h4>Kontakty</h4>
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
           {#if character.state !== 'dead' || $userStore.showDead}
             <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
@@ -54,8 +59,11 @@
   {:else}
     {#if isFilledArray(characters.allGrouped)}
       {#each characters.allGrouped as { id, name, characters }, gameIndex}
-        <a href={'/game/' + id}><h4>{name}</h4></a>
-        <ul class='characters'>
+        <h4 class='header'>
+          <a href={'/game/' + id}>{name}</a>
+          <button on:click={() => toggleList(gameIndex)} class='material plain'>arrow_drop_down</button>
+        </h4>
+        <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex]}>
           {#if isFilledArray(characters)}
             {#each characters as character, characterIndex}
               {#if character.state !== 'dead' || $userStore.showDead}
@@ -86,8 +94,11 @@
 
     {#key $userStore.showDead}
       {#if containsCharacters(characters.myStranded)}
-        <h4>Bez hry</h4>
-        <ul class='characters'>
+        <h4 class='header'>
+          <span>Bez hry</span>
+          <button on:click={() => toggleList('stranded')} class='material plain'>arrow_drop_down</button>
+        </h4>
+        <ul class='characters hiddenList' class:expandedList={expandedLists.stranded}>
           {#each characters.myStranded as character}
             {#if character.state !== 'dead' || $userStore.showDead}
               <li class='mine'>
@@ -141,25 +152,36 @@
     border: none;
     border-top: 1px solid var(--background);
   }
-  h4 {
+  h4.header {
+    display: flex;
+    justify-content: space-between;
     color: var(--dim);
     margin: 0px;
-    margin-bottom: 10px;
-    display: inline-block;
-    align-items: center;
   }
-    a:hover h4 {
+    h4 a {
+      color: var(--dim);
+      font-family: var(--headline);
+    }
+    h4 a:hover, h4 button:hover {
       color: var(--linkHover);
     }
     .selected {
-      margin-bottom: 20px;
+      margin: 0px;
+      margin-bottom: 10px;
+    }
+    .spaced {
+      padding-top: 10px;
+      padding-bottom: 10px;
     }
   ul.characters {
     list-style: none;
     padding: 0px;
     margin: 0px;
-    margin-bottom: 0px;
+    margin-bottom: 10px;
   }
+    ul.characters li:first-child {
+      padding-top: 10px;
+    }
     ul button {
       position: relative;
       font-weight: bold;
@@ -238,4 +260,14 @@
           display: block;
           width: fit-content;
         }
+  .hiddenList {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.2s;
+  }
+  .expandedList {
+    max-height: 500px;
+    overflow: auto;
+    transition: max-height 0.2s;
+  }
 </style>
