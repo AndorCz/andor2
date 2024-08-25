@@ -308,7 +308,7 @@
 </div>
 
 {#if $platform === 'mobile'}
-  <div class='menuWrapper' bind:this={menuEl}>
+  <div class='menuWrapper stickyBottom' bind:this={menuEl}>
     <EditorMenu {fonts} {editor} {isBubble} />
   </div>
 {/if}
@@ -374,6 +374,13 @@
   @media (max-width: 860px) {
     .bubble {
       display: block;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menuWrapper.stickyBottom {
+      position: sticky;
+      bottom: 0px;
     }
   }
 </style>
