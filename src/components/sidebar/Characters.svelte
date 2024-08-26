@@ -8,6 +8,8 @@
   export let userStore
 
   let selected // { character, gameIndex, characterIndex }
+  // if there are more than 20 characters across all games and stranded, the lists will be collapsed by default
+  const listTooLong = (characters.allGrouped.reduce((acc, game) => acc + game.characters.length, 0) + characters.myStranded.length) > 20
   const expandedLists = {}
 
   function openProfile (character) {
@@ -61,9 +63,12 @@
       {#each characters.allGrouped as { id, name, characters }, gameIndex}
         <h4 class='header'>
           <a href={'/game/' + id}>{name}</a>
-          <button on:click={() => toggleList(gameIndex)} class='material plain'>arrow_drop_down</button>
+          {#if listTooLong}
+            {#if characters.some(character => character.unread)}<span class='unread badge'></span>{/if}
+            <button on:click={() => toggleList(gameIndex)} class='material plain toggle' class:opened={expandedLists[gameIndex]}>arrow_drop_down</button>
+          {/if}
         </h4>
-        <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex]}>
+        <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex] || !listTooLong}>
           {#if isFilledArray(characters)}
             {#each characters as character, characterIndex}
               {#if character.state !== 'dead' || $userStore.showDead}
@@ -96,9 +101,12 @@
       {#if containsCharacters(characters.myStranded)}
         <h4 class='header'>
           <span>Bez hry</span>
-          <button on:click={() => toggleList('stranded')} class='material plain'>arrow_drop_down</button>
+          {#if listTooLong}
+            {#if characters.myStranded.some(character => character.unread)}<span class='unread badge'></span>{/if}
+            <button on:click={() => toggleList('stranded')} class='material plain toggle' class:opened={expandedLists.stranded}>arrow_drop_down</button>
+          {/if}
         </h4>
-        <ul class='characters hiddenList' class:expandedList={expandedLists.stranded}>
+        <ul class='characters hiddenList' class:expandedList={expandedLists.stranded || !listTooLong}>
           {#each characters.myStranded as character}
             {#if character.state !== 'dead' || $userStore.showDead}
               <li class='mine'>
@@ -269,5 +277,18 @@
     max-height: 500px;
     overflow: auto;
     transition: max-height 0.2s;
+  }
+  .badge {
+    right: 5px;
+    top: 5px;
+  }
+  .toggle:hover {
+    color: var(--maximum);
+  }
+  .toggle {
+    transition: transform 0.2s;
+  }
+  .toggle.opened {
+    transform: rotate(180deg);
   }
 </style>
