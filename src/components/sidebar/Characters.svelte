@@ -161,6 +161,7 @@
     border-top: 1px solid var(--background);
   }
   h4.header {
+    position: relative;
     display: flex;
     justify-content: space-between;
     color: var(--dim);
