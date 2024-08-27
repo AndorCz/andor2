@@ -9,7 +9,7 @@
 
   let selected // { character, gameIndex, characterIndex }
   // if there are more than 20 characters across all games and stranded, the lists will be collapsed by default
-  const listTooLong = (characters.allGrouped.reduce((acc, game) => acc + game.characters.length, 0) + characters.myStranded.length) > 20
+  const listTooLong = isFilledArray(characters.allGrouped) ? (characters.allGrouped.reduce((acc, game) => acc + game.characters.length, 0) + characters.myStranded.length) > 20 : false
   const expandedLists = {}
 
   function openProfile (character) {

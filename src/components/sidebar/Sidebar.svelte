@@ -134,14 +134,16 @@
   async function loadData () {
     const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { throw error }
-    $bookmarks = data?.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
-    users = data?.users || []
-    characters = data?.characters || { allGrouped: [], myStranded: [] }
+    if (data) {
+      $bookmarks = data.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
+      users = data.users || []
+      characters = data.characters || { allGrouped: [], myStranded: [] }
 
-    // get tab information
-    activeUsers = users.filter(u => u.active).length
-    unreadUsers = users.some(u => u.unread)
-    unreadCharacters = characters.unreadTotal > 0
+      // get tab information
+      activeUsers = users.filter(u => u.active).length
+      unreadUsers = users.some(u => u.unread)
+      unreadCharacters = characters.unreadTotal > 0
+    }
   }
 
   function getBookmarkUnreadTotal (bookmarks) {
