@@ -66,7 +66,12 @@ if (user.id) {
           <slot />
         </div>
         <footer>
-          <a href='https://github.com/EskelCz/andor2' target='_blank'>v{version}</a>
+          <div>{version}</div>
+          <div class='links'>
+            <a href='https://github.com/EskelCz/andor2' target='_blank'>Kód</a>
+            <a href='https://andor.canny.io/navrhy' target='_blank'>Návrhy</a>
+            <a href='/privacy'>Soukromí</a>
+          </div>
         </footer>
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
@@ -107,6 +112,12 @@ if (user.id) {
       padding: 20px;
       text-align: center;
     }
+      .links {
+        margin-top: 20px;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+      }
   
   button.up {
     position: sticky;
