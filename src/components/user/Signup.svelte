@@ -12,7 +12,7 @@
   let password = ''
   let password2 = ''
   let isConfirming = false
-  let captchaToken = ''
+  // let captchaToken = ''
 
   onMount(() => {
     try {
@@ -38,7 +38,7 @@
     // if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, captchaToken } })
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } }) // captchaToken
     if (error) { return handleError(error) }
     if (data.user) { redirectWithToast({ toastType: 'success', toastText: 'Prosím potvrď svůj e-mail pro dokončení registrace.' }) }
   }
@@ -165,8 +165,10 @@
       </form>
     </div>
   {/if}
+  <hr>
 </main>
 <br><br>
+<center>Registrací souhlasíš se <a href='/privacy' target='_blank'>zpracováním osobních údajů</a> (emailu).</center>
 <div id='captchaEl'></div>
 
 <style>
