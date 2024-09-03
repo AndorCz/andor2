@@ -973,6 +973,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function get_sidebar_data () returns json as $$
 declare
   bookmarks_data json;

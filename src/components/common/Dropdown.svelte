@@ -1,13 +1,13 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte'
 
+  export let title
   export let options = []
   export let iconsOnly = false
   export let selected = null
   export let defaultLabel
-  export let title
+  export let openUp = false
 
-  let y = 20
   let x = 20
   let isOpen = false
   let dropdownEl
@@ -27,7 +27,7 @@
   }
 
   function toggleDropdown (e) {
-    y = e.target.offsetTop
+    // y = e.target.offsetTop
     x = e.target.offsetLeft
     isOpen = !isOpen
   }
@@ -50,7 +50,7 @@
     </button>
   </span>
   {#if isOpen}
-    <div class='options' style={`top: ${y + 30}px; left: ${x - 10}px;`}>
+    <div class='options' style={`left: ${x - 10}px;`} class:openUp class:openDown={!openUp}>
       {#each getUnselectedOptions() as option}
         <button type='button' on:click={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
           {#if iconsOnly}
@@ -79,6 +79,12 @@
     flex-direction: column;
     gap: 10px;
   }
+    .openDown {
+      top: 40px;
+    }
+    .openUp {
+      bottom: 40px;
+    }
     .options button.label {
       height: 45px;
       padding: 0 20px;

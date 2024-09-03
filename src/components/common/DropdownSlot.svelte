@@ -47,10 +47,10 @@
     flex-direction: column;
     gap: 5px;
   }
-  .openDown {
-    top: 40px;
-  }
-  .openUp {
-    bottom: 50px;
-  }
+    .openDown {
+      top: 40px;
+    }
+    .openUp {
+      bottom: 40px;
+    }
 </style>

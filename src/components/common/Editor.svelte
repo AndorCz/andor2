@@ -309,7 +309,7 @@
 
 {#if $platform === 'mobile'}
   <div class='menuWrapper stickyBottom' bind:this={menuEl}>
-    <EditorMenu {fonts} {editor} {isBubble} />
+    <EditorMenu {fonts} {editor} {isBubble} isBottom />
   </div>
 {/if}
 
