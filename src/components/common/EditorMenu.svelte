@@ -44,7 +44,7 @@
   const fontOptions = [
     { value: 'sans-serif', label: "<span class='sansserif'>Bezpatkové</span>" },
     { value: 'monospace', label: "<span class='monospace'>Strojové</span>" },
-    { value: 'cursive', label: "<span class='cursive'>Psané</span>" },
+    { value: '"Lucida Handwriting", cursive', label: "<span class='cursive'>Psané</span>" },
     { value: 'caveat', label: "<span class='caveat'>Caveat</span>" },
     { value: 'orbitron', label: "<span class='orbitron'>Orbitron</span>" }
   ]
