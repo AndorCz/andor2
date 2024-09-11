@@ -128,12 +128,13 @@
   }
 
   async function deletePost (post) {
-    if (!window.confirm(post.dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) { return }
-    const res = await fetch(`/api/post?id=${post.id}&thread=${game.openai_thread}`, { method: 'DELETE' })
-    const json = await res.json()
-    if (res.error || json.error) { return showError(res.error || json.error) }
-    showSuccess('Příspěvek smazán')
-    await loadPosts()
+    if (window.confirm(post.dice ? 'Opravdu smazat hod kostkou?' : 'Opravdu smazat příspěvek?')) {
+      const res = await fetch(`/api/post?id=${post.id}&thread=${game.openai_thread}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (res.error || json.error) { return showError(res.error || json.error) }
+      showSuccess('Příspěvek smazán')
+      await loadPosts()
+    }
   }
 
   async function triggerEdit (post) {

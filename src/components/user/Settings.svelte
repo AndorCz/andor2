@@ -52,7 +52,7 @@
   async function setEmail () {
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     if (error) { return showError(error.message) }
-    showSuccess('Ověřovací e-mail byl odeslán na novou adresu, změnu prosím potvrďte odkazem uvnitř')
+    showSuccess('Ověřovací e-mail byl odeslán na novou adresu, změnu prosím potvrď odkazem uvnitř')
   }
 
   function addColor () {

@@ -13,6 +13,7 @@ const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user, supabase } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
+title = title ? ` ― ${title}` : ''
 
 let chatUnread = false
 if (user.id) {
@@ -53,7 +54,7 @@ if (user.id) {
     <!--<script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>-->
 
     <ViewTransitions />
-    <title>Andor2.cz ― {title}</title>
+    <title>Andor2.cz{title}</title>
   </head>
 	<body>
     <Lightbox client:only='svelte' />

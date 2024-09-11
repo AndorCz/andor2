@@ -12,6 +12,7 @@ const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user } = Astro.locals
 const { title, headerStatic, headerStorage } = Astro.props
+title = title ? ` ― ${title}` : ''
 ---
 
 <html lang='cs'>
@@ -34,7 +35,7 @@ const { title, headerStatic, headerStorage } = Astro.props
     <link rel='stylesheet' href={`/css/${user.theme || 'obsidian'}.css?v=${version}`}>
 
     <ViewTransitions />
-    <title>Andor2.cz ― {title}</title>
+    <title>Andor2.cz{title}</title>
   </head>
 	<body>
     <Lightbox client:only='svelte' />

@@ -119,21 +119,23 @@
   }
 
   async function deletePost (post) {
-    if (!window.confirm('Opravdu smazat příspěvek?')) { return }
-    const res = await fetch(`/api/post?id=${post.id}&thread=${data.openai_thread}`, { method: 'DELETE' })
-    const json = await res.json()
-    if (res.error || json.error) { return showError(res.error || json.error) }
-    showSuccess('Příspěvek smazán')
-    await loadPosts()
+    if (window.confirm('Opravdu smazat příspěvek?')) {
+      const res = await fetch(`/api/post?id=${post.id}&thread=${data.openai_thread}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (res.error || json.error) { return showError(res.error || json.error) }
+      showSuccess('Příspěvek smazán')
+      await loadPosts()
+    }
   }
 
   async function moderatePost (id) {
-    if (!window.confirm('Moderovat: Opravdu skrýt příspěvek všem? Tato akce je nevratná.')) { return }
-    const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, moderate: true }), headers: { 'Content-Type': 'application/json' } })
-    const json = await res.json()
-    if (res.error || json.error) { return showError(res.error || json.error) }
-    showSuccess('Příspěvek skryt všem')
-    await loadPosts()
+    if (window.confirm('Moderovat: Opravdu skrýt příspěvek všem? Tato akce je nevratná.')) {
+      const res = await fetch('/api/post', { method: 'PATCH', body: JSON.stringify({ id, moderate: true }), headers: { 'Content-Type': 'application/json' } })
+      const json = await res.json()
+      if (res.error || json.error) { return showError(res.error || json.error) }
+      showSuccess('Příspěvek skryt všem')
+      await loadPosts()
+    }
   }
 
   async function triggerEdit (post) {
