@@ -36,9 +36,11 @@
     if ($postStore.moderated) { expanded = !expanded }
   }
 
-  function triggerModerate () {
-    $postStore.moderated = true
-    if (onModerate) { onModerate($postStore.id) }
+  async function triggerModerate () {
+    if (onModerate) {
+      const isConfirmed = await onModerate($postStore.id)
+      if (isConfirmed) { $postStore.moderated = true }
+    }
   }
 
   function onImageClick (event) {

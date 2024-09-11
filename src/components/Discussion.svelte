@@ -135,6 +135,7 @@
       if (res.error || json.error) { return showError(res.error || json.error) }
       showSuccess('Příspěvek skryt všem')
       await loadPosts()
+      return true
     }
   }
 
