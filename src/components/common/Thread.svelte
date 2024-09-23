@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy, afterUpdate } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { setRead, getReply } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
@@ -38,19 +38,20 @@
   const replies = {}
 
   onMount(async () => {
-    if (isFilledArray($posts)) { lastPostId = $posts[0].id }
     if (user.autorefresh) { refresh() }
+    posts.subscribe(() => {
+      if (isFilledArray($posts)) {
+        removeListeners()
+        setupReplyListeners()
+        // set read for new posts, even for autorefresh
+        if ($posts[0].id !== lastPostId) { seen() }
+        lastPostId = $posts[0].id
+      }
+    })
   })
 
   onDestroy(() => {
     if (frameId) { cancelAnimationFrame(frameId) }
-  })
-
-  afterUpdate(() => {
-    if (isFilledArray($posts)) {
-      removeListeners()
-      setupReplyListeners()
-    }
   })
 
   function removeListeners () {
@@ -148,7 +149,6 @@
     frameId = requestAnimationFrame(refresh)
   }
 
-  $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
   $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
 </script>
 
