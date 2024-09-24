@@ -389,7 +389,7 @@ select {
 		box-shadow: none;
 	}
 		.tabs a:hover, .tabs button:hover {
-			color: var(--maximum); 
+			color: var(--maximum);
 		}
 
 .tabs a.active, .tabs button.active {
@@ -501,6 +501,10 @@ select {
 	padding-left: 10px;
 }
 
+div.body.new {
+	border-left: 2px solid var(--newSecondary);
+}
+
 .badge {
 	position: absolute;
 	top: -5px;
@@ -528,7 +532,7 @@ select {
 	max-width: 100%;
 }
 
-.grecaptcha-badge { 
+.grecaptcha-badge {
 	visibility: hidden !important;
 }
 /* #endregion */
@@ -749,7 +753,7 @@ img.ProseMirror-selectednode {
 @media (max-width: 768px) {
 	body, a { font-size: var(--fontSizeBase) }
 	h1 { font-size: calc(var(--fontSizeBase) * 2) }
-	
+
 	.tabs a.active, .tabs button.active {
 		padding: 10px 15px;
 		font-size: calc(var(--fontSizeBase) * 1.2);

@@ -78,10 +78,7 @@
       {/if}
     </div>
   {/if}
-  {#if unread}
-    <span class='badge'></span>
-  {/if}
-  <div class='body'>
+  <div class='body' class:new={unread}>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class='header'>
