@@ -501,10 +501,6 @@ select {
 	padding-left: 10px;
 }
 
-div.body.new {
-	border-left: 2px solid var(--newSecondary);
-}
-
 .badge {
 	position: absolute;
 	top: -5px;

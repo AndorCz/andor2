@@ -78,7 +78,7 @@
       {/if}
     </div>
   {/if}
-  <div class='body' class:new={unread}>
+  <div class='body'>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class='header'>
@@ -257,9 +257,18 @@
     .clear {
       clear: both;
     }
+
     .important .content, .important .header {
       background-color: var(--prominent);
+    }
+    .important div.body {
       border-left: 5px solid var(--linkVisited);
+    }
+    .unread:not(.important) div.body {
+      border-left: 2px solid var(--newSecondary);
+    }
+    .unread.important div.body {
+      border-left: 5px solid var(--newSecondary);
     }
     .edited {
       font-size: 12px;
