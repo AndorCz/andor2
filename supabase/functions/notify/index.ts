@@ -14,8 +14,8 @@ Deno.serve(async (req: Request) => {
   try {
     console.log('Notify fired, version 0.3.5')
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SERVICE_KEY') ?? '',
+      Deno.env.get('PUBLIC_SUPABASE_URL') ?? '',
+      Deno.env.get('PUBLIC_SERVICE_KEY') ?? '',
       { global: { headers: { Authorization: `Bearer ${Deno.env.get('SERVICE_KEY')}` } }
     })
 
