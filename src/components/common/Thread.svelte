@@ -70,7 +70,6 @@
     setTimeout(async () => { // wait for DOM to update
       // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
       const cites = document.querySelectorAll('cite[data-id]')
-      console.log('listeners set up', cites)
       for (const citeEl of cites) {
         const id = parseInt(citeEl.getAttribute('data-id'))
         // for each cite, load the post from supabase and save it's data
