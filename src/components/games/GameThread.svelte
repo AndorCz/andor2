@@ -102,7 +102,7 @@
     }
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    posts.set(json.posts)
+    $posts = json.posts
     pages = Math.ceil(json.count / limit)
     loading = false
   }

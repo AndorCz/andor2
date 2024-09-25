@@ -32,6 +32,7 @@
   let editing = false
   let page = 0
   let pages
+  let loading = true
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -61,6 +62,7 @@
   })
 
   async function loadPosts () {
+    loading = true
     let query
     if (data.id === 3 && !canModerate) { // Special board "Nahlášení obsahu" (see only your posts and responses from mods)
       if (!user.id) { return }
@@ -75,6 +77,7 @@
       $posts = postdata
     }
     pages = Math.ceil(count / limit)
+    loading = false
   }
 
   function getIdentity () {
@@ -197,7 +200,7 @@
       {/if}
     {/if}
 
-    <Thread {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    <Thread {loading} {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}

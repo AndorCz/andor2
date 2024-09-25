@@ -34,25 +34,27 @@
   let lastRefresh = Date.now()
   let autorefreshRunning = false
   let frameId
+  let postCount = 0
 
   const replies = {}
 
   onMount(async () => {
     if (user.autorefresh) { refresh() }
-    posts.subscribe(() => {
-      if (isFilledArray($posts)) {
-        removeListeners()
-        setupReplyListeners()
-        // set read for new posts, even for autorefresh
-        if ($posts[0].id !== lastPostId) { seen() }
-        lastPostId = $posts[0].id
-      }
-    })
   })
 
   onDestroy(() => {
     if (frameId) { cancelAnimationFrame(frameId) }
   })
+
+  function postsUpdate () {
+    if ($posts.length !== 0) {
+      removeListeners()
+      setupReplyListeners()
+      // set read for new posts, even for autorefresh
+      if ($posts[0].id !== lastPostId) { seen() }
+      lastPostId = $posts[0].id
+    }
+  }
 
   function removeListeners () {
     const cites = document.querySelectorAll('cite[data-id]')
@@ -64,18 +66,21 @@
     }
   }
 
-  async function setupReplyListeners () { // pre-requisite for replies
-    // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
-    const cites = document.querySelectorAll('cite[data-id]')
-    for (const citeEl of cites) {
-      const id = parseInt(citeEl.getAttribute('data-id'))
-      // for each cite, load the post from supabase and save it's data
-      replies[id] = await getReply($posts, id)
-      citeEl.addEventListener('pointerdown', addReply)
-      citeEl.addEventListener('mouseenter', showReply)
-      citeEl.addEventListener('mouseleave', hideReply)
-      window.addEventListener('scroll', hideReply)
-    }
+  function setupReplyListeners () { // pre-requisite for replies
+    setTimeout(async () => { // wait for DOM to update
+      // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
+      const cites = document.querySelectorAll('cite[data-id]')
+      console.log('listeners set up', cites)
+      for (const citeEl of cites) {
+        const id = parseInt(citeEl.getAttribute('data-id'))
+        // for each cite, load the post from supabase and save it's data
+        replies[id] = await getReply($posts, id)
+        citeEl.addEventListener('pointerdown', addReply)
+        citeEl.addEventListener('mouseenter', showReply)
+        citeEl.addEventListener('mouseleave', hideReply)
+        window.addEventListener('scroll', hideReply)
+      }
+    }, 0)
   }
 
   function addReply (event) {
@@ -150,6 +155,10 @@
   }
 
   $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
+  $: {
+    if (!loading && postCount !== $posts.length) { postsUpdate() }
+    postCount = $posts.length
+  }
 </script>
 
 <main bind:this={threadEl}>
