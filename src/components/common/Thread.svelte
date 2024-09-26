@@ -46,13 +46,11 @@
     if (frameId) { cancelAnimationFrame(frameId) }
   })
 
+  // update listeners for replies, even for new posts
   function postsUpdate () {
     if ($posts.length !== 0) {
       removeListeners()
       setupReplyListeners()
-      // set read for new posts, even for autorefresh
-      if ($posts[0].id !== lastPostId) { seen() }
-      lastPostId = $posts[0].id
     }
   }
 
@@ -153,11 +151,12 @@
     frameId = requestAnimationFrame(refresh)
   }
 
-  $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
   $: {
     if (!loading && postCount !== $posts.length) { postsUpdate() }
     postCount = $posts.length
   }
+  $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
+  $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
 </script>
 
 <main bind:this={threadEl}>

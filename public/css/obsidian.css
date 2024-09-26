@@ -23,7 +23,7 @@
   --characterHover: #d7d3ec;
   --whisper: #302f33;
   --new: gold;
-  --newSecondary: rgba(255, 217, 0, 0.5); /* gold with 50% opacity */
+  --newSecondary: rgba(255, 217, 0, 0.75); /* gold with 75% opacity */
   --buttonBg: #634b41;
   --buttonBgHover: #705343;
   --buttonTxHover: #dacfc6;
