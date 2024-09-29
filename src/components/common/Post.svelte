@@ -78,6 +78,9 @@
       {/if}
     </div>
   {/if}
+  {#if unread}
+    <span class='badge'></span>
+  {/if}
   <div class='body'>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -263,12 +266,6 @@
     }
     .important div.body {
       border-left: 5px solid var(--linkVisited);
-    }
-    .unread:not(.important) div.body {
-      border-left: 2px solid var(--newSecondary);
-    }
-    .unread.important div.body {
-      border-left: 5px solid var(--newSecondary);
     }
     .edited {
       font-size: 12px;
