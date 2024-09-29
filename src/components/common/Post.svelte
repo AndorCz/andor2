@@ -267,12 +267,6 @@
     .important div.body {
       border-left: 5px solid var(--linkVisited);
     }
-    .unread:not(.important) div.body {
-      border-left: 2px solid var(--newSecondary);
-    }
-    .unread.important div.body {
-      border-left: 5px solid var(--newSecondary);
-    }
     .edited {
       font-size: 12px;
       color: var(--dim);

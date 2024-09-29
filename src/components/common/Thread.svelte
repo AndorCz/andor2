@@ -151,6 +151,20 @@
     frameId = requestAnimationFrame(refresh)
   }
 
+  let unreadFound = false
+  let firstReadFound = false
+  function shouldDisplayUnreadLine (index) {
+    if (index < unread) {
+        unreadFound = true
+        return false
+    }
+    if (unreadFound && !firstReadFound) {
+        firstReadFound = true
+        return true
+    }
+    return false
+  }
+
   $: {
     if (!loading && postCount !== $posts.length) { postsUpdate() }
     postCount = $posts.length
@@ -164,6 +178,9 @@
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray($posts)}
     {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
+      {#if shouldDisplayUnreadLine(index)}
+        <hr class='unreadLine' />
+      {/if}
       {#if post.dice}
         {#if diceMode === 'post'}
           <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
@@ -199,6 +216,13 @@
 <style>
   main, center {
     margin-top: 30px;
+  }
+
+  hr.unreadLine {
+    border: none;
+    border-top: 2px solid var(--unreadLine);
+    margin-top: 0px;
+    margin-bottom: 5px;
   }
 
   .dicePost {
