@@ -155,12 +155,12 @@
   let firstReadFound = false
   function shouldDisplayUnreadLine (index) {
     if (index < unread) {
-        unreadFound = true
-        return false
+      unreadFound = true
+      return false
     }
     if (unreadFound && !firstReadFound) {
-        firstReadFound = true
-        return true
+      firstReadFound = true
+      return true
     }
     return false
   }
@@ -220,9 +220,10 @@
 
   hr.unreadLine {
     border: none;
-    border-top: 2px solid var(--unreadLine);
+    border-top: 2px solid var(--new);
     margin-top: 0px;
     margin-bottom: 5px;
+    opacity: 0.5;
   }
 
   .dicePost {

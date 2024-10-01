@@ -186,6 +186,10 @@
         margin-right: 15px;
         margin-bottom: 5px;
       }
+      .badge {
+        top: 0px;
+        left: 0px;
+      }
 
   .body {
     flex: 1;
