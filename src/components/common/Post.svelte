@@ -78,13 +78,13 @@
       {/if}
     </div>
   {/if}
-  {#if unread}
-    <span class='badge'></span>
-  {/if}
   <div class='body'>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class='header'>
+      {#if unread}
+        <span class='badge'></span>
+      {/if}
       <span class='title' on:click={onHeaderClick}>
         {#if post.owner_type === 'user'}
           <a href={'/user?id=' + post.owner} class='user'>{$postStore.owner_name}</a>
