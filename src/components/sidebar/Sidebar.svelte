@@ -33,18 +33,18 @@
 
   // BOOKMARKS
   let bookmarksLoaded = false
-  let loadingBookmarks = false;
+  let loadingBookmarks = false
   let bookmarkUnreadTotal = 0
 
   // USERS
-  let users;
-  let loadingUsers = false;
+  let users
+  let loadingUsers = false
   let activeUsers = 0
   let unreadUsers = false
 
   // CHARACTERS
-  let characters;
-  let loadingCharacters = false;
+  let characters
+  let loadingCharacters = false
   let unreadCharacters = false
 
   onMount(async () => {
@@ -141,42 +141,42 @@
     $activeConversation = { us, them, type }
   }
 
-  async function loadBookmarksOnce() {
+  async function loadBookmarksOnce () {
     if (!bookmarksLoaded) {
-      loadingBookmarks = true;
+      loadingBookmarks = true
       try {
         await loadBookmarks()
         bookmarksLoaded = true
       } catch (error) {
-        console.error(error);
+        console.error(error)
       } finally {
-        loadingBookmarks = false;
+        loadingBookmarks = false
       }
     }
   }
 
-  async function loadUsersOnce() {
+  async function loadUsersOnce () {
     if (!users) {
-      loadingUsers = true;
+      loadingUsers = true
       try {
         await loadUsers()
       } catch (error) {
-        console.error(error);
+        console.error(error)
       } finally {
-        loadingUsers = false;
+        loadingUsers = false
       }
     }
   }
 
-  async function loadCharactersOnce() {
+  async function loadCharactersOnce () {
     if (!characters) {
-      loadingCharacters = true;
+      loadingCharacters = true
       try {
         await loadCharacters()
       } catch (error) {
-        console.error(error);
+        console.error(error)
       } finally {
-        loadingCharacters = false;
+        loadingCharacters = false
       }
     }
   }
@@ -187,7 +187,7 @@
     console.timeEnd('get_bookmarks')
     if (error) throw error
 
-    $bookmarks = data ? data : { games: [], boards: [], works: [] }
+    $bookmarks = data || { games: [], boards: [], works: [] }
     bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
   }
 
