@@ -5,7 +5,7 @@
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import Characters from '@components/sidebar/Characters.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
-  import Users from '@components/sidebar/Users.svelte'
+  import People from '@components/sidebar/People.svelte'
   import Conversation from '@components/sidebar/Conversation.svelte'
   import User from '@components/sidebar/User.svelte'
 
@@ -26,25 +26,19 @@
   let stickBottom = false
   let resizeObserver
 
-  // USER
+  // bookmarks
+  let bookmarkUnreadTotal = 0
+
+  // users
   let userStore
+  let users = []
+  let activeUsers = 0
+  let unreadUsers = false
   let email = ''
   let password = ''
 
-  // BOOKMARKS
-  let bookmarksLoaded = false
-  let loadingBookmarks = false
-  let bookmarkUnreadTotal = 0
-
-  // USERS
-  let users
-  let loadingUsers = false
-  let activeUsers = 0
-  let unreadUsers = false
-
-  // CHARACTERS
-  let characters
-  let loadingCharacters = false
+  // characters
+  let characters = { allGrouped: [], myStranded: [] }
   let unreadCharacters = false
 
   onMount(async () => {
@@ -53,10 +47,6 @@
     document.getElementById($userStore.activePanel)?.classList.add('active')
     window.addEventListener('resize', updateHeight) // update height on window resize
     setupResizeObserver()
-
-    loadBookmarksOnce()
-    loadUsersOnce()
-    loadCharactersOnce()
   })
 
   onDestroy(() => { resizeObserver.disconnect() })
@@ -141,82 +131,25 @@
     $activeConversation = { us, them, type }
   }
 
-  async function loadBookmarksOnce () {
-    if (!bookmarksLoaded) {
-      loadingBookmarks = true
-      try {
-        await loadBookmarks()
-        bookmarksLoaded = true
-      } catch (error) {
-        console.error(error)
-      } finally {
-        loadingBookmarks = false
-      }
+  async function loadData () {
+    const { data, error } = await supabase.rpc('get_sidebar_data').single()
+    if (error) { throw error }
+    if (data) {
+      $bookmarks = data.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
+      users = data.users || []
+      characters = data.characters || { allGrouped: [], myStranded: [] }
+
+      // get tab information
+      activeUsers = users.filter(u => u.active).length
+      unreadUsers = users.some(u => u.unread)
+      unreadCharacters = characters.unreadTotal > 0
     }
-  }
-
-  async function loadUsersOnce () {
-    if (!users) {
-      loadingUsers = true
-      try {
-        await loadUsers()
-      } catch (error) {
-        console.error(error)
-      } finally {
-        loadingUsers = false
-      }
-    }
-  }
-
-  async function loadCharactersOnce () {
-    if (!characters) {
-      loadingCharacters = true
-      try {
-        await loadCharacters()
-      } catch (error) {
-        console.error(error)
-      } finally {
-        loadingCharacters = false
-      }
-    }
-  }
-
-  async function loadBookmarks () {
-    console.time('get_bookmarks')
-    const { data, error } = await supabase.rpc('get_bookmarks').single()
-    console.timeEnd('get_bookmarks')
-    if (error) throw error
-
-    $bookmarks = data || { games: [], boards: [], works: [] }
-    bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
-  }
-
-  async function loadUsers () {
-    console.time('get_users')
-    const { data, error } = await supabase.rpc('get_users').single()
-    console.timeEnd('get_users')
-    if (error) throw error
-
-    users = data || []
-    activeUsers = users.filter(u => u.active).length
-    unreadUsers = users.some(u => u.unread)
-  }
-
-  async function loadCharacters () {
-    console.time('get_characters')
-    const { data, error } = await supabase.rpc('get_characters').single()
-    console.timeEnd('get_characters')
-    if (error) throw error
-
-    characters = data || { allGrouped: [], myStranded: [] }
-    unreadCharacters = characters.unreadTotal > 0
   }
 
   function getBookmarkUnreadTotal (bookmarks) {
     let total = 0
     Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread })
     Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId].unread })
-    Object.keys(bookmarks.works).forEach(workId => { total += bookmarks.works[workId].unread })
     return total
   }
 
@@ -234,6 +167,8 @@
     }
     loginInProgress = false
   }
+
+  $: bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -266,35 +201,20 @@
             </button>
           </div>
         {/if}
-
         <div id='panels'>
-          {#if $userStore?.activePanel === 'booked'}
-            {#if bookmarksLoaded}
+          {#await loadData()}
+            <div class='loading'>Načítání...</div>
+          {:then}
+            {#if $userStore.activePanel === 'booked'}
               <Bookmarks />
-            {:else if loadingBookmarks}
-              <div class='loading'>Načítání...</div>
-            {:else}
-              <p>Chyba načítání panelu</p>
+            {:else if $userStore.activePanel === 'people'}
+              <People {users} {openConversation} />
+            {:else if $userStore.activePanel === 'characters'}
+              <Characters {userStore} {characters} {openConversation} />
             {/if}
-
-          {:else if $userStore?.activePanel === 'people'}
-            {#if users}
-              <Users {users} {openConversation} />
-            {:else if loadingUsers}
-              <div class='loading'>Načítání...</div>
-            {:else}
-              <p>Chyba načítání panelu</p>
-            {/if}
-
-          {:else if $userStore?.activePanel === 'characters'}
-            {#if characters}
-              <Characters {characters} {userStore} {openConversation} />
-            {:else if loadingCharacters}
-              <div class='loading'>Načítání...</div>
-            {:else}
-              <p>Chyba načítání panelu</p>
-            {/if}
-          {/if}
+          {:catch error}
+            <p>Chyba načítání panelu: {error.message}</p>
+          {/await}
         </div>
       {/if}
     {:else}

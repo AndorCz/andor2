@@ -974,6 +974,20 @@ end;
 $$ language plpgsql;
 
 
+create or replace function get_sidebar_data () returns json as $$
+declare
+  bookmarks_data json;
+  users_data json;
+  characters_data json;
+begin
+  bookmarks_data := get_bookmarks();
+  users_data := get_users();
+  characters_data := get_characters();
+  return json_build_object('users', users_data, 'characters', characters_data, 'bookmarks', bookmarks_data);
+end;
+$$ language plpgsql;
+
+
 create or replace function get_game_unread (game int4, game_thread int4, discussion_thread int4)
   returns jsonb as $$
 begin
