@@ -148,7 +148,8 @@
 
   function getBookmarkUnreadTotal (bookmarks) {
     let total = 0
-    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread })
+    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread_game })
+    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread_discussion })
     Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId].unread })
     return total
   }

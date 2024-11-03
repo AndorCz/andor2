@@ -737,10 +737,8 @@ begin
         'id', g.id,
         'name', g.name,
         'created_at', b.created_at,
-        'unread', 
-          calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text) +
-          calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text) +
-          calculate_unread_count(user_uuid, 'game-characters-' || g.id::text)
+        'unread_game', calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text),
+        'unread_discussion', calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text)
       ))
       from bookmarks b
       left join games g on g.id = b.game_id
@@ -937,30 +935,33 @@ $$ language plpgsql;
 
 
 create or replace function get_users () returns json as $$
+declare 
+  user_uuid uuid := auth.uid();
 begin
   return (
     with unread_users as (
       select p.id
       from profiles p
       join messages m on m.sender_user = p.id
-      where m.recipient_user = auth.uid() and m.read = false
+      where m.recipient_user = user_uuid and m.read = false
       group by p.id
     ), 
     contacted_users as (
       select p.id
       from profiles p
       join messages m on p.id = m.sender_user or p.id = m.recipient_user
-      where (m.sender_user = auth.uid() or m.recipient_user = auth.uid())
-      and p.id != auth.uid()
+      where (m.sender_user = user_uuid or m.recipient_user = user_uuid)
+      and (sender_character is null or recipient_character is null)
+      and p.id != user_uuid
       group by p.id
     ),
-    active_users as (select p.id from profiles p where p.last_activity > (now() - interval '5 minutes') and p.id != auth.uid()),
+    active_users as (select p.id from profiles p where p.last_activity > (now() - interval '5 minutes') and p.id != user_uuid),
     combined_users as (
       select p.id, p.name, p.portrait,
         (p.id in (select id from unread_users)) as has_unread,
         (p.id in (select id from contacted_users)) as contacted,
         (p.last_activity > (now() - interval '5 minutes')) as active,
-        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = auth.uid() and m.read = false and sender_character is null and recipient_character is null) as unread
+        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = user_uuid and m.read = false and sender_character is null and recipient_character is null) as unread
       from profiles p
       where p.id in (select id from unread_users)
          or p.id in (select id from active_users)
