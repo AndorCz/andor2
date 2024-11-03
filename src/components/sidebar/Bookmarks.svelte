@@ -57,7 +57,7 @@
         <a href={'/game/' + bookmark.id + '?tab=game'}>
           {bookmark.name}
           {#if (bookmark.unread_game || bookmark.unread_discussion) && window.location.pathname !== '/game/' + bookmark.id}
-            <span class='unread'>{bookmark.unread_game} / {bookmark.unread_discussion}</span>
+            <span class='unread'>{bookmark.unread_game} | {bookmark.unread_discussion}</span>
           {/if}
         </a>
         <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
