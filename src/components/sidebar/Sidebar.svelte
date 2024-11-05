@@ -132,7 +132,7 @@
   }
 
   async function loadData () {
-    const { data, error } = await supabase.rpc('get_sidebar_data_test').single()
+    const { data, error } = await supabase.rpc('get_sidebar_data').single()
     if (error) { throw error }
     if (data) {
       $bookmarks = data.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
