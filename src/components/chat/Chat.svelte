@@ -274,14 +274,14 @@
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
     <!-- names of present people -->
-    {#if Object.keys($people).length > 0}
-      <div class='people'>
+    <div class='people'>
+      {#if Object.keys($people).length > 0}
         Právě přítomní:
         {#each Object.values($people) as person}
           <span class='person user'>{person[0].user}</span>
         {/each}
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
   <div id='replyPreview' bind:this={replyPostEl}>
     {#if replyPostData}
