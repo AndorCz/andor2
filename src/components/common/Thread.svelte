@@ -7,6 +7,7 @@
   import Post from '@components/common/Post.svelte'
 
   export let id
+  export let type
   export let user
   export let posts
   export let loading
@@ -134,7 +135,11 @@
     if (isFilledArray($posts)) { lastPostId = $posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
-      if (bookmark) { bookmark.unread = 0 }
+      if (bookmark) {
+        if (bookmark.unread_discussion && type === 'discussion') { bookmark.unread_discussion = 0 }
+        if (bookmark.unread_game && type === 'game') { bookmark.unread_game = 0 }
+        if (bookmark.unread) { bookmark.unread = 0 }
+      }
       $bookmarks = $bookmarks
     }
   }
