@@ -16,6 +16,7 @@
     // const openAiThread = await createThread(openai)
     // const openAiStoryteller = await getStoryteller(system)
     // openai_thread: openAiThread, openai_storyteller: openAiStoryteller
+    if (!name) { return Astro.redirect(/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno hry.')}) }
     const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 

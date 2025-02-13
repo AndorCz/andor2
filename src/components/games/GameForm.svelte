@@ -9,7 +9,7 @@
   <form method='POST' autocomplete='off'>
     <div class='row'>
       <div class='labels'>
-        <label for='gameName'>Název</label>
+        <label for='gameName'>Název *</label>
       </div>
       <div class='inputs'>
         <input type='text' id='gameName' name='gameName' maxlength='80' />
