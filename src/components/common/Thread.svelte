@@ -171,8 +171,10 @@
   }
 
   $: {
-    if (!loading && postCount !== $posts.length) { postsUpdate() }
-    postCount = $posts.length
+    if ($posts) {
+      if (!loading && postCount !== $posts.length) { postsUpdate() }
+      postCount = $posts.length
+    }
   }
   $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
   $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
