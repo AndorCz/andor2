@@ -34,6 +34,7 @@ export const gameSystems = [
   { value: 'fate', label: 'Fate' },
   { value: 'savage', label: 'Savage Worlds' },
   { value: 'dungeonworld', label: 'Dungeon World' },
+  { value: 'onering', label: 'Jeden Prsten' },
   { value: 'other', label: 'Ostatní' }
 ]
 

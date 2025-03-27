@@ -42,7 +42,7 @@ create extension if not exists citext;
 
 
 create type character_state as enum ('alive', 'unconscious', 'dead', 'deleted');
-create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'other');
+create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'onering', 'other');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'erotica', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project');
