@@ -50,13 +50,12 @@
   }
 
   async function cancelEdit () {
-    // const currentValue = allowHtml ? await tiptap.getHTML() : value
     if (value !== originalValue) {
-      if (!window.confirm('Opravdu zrušit úpravu?')) { return }
+      if (window.confirm('Opravdu zrušit úpravu?')) {
+        value = originalValue
+      }
+      editing = false
     }
-    editing = false
-    value = originalValue
-    if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
   }
 
   export function getIsEmpty () { return isEmpty }

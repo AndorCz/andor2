@@ -28,14 +28,11 @@
   function handleKeyDown (event) {
     if (event.key === 'Escape' && isEditing) {
       if (value !== originalValue) {
-        const confirmCancel = confirm('Máš neuložené změny. Opravdu zrušit?')
-        if (confirmCancel) {
-          isEditing = false
+        if (confirm('Máš neuložené změny. Opravdu zrušit?')) {
           value = originalValue
         }
-      } else {
-        isEditing = false
       }
+      isEditing = false
     }
   }
 </script>
