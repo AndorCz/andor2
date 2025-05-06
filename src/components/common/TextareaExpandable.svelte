@@ -97,7 +97,7 @@
 
   // handle enter and escape
   async function handleKeyDown (event) {
-    if (event.key === 'Escape' && editing) { cancelEdit() }
+    if (event.key === 'Escape' && editing) { await cancelEdit() }
     if (!allowHtml) { // TipTap has it's own input event handling
       if (enterSend && event.keyCode === 13 && !event.shiftKey) { // send with enter, new line with shift+enter
         event.preventDefault()
