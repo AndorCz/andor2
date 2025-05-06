@@ -17,31 +17,16 @@
   export let fonts = null
 
   let isEditing = false
-  let originalValue = value
 
   function onSaveWrapper () {
     isEditing = false
     onSave(value)
-    originalValue = value
-  }
-
-  function handleKeyDown (event) {
-    if (event.key === 'Escape' && isEditing) {
-      if (value !== originalValue) {
-        if (confirm('Máš neuložené změny. Opravdu zrušit?')) {
-          value = originalValue
-        }
-      }
-      isEditing = false
-    }
   }
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
-
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
+    <TextareaExpandable preserveValue {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
   {:else}
     {#if loading}
       <Loading />

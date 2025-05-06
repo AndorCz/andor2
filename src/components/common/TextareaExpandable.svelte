@@ -27,6 +27,7 @@
   export let mentionList = null
   export let forceBubble = false
   export let autoFocus = false
+  export let preserveValue = false
 
   let isEmpty = true
   let editorRef
@@ -52,9 +53,14 @@
   async function cancelEdit () {
     if (value !== originalValue) {
       if (window.confirm('Opravdu zrušit úpravu?')) {
-        value = originalValue
+        if (preserveValue) {
+          value = originalValue
+        } else {
+          value = ''
+          if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+        }
+        editing = false
       }
-      editing = false
     }
   }
 
