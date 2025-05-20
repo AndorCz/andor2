@@ -167,7 +167,7 @@
   }
 
   async function seen () {
-    await setRead(user.id, 'thread-1')
+    await setRead(user.id, 1)
   }
 
   function onEdit (id, content) {

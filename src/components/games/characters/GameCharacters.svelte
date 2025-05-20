@@ -1,10 +1,8 @@
 <script>
-  import { setRead } from '@lib/database-browser'
-  import { bookmarks } from '@lib/stores'
   import { addURLParam } from '@lib/utils'
   import GameRoster from '@components/games/characters/GameRoster.svelte'
-  import GameRecruitment from '@components/games/characters/GameRecruitment.svelte'
   import GameGraveyard from '@components/games/characters/GameGraveyard.svelte'
+  import GameRecruitment from '@components/games/characters/GameRecruitment.svelte'
 
   export let user = {}
   export let game = {}
@@ -19,6 +17,7 @@
     addURLParam('section', section)
   }
 
+  /*
   function seen () {
     setRead(user.id, 'game-characters-' + game.id)
     const bookmark = $bookmarks.games.find((g) => { return g.id === game.id })
@@ -28,6 +27,7 @@
   }
 
   $: if ($bookmarks.games.length) { seen() }
+  */
 </script>
 
 <main>

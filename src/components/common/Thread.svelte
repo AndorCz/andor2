@@ -131,7 +131,7 @@
   }
 
   function seen () {
-    setRead(user.id, 'thread-' + id)
+    setRead(user.id, id)
     if (isFilledArray($posts)) { lastPostId = $posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })

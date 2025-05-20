@@ -36,9 +36,9 @@ export async function sendPost (method = 'POST', data) {
   return json
 }
 
-export async function setRead (userId, slug) {
-  if (userId) {
-    const { error } = await supabase.rpc('upsert_user_read', { p_user_id: userId, p_slug: slug })
+export async function setRead (userId, threadId) {
+  if (userId && threadId) {
+    const { error } = await supabase.rpc('upsert_user_read', { p_user_id: userId, thread_id: threadId })
     if (error) { return handleError(error) }
   }
 }

@@ -422,6 +422,31 @@ where
   messages.sender_character is not null
   and messages.recipient_character is not null;
 
+
+create or replace function increment_unread_counters () returns trigger as $$
+declare
+  target_thread_id int4 := new.thread;
+  post_owner_id uuid := new.owner;
+begin
+  update bookmarks set unread = unread + 1 where game_main_thread_id = target_thread_id and user_id != post_owner_id;
+  update bookmarks set unread_secondary = unread_secondary + 1 where game_discussion_thread_id = target_thread_id and user_id != post_owner_id;
+  update bookmarks set unread = unread + 1 where board_thread_id = target_thread_id and user_id != post_owner_id;
+  update bookmarks set unread = unread + 1 where work_thread_id = target_thread_id and user_id != post_owner_id;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function reset_unread_counter (p_user_id uuid, thread_id text) returns void as $$
+begin
+  update bookmarks set unread = 0 where user_id = p_user_id and game_main_thread_id = thread_id;
+  update bookmarks set unread_secondary = 0 where user_id = p_user_id and game_discussion_thread_id = thread_id;
+  update bookmarks set unread = 0 where user_id = p_user_id and board_thread_id = thread_id;
+  update bookmarks set unread = 0 where user_id = p_user_id and work_thread_id = thread_id;
+end;
+$$ language plpgsql;
+
+
 --create or replace view last_posts as
 --  select p.id, p.content, p.created_at,
 --    case
@@ -1168,11 +1193,11 @@ end;
 $$ language plpgsql;
 
 
-create or replace function upsert_user_read (p_user_id uuid, p_slug text) returns void as $$
+create or replace function upsert_user_read (p_user_id uuid, thread_id int4) returns void as $$
 begin
-  insert into user_reads (user_id, slug, read_at)
-  values (p_user_id, p_slug, now())
-  on conflict (user_id, slug) do update set read_at = now();
+  insert into user_reads (user_id, thread_id, read_at)
+  values (p_user_id, thread_id, now())
+  on conflict (user_id, thread_id) do update set read_at = now();
 end;
 $$ language plpgsql;
 
