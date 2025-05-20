@@ -19,6 +19,15 @@ alter table public.bookmarks enable row level security;
 create policy "ALL to user's bookmarks" on public.bookmarks for all to authenticated using (user_id = (select auth.uid()));
 create policy "ALL for storytellers, game joining" on public.bookmarks for all to authenticated using (is_storyteller(game_id));
 
+-- Contacts --
+
+
+alter table public.contacts enable row level security;
+
+create policy "select for contacts owner" on public.contacts for select to authenticated using (owner = (select auth.uid()));
+create policy "insert for contacts owner" on public.contacts for insert to authenticated with check (owner = (select auth.uid()));
+create policy "delete for contacts owner" on public.contacts for delete to authenticated using (owner = (select auth.uid()));
+
 
 -- BOARDS --------------------------------------------
 

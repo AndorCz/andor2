@@ -3,11 +3,11 @@
   import { redirectWithToast } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
-  import Characters from '@components/sidebar/Characters.svelte'
-  import Bookmarks from '@components/sidebar/Bookmarks.svelte'
-  import People from '@components/sidebar/People.svelte'
-  import Conversation from '@components/sidebar/Conversation.svelte'
   import User from '@components/sidebar/User.svelte'
+  import People from '@components/sidebar/People.svelte'
+  import Bookmarks from '@components/sidebar/Bookmarks.svelte'
+  import Characters from '@components/sidebar/Characters.svelte'
+  import Conversation from '@components/sidebar/Conversation.svelte'
 
   export let user = {}
   export let pathname = ''
@@ -209,7 +209,7 @@
             {#if $userStore.activePanel === 'booked'}
               <Bookmarks />
             {:else if $userStore.activePanel === 'people'}
-              <People {users} {openConversation} />
+              <People {user} {users} {openConversation} />
             {:else if $userStore.activePanel === 'characters'}
               <Characters {userStore} {characters} {openConversation} />
             {/if}

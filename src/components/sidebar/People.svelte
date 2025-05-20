@@ -1,36 +1,43 @@
 <script>
-  import { getPortraitUrl } from '@lib/database-browser'
+  import { tooltip } from '@lib/tooltip'
+  import { showSuccess } from '@lib/toasts'
+  import { supabase, getPortraitUrl, handleError } from '@lib/database-browser'
+  import { writable } from 'svelte/store'
 
+  export let user
   export let users = []
   export let openConversation
 
   let showContacts = false
+  const groups = writable({ unread: [], active: [], contacts: [] })
 
-  const unreadGroup = []
-  const activeGroup = []
-  const contactGroup = []
-
-  function updateGroups () {
-    // group users by unread, friends, active
+  $: {
+    const next = { unread: [], active: [], contacts: [] }
     users.forEach(user => {
       if (user.unread) {
-        unreadGroup.push(user)
+        next.unread.push(user)
       } else {
-        if (user.active) { activeGroup.push(user) }
-        if (user.contacted) { contactGroup.push(user) }
+        if (user.active) { next.active.push(user) }
+        if (user.contacted) { next.contacts.push(user) }
       }
     })
+    groups.set(next)
   }
 
-  $: updateGroups()
+  async function deleteContact (userId) {
+    const { error } = await supabase.from('contacts').delete().match({ owner: user.id, contact_user: userId })
+    if (error) { return handleError(error) }
+    groups.update(g => ({ ...g, contacts: g.contacts.filter(contact => contact.id !== userId) }))
+    showSuccess('Konverzace odebrána')
+  }
 </script>
 
-{#if unreadGroup.length}
+{#if $groups.unread.length}
   <h4>Nepřečtené</h4>
   <ul class='unread'>
-    {#each unreadGroup as user}
+    {#each $groups.unread as user}
       <li>
-        <button on:click={() => openConversation({ them: user, type: 'user' })}>
+        <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
             <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
           {:else}
@@ -51,11 +58,11 @@
 </h4>
 
 {#if !showContacts}
-  {#if activeGroup.length}
+  {#if $groups.active.length}
     <ul class='active'>
-      {#each activeGroup as user}
+      {#each $groups.active as user}
         <li>
-          <button on:click={() => openConversation({ them: user, type: 'user' })}>
+          <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
               <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
@@ -71,11 +78,11 @@
     <div class='empty'>Nikdo není online</div>
   {/if}
 {:else}
-  {#if contactGroup.length}
+  {#if $groups.contacts.length}
     <ul class='contacts'>
-      {#each contactGroup as user}
-        <li class:offline={!user.active}>
-          <button on:click={() => openConversation({ them: user, type: 'user' })}>
+      {#each $groups.contacts as user}
+        <li class:offline={!user.active} class='row'>
+          <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
               <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
@@ -84,6 +91,7 @@
             <span class='name user'>{user.name}</span>
             {#if user.active}<span class='status'></span>{/if}
           </button>
+          <button on:click={() => deleteContact(user.id)} class='material square hide plain' title='Skrýt konverzaci' use:tooltip>visibility_off</button>
         </li>
       {/each}
     </ul>
@@ -125,13 +133,16 @@
     padding: 0px;
     margin: 0px;
   }
+    .row {
+      display: flex;
+    }
     li.offline {
       opacity: 0.5;
     }
     ul.unread {
       margin-bottom: 20px;
     }
-    ul button {
+    .opener {
       position: relative;
       font-weight: bold;
       background: none;
@@ -143,6 +154,7 @@
       text-align: left;
       box-shadow: none;
       display: flex;
+      flex: 1;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
@@ -167,6 +179,9 @@
         object-position: center 20%;
         border-radius: 100%;
         background-color: var(--background);
+      }
+      .hide {
+        font-size: 18px;
       }
   .empty {
     padding: 20px 0px;

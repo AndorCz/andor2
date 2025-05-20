@@ -1,4 +1,3 @@
-
 drop table if exists profiles cascade;
 drop table if exists threads cascade;
 drop table if exists games cascade;
@@ -305,6 +304,13 @@ create table news (
   character_name text,
   created_at timestamp with time zone default current_timestamp;
   constraint news_owner_fkey foreign key (owner) references profiles (id) on delete cascade
+);
+
+create table contacts (
+  owner uuid not null references public.profiles(id) on delete cascade,
+  contact_user uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key(owner, contact_user)
 );
 
 -- VIEWS --------------------------------------------
@@ -939,37 +945,69 @@ declare
   user_uuid uuid := auth.uid();
 begin
   return (
-    with unread_users as (
-      select p.id
-      from profiles p
-      join messages m on m.sender_user = p.id
-      where m.recipient_user = user_uuid and m.read = false
-      group by p.id
-    ), 
-    contacted_users as (
-      select p.id
-      from profiles p
-      join messages m on p.id = m.sender_user or p.id = m.recipient_user
-      where (m.sender_user = user_uuid or m.recipient_user = user_uuid)
-      and (sender_character is null or recipient_character is null)
-      and p.id != user_uuid
-      group by p.id
-    ),
-    active_users as (select p.id from profiles p where p.last_activity > (now() - interval '5 minutes') and p.id != user_uuid),
-    combined_users as (
-      select p.id, p.name, p.portrait,
-        (p.id in (select id from unread_users)) as has_unread,
-        (p.id in (select id from contacted_users)) as contacted,
-        (p.last_activity > (now() - interval '5 minutes')) as active,
-        (select count(*) from messages m where m.sender_user = p.id and m.recipient_user = user_uuid and m.read = false and sender_character is null and recipient_character is null) as unread
-      from profiles p
-      where p.id in (select id from unread_users)
-         or p.id in (select id from active_users)
-         or p.id in (select id from contacted_users)
-      group by p.id
-      order by unread desc, active desc, lower(p.name)
-    )
-    select json_agg(c) from combined_users c
+    with 
+      unread_users as (
+        select distinct sender_user as id
+          from messages
+         where recipient_user = user_uuid
+           and read = false
+           and sender_character    is null
+           and recipient_character is null
+      ),
+      contact_ids as (
+        select contact_user as id
+          from public.contacts
+         where owner = user_uuid
+      ),
+      active_users as (
+        select id
+          from profiles
+         where last_activity > now() - interval '5 minutes'
+           and id <> user_uuid
+      ),
+      candidate as (
+        select id from unread_users
+        union
+        select id from contact_ids
+        union
+        select id from active_users
+      ),
+      combined_users as (
+        select
+          p.id,
+          p.name,
+          p.portrait,
+          exists(select 1 from unread_users u where u.id = p.id)   as has_unread,
+          exists(select 1 from contact_ids c where c.id = p.id)   as contacted,
+          p.last_activity > now() - interval '5 minutes'         as active,
+          (
+            select count(*) 
+              from messages m
+             where m.sender_user    = p.id
+               and m.recipient_user = user_uuid
+               and m.read           = false
+               and m.sender_character    is null
+               and m.recipient_character is null
+          )                                                      as unread
+        from profiles p
+        join candidate c on c.id = p.id
+      )
+    select
+      json_agg(
+        json_build_object(
+          'id',         cu.id,
+          'name',       cu.name,
+          'portrait',   cu.portrait,
+          'has_unread', cu.has_unread,
+          'contacted',  cu.contacted,
+          'active',     cu.active,
+          'unread',     cu.unread
+        )
+        order by cu.unread desc,
+                 cu.active desc,
+                 lower(cu.name)
+      )
+    from combined_users cu
   );
 end;
 $$ language plpgsql;
@@ -1252,6 +1290,24 @@ end;
 $$ language plpgsql security definer;
 
 
+create or replace function add_contact_before_message() returns trigger as $$
+begin
+  if new.sender_user is not null
+     and new.recipient_user is not null
+     and new.sender_user <> new.recipient_user
+  then
+    insert into public.contacts(owner, contact_user)
+      values (new.sender_user,    new.recipient_user)
+      on conflict do nothing;
+    insert into public.contacts(owner, contact_user)
+      values (new.recipient_user, new.sender_user)
+      on conflict do nothing;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+
 -- TRIGGERS --------------------------------------------
 
 
@@ -1267,6 +1323,7 @@ create or replace trigger update_map_updated_at before update on maps for each r
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
+create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
 
 
 -- WEBHOOKS --------------------------------------------
