@@ -940,55 +940,35 @@ end;
 $$ language plpgsql;
 
 
+create or replace function get_active_user_count() returns integer as $$
+begin
+  return (select count(*) from profiles where last_activity > now() - interval '5 minutes');
+end;
+$$ language plpgsql;
+
+
 create or replace function get_users () returns json as $$
 declare 
   user_uuid uuid := auth.uid();
 begin
   return (
     with 
-      unread_users as (
-        select distinct sender_user as id
-          from messages
-         where recipient_user = user_uuid
-           and read = false
-           and sender_character    is null
-           and recipient_character is null
-      ),
-      contact_ids as (
-        select contact_user as id
-          from public.contacts
-         where owner = user_uuid
-      ),
-      active_users as (
-        select id
-          from profiles
-         where last_activity > now() - interval '5 minutes'
-           and id <> user_uuid
-      ),
-      candidate as (
-        select id from unread_users
-        union
-        select id from contact_ids
-        union
-        select id from active_users
-      ),
+      unread_users as (select distinct sender_user as id from messages where recipient_user = user_uuid and read = false and sender_character    is null and recipient_character is null),
+      contact_ids as (select contact_user as id from public.contacts where owner = user_uuid ),
+      active_users as (select id from profiles where last_activity > now() - interval '5 minutes' and id <> user_uuid ),
+      candidate as (select id from unread_users union select id from contact_ids union select id from active_users ),
       combined_users as (
         select
           p.id,
           p.name,
           p.portrait,
-          exists(select 1 from unread_users u where u.id = p.id)   as has_unread,
-          exists(select 1 from contact_ids c where c.id = p.id)   as contacted,
-          p.last_activity > now() - interval '5 minutes'         as active,
+          exists(select 1 from unread_users u where u.id = p.id) as has_unread,
+          exists(select 1 from contact_ids c where c.id = p.id) as contacted,
+          p.last_activity > now() - interval '5 minutes' as active,
           (
-            select count(*) 
-              from messages m
-             where m.sender_user    = p.id
-               and m.recipient_user = user_uuid
-               and m.read           = false
-               and m.sender_character    is null
-               and m.recipient_character is null
-          )                                                      as unread
+            select count(*) from messages m
+            where m.sender_user = p.id and m.recipient_user = user_uuid and m.read = false and m.sender_character is null and m.recipient_character is null
+          ) as unread
         from profiles p
         join candidate c on c.id = p.id
       )
@@ -1003,9 +983,7 @@ begin
           'active',     cu.active,
           'unread',     cu.unread
         )
-        order by cu.unread desc,
-                 cu.active desc,
-                 lower(cu.name)
+        order by cu.unread desc, cu.active desc, lower(cu.name)
       )
     from combined_users cu
   );

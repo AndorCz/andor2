@@ -54,6 +54,7 @@
 
     // Load first tab data on mount
     await loadTabData($userStore.activePanel)
+    await loadActiveUsers()
   })
 
   onDestroy(() => { resizeObserver.disconnect() })
@@ -158,6 +159,12 @@
     }
   }
 
+  async function loadActiveUsers () {
+    const { data, error } = await supabase.rpc('get_active_user_count')
+    if (error) { throw error }
+    activeUsers = data || 0
+  }
+
   async function loadBookmarksData () {
     const { data, error } = await supabase.rpc('get_bookmarks')
     if (error) { throw error }
@@ -172,7 +179,6 @@
     if (error) { throw error }
     if (data) {
       users = data || []
-      // get tab information
       activeUsers = users.filter(u => u.active).length
       unreadUsers = users.some(u => u.unread)
     }
