@@ -1,5 +1,5 @@
 <script>
-  import { onMount, tick, onDestroy } from 'svelte'
+  import { onMount, tick, onDestroy, afterUpdate } from 'svelte'
   import { writable } from 'svelte/store'
   import { tooltip } from '@lib/tooltip'
   import { Render } from '@jill64/svelte-sanitize'
@@ -14,15 +14,51 @@
   let messagesEl
   let inputEl
   let channel
+  let scrollHandlerAttached = false
+
+  // Pagination variables
+  let isLoading = false
+  let hasMoreMessages = true
+  let messageOffset = 0
+  const PAGE_SIZE = 20
+
+  // Flag to track if user has manually scrolled up
+  let userHasScrolledUp = false
+
+  // Track the distance from the bottom of the scroll container
+  let distanceFromBottom = 0
 
   const messages = writable([])
-
   const them = $activeConversation.them
   const us = $activeConversation.type === 'character' ? $activeConversation.us : user
   const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
   const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
 
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
+
+  // Function to load more messages when scrolling to top
+  function handleScroll () {
+    // Update the distance from the bottom
+    distanceFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
+
+    // Check if user has manually scrolled up
+    userHasScrolledUp = distanceFromBottom > 50
+
+    if (messagesEl && hasMoreMessages && !isLoading) {
+      // Check if user has scrolled to the top (with a small threshold)
+      if (messagesEl.scrollTop <= 50) {
+        loadMessages(false) // Load more messages, not initial load
+      }
+    }
+  }
+
+  // Ensure the scroll handler is attached after the component is mounted and updated
+  afterUpdate(() => {
+    if (messagesEl && !scrollHandlerAttached) {
+      messagesEl.addEventListener('scroll', handleScroll)
+      scrollHandlerAttached = true
+    }
+  })
 
   onMount(() => {
     // init conversation, listen for new messages in the conversation. we can listen to only "us" in the recipient column
@@ -38,31 +74,78 @@
       .subscribe()
   })
 
-  onDestroy(() => { if (channel) { supabase.removeChannel(channel) } })
+  onDestroy(() => {
+    if (channel) { supabase.removeChannel(channel) }
+    // Remove scroll event listener on component destroy
+    if (messagesEl && scrollHandlerAttached) {
+      messagesEl.removeEventListener('scroll', handleScroll)
+      scrollHandlerAttached = false
+    }
+  })
 
   async function waitForAnimation () {
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  async function loadMessages () {
-    if (us.id === user.id) {
-      // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
-      const { data, error } = await supabase.from('messages').select('*')
-        .is('recipient_character', null)
-        .is('sender_character', null)
-        .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
-        .order('created_at', { ascending: true })
+  async function loadMessages (initialLoad = true) {
+    isLoading = true
+
+    try {
+      if (initialLoad) { // Reset pagination variables on initial load
+        messageOffset = 0
+        hasMoreMessages = true
+        $messages = []
+      }
+
+      let query
+
+      if (us.id === user.id) {
+        // load messages where are both recipientId and us.id (sender or recipient columns), sorted by created_at
+        query = supabase.from('messages').select('*')
+          .is('recipient_character', null)
+          .is('sender_character', null)
+          .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
+          .order('created_at', { ascending: false }) // Descending to get most recent first
+          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
+      } else {
+        // Game messages - filter out those sent by different user
+        query = supabase.from('messages').select('*')
+          .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id})`)
+          .order('created_at', { ascending: false }) // Descending to get most recent first
+          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
+      }
+
+      const { data, error } = await query
       if (error) { return handleError(error) }
-      $messages = data
-    } else {
-      // Game messages - filter out those sent by different user
-      const { data, error } = await supabase.from('messages').select('*')
-        .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id})`)
-        .order('created_at', { ascending: true })
-      if (error) { return handleError(error) }
-      $messages = data
+
+      // Check if we have more messages to load
+      hasMoreMessages = data && data.length >= PAGE_SIZE
+
+      // Update offset for next page load
+      messageOffset += data?.length || 0
+
+      // Add messages to the store (newest messages are loaded first, so we need to prepend them)
+      if (initialLoad) {
+        // Reverse to get chronological order (oldest first)
+        $messages = data ? data.reverse() : []
+      } else if (data && data.length > 0) {
+        // When loading more (older) messages, add them to the beginning
+        const scrollHeight = messagesEl.scrollHeight
+        const scrollPosition = messagesEl.scrollTop
+
+        // Prepend older messages to the beginning
+        $messages = [...data.reverse(), ...$messages]
+
+        // After the DOM updates, restore the scroll position
+        tick().then(() => {
+          const newScrollHeight = messagesEl.scrollHeight
+          messagesEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
+        })
+      }
+      if (initialLoad) { markMessagesRead() }
+    } finally {
+      isLoading = false
     }
-    markMessagesRead()
   }
 
   async function markMessagesRead () {
@@ -98,16 +181,18 @@
 
   // Reactive statement for scrolling
   $: if (messagesEl && $messages.length) {
-    if (previousMessagesLength === 0 && $messages.length > 0) {
-      // Instant scroll for the initial load
-      messagesEl.scrollTop = messagesEl.scrollHeight
-    } else if (previousMessagesLength < $messages.length) {
-      // Smooth scroll for subsequent updates (new messages)
-      tick().then(() => {
-        // Smooth scroll to the bottom
-        messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' })
-        previousMessagesLength = $messages.length // update count
-      })
+    if (!userHasScrolledUp) {
+      if (previousMessagesLength === 0 && $messages.length > 0) {
+        // Instant scroll for the initial load
+        messagesEl.scrollTop = messagesEl.scrollHeight
+      } else if (previousMessagesLength < $messages.length) {
+        // Smooth scroll for subsequent updates (new messages)
+        tick().then(() => {
+          // Smooth scroll to the bottom
+          messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' })
+          previousMessagesLength = $messages.length // update count
+        })
+      }
     }
     previousMessagesLength = $messages.length // Update the length after scrolling
   }
@@ -134,7 +219,18 @@
           </div>
         </h2>
 
-        <div class='messages' bind:this={messagesEl}>
+        <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
+          {#if isLoading && !$messages.length}
+            <div class="loading-indicator">Načítám zprávy...</div>
+          {:else if hasMoreMessages}
+            <div class="loading-more">
+              {#if isLoading}
+                <div class="loading-indicator">Načítám starší zprávy...</div>
+              {:else}
+                <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
+              {/if}
+            </div>
+          {/if}
           {#if $messages.length > 0}
             {#each $messages as message}
               <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -249,4 +345,25 @@
             text-align: right;
             float: right;
           }
+
+    /* Loading indicator */
+    .loading-indicator {
+      text-align: center;
+      padding: 10px;
+      font-style: italic;
+      color: var(--dim);
+    }
+
+    .loading-more {
+      text-align: center;
+      padding: 5px;
+      margin-bottom: 15px;
+      border-bottom: 1px dashed var(--block);
+    }
+
+    .load-more-hint {
+      font-size: 0.9em;
+      color: var(--dim);
+      padding: 5px;
+    }
 </style>
