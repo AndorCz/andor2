@@ -41,20 +41,22 @@
   let characters = { allGrouped: [], myStranded: [] }
   let unreadCharacters = false
 
+  // loading states
+  let loading = false
+  let currentTab = ''
+
   onMount(async () => {
     userStore = getSavedStore('user')
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')
     window.addEventListener('resize', updateHeight) // update height on window resize
     setupResizeObserver()
+
+    // Load first tab data on mount
+    await loadTabData($userStore.activePanel)
   })
 
   onDestroy(() => { resizeObserver.disconnect() })
-
-  // afterUpdate(async () => {
-  //   await tick() // wait for DOM update
-  //   updateHeight()
-  // })
 
   function setupResizeObserver () {
     resizeObserver = new ResizeObserver(entries => {
@@ -120,37 +122,78 @@
     }
   }
 
-  function activate (panel) {
-    $userStore.activePanel = panel
-    document.querySelectorAll('#tabs button').forEach(button => {
-      button.classList.toggle('active', button.id === panel)
-    })
+  async function activate (panel) {
+    if ($userStore.activePanel !== panel) {
+      $userStore.activePanel = panel
+      document.querySelectorAll('#tabs button').forEach(button => {
+        button.classList.toggle('active', button.id === panel)
+      })
+      // Load data for the newly activated tab
+      await loadTabData(panel)
+    }
   }
 
   function openConversation ({ us = user, them, type = 'user' }) {
     $activeConversation = { us, them, type }
   }
 
-  async function loadData () {
-    const { data, error } = await supabase.rpc('get_sidebar_data').single()
+  async function loadTabData (panel) {
+    if (!user.id) return // Only load data if user is logged in
+
+    currentTab = panel
+    loading = true
+
+    try {
+      if (panel === 'booked') {
+        await loadBookmarksData()
+      } else if (panel === 'people') {
+        await loadUsersData()
+      } else if (panel === 'characters') {
+        await loadCharactersData()
+      }
+    } catch (error) {
+      handleError(error)
+    } finally {
+      loading = false
+    }
+  }
+
+  async function loadBookmarksData () {
+    const { data, error } = await supabase.rpc('get_bookmarks')
     if (error) { throw error }
     if (data) {
-      $bookmarks = data.bookmarks ? data.bookmarks : { games: [], boards: [], works: [] }
-      users = data.users || []
-      characters = data.characters || { allGrouped: [], myStranded: [] }
+      $bookmarks = data
+      bookmarkUnreadTotal = getBookmarkUnreadTotal(data)
+    }
+  }
 
+  async function loadUsersData () {
+    const { data, error } = await supabase.rpc('get_users')
+    if (error) { throw error }
+    if (data) {
+      users = data || []
       // get tab information
       activeUsers = users.filter(u => u.active).length
       unreadUsers = users.some(u => u.unread)
+    }
+  }
+
+  async function loadCharactersData () {
+    const { data, error } = await supabase.rpc('get_characters')
+    if (error) { throw error }
+    if (data) {
+      characters = data || { allGrouped: [], myStranded: [] }
       unreadCharacters = characters.unreadTotal > 0
     }
   }
 
   function getBookmarkUnreadTotal (bookmarks) {
     let total = 0
-    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread_game })
-    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId].unread_discussion })
-    Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId].unread })
+    if (!bookmarks.games) return total
+
+    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId]?.unread_game || 0 })
+    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId]?.unread_discussion || 0 })
+    Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId]?.unread || 0 })
     return total
   }
 
@@ -203,19 +246,17 @@
           </div>
         {/if}
         <div id='panels'>
-          {#await loadData()}
+          {#if loading}
             <div class='loading'>Načítání...</div>
-          {:then}
-            {#if $userStore.activePanel === 'booked'}
+          {:else}
+            {#if currentTab === 'booked'}
               <Bookmarks />
-            {:else if $userStore.activePanel === 'people'}
+            {:else if currentTab === 'people'}
               <People {user} {users} {openConversation} />
-            {:else if $userStore.activePanel === 'characters'}
+            {:else if currentTab === 'characters'}
               <Characters {userStore} {characters} {openConversation} />
             {/if}
-          {:catch error}
-            <p>Chyba načítání panelu: {error.message}</p>
-          {/await}
+          {/if}
         </div>
       {/if}
     {:else}
@@ -353,6 +394,14 @@
 
   .w100 {
     width: 100%;
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    color: var(--dim);
   }
 
   /* mobile elements */
