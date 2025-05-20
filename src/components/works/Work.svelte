@@ -14,7 +14,7 @@
   const curatorIds = ['a78d91c6-3af6-4163-befd-e7b5d21d9c0f', 'c3304e31-9687-413f-a478-214c865bf5a2', '2d7898ea-ac7b-4f1b-bf29-a10c28892835', '6d3c87ea-aacc-4fd6-9859-852894fd3092'] // Sargo, Hitomi, Eskel, Eskel localhost
 
   async function addBookmark () {
-    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true }).select().maybeSingle()
+    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id, work_thread: data.thread }, { onConflict: 'user_id, work_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
       $bookmarks.works = [...$bookmarks.works, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]

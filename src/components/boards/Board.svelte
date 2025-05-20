@@ -34,7 +34,7 @@
   }
 
   async function addBookmark () {
-    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id }, { onConflict: 'user_id, board_id', ignoreDuplicates: true }).select().maybeSingle()
+    const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id, board_thread: data.thread }, { onConflict: 'user_id, board_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
       $bookmarks.boards = [...$bookmarks.boards, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]
