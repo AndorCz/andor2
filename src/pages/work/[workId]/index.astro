@@ -11,7 +11,7 @@
   const { data: workData, error } = await supabase.from('works').select('id, type, name, annotation, content, thread, owner:profiles(id, name), tags, category, custom_header, likes, dislikes, created_at, published').eq('id', workId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
-  const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: workData.thread }).single()
+  const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: workData.thread }).maybeSingle()
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
   if (unreadData) { workData.unread = unreadData || 0 }
 ---

@@ -22,7 +22,7 @@
     }
   }
 
-  const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: boardData.thread }).single()
+  const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: boardData.thread }).maybeSingle()
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
   if (unreadData) { boardData.unread = unreadData || 0 }
 ---

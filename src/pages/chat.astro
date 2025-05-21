@@ -6,7 +6,7 @@
   let unread = 0
   if (user.id) {
     const env = import.meta.env ? import.meta.env : context.locals.runtime.env
-    const { data, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).single()
+    const { data, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).maybeSingle()
     if (error) {
       console.error('loading unread for chat failed', error)
     } else {
