@@ -17,9 +17,9 @@ const { title, headerStatic, headerStorage } = Astro.props
 let chatUnread = false
 if (user.id) {
   const env = import.meta.env ? import.meta.env : context.locals.runtime.env
-  const { data: count, error } = await supabase.rpc('get_thread_unread', { thread: 1 })
+  const { data: count, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).single()
   if (error) {
-    console.error('get_thread_unread for chat failed', error)
+    console.error('loading unread for chat failed', error)
   } else {
     chatUnread = count > 0
   }
