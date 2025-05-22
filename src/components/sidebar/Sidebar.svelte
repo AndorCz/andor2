@@ -170,7 +170,7 @@
     const groupedData = { games: [], boards: [], works: [] }
     data.forEach(item => {
       if (item.game_id) {
-        groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread + item.unread_secondary })
+        groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread, unread_discussion: item.unread_secondary })
       } else if (item.board_id) {
         groupedData.boards.push({ ...item, id: item.board_id })
       } else if (item.work_id) {
