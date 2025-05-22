@@ -10,7 +10,7 @@
     if (error) {
       console.error('loading unread for chat failed', error)
     } else {
-      unread = data || 0
+      unread = data?.unread_count || 0
     }
   }
 ---

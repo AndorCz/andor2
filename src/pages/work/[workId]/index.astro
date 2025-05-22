@@ -13,7 +13,7 @@
 
   const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: workData.thread }).maybeSingle()
   if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
-  if (unreadData) { workData.unread = unreadData || 0 }
+  if (unreadData) { workData.unread = unreadData?.unread_count || 0 }
 ---
 
 <Layout title={workData?.name} headerStorage={workData?.custom_header ? `work-${workData.id}.jpg?hash=${workData.custom_header}` : null}>
