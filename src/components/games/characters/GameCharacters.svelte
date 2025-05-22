@@ -16,18 +16,6 @@
     activeSection = section
     addURLParam('section', section)
   }
-
-  /*
-  function seen () {
-    setRead(user.id, 'game-characters-' + game.id)
-    const bookmark = $bookmarks.games.find((g) => { return g.id === game.id })
-    if (bookmark) { bookmark.unread = 0 }
-    $bookmarks = $bookmarks
-    delete game.unread.gameCharacters
-  }
-
-  $: if ($bookmarks.games.length) { seen() }
-  */
 </script>
 
 <main>

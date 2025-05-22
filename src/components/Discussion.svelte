@@ -109,7 +109,7 @@
     if (editing) {
       response = await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     } else {
-      response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
+      response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience, post_type: 'other' })
     }
     if (!response.error) {
       page = 0

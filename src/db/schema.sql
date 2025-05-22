@@ -17,6 +17,7 @@ drop type if exists game_category;
 drop type if exists work_type cascade;
 drop type if exists work_tag cascade;
 drop type if exists work_category cascade;
+drop type if exists post_content_type;
 
 drop view if exists posts_owner;
 drop view if exists discussion_posts_owner;
@@ -47,6 +48,7 @@ create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', '
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'erotica', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project');
 create type work_category as enum ('prose', 'poetry', 'game', 'other');
+create type post_content_type as enum ('game', 'other');
 
 
 -- TABLES --------------------------------------------
@@ -214,6 +216,7 @@ create table posts (
   thread int4,
   owner uuid,
   owner_type text not null,
+  post_type public.post_content_type not null default 'other'::public.post_content_type,
   content text,
   important boolean default false,
   audience uuid[],
@@ -271,6 +274,15 @@ create table bookmarks (
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
+);
+
+create table read_threads (
+  user_id uuid not null,
+  thread_id int4 not null,
+  read_at timestamp with time zone not null default current_timestamp,
+  foreign key (user_id) references profiles (id) on delete cascade,
+  foreign key (thread_id) references threads (id) on delete cascade,
+  primary key (user_id, thread_id)
 );
 
 create table unread_threads (
@@ -407,45 +419,26 @@ create or replace view work_list as
   order by w.created_at desc;
 
 create or replace view game_messages as
-select
-  messages.id,
-  messages.sender_user,
-  messages.recipient_user,
-  messages.content,
-  messages.read,
-  messages.moderated,
-  messages.created_at,
-  messages.sender_character,
-  messages.recipient_character
-from
-  messages
-where
-  messages.sender_character is not null
-  and messages.recipient_character is not null;
+  select messages.id, messages.sender_user, messages.recipient_user, messages.content, messages.read, messages.moderated, messages.created_at, messages.sender_character, messages.recipient_character
+  from messages
+  where messages.sender_character is not null and messages.recipient_character is not null;
 
 create or replace view user_unread_bookmarks as
-select
-  b.id as bookmark_id,
-  b.user_id,
-  b.game_id,
-  b.board_id,
-  b.work_id,
-  b.game_main_thread,
-  b.game_discussion_thread,
-  b.board_thread,
-  b.work_thread,
-  b.index,
-  b.created_at as bookmark_created_at, -- aliased to avoid conflict if joined with other created_at
-  coalesce(ut_main.unread_count, 0) as unread_game_main_count,
-  coalesce(ut_disc.unread_count, 0) as unread_game_discussion_count,
-  coalesce(ut_board.unread_count, 0) as unread_board_count,
-  coalesce(ut_work.unread_count, 0) as unread_work_count
-from bookmarks b
-left join unread_threads ut_main on b.game_main_thread = ut_main.thread_id and b.user_id = ut_main.user_id
-left join unread_threads ut_disc on b.game_discussion_thread = ut_disc.thread_id and b.user_id = ut_disc.user_id
-left join unread_threads ut_board on b.board_thread = ut_board.thread_id and b.user_id = ut_board.user_id
-left join unread_threads ut_work on b.work_thread = ut_work.thread_id and b.user_id = ut_work.user_id
-where b.user_id = auth.uid();
+  select
+    b.id as bookmark_id, b.user_id, b.game_id, b.board_id, b.work_id, b.game_main_thread, b.game_discussion_thread, b.board_thread, b.work_thread, b.index, g.name as game_name, brd.name as board_name, w.name as work_name, b.created_at as bookmark_created_at,
+    coalesce(g.name, brd.name, w.name) as name,
+    coalesce(ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0) as unread,
+    coalesce(ut_disc.unread_count, 0) as unread_secondary
+  from
+    bookmarks b
+  left join games g on b.game_id = g.id
+  left join boards brd on b.board_id = brd.id
+  left join works w on b.work_id = w.id
+  left join unread_threads ut_main on b.game_main_thread = ut_main.thread_id and b.user_id = ut_main.user_id
+  left join unread_threads ut_disc on b.game_discussion_thread = ut_disc.thread_id and b.user_id = ut_disc.user_id
+  left join unread_threads ut_board on b.board_thread = ut_board.thread_id and b.user_id = ut_board.user_id
+  left join unread_threads ut_work on b.work_thread = ut_work.thread_id and b.user_id = ut_work.user_id
+  where b.user_id = auth.uid();
 
 
 -- FUNCTIONS --------------------------------------------
@@ -454,96 +447,56 @@ where b.user_id = auth.uid();
 create or replace function increment_unread_counters () returns trigger as $$
 declare
   target_thread_id int4 := new.thread;
-  post_owner_user_id uuid := new.owner;
-  post_audience uuid[] := new.audience;
-  thread_game_id int4;
+  post_owner_actual_user_id uuid;
+  v_post_type public.post_content_type := new.post_type;
+  v_audience uuid[] := new.audience;
 begin
-    -- 1. resolve the actual user_id of the post owner for character posts, to prevent self-incrementing unread counts
-    if new.owner_type = 'character' then
-      select c.player into post_owner_user_id from characters c where c.id = new.owner;
+  -- resolve the actual user_id of the post owner to prevent self-incrementing unread counts.
+  if new.owner_type = 'character' then
+    select c.player into post_owner_actual_user_id from characters c where c.id = new.owner;
+  else
+    post_owner_actual_user_id := new.owner; -- assumed to be a user uuid
+  end if;
+
+  if v_post_type = 'game' then
+    -- logic for 'game' posts (audience-based or all game players)
+    if v_audience is not null and array_length(v_audience, 1) > 0 then
+      -- game post with a specific character audience
+      insert into unread_threads (user_id, thread_id, unread_count)
+      select distinct ch.player, target_thread_id, 1
+      from characters ch
+      where ch.id = any(v_audience) and ch.player is not null and ch.player != post_owner_actual_user_id
+      on conflict (user_id, thread_id) do update
+      set unread_count = unread_threads.unread_count + 1
+      where unread_threads.user_id != post_owner_actual_user_id;
+    else
+      -- public game post (no specific audience)
+      with game_players as (
+        select distinct ch.player
+        from games g
+        join characters ch on ch.game = g.id
+        where (g.game_thread = target_thread_id or g.discussion_thread = target_thread_id)
+        and ch.player is not null
+        and ch.player != post_owner_actual_user_id
+      )
+      insert into unread_threads (user_id, thread_id, unread_count)
+      select gp.player, target_thread_id, 1
+      from game_players gp
+      on conflict (user_id, thread_id) do update
+      set unread_count = unread_threads.unread_count + 1
+      where unread_threads.user_id != post_owner_actual_user_id;
     end if;
-
-    -- 2. determine the target game id for audience checks within is_post_visible_to_user
-    select g.id into thread_game_id 
-    from games g 
-    where g.game_thread = target_thread_id or g.discussion_thread = target_thread_id;
-
-    -- 3. identify all users who might need their unread count updated for this new post.
-    -- this cte gathers users based on bookmarks, game membership (if a game thread), or direct/character presence in the post's audience.
-    with relevant_users_cte as (
-      -- users who have bookmarked an item (game, board, work) associated with this thread.
-      select b.user_id from bookmarks b
-      where b.game_main_thread = target_thread_id
-        or b.game_discussion_thread = target_thread_id
-        or b.board_thread = target_thread_id
-        or b.work_thread = target_thread_id
-      union
-      -- if it's a game thread, include all players in that game.
-      select distinct ch.player as user_id from games g join characters ch on ch.game = g.id
-      where (g.game_thread = target_thread_id or g.discussion_thread = target_thread_id) and ch.player is not null
-      union
-      -- users directly named in the post's audience.
-      select aud_id as user_id from unnest(post_audience) as aud_id
-      where exists (select 1 from profiles p where p.id = aud_id) -- ensure it's a user uuid
-      union
-      -- users whose characters are named in the post's audience.
-      select ch.player as user_id from characters ch
-      where ch.id = any(post_audience) and ch.player is not null
-    )
-    -- 4. insert or update unread counts for the identified relevant users.
+  else
+    -- increment unread count only for users who have previously read this thread (have record in read_threads)
     insert into unread_threads (user_id, thread_id, unread_count)
-    select
-      ru.user_id,         -- the user whose unread count is being updated.
-      target_thread_id,   -- the thread containing the new post.
-      1                   -- increment by 1 for this new post.
-    from
-      (select distinct user_id from relevant_users_cte) ru -- process each relevant user only once.
-    where
-      -- don't increment unread count for the user who made the post.
-      ru.user_id != post_owner_actual_user_id
-      -- check if the post is actually visible to this user based on audience restrictions.
-      and is_post_visible_to_user(ru.user_id, post_audience, thread_game_id)
+    select rt.user_id, target_thread_id, 1
+    from read_threads rt
+    where rt.thread_id = target_thread_id and rt.user_id != post_owner_actual_user_id
     on conflict (user_id, thread_id) do update
     set unread_count = unread_threads.unread_count + 1
-    -- ensure, even on conflict, that self-posts don't increment the count.
     where unread_threads.user_id != post_owner_actual_user_id;
-
-    return new;
-end;
-$$ language plpgsql;
-
-
-create or replace function is_post_visible_to_user ( p_user_id uuid, p_post_audience uuid[], p_thread_game_id int4 ) returns boolean as $$
-begin
-  -- Public posts are visible
-  if p_post_audience is null then return true;
   end if;
-  -- Visible if user is directly in audience
-  if p_user_id = any(p_post_audience) then return true;
-  end if;
-  -- Visible if user's character is in audience. For game threads, character must belong to that game.
-  if exists (
-    select 1 from characters ch where ch.player = p_user_id and ch.id = any(p_post_audience) and (p_thread_game_id is null or ch.game = p_thread_game_id)
-  ) then return true;
-  end if;
-  return false;
-end;
-$$ language plpgsql;
-
-
-create or replace function get_game_unread (p_game_id int4, p_game_thread_id int4, p_discussion_thread_id int4)
-  returns jsonb as $$
-declare
-  game_unread_count int;
-  discussion_unread_count int;
-  current_user_id uuid := auth.uid();
-begin
-  select ut.unread_count into game_unread_count from unread_threads ut where ut.user_id = current_user_id and ut.thread_id = p_game_thread_id;
-  select ut.unread_count into discussion_unread_count from unread_threads ut where ut.user_id = current_user_id and ut.thread_id = p_discussion_thread_id;
-  return jsonb_build_object(
-    'gameChat', coalesce(discussion_unread_count, 0),
-    'gameThread', coalesce(game_unread_count, 0)
-  );
+  return new;
 end;
 $$ language plpgsql;
 
@@ -655,7 +608,113 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_character_names (audience_ids uuid[]) returns text[] as $$
+create or replace function add_storyteller () returns trigger as $$
+begin
+  insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function add_codex_index () returns trigger as $$
+begin
+  insert into codex_pages (game, name, slug) values (new.id, 'Úvod', 'index');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function reject_character (character_id uuid) returns void as $$
+begin
+  if not is_players_character(character_id) and not is_storyteller((select game from characters where id = character_id)) then raise exception 'Nejsi vypravěč hry, ani vlastník postavy'; end if;
+  update characters set game = null, accepted = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function claim_character (character_id uuid) returns void as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if character_row.open is false then raise exception 'Postava není volná'; end if;
+  update characters set player = auth.uid(), open = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function hand_over_character (character_id uuid, new_owner uuid) returns uuid as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if auth.uid() != character_row.player then raise exception 'Není tvoje postava'; end if;
+  -- create a new character with the same data for the player to keep (except for the game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  character_row.storyteller := false;
+  insert into characters values (character_row.*);
+  -- update the original character to change the player
+  update characters set player = new_owner where id = character_id;
+  return character_row.id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function take_over_character (character_id uuid) returns uuid as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if is_storyteller(character_row.game) is false then raise exception 'Nejsi vypravěč'; end if;
+  -- create a new character with the same data for the player to keep (except for the game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  character_row.storyteller := false;
+  insert into characters values (character_row.*);
+  -- update the original character to change the player
+  update characters set player = auth.uid() where id = character_id;
+  return character_row.id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function add_game_threads () returns trigger as $$
+begin
+  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
+  insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function delete_game_threads () returns trigger as $$
+begin
+  delete from threads where id = old.discussion_thread;
+  delete from threads where id = old.game_thread;
+  return old;
+end;
+$$ language plpgsql;
+
+
+create or replace function add_thread () returns trigger as $$
+begin
+  insert into threads (name) values (new.name) returning id into new.thread;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function delete_thread () returns trigger as $$
+begin
+  delete from threads where id = old.thread;
+  return old;
+end;
+$$ language plpgsql;
+
+unction get_character_names (audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -663,6 +722,7 @@ begin
   return names;
 end;
 $$ language plpgsql;
+
 
 create or replace function get_discussion_posts (_thread integer, page integer, _limit int, ascending boolean)
 returns json as $$
@@ -966,7 +1026,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_active_user_count() returns integer as $$
+create or replace function get_active_user_count () returns integer as $$
 begin
   return (select count(*) from profiles where last_activity > now() - interval '5 minutes');
 end;
@@ -1017,7 +1077,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_game_data (game_id int) returns jsonb as $$
+create or replace function get_game (game_id int) returns jsonb as $$
 declare
   game_data jsonb;
   character_data jsonb;
@@ -1025,13 +1085,37 @@ declare
   unread_data jsonb;
   codex_data jsonb;
   subscription_data jsonb;
+  game_unread_count int;
+  discussion_unread_count int;
+  current_user_id uuid := auth.uid();
+  v_game_thread_id int;
+  v_discussion_thread_id int;
 begin
   select to_jsonb(t) into game_data from (select g.*, p as owner, m as active_map from games g left join profiles p on g.owner = p.id left join maps m on g.active_map = m.id where g.id = game_id) t;
+  
+  -- Extract thread IDs from game_data
+  v_game_thread_id := (game_data->>'game_thread')::int;
+  v_discussion_thread_id := (game_data->>'discussion_thread')::int;
+
+  -- Inline get_game_unread logic
+  select ut.unread_count into game_unread_count 
+  from unread_threads ut 
+  where ut.user_id = current_user_id and ut.thread_id = v_game_thread_id;
+  
+  select ut.unread_count into discussion_unread_count 
+  from unread_threads ut 
+  where ut.user_id = current_user_id and ut.thread_id = v_discussion_thread_id;
+  
+  unread_data := jsonb_build_object(
+    'gameChat', coalesce(discussion_unread_count, 0),
+    'gameThread', coalesce(game_unread_count, 0)
+  );
+
   select jsonb_agg(t) into character_data from (select c.*, p as player from characters c left join profiles p on c.player = p.id where c.game = game_id) t;
   select jsonb_agg(t) into map_data from (select * from maps where game = game_id order by updated_at desc) t;
-  select to_jsonb(get_game_unread(game_id, (game_data->>'game_thread')::int, (game_data->>'discussion_thread')::int)) into unread_data where auth.uid() is not null; -- only calculate unread if user is logged in
   select jsonb_agg(t) into codex_data from (select * from codex_sections where game = game_id order by index) t;
   select to_jsonb(t) into subscription_data from (select * from subscriptions where user_id = auth.uid() and game = game_id) t;
+  
   return game_data || jsonb_build_object('characters', character_data, 'maps', map_data, 'unread', unread_data, 'codexSections', codex_data, 'subscription', subscription_data);
 end;
 $$ language plpgsql;
@@ -1111,6 +1195,14 @@ $$ language plpgsql security definer;
 create or replace function delete_old_chat_posts () returns void as $$
 begin
   delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thread = 1;
+end;
+$$ language plpgsql;
+
+
+create or replace function thread_read (p_user_id uuid, p_thread_id int4) returns void as $$
+begin
+  insert into read_threads (user_id, thread_id, read_at) values (p_user_id, p_thread_id, now()) on conflict (user_id, thread_id) do update set read_at = now();
+  update unread_threads set unread_count = 0 where user_id = p_user_id and thread_id = p_thread_id;
 end;
 $$ language plpgsql;
 
@@ -1231,6 +1323,70 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
+
+create or replace function get_bookmarks () returns jsonb as $$
+DECLARE
+    games_json jsonb;
+    boards_json jsonb;
+    works_json jsonb;
+    user_uuid uuid := auth.uid();
+BEGIN
+    games_json := COALESCE(
+        (
+            SELECT jsonb_agg(jsonb_build_object(
+                'bookmark_id', v.bookmark_id,
+                'index', v.index,
+                'id', v.game_id, -- Use v.game_id directly
+                'name', v.name,  -- Use consolidated name from view
+                'created_at', v.bookmark_created_at,
+                'unread', v.unread,
+                'unread_discussion', v.unread_secondary
+            ))
+            FROM user_unread_bookmarks v
+            -- No need to join games g here anymore, name and id come from view
+            WHERE v.user_id = user_uuid AND v.game_id IS NOT NULL
+        ),
+        '[]'::jsonb
+    );
+
+    boards_json := COALESCE(
+        (
+            SELECT jsonb_agg(jsonb_build_object(
+                'bookmark_id', v.bookmark_id,
+                'index', v.index,
+                'id', v.board_id, -- Use v.board_id directly
+                'name', v.name, -- Use consolidated name from view
+                'created_at', v.bookmark_created_at,
+                'unread', v.unread
+            ))
+            FROM user_unread_bookmarks v
+            -- No need to join boards brd here anymore, name and id come from view
+            WHERE v.user_id = user_uuid AND v.board_id IS NOT NULL
+        ),
+        '[]'::jsonb
+    );
+
+    works_json := COALESCE(
+        (
+            SELECT jsonb_agg(jsonb_build_object(
+                'bookmark_id', v.bookmark_id,
+                'index', v.index,
+                'id', v.work_id, -- Use v.work_id directly
+                'name', v.name, -- Use consolidated name from view
+                'created_at', v.bookmark_created_at,
+                'unread', v.unread
+            ))
+            FROM user_unread_bookmarks v
+            -- No need to join works w here anymore, name and id come from view
+            WHERE v.user_id = user_uuid AND v.work_id IS NOT NULL
+        ),
+        '[]'::jsonb
+    );
+
+    RETURN jsonb_build_object('games', games_json, 'boards', boards_json, 'works', works_json);
+END;
+$$ language plpgsql;
 
 
 -- TRIGGERS --------------------------------------------

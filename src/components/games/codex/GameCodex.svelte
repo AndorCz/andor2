@@ -74,18 +74,6 @@
       if (pages) { searchResults = [...searchResults, ...pages] }
     }
   }
-
-  /*
-  function seen () {
-    delete game.unread.gameCodex
-    setRead(user.id, 'game-codex-' + game.id)
-    const game = $bookmarks.games.find((game) => { return game.id === game.id })
-    if (game) { game.unread = 0 }
-    $bookmarks = $bookmarks
-  }
-  */
-
-  // $: if ($bookmarks.games.length) { seen() }
 </script>
 
 <main>

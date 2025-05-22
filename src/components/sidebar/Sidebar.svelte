@@ -166,11 +166,21 @@
   }
 
   async function loadBookmarksData () {
-    const { data, error } = await supabase.rpc('get_bookmarks')
+    const { data, error } = await supabase.from('user_unread_bookmarks').select().eq('user_id', user.id)
+    const groupedData = { games: [], boards: [], works: [] }
+    data.forEach(item => {
+      if (item.game_id) {
+        groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread + item.unread_secondary })
+      } else if (item.board_id) {
+        groupedData.boards.push({ ...item, id: item.board_id })
+      } else if (item.work_id) {
+        groupedData.works.push({ ...item, id: item.work_id })
+      }
+    })
     if (error) { throw error }
     if (data) {
-      $bookmarks = data
-      bookmarkUnreadTotal = getBookmarkUnreadTotal(data)
+      $bookmarks = groupedData
+      bookmarkUnreadTotal = getBookmarkUnreadTotal(groupedData)
     }
   }
 

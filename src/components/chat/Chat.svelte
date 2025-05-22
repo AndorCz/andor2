@@ -206,7 +206,7 @@
     if (editing) {
       response = await sendPost('PATCH', { id: editing, thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
     } else {
-      response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
+      response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user', post_type: 'other' })
     }
     if (!response.error) {
       textareaValue = ''
