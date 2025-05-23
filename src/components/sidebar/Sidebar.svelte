@@ -26,20 +26,20 @@
   let stickBottom = false
   let resizeObserver
 
-  // bookmarks
-  let bookmarkUnreadTotal = 0
+  // unread
+  let unreadBookmarks = false
+  let unreadUsers = false
+  let unreadCharacters = false
 
   // users
   let userStore
   let users = []
   let activeUsers = 0
-  let unreadUsers = false
   let email = ''
   let password = ''
 
   // characters
   let characters = { allGrouped: [], myStranded: [] }
-  let unreadCharacters = false
 
   // loading states
   let loading = false
@@ -52,9 +52,9 @@
     window.addEventListener('resize', updateHeight) // update height on window resize
     setupResizeObserver()
 
-    // Load first tab data on mount
-    await loadTabData($userStore.activePanel)
+    await loadUnread()
     await loadActiveUsers()
+    await loadTabData($userStore.activePanel) // Load first tab data on mount
   })
 
   onDestroy(() => { resizeObserver.disconnect() })
@@ -138,12 +138,20 @@
     $activeConversation = { us, them, type }
   }
 
+  async function loadUnread () {
+    const { data, error } = await supabase.rpc('get_unread_tabs', { user_id: user.id })
+    if (error) { throw error }
+    if (data) {
+      unreadBookmarks = data.unread_bookmarks > 0
+      unreadUsers = data.unread_users > 0
+      unreadCharacters = data.unread_characters > 0
+    }
+  }
+
   async function loadTabData (panel) {
     if (!user.id) return // Only load data if user is logged in
-
     currentTab = panel
     loading = true
-
     try {
       if (panel === 'booked') {
         await loadBookmarksData()
@@ -166,7 +174,7 @@
   }
 
   async function loadBookmarksData () {
-    const { data, error } = await supabase.from('user_unread_bookmarks').select().eq('user_id', user.id)
+    const { data, error } = await supabase.from('user_bookmarks').select().eq('user_id', user.id)
     const groupedData = { games: [], boards: [], works: [] }
     data.forEach(item => {
       if (item.game_id) {
@@ -180,7 +188,7 @@
     if (error) { throw error }
     if (data) {
       $bookmarks = groupedData
-      bookmarkUnreadTotal = getBookmarkUnreadTotal(groupedData)
+      unreadBookmarks = getBookmarkUnread(groupedData)
     }
   }
 
@@ -203,14 +211,19 @@
     }
   }
 
-  function getBookmarkUnreadTotal (bookmarks) {
-    let total = 0
-    if (!bookmarks.games) return total
-
-    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId]?.unread_game || 0 })
-    Object.keys(bookmarks.games).forEach(gameId => { total += bookmarks.games[gameId]?.unread_discussion || 0 })
-    Object.keys(bookmarks.boards).forEach(boardId => { total += bookmarks.boards[boardId]?.unread || 0 })
-    return total
+  function getBookmarkUnread (bookmarks) {
+    let unreadFound = false
+    if (bookmarks.games) {
+      Object.keys(bookmarks.games).forEach(gameId => { unreadFound = bookmarks.games[gameId]?.unread_game > 0 })
+      Object.keys(bookmarks.games).forEach(gameId => { unreadFound = bookmarks.games[gameId]?.unread_discussion > 0 })
+    }
+    if (bookmarks.works) {
+      Object.keys(bookmarks.works).forEach(workId => { unreadFound = bookmarks.works[workId]?.unread > 0 })
+    }
+    if (bookmarks.boards) {
+      Object.keys(bookmarks.boards).forEach(boardId => { unreadFound = bookmarks.boards[boardId]?.unread > 0 })
+    }
+    return unreadFound
   }
 
   async function signInWithEmail () {
@@ -227,8 +240,6 @@
     }
     loginInProgress = false
   }
-
-  $: bookmarkUnreadTotal = getBookmarkUnreadTotal($bookmarks)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -246,7 +257,7 @@
         {#if $userStore?.activePanel}
           <div id='tabs'>
             <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
-              {#if bookmarkUnreadTotal && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
+              {#if unreadBookmarks && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
               <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
             <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>

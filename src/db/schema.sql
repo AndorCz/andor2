@@ -246,7 +246,6 @@ create table messages (
   sender_character uuid,
   recipient_character uuid,
   content text,
-  read boolean default false,
   moderated boolean default false,
   created_at timestamp with time zone default current_timestamp,
   constraint messages_sender_user_fkey foreign key (sender_user) references profiles (id) on delete cascade,
@@ -1429,7 +1428,7 @@ $$ language plpgsql security definer;
 
 -- Functions and Triggers for Message Unread Counts
 
-create or replace function increment_unread_user_message_count() returns trigger as $$
+create or replace function increment_unread_user_message_count () returns trigger as $$
 begin
   if new.recipient_user is not null and new.sender_user is not null then
     insert into unread_user_message_counts (recipient_user_id, sender_user_id, unread_count)
@@ -1441,7 +1440,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function decrement_unread_user_message_count() returns trigger as $$
+create or replace function decrement_unread_user_message_count () returns trigger as $$
 declare
   v_user_read_at timestamp with time zone;
 begin
@@ -1461,7 +1460,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function increment_unread_character_message_count() returns trigger as $$
+create or replace function increment_unread_character_message_count () returns trigger as $$
 begin
   if new.recipient_character is not null and new.sender_character is not null then
     insert into unread_character_message_counts (recipient_character_id, sender_character_id, unread_count)
@@ -1473,7 +1472,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function decrement_unread_character_message_count() returns trigger as $$
+create or replace function decrement_unread_character_message_count () returns trigger as $$
 declare
   v_char_read_at timestamp with time zone;
 begin
@@ -1510,39 +1509,15 @@ create or replace trigger update_codex_updated_at before update on codex_pages f
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
+-- Triggers for thread unread counts
 create or replace trigger increment_unread_after_post_insert after insert on posts for each row execute function increment_unread_counters();
 create or replace trigger decrement_unread_after_post_delete after delete on posts for each row execute procedure decrement_unread_counters();
-
--- Triggers for user messages
-drop trigger if exists increment_user_message_unread on messages;
-create trigger increment_user_message_unread
-  after insert on messages
-  for each row
-  when (new.recipient_user is not null and new.sender_user is not null)
-  execute procedure increment_unread_user_message_count();
-
-drop trigger if exists decrement_user_message_unread_on_delete on messages;
-create trigger decrement_user_message_unread_on_delete
-  after delete on messages
-  for each row
-  when (old.recipient_user is not null and old.sender_user is not null)
-  execute procedure decrement_unread_user_message_count();
-
--- Triggers for character messages
-drop trigger if exists increment_character_message_unread on messages;
-create trigger increment_character_message_unread
-  after insert on messages
-  for each row
-  when (new.recipient_character is not null and new.sender_character is not null)
-  execute procedure increment_unread_character_message_count();
-
-drop trigger if exists decrement_character_message_unread_on_delete on messages;
-create trigger decrement_character_message_unread_on_delete
-  after delete on messages
-  for each row
-  when (old.recipient_character is not null and old.sender_character is not null)
-  execute procedure decrement_unread_character_message_count();
-
+-- Triggers for user message unread counts
+create or replace trigger increment_user_message_unread after insert on messages for each row when (new.recipient_user is not null and new.sender_user is not null) execute procedure increment_unread_user_message_count();
+create or replace trigger decrement_user_message_unread_on_delete after delete on messages for each row when (old.recipient_user is not null and old.sender_user is not null) execute procedure decrement_unread_user_message_count();
+-- Triggers for character message unread counts
+create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
+create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
 
 -- WEBHOOKS --------------------------------------------
 

@@ -142,14 +142,14 @@
           messagesEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
         })
       }
-      if (initialLoad) { markMessagesRead() }
+      if (initialLoad) { clearUnread() }
     } finally {
       isLoading = false
     }
   }
 
-  async function markMessagesRead () {
-    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === us.id && message.read !== true) // only where we are the sender
+  async function clearUnread () {
+    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === us.id) // only where we are the sender
     if (myUnreadMessages.length) {
       const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
       if (error) { return handleError(error) }
