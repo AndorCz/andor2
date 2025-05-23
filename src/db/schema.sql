@@ -574,31 +574,10 @@ declare
   unread_character_messages boolean;
   current_user_id uuid := auth.uid();
 begin
-  select exists(
-    select 1
-    from unread_threads ut
-    join bookmarks b on ut.thread_id = b.id -- Assuming bookmarks.id is the thread_id
-    where ut.user_id = current_user_id
-  ) into unread_bookmarks;
-
-  select exists(
-    select 1
-    from unread_user_message_counts uumc
-    where uumc.recipient_user_id = current_user_id and uumc.unread_count > 0
-  ) into unread_user_messages;
-
-  select exists(
-    select 1
-    from unread_character_message_counts ucmc
-    join characters c on ucmc.recipient_character_id = c.id
-    where c.player = current_user_id and ucmc.unread_count > 0
-  ) into unread_character_messages;
-  
-  return json_build_object(
-    'unread_bookmarks', unread_bookmarks,
-    'unread_user_messages', unread_user_messages,
-    'unread_character_messages', unread_character_messages
-  );
+  select exists(select 1 from user_bookmarks where (unread > 0 or unread_secondary > 0)) into unread_bookmarks;
+  select exists(select 1 from unread_user_message_counts uumc where uumc.recipient_user_id = current_user_id and uumc.unread_count > 0) into unread_user_messages;
+  select exists(select 1 from unread_character_message_counts ucmc join characters c on ucmc.recipient_character_id = c.id where c.player = current_user_id and ucmc.unread_count > 0) into unread_character_messages;
+  return json_build_object( 'unread_bookmarks', unread_bookmarks, 'unread_user_messages', unread_user_messages, 'unread_character_messages', unread_character_messages );
 end;
 $$ language plpgsql;
 
@@ -1141,7 +1120,7 @@ declare
 begin
   return (
     with 
-      unread_users as (select distinct sender_user as id from messages where recipient_user = user_uuid and read = false and sender_character    is null and recipient_character is null),
+      unread_users as (select distinct sender_user as id from messages where recipient_user = user_uuid and read = false and sender_character is null and recipient_character is null),
       contact_ids as (select contact_user as id from public.contacts where owner = user_uuid ),
       active_users as (select id from profiles where last_activity > now() - interval '5 minutes' and id <> user_uuid ),
       candidate as (select id from unread_users union select id from contact_ids union select id from active_users ),

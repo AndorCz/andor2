@@ -149,16 +149,22 @@
   }
 
   async function clearUnread () {
-    const myUnreadMessages = $messages.filter(message => message[recipientColumn] === us.id) // only where we are the sender
-    if (myUnreadMessages.length) {
-      const { error } = await supabase.from('messages').update({ read: true }).in('id', myUnreadMessages.map(message => message.id))
-      if (error) { return handleError(error) }
+    const now = new Date().toISOString()
+    if ($activeConversation.type === 'character') { // Character-to-character conversation
+      const { error: readError } = await supabase.from('read_character_conversations').upsert({ reader_character_id: us.id, peer_character_id: them.id, read_at: now }, { onConflict: 'reader_character_id, peer_character_id' })
+      if (readError) { return handleError(readError) }
+      const { error: unreadError } = await supabase.from('unread_character_message_counts').update({ unread_count: 0 }).eq('recipient_character_id', us.id).eq('sender_character_id', them.id)
+      if (unreadError) { return handleError(unreadError) }
+    } else { // User-to-user conversation
+      const { error: readError } = await supabase.from('read_user_conversations').upsert({ reader_user_id: us.id, peer_user_id: them.id, read_at: now }, { onConflict: 'reader_user_id, peer_user_id' })
+      if (readError) { return handleError(readError) }
+      const { error: unreadError } = await supabase.from('unread_user_message_counts').update({ unread_count: 0 }).eq('recipient_user_id', us.id).eq('sender_user_id', them.id)
+      if (unreadError) { return handleError(unreadError) }
     }
   }
 
   async function sendMessage () {
-    if (us.id !== user.id) {
-      // Game messages - insert both sender and character ids
+    if (us.id !== user.id) { // Game messages - insert both sender and character ids
       const { error } = await supabase.from('messages').insert({ content: textareaValue, sender_character: us.id, sender_user: user.id, recipient_character: them.id, recipient_user: them.player })
       if (error) { return handleError(error) }
     } else {

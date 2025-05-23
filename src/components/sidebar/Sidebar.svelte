@@ -139,12 +139,12 @@
   }
 
   async function loadUnread () {
-    const { data, error } = await supabase.rpc('get_unread_tabs', { user_id: user.id })
+    const { data, error } = await supabase.rpc('get_unread_tabs')
     if (error) { throw error }
     if (data) {
       unreadBookmarks = data.unread_bookmarks > 0
-      unreadUsers = data.unread_users > 0
-      unreadCharacters = data.unread_characters > 0
+      unreadUsers = data.unread_user_messages > 0
+      unreadCharacters = data.unread_character_messages > 0
     }
   }
 
