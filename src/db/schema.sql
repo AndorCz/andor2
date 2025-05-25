@@ -17,6 +17,7 @@ drop type if exists game_category;
 drop type if exists work_type cascade;
 drop type if exists work_tag cascade;
 drop type if exists work_category cascade;
+drop type if exists post_content_type;
 
 drop view if exists posts_owner;
 drop view if exists discussion_posts_owner;
@@ -26,6 +27,7 @@ drop view if exists game_list;
 drop view if exists work_list;
 drop view if exists last_posts;
 drop view if exists game_messages;
+drop view if exists user_bookmarks;
 
 
 -- EXTENSIONS --------------------------------------------
@@ -46,6 +48,7 @@ create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', '
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ('story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'erotica', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project');
 create type work_category as enum ('prose', 'poetry', 'game', 'other');
+create type post_content_type as enum ('game', 'other');
 
 
 -- TABLES --------------------------------------------
@@ -213,6 +216,7 @@ create table posts (
   thread int4,
   owner uuid,
   owner_type text not null,
+  post_type public.post_content_type not null default 'other'::public.post_content_type,
   content text,
   important boolean default false,
   audience uuid[],
@@ -242,13 +246,54 @@ create table messages (
   sender_character uuid,
   recipient_character uuid,
   content text,
-  read boolean default false,
   moderated boolean default false,
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
   constraint messages_sender_user_fkey foreign key (sender_user) references profiles (id) on delete cascade,
   constraint messages_recipient_user_fkey foreign key (recipient_user) references profiles (id) on delete cascade,
   constraint messages_sender_character_fkey foreign key (sender_character) references characters (id) on delete cascade,
   constraint messages_recipient_character_fkey foreign key (recipient_character) references characters (id) on delete cascade
+);
+
+-- Tables for aggregated unread message counts and read timestamps
+create table read_user_conversations (
+  reader_user_id uuid not null,
+  peer_user_id uuid not null,
+  read_at timestamptz not null default current_timestamp,
+  primary key (reader_user_id, peer_user_id),
+  foreign key (reader_user_id) references profiles(id) on delete cascade,
+  foreign key (peer_user_id) references profiles(id) on delete cascade,
+  check (reader_user_id <> peer_user_id)
+);
+
+create table unread_user_message_counts (
+  recipient_user_id uuid not null,
+  sender_user_id uuid not null,
+  unread_count integer not null default 0,
+  primary key (recipient_user_id, sender_user_id),
+  foreign key (recipient_user_id) references profiles(id) on delete cascade,
+  foreign key (sender_user_id) references profiles(id) on delete cascade,
+  check (recipient_user_id <> sender_user_id)
+);
+
+create table read_character_conversations (
+  reader_character_id uuid not null,
+  peer_character_id uuid not null,
+  read_at timestamptz not null default current_timestamp,
+  primary key (reader_character_id, peer_character_id),
+  foreign key (reader_character_id) references characters(id) on delete cascade,
+  foreign key (peer_character_id) references characters(id) on delete cascade,
+  check (reader_character_id <> peer_character_id)
+);
+
+create table unread_character_message_counts (
+  recipient_character_id uuid not null,
+  sender_character_id uuid not null,
+  unread_count integer not null default 0,
+  primary key (recipient_character_id, sender_character_id),
+  foreign key (recipient_character_id) references characters(id) on delete cascade,
+  foreign key (sender_character_id) references characters(id) on delete cascade,
+  check (recipient_character_id <> sender_character_id)
 );
 
 create table bookmarks (
@@ -261,8 +306,6 @@ create table bookmarks (
   game_discussion_thread int4 null references threads(id) on delete set null,
   board_thread int4 null references threads(id) on delete set null,
   work_thread int4 null references threads(id) on delete set null,
-  unread int4 not null default 0,
-  unread_secondary int4 not null default 0,
   index smallint default 0,
   created_at timestamp with time zone default current_timestamp,
   constraint unique_user_game unique (user_id, game_id),
@@ -274,12 +317,21 @@ create table bookmarks (
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
 );
 
-create table user_reads (
+create table read_threads (
   user_id uuid not null,
-  slug text not null,
+  thread_id int4 not null,
   read_at timestamp with time zone not null default current_timestamp,
   foreign key (user_id) references profiles (id) on delete cascade,
-  primary key (user_id, slug)
+  foreign key (thread_id) references threads (id) on delete cascade,
+  primary key (user_id, thread_id)
+);
+
+create table unread_threads (
+  id int4 not null primary key generated by default as identity,
+  user_id uuid not null references profiles(id) on delete cascade,
+  thread_id int4 not null references threads(id) on delete cascade,
+  unread_count int4 not null default 0,
+  constraint unique_user_thread unique (user_id, thread_id)
 );
 
 create table subscriptions (
@@ -319,7 +371,9 @@ create table contacts (
   primary key(owner, contact_user)
 );
 
+
 -- VIEWS --------------------------------------------
+
 
 create or replace view news_reactions as
   select n.id, n.title, n.content_type, n.content_id, n.image_url, n.subheadline, n.button_text, n.url, n.content, n.published, n.owner, p.id as owner_id, p.name as owner_name, p.portrait as owner_portrait, n.character, n.character_name, n.created_at, r.thumbs, r.frowns, r.shocks, r.hearts, r.laughs
@@ -406,61 +460,127 @@ create or replace view work_list as
   order by w.created_at desc;
 
 create or replace view game_messages as
-select
-  messages.id,
-  messages.sender_user,
-  messages.recipient_user,
-  messages.content,
-  messages.read,
-  messages.moderated,
-  messages.created_at,
-  messages.sender_character,
-  messages.recipient_character
-from
-  messages
-where
-  messages.sender_character is not null
-  and messages.recipient_character is not null;
+  select messages.id, messages.sender_user, messages.recipient_user, messages.content, messages.read, messages.moderated, messages.created_at, messages.sender_character, messages.recipient_character
+  from messages
+  where messages.sender_character is not null and messages.recipient_character is not null;
 
---create or replace view last_posts as
---  select p.id, p.content, p.created_at,
---    case
---      when g.id is not null then 'game'
---      when b.id is not null then 'board'
---      when w.id is not null then 'work'
---    end as content_type,
---    coalesce(g.id::text, b.id::text, w.id::text) as content_id,
---    p.owner,
---    p.owner_type,
---    case
---      when p.owner_type = 'user' then pr.name
---      when p.owner_type = 'character' then ch.name
---    end as owner_name,
---    case
---      when p.owner_type = 'user' then pr.portrait
---      when p.owner_type = 'character' then ch.portrait
---    end as owner_portrait,
---    case
---      when g.id is not null then g.name
---      when b.id is not null then b.name
---      when w.id is not null then w.name
---    end as content_name,
---    p.frowns, p.hearts, p.laughs, p.thumbs, p.shocks
---  from
---    posts p
---    left join games g on p.thread = g.game_thread
---    left join boards b on p.thread = b.thread
---    left join works w on p.thread = w.thread
---    left join profiles pr on p.owner = pr.id and p.owner_type = 'user'
---    left join characters ch on p.owner = ch.id and p.owner_type = 'character'
---  where
---    p.audience is null and (g.id is not null or b.id is not null or w.id is not null) and p.dice = FALSE and p.moderated = FALSE and g.open_game = true
---  order by
---    p.created_at desc
---  limit 10;
+create or replace view user_bookmarks as
+  select
+    b.id as bookmark_id, b.user_id, b.game_id, b.board_id, b.work_id, b.game_main_thread, b.game_discussion_thread, b.board_thread, b.work_thread, b.index, g.name as game_name, brd.name as board_name, w.name as work_name, b.created_at as bookmark_created_at,
+    coalesce(g.name, brd.name, w.name) as name,
+    coalesce(ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0) as unread,
+    coalesce(ut_disc.unread_count, 0) as unread_secondary
+  from
+    bookmarks b
+  left join games g on b.game_id = g.id
+  left join boards brd on b.board_id = brd.id
+  left join works w on b.work_id = w.id
+  left join unread_threads ut_main on b.game_main_thread = ut_main.thread_id and b.user_id = ut_main.user_id
+  left join unread_threads ut_disc on b.game_discussion_thread = ut_disc.thread_id and b.user_id = ut_disc.user_id
+  left join unread_threads ut_board on b.board_thread = ut_board.thread_id and b.user_id = ut_board.user_id
+  left join unread_threads ut_work on b.work_thread = ut_work.thread_id and b.user_id = ut_work.user_id
+  where b.user_id = auth.uid();
 
 
 -- FUNCTIONS --------------------------------------------
+
+
+create or replace function get_affected_users_for_post_change (p_thread_id int4, p_post_owner_id uuid, p_post_owner_type text, p_post_type public.post_content_type, p_post_audience uuid[]) returns setof uuid as $$
+declare
+  v_post_owner_actual_user_id uuid;
+begin
+  -- resolve the actual user_id of the post owner
+  if p_post_owner_type = 'character' then
+    select c.player into v_post_owner_actual_user_id from characters c where c.id = p_post_owner_id;
+  else
+    v_post_owner_actual_user_id := p_post_owner_id;
+  end if;
+  if p_post_type = 'game' then
+    if p_post_audience is not null and array_length(p_post_audience, 1) > 0 then
+      -- Game post with a specific character audience.
+      return query
+      select distinct ch.player
+      from characters ch
+      where ch.id = any(p_post_audience) and ch.player is not null and ch.player != v_post_owner_actual_user_id;
+    else
+      -- Public game post (no specific audience).
+      return query
+      select distinct ch.player
+      from games g
+      join characters ch on ch.game = g.id
+      -- Assuming 'game' type posts are in either the game_thread or discussion_thread of a game.
+      where (g.game_thread = p_thread_id or g.discussion_thread = p_thread_id)
+        and ch.player is not null
+        and ch.player != v_post_owner_actual_user_id;
+    end if;
+  else
+    -- For these post types, affect users who have previously read this thread.
+    return query
+    select rt.user_id
+    from read_threads rt
+    where rt.thread_id = p_thread_id and rt.user_id != v_post_owner_actual_user_id;
+  end if;
+  return;
+end;
+$$ language plpgsql;
+
+
+create or replace function increment_unread_counters()
+returns trigger as $$
+declare
+  affected_users record;
+begin
+  for affected_users in
+    select user_id
+    from get_affected_users_for_post_change(new.thread, new.owner, new.owner_type, new.post_type, new.audience)
+  loop
+    insert into unread_threads (user_id, thread_id, unread_count)
+    values (affected_users.user_id, new.thread, 1)
+    on conflict (user_id, thread_id) do update
+    set unread_count = unread_threads.unread_count + 1;
+  end loop;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function decrement_unread_counters () returns trigger as $$
+declare
+  affected_user_id uuid;
+  v_user_read_at timestamp with time zone;
+begin
+  for affected_user_id in
+    select user_id from get_affected_users_for_post_change( old.thread, old.owner, old.owner_type, old.post_type, old.audience ) as user_id
+  loop
+    -- Get the last time this affected user read this specific thread
+    select rt.read_at into v_user_read_at
+    from read_threads rt
+    where rt.user_id = affected_user_id and rt.thread_id = old.thread;
+    if v_user_read_at is null or old.created_at > v_user_read_at then
+      update unread_threads
+      set unread_count = greatest(0, unread_threads.unread_count - 1)
+      where unread_threads.user_id = affected_user_id
+        and unread_threads.thread_id = old.thread;
+    end if;
+  end loop;
+  return old;
+end;
+$$ language plpgsql;
+
+
+create or replace function get_unread_tabs () returns json as $$
+declare
+  unread_bookmarks boolean;
+  unread_user_messages boolean;
+  unread_character_messages boolean;
+  current_user_id uuid := auth.uid();
+begin
+  select exists(select 1 from user_bookmarks where (unread > 0 or unread_secondary > 0)) into unread_bookmarks;
+  select exists(select 1 from unread_user_message_counts uumc where uumc.recipient_user_id = current_user_id and uumc.unread_count > 0) into unread_user_messages;
+  select exists(select 1 from unread_character_message_counts ucmc join characters c on ucmc.recipient_character_id = c.id where c.player = current_user_id and ucmc.unread_count > 0) into unread_character_messages;
+  return json_build_object( 'unread_bookmarks', unread_bookmarks, 'unread_user_messages', unread_user_messages, 'unread_character_messages', unread_character_messages );
+end;
+$$ language plpgsql;
 
 
 create or replace function add_storyteller () returns trigger as $$
@@ -570,7 +690,113 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_character_names (audience_ids uuid[]) returns text[] as $$
+create or replace function add_storyteller () returns trigger as $$
+begin
+  insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function add_codex_index () returns trigger as $$
+begin
+  insert into codex_pages (game, name, slug) values (new.id, 'Úvod', 'index');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function reject_character (character_id uuid) returns void as $$
+begin
+  if not is_players_character(character_id) and not is_storyteller((select game from characters where id = character_id)) then raise exception 'Nejsi vypravěč hry, ani vlastník postavy'; end if;
+  update characters set game = null, accepted = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function claim_character (character_id uuid) returns void as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if character_row.open is false then raise exception 'Postava není volná'; end if;
+  update characters set player = auth.uid(), open = false where id = character_id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function hand_over_character (character_id uuid, new_owner uuid) returns uuid as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if auth.uid() != character_row.player then raise exception 'Není tvoje postava'; end if;
+  -- create a new character with the same data for the player to keep (except for the game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  character_row.storyteller := false;
+  insert into characters values (character_row.*);
+  -- update the original character to change the player
+  update characters set player = new_owner where id = character_id;
+  return character_row.id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function take_over_character (character_id uuid) returns uuid as $$
+declare
+  character_row characters%ROWTYPE;
+begin
+  select * into character_row from characters where id = character_id;
+  if is_storyteller(character_row.game) is false then raise exception 'Nejsi vypravěč'; end if;
+  -- create a new character with the same data for the player to keep (except for the game columns)
+  character_row.id := gen_random_uuid();
+  character_row.game := null;
+  character_row.accepted := false;
+  character_row.storyteller := false;
+  insert into characters values (character_row.*);
+  -- update the original character to change the player
+  update characters set player = auth.uid() where id = character_id;
+  return character_row.id;
+end;
+$$ language plpgsql security definer;
+
+
+create or replace function add_game_threads () returns trigger as $$
+begin
+  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
+  insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function delete_game_threads () returns trigger as $$
+begin
+  delete from threads where id = old.discussion_thread;
+  delete from threads where id = old.game_thread;
+  return old;
+end;
+$$ language plpgsql;
+
+
+create or replace function add_thread () returns trigger as $$
+begin
+  insert into threads (name) values (new.name) returning id into new.thread;
+  return new;
+end;
+$$ language plpgsql;
+
+
+create or replace function delete_thread () returns trigger as $$
+begin
+  delete from threads where id = old.thread;
+  return old;
+end;
+$$ language plpgsql;
+
+unction get_character_names (audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -579,7 +805,8 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_discussion_posts(_thread integer, page integer, _limit int, ascending boolean)
+
+create or replace function get_discussion_posts (_thread integer, page integer, _limit int, ascending boolean)
 returns json as $$
 declare
   postdata json;
@@ -613,7 +840,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_discussion_posts_special(user_id uuid, _thread integer, page integer, _limit int)
+create or replace function get_discussion_posts_special (user_id uuid, _thread integer, page integer, _limit int)
 returns json as $$
 declare
   postdata json;
@@ -669,7 +896,7 @@ begin
         -- check if a search term is provided, if not, use the original content
         case
           when search_lower = '' then p.content
-          else REGEXP_REPLACE(p.content, '(?i)' || _search, '<span class="highlight">' ||UPPER(_search)||'</span>', 'g')
+          else regexp_replace(p.content, '(?i)' || _search, '<span class="highlight">' ||UPPER(_search)||'</span>', 'g')
         end as highlighted_content
       from game_posts_owner p where p.thread = thread_id
       and (
@@ -734,70 +961,6 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_bookmarks () returns jsonb as $$
-declare
-  games_json jsonb;
-  boards_json jsonb;
-  works_json jsonb;
-  user_uuid uuid := auth.uid();
-begin
-  games_json := COALESCE(
-    (
-      select jsonb_agg(jsonb_build_object(
-        'bookmark_id', b.id,
-        'index', b.index,
-        'id', g.id,
-        'name', g.name,
-        'created_at', b.created_at,
-        'unread_game', calculate_unread_count(user_uuid, 'thread-' || g.game_thread::text),
-        'unread_discussion', calculate_unread_count(user_uuid, 'thread-' || g.discussion_thread::text)
-      ))
-      from bookmarks b
-      left join games g on g.id = b.game_id
-      where b.user_id = user_uuid and b.game_id is not null
-    ),
-    '[]'::jsonb
-  );
-
-  boards_json := COALESCE(
-    (
-      select jsonb_agg(jsonb_build_object(
-        'bookmark_id', b.id,
-        'index', b.index,
-        'id', brd.id,
-        'name', brd.name,
-        'created_at', b.created_at,
-        'unread', calculate_unread_count(user_uuid, 'thread-' || brd.thread::text)
-      ))
-      from bookmarks b
-      left join boards brd on brd.id = b.board_id
-      where b.user_id = user_uuid and b.board_id is not null
-    ),
-    '[]'::jsonb
-  );
-
-  works_json := COALESCE(
-    (
-      select jsonb_agg(jsonb_build_object(
-        'bookmark_id', b.id,
-        'index', b.index,
-        'id', w.id,
-        'name', w.name,
-        'created_at', b.created_at,
-        'unread', calculate_unread_count(user_uuid, 'thread-' || w.thread::text)
-      ))
-      from bookmarks b
-      left join works w on w.id = b.work_id
-      where b.user_id = user_uuid and b.work_id is not null
-    ),
-    '[]'::jsonb
-  );
-
-  return jsonb_build_object('games', games_json, 'boards', boards_json, 'works', works_json);
-end;
-$$ language plpgsql;
-
-
 create or replace function is_mod (board_id int4) returns boolean as $$
 begin
   return exists(select 1 from boards where id = board_id and owner = auth.uid() or mods @> array[auth.uid()]);
@@ -837,8 +1000,7 @@ select exists (
 $$ language sql security definer;
 
 
-create or replace function get_game_messages_for_user()
-returns table (
+create or replace function get_game_messages_for_user () returns table (
   id integer,
   sender_character uuid,
   recipient_character uuid,
@@ -860,7 +1022,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_characters () returns json as $$
+create or replace function get_character_data () returns json as $$
 declare
   user_id uuid := auth.uid();
 begin
@@ -902,23 +1064,24 @@ begin
                 'player', other_c.player,
                 'state', other_c.state,
                 'storyteller', other_c.storyteller,
-                'state', other_c.state,
                 'unread', coalesce((
-                  select count(*)
-                  from get_game_messages_for_user() m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = user_id
+                  select ucmc.unread_count
+                  from unread_character_message_counts ucmc
+                  where ucmc.recipient_character_id = c.id and ucmc.sender_character_id = other_c.id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by lower(other_c.name)
             )
             from characters other_c
-            where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
-            and (other_c.state = 'alive' or (other_c.state = 'dead' and (
-              select count(*)
-              from get_game_messages_for_user() m
-              where (m.sender_character = other_c.id and m.recipient_character = c.id and m.recipient_user = c.player) 
-                or (m.sender_character = c.id and m.recipient_character = other_c.id and m.sender_user = c.player) 
-            ) > 0))
+            where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player -- Ensure other_c.player is not null if it's part of game logic
+            and (other_c.state = 'alive' or (other_c.state = 'dead' and ( 
+              coalesce((
+                select sum(ucmc.unread_count)
+                from unread_character_message_counts ucmc
+                where (ucmc.recipient_character_id = c.id and ucmc.sender_character_id = other_c.id)
+                   or (ucmc.recipient_character_id = other_c.id and ucmc.sender_character_id = c.id)
+              ), 0) > 0
+            )))
           ) as contacts
         from characters c
         where c.player = user_id and c.state != 'deleted'
@@ -927,8 +1090,20 @@ begin
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by lower(c.name))
-      as characters
+      select json_agg(
+        json_build_object(
+          'name', c.name, 
+          'id', c.id, 
+          'state', c.state, 
+          'portrait', c.portrait, 
+          'unread', coalesce((
+            select sum(ucmc.unread_count) 
+            from unread_character_message_counts ucmc 
+            where ucmc.recipient_character_id = c.id
+            ), 0
+          )
+        ) order by lower(c.name)
+      ) as characters
       from characters c
       where c.player = user_id and c.game is null and c.state != 'deleted'
     )
@@ -936,9 +1111,12 @@ begin
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
       'unreadTotal', (
-        select sum((character->>'unread')::int)
-        from (select json_array_elements(characters) as character from all_characters union all select json_array_elements(coalesce(characters, '[]'::json)) as character from stranded_characters)
-        as all_unreads
+        select coalesce(sum((character_data->>'unread')::int),0)
+        from (
+          select json_array_elements(acc.characters) as character_data from all_characters acc
+          union all
+          select json_array_elements(coalesce(sc.characters, '[]'::json)) as character_data from stranded_characters sc
+        ) as all_unreads
       )
     )
   );
@@ -946,20 +1124,24 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_active_user_count() returns integer as $$
+create or replace function get_active_user_count () returns integer as $$
 begin
   return (select count(*) from profiles where last_activity > now() - interval '5 minutes');
 end;
 $$ language plpgsql;
 
 
-create or replace function get_users () returns json as $$
+create or replace function get_user_data () returns json as $$
 declare 
   user_uuid uuid := auth.uid();
 begin
   return (
     with 
-      unread_users as (select distinct sender_user as id from messages where recipient_user = user_uuid and read = false and sender_character    is null and recipient_character is null),
+      unread_users as (
+        select distinct uumc.sender_user_id as id 
+        from unread_user_message_counts uumc 
+        where uumc.recipient_user_id = user_uuid and uumc.unread_count > 0
+      ),
       contact_ids as (select contact_user as id from public.contacts where owner = user_uuid ),
       active_users as (select id from profiles where last_activity > now() - interval '5 minutes' and id <> user_uuid ),
       candidate as (select id from unread_users union select id from contact_ids union select id from active_users ),
@@ -971,10 +1153,11 @@ begin
           exists(select 1 from unread_users u where u.id = p.id) as has_unread,
           exists(select 1 from contact_ids c where c.id = p.id) as contacted,
           p.last_activity > now() - interval '5 minutes' as active,
-          (
-            select count(*) from messages m
-            where m.sender_user = p.id and m.recipient_user = user_uuid and m.read = false and m.sender_character is null and m.recipient_character is null
-          ) as unread
+          coalesce((
+            select uumc.unread_count 
+            from unread_user_message_counts uumc
+            where uumc.sender_user_id = p.id and uumc.recipient_user_id = user_uuid
+          ), 0) as unread
         from profiles p
         join candidate c on c.id = p.id
       )
@@ -997,80 +1180,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_sidebar_data () returns json as $$
-declare
-  bookmarks_data json;
-  users_data json;
-  characters_data json;
-begin
-  bookmarks_data := get_bookmarks();
-  users_data := get_users();
-  characters_data := get_characters();
-  return json_build_object('users', users_data, 'characters', characters_data, 'bookmarks', bookmarks_data);
-end;
-$$ language plpgsql;
-
-
-create or replace function get_game_unread (game int4, game_thread int4, discussion_thread int4)
-  returns jsonb as $$
-begin
-  return jsonb_build_object(
-    'gameChat', calculate_unread_count(auth.uid(), 'thread-' || discussion_thread::text),
-    'gameThread', calculate_unread_count(auth.uid(), 'thread-' || game_thread::text),
-    'gameCharacters', calculate_unread_count(auth.uid(), 'game-characters-' || game::text)
-  );
-end;
-$$ language plpgsql;
-
-
-create or replace function get_thread_unread (thread int4) returns integer as $$
-begin
-  return calculate_unread_count(auth.uid(), 'thread-' || thread::text);
-end;
-$$ language plpgsql;
-
-
-create or replace function calculate_unread_count (user_uuid uuid, slug_alias text) returns int as $$
-declare
-  unread_count int;
-  numeric_id int;
-  user_characters uuid[];
-begin
-  numeric_id := substring(slug_alias from '\d+$')::int; -- Extract numeric part
-  if slug_alias like 'thread-%' then
-  
-    if numeric_id = 277 then
-	    if (select count(*) from boards where boards.thread = 277 and user_uuid = any(mods)) >= 1 THEN
-        unread_count := (select count(*) from posts where posts.thread = 277
-        and (created_at > (select coalesce(max(read_at), '1970-01-01') from user_reads where user_id = user_uuid and slug = slug_alias))
-        );
-	    else
-        unread_count := (select count(*) from posts where posts.thread = 277 and (user_uuid = any(audience))
-        and (created_at > (select coalesce(max(read_at), '1970-01-01') from user_reads where user_id = user_uuid and slug = slug_alias))
-        );
-	    end if;
-    else
-      -- Calculate unread posts for threads
-      user_characters := array(select id from characters where player = user_uuid);
-      unread_count := (
-        select count(*) from posts p where p.thread = numeric_id 
-        and p.created_at > (select coalesce(max(read_at), '1970-01-01') from user_reads where user_id = user_uuid and slug = slug_alias)
-        and (
-          p.audience is null 
-          or p.audience && user_characters  -- Checks if any of the user's characters are in the audience
-          or p.audience @> array[user_uuid]  -- Checks if the user's uuid is directly in the audience
-        )
-      );
-    end if;
-  else
-    unread_count := 0; -- Default case for unsupported slugs
-  end if;
-  return unread_count;
-end;
-$$ language plpgsql;
-
-
-create or replace function get_game_data (game_id int) returns jsonb as $$
+create or replace function get_game (game_id int) returns jsonb as $$
 declare
   game_data jsonb;
   character_data jsonb;
@@ -1078,13 +1188,37 @@ declare
   unread_data jsonb;
   codex_data jsonb;
   subscription_data jsonb;
+  game_unread_count int;
+  discussion_unread_count int;
+  current_user_id uuid := auth.uid();
+  v_game_thread_id int;
+  v_discussion_thread_id int;
 begin
   select to_jsonb(t) into game_data from (select g.*, p as owner, m as active_map from games g left join profiles p on g.owner = p.id left join maps m on g.active_map = m.id where g.id = game_id) t;
+  
+  -- Extract thread IDs from game_data
+  v_game_thread_id := (game_data->>'game_thread')::int;
+  v_discussion_thread_id := (game_data->>'discussion_thread')::int;
+
+  -- Inline get_game_unread logic
+  select ut.unread_count into game_unread_count 
+  from unread_threads ut 
+  where ut.user_id = current_user_id and ut.thread_id = v_game_thread_id;
+  
+  select ut.unread_count into discussion_unread_count 
+  from unread_threads ut 
+  where ut.user_id = current_user_id and ut.thread_id = v_discussion_thread_id;
+  
+  unread_data := jsonb_build_object(
+    'gameChat', coalesce(discussion_unread_count, 0),
+    'gameThread', coalesce(game_unread_count, 0)
+  );
+
   select jsonb_agg(t) into character_data from (select c.*, p as player from characters c left join profiles p on c.player = p.id where c.game = game_id) t;
   select jsonb_agg(t) into map_data from (select * from maps where game = game_id order by updated_at desc) t;
-  select to_jsonb(get_game_unread(game_id, (game_data->>'game_thread')::int, (game_data->>'discussion_thread')::int)) into unread_data where auth.uid() is not null; -- only calculate unread if user is logged in
   select jsonb_agg(t) into codex_data from (select * from codex_sections where game = game_id order by index) t;
   select to_jsonb(t) into subscription_data from (select * from subscriptions where user_id = auth.uid() and game = game_id) t;
+  
   return game_data || jsonb_build_object('characters', character_data, 'maps', map_data, 'unread', unread_data, 'codexSections', codex_data, 'subscription', subscription_data);
 end;
 $$ language plpgsql;
@@ -1168,11 +1302,10 @@ end;
 $$ language plpgsql;
 
 
-create or replace function upsert_user_read (p_user_id uuid, p_slug text) returns void as $$
+create or replace function thread_read (p_user_id uuid, p_thread_id int4) returns void as $$
 begin
-  insert into user_reads (user_id, slug, read_at)
-  values (p_user_id, p_slug, now())
-  on conflict (user_id, slug) do update set read_at = now();
+  insert into read_threads (user_id, thread_id, read_at) values (p_user_id, p_thread_id, now()) on conflict (user_id, thread_id) do update set read_at = now();
+  update unread_threads set unread_count = 0 where user_id = p_user_id and thread_id = p_thread_id;
 end;
 $$ language plpgsql;
 
@@ -1197,9 +1330,12 @@ $$ language plpgsql;
 
 create or replace function add_default_bookmarks () returns trigger as $$
 begin
-  insert into bookmarks (user_id, board_id) values (new.id, 1);
-  insert into bookmarks (user_id, board_id) values (new.id, 2);
-  insert into bookmarks (user_id, board_id) values (new.id, 3);
+  insert into bookmarks (user_id, board_id, board_thread) 
+  select new.id, b.id, b.thread from boards b where b.id = 1;
+  insert into bookmarks (user_id, board_id, board_thread) 
+  select new.id, b.id, b.thread from boards b where b.id = 2;
+  insert into bookmarks (user_id, board_id, board_thread) 
+  select new.id, b.id, b.thread from boards b where b.id = 3;
   return new;
 end;
 $$ language plpgsql;
@@ -1217,7 +1353,7 @@ create or replace function delete_user () returns void as $$
 $$ language sql security definer;
 
 
-create or replace function get_old_chars_by_game(game_id_param bigint)
+create or replace function get_old_chars_by_game (game_id_param bigint)
 returns setof old_chars as $$
 begin
   return query 
@@ -1233,7 +1369,7 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function check_if_transferable(character_id uuid) returns boolean as $$
+create or replace function check_if_transferable (character_id uuid) returns boolean as $$
 begin
   -- check if character belongs to owner and not being transferred already
   return exists (
@@ -1274,7 +1410,7 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function add_contact_before_message() returns trigger as $$
+create or replace function add_contact_before_message () returns trigger as $$
 begin
   if new.sender_user is not null
      and new.recipient_user is not null
@@ -1291,6 +1427,72 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Functions and Triggers for Message Unread Counts
+
+create or replace function increment_unread_user_message_count () returns trigger as $$
+begin
+  if new.recipient_user is not null and new.sender_user is not null then
+    insert into unread_user_message_counts (recipient_user_id, sender_user_id, unread_count)
+    values (new.recipient_user, new.sender_user, 1)
+    on conflict (recipient_user_id, sender_user_id) do update
+    set unread_count = unread_user_message_counts.unread_count + 1;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function decrement_unread_user_message_count () returns trigger as $$
+declare
+  v_user_read_at timestamp with time zone;
+begin
+  if old.recipient_user is not null and old.sender_user is not null then
+    select ruc.read_at into v_user_read_at
+    from read_user_conversations ruc
+    where ruc.reader_user_id = old.recipient_user and ruc.peer_user_id = old.sender_user;
+
+    if v_user_read_at is null or old.created_at > v_user_read_at then
+      update unread_user_message_counts
+      set unread_count = greatest(0, unread_user_message_counts.unread_count - 1)
+      where recipient_user_id = old.recipient_user
+        and sender_user_id = old.sender_user;
+    end if;
+  end if;
+  return old;
+end;
+$$ language plpgsql;
+
+create or replace function increment_unread_character_message_count () returns trigger as $$
+begin
+  if new.recipient_character is not null and new.sender_character is not null then
+    insert into unread_character_message_counts (recipient_character_id, sender_character_id, unread_count)
+    values (new.recipient_character, new.sender_character, 1)
+    on conflict (recipient_character_id, sender_character_id) do update
+    set unread_count = unread_character_message_counts.unread_count + 1;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function decrement_unread_character_message_count () returns trigger as $$
+declare
+  v_char_read_at timestamp with time zone;
+begin
+  if old.recipient_character is not null and old.sender_character is not null then
+    select rcc.read_at into v_char_read_at
+    from read_character_conversations rcc
+    where rcc.reader_character_id = old.recipient_character and rcc.peer_character_id = old.sender_character;
+
+    if v_char_read_at is null or old.created_at > v_char_read_at then
+      update unread_character_message_counts
+      set unread_count = greatest(0, unread_character_message_counts.unread_count - 1)
+      where recipient_character_id = old.recipient_character
+        and sender_character_id = old.sender_character;
+    end if;
+  end if;
+  return old;
+end;
+$$ language plpgsql;
+
 
 -- TRIGGERS --------------------------------------------
 
@@ -1306,9 +1508,18 @@ create or replace trigger delete_work_thread after delete on works for each row 
 create or replace trigger update_map_updated_at before update on maps for each row execute procedure update_updated_at();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
+create or replace trigger update_message_updated_at before update on messages for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
-
+-- Triggers for thread unread counts
+create or replace trigger increment_unread_after_post_insert after insert on posts for each row execute function increment_unread_counters();
+create or replace trigger decrement_unread_after_post_delete after delete on posts for each row execute procedure decrement_unread_counters();
+-- Triggers for user message unread counts
+create or replace trigger increment_user_message_unread after insert on messages for each row when (new.recipient_user is not null and new.sender_user is not null and new.sender_character is null and new.recipient_character is null) execute procedure increment_unread_user_message_count();
+create or replace trigger decrement_user_message_unread_on_delete after delete on messages for each row when (old.recipient_user is not null and old.sender_user is not null and old.sender_character is null and old.recipient_character is null) execute procedure decrement_unread_user_message_count();
+-- Triggers for character message unread counts
+create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
+create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
 
 -- WEBHOOKS --------------------------------------------
 

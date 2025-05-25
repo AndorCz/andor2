@@ -30,7 +30,8 @@ async function importAllPosts (oldGameId, newGameThread, idMap, locals) {
           owner_type: 'character',
           content: post.content,
           created_at: post.post_date,
-          audience: toChars
+          audience: toChars,
+          post_type: 'game'
         }
       })
       const { error: batchInsertError } = await locals.supabase.from('posts').insert(postsToInsert)
@@ -138,7 +139,8 @@ async function createGame (locals, oldGameData) {
         owner_type: 'character',
         content: oldGameData.game_desc,
         thread: data.game_thread,
-        created_at: oldGameData.created_at
+        created_at: oldGameData.created_at,
+        post_type: 'game'
       }).select().single()
       if (postError) throw new Error(`Failed to create initial game post: ${postError.message}`)
     } else {

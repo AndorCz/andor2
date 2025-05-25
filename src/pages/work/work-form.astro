@@ -31,6 +31,7 @@
       owner_type: 'user',
       content: `Přidal/a jsem nové dílo: <a href='/work/${data.id}'>${data.name}</a>`,
       important: true,
+      post_type: 'other'
     })
     if (postError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba v přidání upozornění na dílo: ' + insertError.message)}`) }
 

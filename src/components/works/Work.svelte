@@ -78,7 +78,7 @@
   {/if}
 
   <br><br>
-  <Discussion {data} {user} thread={data.thread} canModerate={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection={'works'} />
+  <Discussion {data} {user} thread={data.thread} canModerate={data.owner.id === user.id} unread={data.unread} slug={'work-' + data.id} contentSection='works' />
 </main>
 
 <style>

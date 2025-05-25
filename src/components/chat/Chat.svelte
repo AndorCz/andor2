@@ -167,7 +167,7 @@
   }
 
   async function seen () {
-    await setRead(user.id, 'thread-1')
+    await setRead(user.id, 1)
   }
 
   function onEdit (id, content) {
@@ -206,7 +206,7 @@
     if (editing) {
       response = await sendPost('PATCH', { id: editing, thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
     } else {
-      response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user' })
+      response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user', postType: 'other' })
     }
     if (!response.error) {
       textareaValue = ''

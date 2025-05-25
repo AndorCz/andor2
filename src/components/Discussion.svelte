@@ -1,10 +1,10 @@
 <script>
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError, sendPost } from '@lib/database-browser'
-  import { platform } from '@components/common/MediaQuery.svelte'
   import { clone, isFilledArray, addCharacterNameStyles } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
@@ -109,7 +109,7 @@
     if (editing) {
       response = await sendPost('PATCH', { id: editing, thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
     } else {
-      response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience })
+      response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience, postType: contentSection === 'games' ? 'game' : 'other' })
     }
     if (!response.error) {
       page = 0

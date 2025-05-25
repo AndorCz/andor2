@@ -30,16 +30,18 @@ export const GET = async ({ url, redirect, locals }) => {
 }
 
 // add new post
-export const POST = async ({ request, redirect, locals }) => {
+export const POST = async ({ request, locals }) => {
   const data = await request.json()
   if (locals.user.id) { // check if user is signed in
     if (Array.isArray(data.audience) && data.audience.length === 0) { data.audience = null } // don't save empty array
-    const postData = { thread: data.thread, owner: data.owner, owner_type: data.ownerType, content: data.content, audience: data.audience }
+    const postData = { thread: data.thread, owner: data.owner, owner_type: data.ownerType, content: data.content, audience: data.audience, post_type: data.postType }
+    /*
     if (data.openAiThread) { // send to open ai thread
       // UNCOMMENT ONCE POST EDITING IS ALLOWED
       // const openAiPost = await savePost(data.openAiThread, data.content, data.character)
       // postData.openai_post = openAiPost.id
     }
+    */
     // save to supabase
     const { error } = await locals.supabase.from('posts').insert(postData)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }

@@ -6,11 +6,11 @@
   let unread = 0
   if (user.id) {
     const env = import.meta.env ? import.meta.env : context.locals.runtime.env
-    const { data, error } = await supabase.rpc('get_thread_unread', { thread: 1 })
+    const { data, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).maybeSingle()
     if (error) {
-      console.error('get_thread_unread for chat failed', error)
+      console.error('loading unread for chat failed', error)
     } else {
-      unread = data
+      unread = data?.unread_count || 0
     }
   }
 ---

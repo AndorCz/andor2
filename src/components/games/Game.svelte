@@ -129,7 +129,7 @@
       <GameCodex {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'chat'}
       {#if game.open_discussion}<h2>Veřejná diskuze</h2>{/if}
-      <Discussion data={game} {user} canModerate={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection={'games'} />
+      <Discussion data={game} {user} canModerate={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection='games' />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {game} {user} {isStoryteller} {isPlayer} unread={game.unread.gameThread} {gameStore} />
     {:else if $gameStore.activeTab === 'chars'}

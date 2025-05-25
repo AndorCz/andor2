@@ -27,11 +27,11 @@
   export let mentionList = null
   export let forceBubble = false
   export let autoFocus = false
-  export let preserveValue = false
 
+  let tiptap
   let isEmpty = true
   let editorRef
-  let tiptap
+  let textareaRef
   let originalValue = value
   let height = '60px'
 
@@ -40,28 +40,15 @@
       tiptap = editorRef.getEditor()
       if (value) { editorRef.setContent(value) } // set html content
       isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
+    } else {
+      isEmpty = value.length === 0
     }
   })
 
   function setHeight (node) { // textarea only
-    const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
     height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
     textareaRef.style.height = height
-  }
-
-  async function cancelEdit () {
-    if (value !== originalValue) {
-      if (window.confirm('Opravdu zrušit úpravu?')) {
-        if (preserveValue) {
-          value = originalValue
-        } else {
-          value = ''
-          if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
-        }
-        editing = false
-      }
-    }
   }
 
   export function getIsEmpty () { return isEmpty }
@@ -71,11 +58,25 @@
   }
 
   export async function triggerEdit (id, content) {
+    if (allowHtml) { editorRef.getEditor().commands.focus() } else { document.getElementById(id)?.focus() }
     editing = id
     if (allowHtml) {
       editorRef.getEditor().commands.setContent(content)
-      originalValue = value
-      onChange()
+      originalValue = tiptap.getHTML()
+    } else {
+      value = content
+      originalValue = content
+    }
+    onChange()
+  }
+
+  async function cancelEdit () {
+    const val = allowHtml ? tiptap.getHTML() : editorRef.value
+    const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
+    if (shouldCancel) {
+      value = ''
+      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      editing = false
     }
   }
 
@@ -122,18 +123,16 @@
       <span class='counter'>{maxlength - value.length}</span>
     {/if}
     <!-- svelte-ignore a11y-autofocus -->
-    <textarea autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
+    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
-  {#if showButton}
-    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle} use:tooltip>
-      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
-    </button>
-  {/if}
-  {#if editing}
-    <button on:click={cancelEdit} class='cancel' title='Zrušit'>
+  <div class='buttons'>
+    <button on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
       <span class='material'>close</span>
     </button>
-  {/if}
+    <button on:click={triggerSave} class='save' class:hidden={!showButton} title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
+    </button>
+  </div>
   {#if loading}
     <Loading />
   {/if}
@@ -162,34 +161,45 @@
       padding-right: 80px;
     }
 
-    button {
+    .buttons {
       position: absolute;
+      top: 0px;
       right: 0px;
-      padding: 10px 15px;
+      padding-top: 50px; /* to account for wysiwyg menu */
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      width: fit-content;
+      justify-content: space-between;
+      align-items: center;
     }
+      .bubbleMenu .buttons {
+        padding-top: 0px;
+        padding-bottom: 0px;
+      }
+      .singleLine .buttons {
+        top: 0px; /* for single line */
+        flex-direction: row;
+      }
+      button {
+        padding: 10px 15px;
+      }
       .save {
-        bottom: 0px;
         border-radius: 10px 0px 10px 0px;
         border-bottom: 3px var(--buttonBg) solid;
       }
       .cancel {
-        top: 50px;
+        visibility: visible;
         border-radius: 0px 10px 0px 10px;
       }
-      .singleLine .save, .singleLine .cancel {
-        right: 5px;
-        bottom: 50px;
+        .cancel.hidden {
+          visibility: hidden;
+        }
+      .singleLine button {
         background: none;
         border: none;
         border-radius: 10px;
         box-shadow: none;
-      }
-        .singleLine .cancel {
-          top: unset;
-          right: 50px;
-        }
-      .bubbleMenu .save {
-        bottom: 5px;
       }
     .counter {
       position: absolute;
@@ -203,11 +213,9 @@
     }
   }
   @media (max-width: 720px) {
-    .cancel {
-      top: 0px;
-    }
-    .save {
-      bottom: 50px;
+    .buttons {
+      padding-top: 0px;
+      padding-bottom: 50px;
     }
   }
   @media (max-width: 500px) {

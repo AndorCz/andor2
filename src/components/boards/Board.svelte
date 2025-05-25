@@ -80,7 +80,7 @@
   </p>
 {/if}
 
-<Discussion {data} {user} canModerate={isMod} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection={'boards'} />
+<Discussion {data} {user} canModerate={isMod} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection='boards' />
 
 <style>
   .headline {
