@@ -193,7 +193,7 @@
   }
 
   async function loadUsersData () {
-    const { data, error } = await supabase.rpc('get_users')
+    const { data, error } = await supabase.rpc('get_user_data')
     if (error) { throw error }
     if (data) {
       users = data || []
@@ -203,10 +203,11 @@
   }
 
   async function loadCharactersData () {
-    const { data, error } = await supabase.rpc('get_characters')
+    const { data, error } = await supabase.rpc('get_character_data')
     if (error) { throw error }
     if (data) {
       characters = data || { allGrouped: [], myStranded: [] }
+      console.log('Characters loaded:', characters)
       unreadCharacters = characters.unreadTotal > 0
     }
   }
@@ -240,6 +241,27 @@
     }
     loginInProgress = false
   }
+
+  function clearUnreadUser (userId) {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      user.unread = 0
+      unreadUsers = users.some(u => u.unread)
+    }
+  }
+
+  function clearUnreadCharacter (themId, usId) {
+    const flatCharacters = characters.allGrouped.flatMap(group => group.characters)
+    const character = flatCharacters.find(c => c.id === usId)
+    if (character) {
+      if (character.unread > 0) { character.unread-- }
+      const contact = character.contacts.find(c => c.id === themId)
+      if (contact) {
+        contact.unread = 0
+        unreadCharacters = flatCharacters.some(c => c.contacts.some(contact => contact.unread > 0))
+      }
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -250,23 +272,23 @@
   <section bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
     {#if user.name || user.email}
       {#if $activeConversation}
-        <Conversation {user} />
+        <Conversation {user} clearUnread={$userStore?.activePanel === 'people' ? clearUnreadUser : clearUnreadCharacter } />
       {:else}
         <User {user} />
 
         {#if $userStore?.activePanel}
           <div id='tabs'>
-            <button id='booked' class:active={$userStore.activePanel === 'booked'} on:click={() => { activate('booked') }}>
+            <button id='booked' class:active={$userStore?.activePanel === 'booked'} on:click={() => { activate('booked') }}>
               {#if unreadBookmarks && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
               <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
-            <button id='people' class:active={$userStore.activePanel === 'people'} on:click={() => { activate('people') }}>
+            <button id='people' class:active={$userStore?.activePanel === 'people'} on:click={() => { activate('people') }}>
               {#if unreadUsers && $userStore.activePanel !== 'people'}<span class='unread badge'></span>{/if}
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
             </button>
-            <button id='characters' class:active={$userStore.activePanel === 'characters'} on:click={() => { activate('characters') }}>
-              {#if unreadCharacters && $userStore.activePanel !== 'characters'}<span class='unread badge'></span>{/if}
+            <button id='characters' class:active={$userStore?.activePanel === 'characters'} on:click={() => { activate('characters') }}>
+              {#if unreadCharacters && $userStore?.activePanel !== 'characters'}<span class='unread badge'></span>{/if}
               <span class='material'>domino_mask</span>
               <span class='label'>Postavy</span>
             </button>

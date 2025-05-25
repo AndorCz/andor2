@@ -320,7 +320,6 @@
     background-color: var(--inputBg);
     box-shadow: inset 1px 1px 6px #0006;
     border-radius: 10px;
-    margin-top: 2px;
   }
     .useBubble {
       height: 100%;

@@ -248,6 +248,7 @@ create table messages (
   content text,
   moderated boolean default false,
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
   constraint messages_sender_user_fkey foreign key (sender_user) references profiles (id) on delete cascade,
   constraint messages_recipient_user_fkey foreign key (recipient_user) references profiles (id) on delete cascade,
   constraint messages_sender_character_fkey foreign key (sender_character) references characters (id) on delete cascade,
@@ -1021,7 +1022,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_characters () returns json as $$
+create or replace function get_character_data () returns json as $$
 declare
   user_id uuid := auth.uid();
 begin
@@ -1063,23 +1064,24 @@ begin
                 'player', other_c.player,
                 'state', other_c.state,
                 'storyteller', other_c.storyteller,
-                'state', other_c.state,
                 'unread', coalesce((
-                  select count(*)
-                  from get_game_messages_for_user() m
-                  where m.recipient_character = c.id and m.sender_character = other_c.id and m.read = false and m.sender_character != c.id and m.recipient_user = user_id
+                  select ucmc.unread_count
+                  from unread_character_message_counts ucmc
+                  where ucmc.recipient_character_id = c.id and ucmc.sender_character_id = other_c.id
                 ), 0),
                 'active', (select p.last_activity > current_timestamp - interval '5 minutes' from profiles p where p.id = other_c.player)
               ) order by lower(other_c.name)
             )
             from characters other_c
-            where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player
-            and (other_c.state = 'alive' or (other_c.state = 'dead' and (
-              select count(*)
-              from get_game_messages_for_user() m
-              where (m.sender_character = other_c.id and m.recipient_character = c.id and m.recipient_user = c.player) 
-                or (m.sender_character = c.id and m.recipient_character = other_c.id and m.sender_user = c.player) 
-            ) > 0))
+            where other_c.game = c.game and other_c.id != c.id and other_c.player != c.player -- Ensure other_c.player is not null if it's part of game logic
+            and (other_c.state = 'alive' or (other_c.state = 'dead' and ( 
+              coalesce((
+                select sum(ucmc.unread_count)
+                from unread_character_message_counts ucmc
+                where (ucmc.recipient_character_id = c.id and ucmc.sender_character_id = other_c.id)
+                   or (ucmc.recipient_character_id = other_c.id and ucmc.sender_character_id = c.id)
+              ), 0) > 0
+            )))
           ) as contacts
         from characters c
         where c.player = user_id and c.state != 'deleted'
@@ -1088,8 +1090,20 @@ begin
       group by g.id, g.name
     ),
     stranded_characters as (
-      select json_agg(json_build_object('name', c.name, 'id', c.id, 'state', c.state, 'portrait', c.portrait, 'unread', coalesce((select count(*) from get_game_messages_for_user() m where m.recipient_character = c.id and m.read = false), 0)) order by lower(c.name))
-      as characters
+      select json_agg(
+        json_build_object(
+          'name', c.name, 
+          'id', c.id, 
+          'state', c.state, 
+          'portrait', c.portrait, 
+          'unread', coalesce((
+            select sum(ucmc.unread_count) 
+            from unread_character_message_counts ucmc 
+            where ucmc.recipient_character_id = c.id
+            ), 0
+          )
+        ) order by lower(c.name)
+      ) as characters
       from characters c
       where c.player = user_id and c.game is null and c.state != 'deleted'
     )
@@ -1097,9 +1111,12 @@ begin
       'allGrouped', (select json_agg(json_build_object('id', game_id, 'name', game_name, 'characters', characters)) from all_characters),
       'myStranded', (select coalesce(characters, '[]'::json) from stranded_characters),
       'unreadTotal', (
-        select sum((character->>'unread')::int)
-        from (select json_array_elements(characters) as character from all_characters union all select json_array_elements(coalesce(characters, '[]'::json)) as character from stranded_characters)
-        as all_unreads
+        select coalesce(sum((character_data->>'unread')::int),0)
+        from (
+          select json_array_elements(acc.characters) as character_data from all_characters acc
+          union all
+          select json_array_elements(coalesce(sc.characters, '[]'::json)) as character_data from stranded_characters sc
+        ) as all_unreads
       )
     )
   );
@@ -1114,13 +1131,17 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_users () returns json as $$
+create or replace function get_user_data () returns json as $$
 declare 
   user_uuid uuid := auth.uid();
 begin
   return (
     with 
-      unread_users as (select distinct sender_user as id from messages where recipient_user = user_uuid and read = false and sender_character is null and recipient_character is null),
+      unread_users as (
+        select distinct uumc.sender_user_id as id 
+        from unread_user_message_counts uumc 
+        where uumc.recipient_user_id = user_uuid and uumc.unread_count > 0
+      ),
       contact_ids as (select contact_user as id from public.contacts where owner = user_uuid ),
       active_users as (select id from profiles where last_activity > now() - interval '5 minutes' and id <> user_uuid ),
       candidate as (select id from unread_users union select id from contact_ids union select id from active_users ),
@@ -1132,10 +1153,11 @@ begin
           exists(select 1 from unread_users u where u.id = p.id) as has_unread,
           exists(select 1 from contact_ids c where c.id = p.id) as contacted,
           p.last_activity > now() - interval '5 minutes' as active,
-          (
-            select count(*) from messages m
-            where m.sender_user = p.id and m.recipient_user = user_uuid and m.read = false and m.sender_character is null and m.recipient_character is null
-          ) as unread
+          coalesce((
+            select uumc.unread_count 
+            from unread_user_message_counts uumc
+            where uumc.sender_user_id = p.id and uumc.recipient_user_id = user_uuid
+          ), 0) as unread
         from profiles p
         join candidate c on c.id = p.id
       )
@@ -1486,6 +1508,7 @@ create or replace trigger delete_work_thread after delete on works for each row 
 create or replace trigger update_map_updated_at before update on maps for each row execute procedure update_updated_at();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
+create or replace trigger update_message_updated_at before update on messages for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
 -- Triggers for thread unread counts

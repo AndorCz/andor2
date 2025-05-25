@@ -124,16 +124,14 @@
     <!-- svelte-ignore a11y-autofocus -->
     <textarea autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
-  {#if showButton}
-    <button on:click={triggerSave} disabled={disabled || (disableEmpty && isEmpty)} class='save' title={editing ? 'Uložit' : buttonTitle} use:tooltip>
-      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
-    </button>
-  {/if}
-  {#if editing}
-    <button on:click={cancelEdit} class='cancel' title='Zrušit'>
+  <div class='buttons'>
+    <button on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
       <span class='material'>close</span>
     </button>
-  {/if}
+    <button on:click={triggerSave} class='save' class:hidden={!showButton} title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
+    </button>
+  </div>
   {#if loading}
     <Loading />
   {/if}
@@ -162,34 +160,47 @@
       padding-right: 80px;
     }
 
-    button {
+    .buttons {
       position: absolute;
+      top: 0px;
       right: 0px;
-      padding: 10px 15px;
+      padding-top: 50px; /* to account for wysiwyg menu */
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      width: fit-content;
+      justify-content: space-between;
+      align-items: center;
     }
+      .bubbleMenu .buttons {
+        padding-top: 0px;
+      }
+      .singleLine {
+        flex-direction: row;
+      }
+      .singleLine .buttons {
+        top: 0px; /* for single line */
+        flex-direction: row-reverse;
+      }
+      button {
+        padding: 10px 15px;
+      }
       .save {
-        bottom: 0px;
         border-radius: 10px 0px 10px 0px;
         border-bottom: 3px var(--buttonBg) solid;
       }
       .cancel {
-        top: 50px;
+        visibility: visible;
         border-radius: 0px 10px 0px 10px;
       }
-      .singleLine .save, .singleLine .cancel {
-        right: 5px;
-        bottom: 50px;
+        .cancel.hidden {
+          visibility: hidden;
+        }
+      .singleLine button {
         background: none;
         border: none;
         border-radius: 10px;
         box-shadow: none;
-      }
-        .singleLine .cancel {
-          top: unset;
-          right: 50px;
-        }
-      .bubbleMenu .save {
-        bottom: 5px;
       }
     .counter {
       position: absolute;
@@ -203,11 +214,9 @@
     }
   }
   @media (max-width: 720px) {
-    .cancel {
-      top: 0px;
-    }
-    .save {
-      bottom: 50px;
+    .buttons {
+      padding-top: 0px !important;
+      padding-bottom: 50px !important;
     }
   }
   @media (max-width: 500px) {

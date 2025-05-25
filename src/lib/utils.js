@@ -218,3 +218,24 @@ export function getHex (color) {
     return '#' + hex
   }
 }
+
+export async function waitForMediaLoad (container) {
+  if (!container) return
+  const images = container.querySelectorAll('img')
+  const videos = container.querySelectorAll('video')
+  const promises = Array.from(images).map(img => {
+    if (img.complete) return Promise.resolve()
+    return new Promise(resolve => {
+      img.onload = resolve
+      img.onerror = resolve
+    })
+  })
+  promises.push(...Array.from(videos).map(video => {
+    if (video.readyState >= 2) return Promise.resolve()
+    return new Promise(resolve => {
+      video.onloadeddata = resolve
+      video.onerror = resolve
+    })
+  }))
+  await Promise.all(promises)
+}
