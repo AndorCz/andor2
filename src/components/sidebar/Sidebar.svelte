@@ -207,7 +207,6 @@
     if (error) { throw error }
     if (data) {
       characters = data || { allGrouped: [], myStranded: [] }
-      console.log('Characters loaded:', characters)
       unreadCharacters = characters.unreadTotal > 0
     }
   }

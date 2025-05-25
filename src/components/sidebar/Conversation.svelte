@@ -33,16 +33,10 @@
 
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
-  // Function to load more messages when scrolling to top
   function handleScroll () {
-    // Update the distance from the bottom
     distanceFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
-
-    // Check if user has manually scrolled up
     userHasScrolledUp = distanceFromBottom > 50 // Threshold to consider as manual scroll
-
     if (messagesEl && hasMoreMessages && !isLoading) {
-      // Check if user has scrolled to the top (with a small threshold)
       if (messagesEl.scrollTop <= 50) { // 50px threshold from top
         loadMessages(false) // Load more messages, not initial load
       }
@@ -73,9 +67,7 @@
   })
 
   onDestroy(() => {
-    if (channel) {
-      supabase.removeChannel(channel)
-    }
+    if (channel) { supabase.removeChannel(channel) }
     if (messagesEl && scrollHandlerAttached) {
       messagesEl.removeEventListener('scroll', handleScroll)
       scrollHandlerAttached = false
@@ -203,20 +195,16 @@
       editingMessage = null
     } else {
       // Insert new message
-      const messageData = { content: textareaValue }
-      if (us.id !== user.id) { // Game messages
-        messageData.sender_character = us.id
-        messageData.sender_user = user.id
-        messageData.recipient_character = them.id
-        messageData.recipient_user = them.player
-      } else { // User messages
-        messageData[senderColumn] = us.id
-        messageData[recipientColumn] = them.id
+      const messageData = {
+        content: textareaValue,
+        ...(us.id !== user.id
+          ? { sender_character: us.id, sender_user: user.id, recipient_character: them.id, recipient_user: them.player }
+          : { [senderColumn]: us.id, [recipientColumn]: them.id })
       }
-      const { error } = await supabase.from('messages').insert(messageData)
+      const { data: newMessagesData, error } = await supabase.from('messages').insert(messageData).select()
       if (error) { return handleError(error) }
       textareaValue = ''
-      await loadMessages()
+      $messages = [...$messages, ...newMessagesData]
     }
   }
 
@@ -245,14 +233,10 @@
   // Reactive statement for scrolling
   $: {
     if (messagesEl && $messages.length) {
-      console.log('messages exist, userHasScrolledUp', userHasScrolledUp)
-      if (!userHasScrolledUp) {
-        // Scroll to bottom for new messages from the other user, or on initial load if not scrolled up
+      if (!userHasScrolledUp) { // Scroll to bottom for new messages from the other user, or on initial load if not scrolled up
         if (previousMessagesLength === 0 && $messages.length > 0) { // Initial load
-          console.log('initial load, scrolling to bottom')
           messagesEl.scrollTop = messagesEl.scrollHeight
         } else { // New message
-          console.log('update fired, scrolling to bottom')
           waitForMediaLoad(messagesEl).then(() => {
             if (messagesEl) {
               messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' })
@@ -261,6 +245,8 @@
         }
       }
       previousMessagesLength = $messages.length
+    } else {
+      previousMessagesLength = 0
     }
   }
 </script>
