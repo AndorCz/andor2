@@ -140,7 +140,6 @@
 
   async function loadUnread () {
     const { data, error } = await supabase.rpc('get_unread_tabs')
-    console.log('loadUnread data:', data)
     if (error) { throw error }
     if (data) {
       unreadBookmarks = data.unread_bookmarks > 0

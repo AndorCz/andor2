@@ -1515,8 +1515,8 @@ create or replace trigger ensure_contact before insert on messages for each row 
 create or replace trigger increment_unread_after_post_insert after insert on posts for each row execute function increment_unread_counters();
 create or replace trigger decrement_unread_after_post_delete after delete on posts for each row execute procedure decrement_unread_counters();
 -- Triggers for user message unread counts
-create or replace trigger increment_user_message_unread after insert on messages for each row when (new.recipient_user is not null and new.sender_user is not null) execute procedure increment_unread_user_message_count();
-create or replace trigger decrement_user_message_unread_on_delete after delete on messages for each row when (old.recipient_user is not null and old.sender_user is not null) execute procedure decrement_unread_user_message_count();
+create or replace trigger increment_user_message_unread after insert on messages for each row when (new.recipient_user is not null and new.sender_user is not null and new.sender_character is null and new.recipient_character is null) execute procedure increment_unread_user_message_count();
+create or replace trigger decrement_user_message_unread_on_delete after delete on messages for each row when (old.recipient_user is not null and old.sender_user is not null and old.sender_character is null and old.recipient_character is null) execute procedure decrement_unread_user_message_count();
 -- Triggers for character message unread counts
 create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
 create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
