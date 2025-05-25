@@ -27,11 +27,11 @@
   export let mentionList = null
   export let forceBubble = false
   export let autoFocus = false
-  export let preserveValue = false
 
+  let tiptap
   let isEmpty = true
   let editorRef
-  let tiptap
+  let textareaRef
   let originalValue = value
   let height = '60px'
 
@@ -40,28 +40,15 @@
       tiptap = editorRef.getEditor()
       if (value) { editorRef.setContent(value) } // set html content
       isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
+    } else {
+      isEmpty = value.length === 0
     }
   })
 
   function setHeight (node) { // textarea only
-    const textareaRef = node.target || node
     textareaRef.style.height = 'auto'
     height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
     textareaRef.style.height = height
-  }
-
-  async function cancelEdit () {
-    if (value !== originalValue) {
-      if (window.confirm('Opravdu zrušit úpravu?')) {
-        if (preserveValue) {
-          value = originalValue
-        } else {
-          value = ''
-          if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
-        }
-        editing = false
-      }
-    }
   }
 
   export function getIsEmpty () { return isEmpty }
@@ -71,11 +58,26 @@
   }
 
   export async function triggerEdit (id, content) {
+    if (allowHtml) { editorRef.getEditor().commands.focus() } else { document.getElementById(id)?.focus() }
     editing = id
     if (allowHtml) {
       editorRef.getEditor().commands.setContent(content)
-      originalValue = value
+      originalValue = tiptap.getHTML()
       onChange()
+    } else {
+      value = content
+      originalValue = content
+    }
+  }
+
+  async function cancelEdit () {
+    const val = allowHtml ? tiptap.getHTML() : editorRef.value
+    console.log('cancelEdit, val: ' + val + ', originalValue: ' + originalValue)
+    const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
+    if (shouldCancel) {
+      value = ''
+      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      editing = false
     }
   }
 
@@ -122,7 +124,7 @@
       <span class='counter'>{maxlength - value.length}</span>
     {/if}
     <!-- svelte-ignore a11y-autofocus -->
-    <textarea autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
+    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
   <div class='buttons'>
     <button on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>

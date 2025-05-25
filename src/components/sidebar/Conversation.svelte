@@ -209,6 +209,7 @@
   }
 
   function onEdit (message) {
+    editingMessage = message
     inputEl.triggerEdit(message.id, message.content)
   }
 
