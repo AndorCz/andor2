@@ -63,17 +63,15 @@
     if (allowHtml) {
       editorRef.getEditor().commands.setContent(content)
       originalValue = tiptap.getHTML()
-      onChange()
     } else {
       value = content
       originalValue = content
     }
-    editing = false
+    onChange()
   }
 
   async function cancelEdit () {
     const val = allowHtml ? tiptap.getHTML() : editorRef.value
-    console.log('cancelEdit, val: ' + val + ', originalValue: ' + originalValue)
     const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
     if (shouldCancel) {
       value = ''
@@ -177,13 +175,11 @@
     }
       .bubbleMenu .buttons {
         padding-top: 0px;
-      }
-      .singleLine {
-        flex-direction: row;
+        padding-bottom: 0px;
       }
       .singleLine .buttons {
         top: 0px; /* for single line */
-        flex-direction: row-reverse;
+        flex-direction: row;
       }
       button {
         padding: 10px 15px;
@@ -218,8 +214,8 @@
   }
   @media (max-width: 720px) {
     .buttons {
-      padding-top: 0px !important;
-      padding-bottom: 50px !important;
+      padding-top: 0px;
+      padding-bottom: 50px;
     }
   }
   @media (max-width: 500px) {
