@@ -68,6 +68,7 @@
       value = content
       originalValue = content
     }
+    editing = false
   }
 
   async function cancelEdit () {
