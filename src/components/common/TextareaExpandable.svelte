@@ -46,9 +46,11 @@
   })
 
   function setHeight (node) { // textarea only
-    textareaRef.style.height = 'auto'
-    height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
-    textareaRef.style.height = height
+    if (textareaRef) {
+      textareaRef.style.height = 'auto'
+      height = singleLine ? '60px' : `${textareaRef.scrollHeight > minHeight ? textareaRef.scrollHeight : minHeight}px`
+      textareaRef.style.height = height
+    }
   }
 
   export function getIsEmpty () { return isEmpty }
