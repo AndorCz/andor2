@@ -125,11 +125,11 @@
     <!-- svelte-ignore a11y-autofocus -->
     <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
-  <div class='buttons'>
-    <button on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
+  <div class='buttons' class:hidden={!showButton} >
+    <button type='button' on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
       <span class='material'>close</span>
     </button>
-    <button on:click={triggerSave} class='save' class:hidden={!showButton} title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+    <button type='button' on:click={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
       <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
     </button>
   </div>
@@ -192,9 +192,9 @@
         visibility: visible;
         border-radius: 0px 10px 0px 10px;
       }
-        .cancel.hidden {
-          visibility: hidden;
-        }
+      .hidden {
+        visibility: hidden;
+      }
       .singleLine button {
         background: none;
         border: none;

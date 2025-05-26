@@ -28,9 +28,9 @@
   import EditorMenu from '@components/common/EditorMenu.svelte'
 
   export let user
+  export let triggerSave
   export let value = ''
   export let onKeyUp = null
-  export let triggerSave = null
   export let onChange = null
   export let minHeight = 140
   export let enterSend = false
