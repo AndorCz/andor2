@@ -39,9 +39,9 @@
     if (allowHtml) {
       tiptap = editorRef.getEditor()
       if (value) { editorRef.setContent(value) } // set html content
-      isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
+      isEmpty = tiptap.isEmpty
     } else {
-      isEmpty = value.length === 0
+      isEmpty = value ? value.length === 0 : true
     }
   })
 
@@ -96,7 +96,7 @@
   function onKeyUp (e) { if (onTyping) { onTyping(e) } }
 
   function onChange () {
-    isEmpty = allowHtml ? tiptap.isEmpty : value.length === 0
+    isEmpty = allowHtml ? tiptap.isEmpty : (value ? value.length === 0 : true)
   }
 
   export function addReply (postId, userName, userId) {
@@ -122,7 +122,7 @@
     <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
-      <span class='counter'>{maxlength - value.length}</span>
+      <span class='counter'>{maxlength - (value ? value.length : 0)}</span>
     {/if}
     <!-- svelte-ignore a11y-autofocus -->
     <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>

@@ -46,6 +46,7 @@ alter table public.games enable row level security;
 
 create policy "READ for everyone" on public.games for select to public using (true);
 create policy "ALL for owner" on public.games for all to authenticated using (owner = (select auth.uid()));
+create policy "ALL for storytellers in their game" on public.games for all to authenticated using (is_storyteller(id));
 
 -- Characters --
 
