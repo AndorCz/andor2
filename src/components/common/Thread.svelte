@@ -41,6 +41,7 @@
 
   onMount(async () => {
     if (user.autorefresh) { refresh() }
+    setRead(user.id, id)
   })
 
   onDestroy(() => {
