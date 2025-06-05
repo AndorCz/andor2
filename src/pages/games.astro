@@ -7,7 +7,10 @@
   const tab = Astro.url.searchParams.get('tab') || 'open'
   const sort = Astro.url.searchParams.get('sort') || 'new'
 
-  let query = supabase.from('game_list').select('*')
+  const page = parseInt(Astro.url.searchParams.get('page') || '0')
+  const limit = 20
+
+  let query = supabase.from('game_list').select('*', { count: 'exact' })
   switch (tab) {
     case 'open': query.match({ archived: false, published: true, recruitment_open: true }); break
     case 'public': query.match({ archived: false, published: true, open_game: true }); break
@@ -26,10 +29,11 @@
     case 'owner': query.order('owner_name'); break
   }
 
-  const { data: games, error } = await query
+  const { data: games, count, error } = await query.range(page * limit, page * limit + limit - 1)
+  const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
 ---
 
 <Layout title='Hry'>
-  <GameList {user} {games} showHeadline client:only='svelte' />
+  <GameList {user} {games} {page} {maxPage} showHeadline client:only='svelte' />
 </Layout>

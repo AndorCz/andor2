@@ -10,6 +10,8 @@
   export let games = []
   export let showHeadline = false
   export let showTabs = true
+  export let page = 0
+  export let maxPage = 0
 
   let listView = false
   let gameListStore
@@ -50,6 +52,11 @@
 
   function setSort (e) {
     const newUrl = addURLParam('sort', e.target.value, true)
+    window.location.href = newUrl
+  }
+
+  function triggerPaging (newPage) {
+    const newUrl = addURLParam('page', newPage, true)
     window.location.href = newUrl
   }
 </script>
@@ -136,6 +143,14 @@
   {/if}
 {:else}
   <p class='info'>Žádné hry nenalezeny</p>
+{/if}
+
+{#if maxPage > 0}
+  <div class='pagination'>
+    {#each { length: maxPage + 1 } as _, i}
+      <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+    {/each}
+  </div>
 {/if}
 
 <style>
@@ -266,6 +281,18 @@
         height: 100%;
         padding: 20px;
       }
+
+  .pagination {
+    text-align: center;
+    margin-top: 70px;
+  }
+    .pagination button {
+      margin: 5px;
+      font-size: 18px;
+      padding: 0px;
+      width: 40px;
+      height: 40px;
+    }
 
   @media (max-width: 1200px) {
     .block .name {

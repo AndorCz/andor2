@@ -5,10 +5,14 @@
   const { supabase, user } = Astro.locals
   const activeTab = Astro.url.searchParams.get('tab') || 'articles'
 
-  const { data: works, error } = await supabase.from('work_list').select('*').eq('published', true)
+  const page = parseInt(Astro.url.searchParams.get('page') || '0')
+  const limit = 20
+
+  const { data: works, count, error } = await supabase.from('work_list').select('*', { count: 'exact' }).eq('published', true).range(page * limit, page * limit + limit - 1)
+  const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
 ---
 
 <Layout title='Tvorba'>
-  <WorkList {user} {works} {activeTab} showHeadline client:load />
+  <WorkList {user} {works} {activeTab} {page} {maxPage} showHeadline client:load />
 </Layout>
