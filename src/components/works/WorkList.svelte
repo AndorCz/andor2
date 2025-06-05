@@ -9,6 +9,8 @@
   export let works = []
   export let activeTab = 'articles'
   export let showHeadline = false
+  export let page = 0
+  export let maxPage = 0
 
   let listView = false
   let workListStore
@@ -38,6 +40,12 @@
 
   function setListView (val) {
     listView = $workListStore.listView = val
+  }
+
+  function triggerPaging (newPage) {
+    const url = new URL(window.location)
+    url.searchParams.set('page', newPage)
+    window.location.href = url.toString()
   }
 </script>
 
@@ -114,6 +122,14 @@
   {/if}
 {:else}
   <p class='info'>Žádná díla nenalezena</p>
+{/if}
+
+{#if maxPage > 0}
+  <div class='pagination'>
+    {#each { length: maxPage + 1 } as _, i}
+      <button on:click={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
+    {/each}
+  </div>
 {/if}
 
 <style>
@@ -230,6 +246,16 @@
       .category {
         padding-right: 20px;
       }
+
+  .pagination {
+    text-align: center;
+    margin-top: 70px;
+  }
+    .pagination button {
+      margin: 5px;
+      font-size: 22px;
+      padding: 15px 25px;
+    }
 
   /* common */
 

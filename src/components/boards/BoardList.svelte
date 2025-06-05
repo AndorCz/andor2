@@ -8,6 +8,8 @@
   export let boards = []
   export let showHeadline = false
   export let compactOnly = false
+  export let page = 0
+  export let maxPage = 0
 
   let listView = false
   let boardListStore
@@ -26,6 +28,12 @@
 
   function setListView (val) {
     listView = $boardListStore.listView = val
+  }
+
+  function triggerPaging (newPage) {
+    const url = new URL(window.location)
+    url.searchParams.set('page', newPage)
+    window.location.href = url.toString()
   }
 </script>
 
@@ -88,6 +96,14 @@
   {/if}
 {:else}
   <p class='info'>Žádné diskuze nenalezeny</p>
+{/if}
+
+{#if maxPage > 0}
+  <div class='pagination'>
+    {#each { length: maxPage + 1 } as _, i}
+      <button on:click={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
+    {/each}
+  </div>
 {/if}
 
 <style>
@@ -207,6 +223,16 @@
         height: 100%;
         padding: 20px;
       }
+
+  .pagination {
+    text-align: center;
+    margin-top: 70px;
+  }
+    .pagination button {
+      margin: 5px;
+      font-size: 22px;
+      padding: 15px 25px;
+    }
 
   @media (max-width: 1200px) {
     .block .name {
