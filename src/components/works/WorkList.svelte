@@ -253,8 +253,10 @@
   }
     .pagination button {
       margin: 5px;
-      font-size: 22px;
-      padding: 15px 25px;
+      font-size: 18px;
+      padding: 0px;
+      width: 40px;
+      height: 40px;
     }
 
   /* common */
