@@ -7,7 +7,6 @@ drop table if exists reactions cascade;
 drop table if exists messages cascade;
 drop table if exists boards cascade;
 drop table if exists bookmarks cascade;
-drop table if exists user_reads cascade;
 drop table if exists maps cascade;
 drop table if exists news cascade;
 
@@ -1195,20 +1194,20 @@ declare
   v_discussion_thread_id int;
 begin
   select to_jsonb(t) into game_data from (select g.*, p as owner, m as active_map from games g left join profiles p on g.owner = p.id left join maps m on g.active_map = m.id where g.id = game_id) t;
-  
+
   -- Extract thread IDs from game_data
   v_game_thread_id := (game_data->>'game_thread')::int;
   v_discussion_thread_id := (game_data->>'discussion_thread')::int;
 
   -- Inline get_game_unread logic
-  select ut.unread_count into game_unread_count 
-  from unread_threads ut 
+  select ut.unread_count into game_unread_count
+  from unread_threads ut
   where ut.user_id = current_user_id and ut.thread_id = v_game_thread_id;
-  
-  select ut.unread_count into discussion_unread_count 
-  from unread_threads ut 
+
+  select ut.unread_count into discussion_unread_count
+  from unread_threads ut
   where ut.user_id = current_user_id and ut.thread_id = v_discussion_thread_id;
-  
+
   unread_data := jsonb_build_object(
     'gameChat', coalesce(discussion_unread_count, 0),
     'gameThread', coalesce(game_unread_count, 0)
@@ -1218,7 +1217,7 @@ begin
   select jsonb_agg(t) into map_data from (select * from maps where game = game_id order by updated_at desc) t;
   select jsonb_agg(t) into codex_data from (select * from codex_sections where game = game_id order by index) t;
   select to_jsonb(t) into subscription_data from (select * from subscriptions where user_id = auth.uid() and game = game_id) t;
-  
+
   return game_data || jsonb_build_object('characters', character_data, 'maps', map_data, 'unread', unread_data, 'codexSections', codex_data, 'subscription', subscription_data);
 end;
 $$ language plpgsql;

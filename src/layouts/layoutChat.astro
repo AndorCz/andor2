@@ -46,7 +46,7 @@ const { title, headerStatic, headerStorage } = Astro.props
           <li><a href='/works'><span class='material'>edit</span><span>Tvorba</span></a></li>
           <li><a href='/boards'><span class='material'>forum</span><span>Diskuze</span></a></li>
           <li><a href='/chat' class='active'><span class='material'>chat</span><span>Chat</span></a></li>
-        </ul>        
+        </ul>
         <div class='content chat'>
           <slot />
         </div>
@@ -56,6 +56,14 @@ const { title, headerStatic, headerStorage } = Astro.props
         <Sidebar {pathname} {user} client:only='svelte' />
       ) : null}
     </div>
+    <!-- analytics -->
+    <script async src='https://www.googletagmanager.com/gtag/js?id=G-W0K9N4XNHJ'></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() { dataLayer.push(arguments) }
+      gtag('js', new Date())
+      gtag('config', 'G-W0K9N4XNHJ')
+    </script>
   </body>
 </html>
 
