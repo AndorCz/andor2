@@ -3,7 +3,14 @@
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
-  import { workTags, workCategoriesText } from '@lib/constants'
+  import {
+    workTagsText,
+    workTagsImage,
+    workTagsMusic,
+    workCategoriesText,
+    workCategoriesImage,
+    workCategoriesMusic
+  } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
@@ -53,7 +60,9 @@
   }
 
   $: maxTags = data.tags?.length === 3
-  $: tagItems = maxTags ? [] : [...workTags]
+  $: tagSource = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
+  $: categoryItems = data.type === 'text' ? workCategoriesText : data.type === 'image' ? workCategoriesImage : workCategoriesMusic
+  $: tagItems = maxTags ? [] : [...tagSource]
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
@@ -88,7 +97,7 @@
     <h2>Kategorie</h2>
     <div class='row'>
       <select id='workCategory' name='workCategory' bind:value={data.category}>
-        {#each workCategoriesText as category}
+        {#each categoryItems as category}
           <option value={category.value}>{category.label}</option>
         {/each}
       </select>

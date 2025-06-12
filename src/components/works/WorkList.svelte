@@ -1,6 +1,13 @@
 <script>
   import { onMount } from 'svelte'
-  import { workTags, workCategoriesText } from '@lib/constants'
+  import {
+    workTagsText,
+    workTagsImage,
+    workTagsMusic,
+    workCategoriesText,
+    workCategoriesImage,
+    workCategoriesMusic
+  } from '@lib/constants'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
@@ -18,24 +25,28 @@
   // functions to run only in the browser
   let getHeaderUrl = () => {}
   let getPortraitUrl = () => {}
+  let getWorkFileUrl = () => {}
 
   onMount(async () => {
     const databaseBrowser = await import('@lib/database-browser')
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
+    getWorkFileUrl = databaseBrowser.getWorkFileUrl
 
     workListStore = getSavedStore('works', { listView: false })
     listView = $workListStore.listView
   })
 
-  function getTags (value) {
-    return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
+  function getTags (work) {
+    const source = work.type === 'text' ? workTagsText : work.type === 'image' ? workTagsImage : workTagsMusic
+    return work.tags.map(tag => source.find(t => t.value === tag)?.label || tag).join(', ')
   }
 
   function getCategory (work) {
     if (work.editorial) { return 'Editorial' }
-    const category = workCategoriesText.find(c => c.value === work.category)
-    return category.value !== 'other' ? category.label : ''
+    const source = work.type === 'text' ? workCategoriesText : work.type === 'image' ? workCategoriesImage : workCategoriesMusic
+    const category = source.find(c => c.value === work.category)
+    return category && category.value !== 'other' ? category.label : ''
   }
 
   function setListView (val) {
@@ -92,7 +103,7 @@
         <tr class='work' class:editorial={work.editorial}>
           <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
           <td><div class='category'>{getCategory(work)}</div></td>
-          <td><div class='tags'>{getTags(work.tags)}</div></td>
+          <td><div class='tags'>{getTags(work)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
           <td>
             <a href='./user?id={work.owner_id}' class='user owner'>
@@ -106,9 +117,13 @@
   {:else}
     {#each works as work}
       <div class='block' class:editorial={work.editorial}>
-        {#if work.custom_header}
+        {#if work.custom_header || work.type === 'image'}
           <div class='col image'>
-            <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
+            {#if work.type === 'image'}
+              <img src={getWorkFileUrl(work.content)} alt={work.name} />
+            {:else}
+              <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
+            {/if}
           </div>
         {/if}
         <div class='col left'>
@@ -116,7 +131,7 @@
           <div class='annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
           <div class='meta'>
             <div class='category' title='kategorie'>{getCategory(work)}</div>
-            <div class='tags' title='tagy'>{getTags(work.tags)}</div>
+            <div class='tags' title='tagy'>{getTags(work)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
               <span>{work.owner_name}</span>

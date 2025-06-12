@@ -120,7 +120,7 @@
   .media {
     max-width: 100%;
     display: block;
-    margin: 20px 0;
+    margin: 20px auto;
   }
     .portrait {
       display: block;

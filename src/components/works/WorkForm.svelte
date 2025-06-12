@@ -1,5 +1,12 @@
 <script>
-  import { workTags, workCategoriesText } from '@lib/constants'
+  import {
+    workTagsText,
+    workTagsImage,
+    workTagsMusic,
+    workCategoriesText,
+    workCategoriesImage,
+    workCategoriesMusic
+  } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -24,7 +31,9 @@
   }
 
   $: maxTags = selectedTags?.length === 3
-  $: tagItems = maxTags ? [] : [...workTags]
+  $: tagSource = type === 'text' ? workTagsText : type === 'image' ? workTagsImage : workTagsMusic
+  $: categoryItems = type === 'text' ? workCategoriesText : type === 'image' ? workCategoriesImage : workCategoriesMusic
+  $: tagItems = maxTags ? [] : [...tagSource]
 
   function showPreview () {
     if (files && files[0]) {
@@ -75,7 +84,7 @@
       </div>
       <div class='inputs'>
         <select id='workCategory' name='workCategory'>
-          {#each workCategoriesText as category}
+          {#each categoryItems as category}
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
