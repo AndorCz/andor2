@@ -1,0 +1,55 @@
+---
+---
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>Database Unavailable</title>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
+    <link rel='stylesheet' href={`/css/common/base.css`}>
+    <link rel='stylesheet' href={`/css/obsidian.css`}>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #201c1b;
+        color: #c4b6ab;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+      .container {
+        max-width: 800px;
+        padding: 2rem;
+      }
+      .retry-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #635147;
+        color: #c4b6ab;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .retry-button:hover {
+        background-color: #736157;
+      }
+      .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">🔌</div>
+      <h1>Chyba spojení s databází</h1>
+      <p>Vaše dobrodružná výprava narazila na zamčené dveře – databáze je momentálně nedostupná.</p>
+      <p>Naši mágové IT oddělení už sesílají kouzlo <strong>Obnovit spojení</strong>. Hoďte kostkou na trpělivost a zkuste to za tolik minut kolik vám padne.<br>Více informací na našem <a href='https://discord.gg/3kp83cBZPC' target='_blank'>Discord serveru</a>.</p>
+      <br>
+      <button class="large" onclick="window.location.href='/'">Zkusit znovu</button>
+    </div>
+  </body>
+</html>
