@@ -3,17 +3,30 @@
   import WorkForm from '@components/works/WorkForm.svelte'
 
   const { supabase, user } = Astro.locals
+  const type = Astro.url.searchParams.get('type') || 'text'
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const name = formData.get('workName')
-    const content = formData.get('workContent')
     const annotation = formData.get('workAnnotation')
     const category = formData.get('workCategory')
     const tags = formData.get('workTags') ? formData.get('workTags').split(',') : []
+    const formType = formData.get('workType') || type
+    let content = formData.get('workContent')
 
-    // 2DO: add 'type' for other types of works
-    const { data, error } = await supabase.from('works').insert({ owner: user.id, name, category, content, annotation, tags }).select().single()
+    if (formType !== 'text') {
+      const file = formData.get('workFile')
+      if (!file || file.size === 0) {
+        return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chybí soubor')}`)
+      }
+      const fileExt = file.name.split('.').pop()
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('works').upload(filePath, file)
+      if (uploadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba uploadu: ' + uploadError.message)}`) }
+      content = filePath
+    }
+
+    const { data, error } = await supabase.from('works').insert({ owner: user.id, name, category, content, annotation, tags, type: formType }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba vložení díla: ' + error.message)}`) }
 
     // add bookmark
@@ -35,13 +48,13 @@
     })
     if (postError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba v přidání upozornění na dílo: ' + insertError.message)}`) }
 
-    return Astro.redirect(`/work/${data.id}?toastType=success&toastText=${encodeURIComponent('Článek byl přidán, čeká na schválení')}`)
+    return Astro.redirect(`/work/${data.id}?toastType=success&toastText=${encodeURIComponent('Dílo bylo přidáno, čeká na schválení')}`)
   }
 ---
 
-<Layout title='Vytvořit článek'>
+<Layout title={'Vytvořit ' + (type === 'text' ? 'článek' : type === 'image' ? 'obrázek' : 'hudbu')}>
   <a href='javascript:history.back()'>zpět</a>
 
-  <h1>Vytvořit článek</h1>
-  <WorkForm {user} client:only='svelte' />
+  <h1>Vytvořit {type === 'text' ? 'článek' : type === 'image' ? 'obrázek' : 'hudbu'}</h1>
+  <WorkForm {user} {type} client:only='svelte' />
 </Layout>

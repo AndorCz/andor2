@@ -1,6 +1,6 @@
 <script>
   import { tooltip } from '@lib/tooltip'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { supabase, handleError, getPortraitUrl, getWorkFileUrl } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import Discussion from '@components/Discussion.svelte'
@@ -62,7 +62,13 @@
     {/if}
   </div>
 
-  <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  {#if data.type === 'text'}
+    <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  {:else if data.type === 'image'}
+    <img src={getWorkFileUrl(data.content)} alt={data.name} class='media' />
+  {:else if data.type === 'audio'}
+    <audio controls src={getWorkFileUrl(data.content)} class='media'></audio>
+  {/if}
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
     <div class='author'>
@@ -110,6 +116,11 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+  .media {
+    max-width: 100%;
+    display: block;
+    margin: 20px 0;
   }
     .portrait {
       display: block;

@@ -4,25 +4,37 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
+  export let type = 'text'
   let editorRef
   let selectedTags
   let maxTags
   let contentInputRef
   let tagsInputRef
+  let fileInputRef
+  let files
+  let previewUrl
 
   const prepareData = async (event) => {
     event.preventDefault()
-    contentInputRef.value = await editorRef.getContent()
+    if (type === 'text') {
+      contentInputRef.value = await editorRef.getContent()
+    }
     tagsInputRef.value = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : null
     event.target.submit()
   }
 
   $: maxTags = selectedTags?.length === 3
   $: tagItems = maxTags ? [] : [...workTags]
+
+  function showPreview () {
+    if (files && files[0]) {
+      previewUrl = URL.createObjectURL(files[0])
+    }
+  }
 </script>
 
 {#if user.id}
-  <form method='POST' autocomplete='off' on:submit={prepareData}>
+  <form method='POST' autocomplete='off' enctype='multipart/form-data' on:submit={prepareData}>
     <div class='row'>
       <div class='labels'>
         <label for='workName'>Název</label>
@@ -37,13 +49,25 @@
       <div class='inputs'><TextareaExpandable placeholder='Popis díla, do seznamu tvorby a novinek' {user} id='workAnnotation' name='workAnnotation' minHeight={80} maxlength={150} /></div>
     </div>
 
-    <div class='row'>
-      <div class='labels'>Obsah</div>
-      <div class='inputs'>
-        <TextareaExpandable {user} bind:this={editorRef} allowHtml minHeight={500} />
-        <input type='hidden' name='workContent' bind:this={contentInputRef} />
+    {#if type === 'text'}
+      <div class='row'>
+        <div class='labels'>Obsah</div>
+        <div class='inputs'>
+          <TextareaExpandable {user} bind:this={editorRef} allowHtml minHeight={500} />
+          <input type='hidden' name='workContent' bind:this={contentInputRef} />
+        </div>
       </div>
-    </div>
+    {:else}
+      <div class='row'>
+        <div class='labels'><label for='workFile'>Soubor</label></div>
+        <div class='inputs'>
+          <input type='file' bind:this={fileInputRef} bind:files on:change={showPreview} id='workFile' name='workFile' accept={type === 'image' ? 'image/*' : 'audio/*'} />
+        </div>
+      </div>
+      {#if previewUrl && type === 'image'}
+        <div class='row'><img src={previewUrl} alt='preview' class='preview'/></div>
+      {/if}
+    {/if}
 
     <div class='row'>
       <div class='labels'>
@@ -67,6 +91,7 @@
         <input type='hidden' name='workTags' bind:this={tagsInputRef} />
       </div>
     </div>
+    <input type='hidden' name='workType' value={type} />
     <center>
       <button type='submit' class='large'>Vytvořit</button>
     </center>
@@ -101,6 +126,9 @@
         }
   center {
     margin-top: 20px;
+  }
+  .preview {
+    max-width: 100%;
   }
   @media (max-width: 860px) {
     .row {

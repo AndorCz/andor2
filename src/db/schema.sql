@@ -1536,6 +1536,7 @@ insert into storage.buckets (id, name, public) values ('headers', 'headers', tru
 insert into storage.buckets (id, name, public) values ('portraits', 'portraits', true);
 insert into storage.buckets (id, name, public) values ('posts', 'posts', true);
 insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
+insert into storage.buckets (id, name, public) values ('works', 'works', true);
 
 
 -- SEED  --------------------------------------------

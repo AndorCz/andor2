@@ -47,6 +47,13 @@
     url.searchParams.set('page', newPage)
     window.location.href = url.toString()
   }
+
+  function navigateTab (tab) {
+    const url = new URL(window.location)
+    url.searchParams.set('tab', tab)
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
 </script>
 
 {#if showHeadline}
@@ -58,21 +65,21 @@
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
-        <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
-        <a href='./work/work-form' class='button mobile material'>add</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button desktop'>Vytvořit nové dílo</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button mobile material'>add</a>
       {/if}
     </div>
   </div>
 {/if}
 
 <nav class='tabs secondary'>
-  <button on:click={() => { activeTab = 'articles' }} class:active={activeTab === 'articles'}>
+  <button on:click={() => { navigateTab('articles') }} class:active={activeTab === 'articles'}>
     Články
   </button>
-  <button disabled on:click={() => { activeTab = 'images' }} class:active={activeTab === 'images'}>
+  <button on:click={() => { navigateTab('images') }} class:active={activeTab === 'images'}>
     Obrázky
   </button>
-  <button disabled on:click={() => { activeTab = 'music' }} class:active={activeTab === 'music'}>
+  <button on:click={() => { navigateTab('music') }} class:active={activeTab === 'music'}>
     Hudba
   </button>
 </nav>
