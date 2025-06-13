@@ -33,7 +33,7 @@
   $: maxTags = selectedTags?.length === 3
   $: tagSource = type === 'text' ? workTagsText : type === 'image' ? workTagsImage : workTagsMusic
   $: categoryItems = type === 'text' ? workCategoriesText : type === 'image' ? workCategoriesImage : workCategoriesMusic
-  $: tagItems = maxTags ? [] : [...tagSource]
+  $: tagItems = maxTags ? [] : tagSource
 
   function showPreview () {
     if (files && files[0]) {

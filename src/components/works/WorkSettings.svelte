@@ -72,7 +72,7 @@
   $: maxTags = data.tags?.length === 3
   $: tagSource = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
   $: categoryItems = data.type === 'text' ? workCategoriesText : data.type === 'image' ? workCategoriesImage : workCategoriesMusic
-  $: tagItems = maxTags ? [] : [...tagSource]
+  $: tagItems = maxTags ? [] : tagSource
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
