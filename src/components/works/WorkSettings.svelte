@@ -18,6 +18,13 @@
   export let data = {}
   export let user = {}
 
+  function normalizeTags () {
+    if (Array.isArray(data.tags) && typeof data.tags[0] === 'string') {
+      const source = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
+      data.tags = data.tags.map(tag => source.find(t => t.value === tag) || { value: tag, label: tag })
+    }
+  }
+
   let saving = false
   let originalName
   let originalAnnotation
@@ -27,12 +34,14 @@
   let headlineEl
 
   onMount(() => {
+    normalizeTags()
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
   })
 
   function setOriginal () {
+    normalizeTags()
     originalName = data.name
     originalAnnotation = data.annotation
     originalCategory = data.category
@@ -41,7 +50,7 @@
 
   async function updateWork () {
     saving = true
-    const tags = data.tags ? data.tags.map(t => t.value) : []
+    const tags = data.tags ? data.tags.map(t => t.value ?? t) : []
     const { error } = await supabase.from('works').update({ name: data.name, annotation: data.annotation, category: data.category, tags }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
@@ -57,6 +66,10 @@
 
   function showWork () {
     window.location.href = `/work/${data.id}`
+  }
+
+  $: if (Array.isArray(data.tags) && typeof data.tags[0] === 'string') {
+    normalizeTags()
   }
 
   $: maxTags = data.tags?.length === 3
