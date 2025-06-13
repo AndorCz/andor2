@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import {
     workTagsText,
     workTagsImage,
@@ -20,6 +21,21 @@
   let fileInputRef
   let files
   let previewUrl
+  let tagItems = []
+  let categoryItems = []
+
+  onMount(() => {
+    if (type === 'text') {
+      tagItems = [...workTagsText]
+      categoryItems = [...workCategoriesText]
+    } else if (type === 'image') {
+      tagItems = [...workTagsImage]
+      categoryItems = [...workCategoriesImage]
+    } else {
+      tagItems = [...workTagsMusic]
+      categoryItems = [...workCategoriesMusic]
+    }
+  })
 
   const prepareData = async (event) => {
     event.preventDefault()
@@ -31,9 +47,6 @@
   }
 
   $: maxTags = selectedTags?.length === 3
-  $: tagSource = type === 'text' ? workTagsText : type === 'image' ? workTagsImage : workTagsMusic
-  $: categoryItems = type === 'text' ? workCategoriesText : type === 'image' ? workCategoriesImage : workCategoriesMusic
-  $: tagItems = maxTags ? [] : tagSource
 
   function showPreview () {
     if (files && files[0]) {
@@ -78,28 +91,32 @@
       {/if}
     {/if}
 
-    <div class='row'>
-      <div class='labels'>
-        <label for='workCategory'>Kategorie</label>
+    {#if categoryItems.length}
+      <div class='row'>
+        <div class='labels'>
+          <label for='workCategory'>Kategorie</label>
+        </div>
+        <div class='inputs'>
+          <select id='workCategory' name='workCategory'>
+            {#each categoryItems as category}
+              <option value={category.value}>{category.label}</option>
+            {/each}
+          </select>
+        </div>
       </div>
-      <div class='inputs'>
-        <select id='workCategory' name='workCategory'>
-          {#each categoryItems as category}
-            <option value={category.value}>{category.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
+    {/if}
 
-    <div class='row'>
-      <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
-      <div class='inputs'>
-        <Select items={tagItems} multiple bind:value={selectedTags} placeholder=''>
-          <div slot='empty'>Více tagů nelze přidat</div>
-        </Select>
-        <input type='hidden' name='workTags' bind:this={tagsInputRef} />
+    {#if tagItems.length}
+      <div class='row'>
+        <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
+        <div class='inputs'>
+          <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
+            <div slot='empty'>Více tagů nelze přidat</div>
+          </Select>
+          <input type='hidden' name='workTags' bind:this={tagsInputRef} />
+        </div>
       </div>
-    </div>
+    {/if}
     <input type='hidden' name='workType' value={type} />
     <center>
       <button type='submit' class='large'>Vytvořit</button>

@@ -32,8 +32,21 @@
   let originalTagsString
   let selectedTagsString
   let headlineEl
+  let tagItems = []
+  let categoryItems = []
 
   onMount(() => {
+    if (data.type === 'text') {
+      tagItems = [...workTagsText]
+      categoryItems = [...workCategoriesText]
+    } else if (data.type === 'image') {
+      tagItems = [...workTagsImage]
+      categoryItems = [...workCategoriesImage]
+    } else {
+      tagItems = [...workTagsMusic]
+      categoryItems = [...workCategoriesMusic]
+    }
+
     normalizeTags()
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
@@ -70,9 +83,6 @@
 
 
   $: maxTags = data.tags?.length === 3
-  $: tagSource = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
-  $: categoryItems = data.type === 'text' ? workCategoriesText : data.type === 'image' ? workCategoriesImage : workCategoriesMusic
-  $: tagItems = maxTags ? [] : tagSource
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
@@ -104,23 +114,27 @@
       <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
-    <h2>Kategorie</h2>
-    <div class='row'>
-      <select id='workCategory' name='workCategory' bind:value={data.category}>
-        {#each categoryItems as category}
-          <option value={category.value}>{category.label}</option>
-        {/each}
-      </select>
-      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+    {#if categoryItems.length}
+      <h2>Kategorie</h2>
+      <div class='row'>
+        <select id='workCategory' name='workCategory' bind:value={data.category}>
+          {#each categoryItems as category}
+            <option value={category.value}>{category.label}</option>
+          {/each}
+        </select>
+        <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
+    {/if}
 
-    <h2>Tagy</h2>
-    <div class='row'>
-      <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
-        <div slot='empty'>Více tagů nelze přidat</div>
-      </Select>
-      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+    {#if tagItems.length}
+      <h2>Tagy</h2>
+      <div class='row'>
+        <Select items={maxTags ? [] : tagItems} multiple bind:value={data.tags} placeholder=''>
+          <div slot='empty'>Více tagů nelze přidat</div>
+        </Select>
+        <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
+    {/if}
 
     <h2>Smazání díla</h2>
     Pozor, toto je nevratná akce.<br><br>
