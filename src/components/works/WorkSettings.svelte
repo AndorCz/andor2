@@ -68,9 +68,6 @@
     window.location.href = `/work/${data.id}`
   }
 
-  $: if (Array.isArray(data.tags) && typeof data.tags[0] === 'string') {
-    normalizeTags()
-  }
 
   $: maxTags = data.tags?.length === 3
   $: tagSource = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
