@@ -1,6 +1,13 @@
 <script>
   import { onMount } from 'svelte'
-  import { workTags, workCategoriesText } from '@lib/constants'
+  import {
+    workTagsText,
+    workTagsImage,
+    workTagsMusic,
+    workCategoriesText,
+    workCategoriesImage,
+    workCategoriesMusic
+  } from '@lib/constants'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
@@ -18,24 +25,28 @@
   // functions to run only in the browser
   let getHeaderUrl = () => {}
   let getPortraitUrl = () => {}
+  let getWorkFileUrl = () => {}
 
   onMount(async () => {
     const databaseBrowser = await import('@lib/database-browser')
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
+    getWorkFileUrl = databaseBrowser.getWorkFileUrl
 
     workListStore = getSavedStore('works', { listView: false })
     listView = $workListStore.listView
   })
 
-  function getTags (value) {
-    return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
+  function getTags (work) {
+    const source = work.type === 'text' ? workTagsText : work.type === 'image' ? workTagsImage : workTagsMusic
+    return work.tags.map(tag => source.find(t => t.value === tag)?.label || tag).join(', ')
   }
 
   function getCategory (work) {
     if (work.editorial) { return 'Editorial' }
-    const category = workCategoriesText.find(c => c.value === work.category)
-    return category.value !== 'other' ? category.label : ''
+    const source = work.type === 'text' ? workCategoriesText : work.type === 'image' ? workCategoriesImage : workCategoriesMusic
+    const category = source.find(c => c.value === work.category)
+    return category && category.value !== 'other' ? category.label : ''
   }
 
   function setListView (val) {
@@ -45,6 +56,13 @@
   function triggerPaging (newPage) {
     const url = new URL(window.location)
     url.searchParams.set('page', newPage)
+    window.location.href = url.toString()
+  }
+
+  function navigateTab (tab) {
+    const url = new URL(window.location)
+    url.searchParams.set('tab', tab)
+    url.searchParams.delete('page')
     window.location.href = url.toString()
   }
 </script>
@@ -58,21 +76,21 @@
         <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
-        <a href='./work/work-form' class='button desktop'>Vytvořit nové dílo</a>
-        <a href='./work/work-form' class='button mobile material'>add</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button desktop'>Vytvořit nové dílo</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button mobile material'>add</a>
       {/if}
     </div>
   </div>
 {/if}
 
 <nav class='tabs secondary'>
-  <button on:click={() => { activeTab = 'articles' }} class:active={activeTab === 'articles'}>
+  <button on:click={() => { navigateTab('articles') }} class:active={activeTab === 'articles'}>
     Články
   </button>
-  <button disabled on:click={() => { activeTab = 'images' }} class:active={activeTab === 'images'}>
+  <button on:click={() => { navigateTab('images') }} class:active={activeTab === 'images'}>
     Obrázky
   </button>
-  <button disabled on:click={() => { activeTab = 'music' }} class:active={activeTab === 'music'}>
+  <button on:click={() => { navigateTab('music') }} class:active={activeTab === 'music'}>
     Hudba
   </button>
 </nav>
@@ -85,7 +103,7 @@
         <tr class='work' class:editorial={work.editorial}>
           <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
           <td><div class='category'>{getCategory(work)}</div></td>
-          <td><div class='tags'>{getTags(work.tags)}</div></td>
+          <td><div class='tags'>{getTags(work)}</div></td>
           <td><div class='count'>{work.post_count}</div></td>
           <td>
             <a href='./user?id={work.owner_id}' class='user owner'>
@@ -99,9 +117,13 @@
   {:else}
     {#each works as work}
       <div class='block' class:editorial={work.editorial}>
-        {#if work.custom_header}
+        {#if work.custom_header || work.type === 'image'}
           <div class='col image'>
-            <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
+            {#if work.type === 'image'}
+              <img src={getWorkFileUrl(work.content)} alt={work.name} />
+            {:else}
+              <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
+            {/if}
           </div>
         {/if}
         <div class='col left'>
@@ -109,7 +131,7 @@
           <div class='annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
           <div class='meta'>
             <div class='category' title='kategorie'>{getCategory(work)}</div>
-            <div class='tags' title='tagy'>{getTags(work.tags)}</div>
+            <div class='tags' title='tagy'>{getTags(work)}</div>
             <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
             <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
               <span>{work.owner_name}</span>

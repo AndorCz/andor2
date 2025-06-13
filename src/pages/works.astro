@@ -8,7 +8,8 @@
   const page = parseInt(Astro.url.searchParams.get('page') || '0')
   const limit = 20
 
-  const { data: works, count, error } = await supabase.from('work_list').select('*', { count: 'exact' }).eq('published', true).range(page * limit, page * limit + limit - 1)
+  const typeMap = { articles: 'text', images: 'image', music: 'audio' }
+  const { data: works, count, error } = await supabase.from('work_list').select('*', { count: 'exact' }).match({ published: true, type: typeMap[activeTab] }).range(page * limit, page * limit + limit - 1)
   const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
 ---

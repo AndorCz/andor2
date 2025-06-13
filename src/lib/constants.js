@@ -45,7 +45,23 @@ export const workCategoriesText = [
   { value: 'other', label: 'Ostatní' }
 ]
 
-export const workTags = [
+export const workCategoriesImage = [
+  { value: 'painting', label: 'Malba' },
+  { value: 'drawing', label: 'Kresba' },
+  { value: 'photo', label: 'Fotografie' },
+  { value: 'digital', label: 'Digitální' },
+  { value: 'other', label: 'Ostatní' }
+]
+
+export const workCategoriesMusic = [
+  { value: 'instrumental', label: 'Instrumentální' },
+  { value: 'vocal', label: 'Zpěv' },
+  { value: 'orchestral', label: 'Orchestrální' },
+  { value: 'electronic', label: 'Elektronická' },
+  { value: 'other', label: 'Ostatní' }
+]
+
+export const workTagsText = [
   { value: 'story', label: 'Povídka' },
   { value: 'continued', label: 'Na pokračování' },
   { value: 'preview', label: 'Ukázka' },
@@ -68,4 +84,31 @@ export const workTags = [
   { value: 'editorial', label: 'Editorial' },
   { value: 'announcement', label: 'Oznámení' },
   { value: 'project', label: 'Projekt(íček)' }
+]
+
+export const workTagsImage = [
+  { value: 'portrait', label: 'Portrét' },
+  { value: 'landscape', label: 'Krajina' },
+  { value: 'abstract', label: 'Abstrakce' }
+]
+
+export const workTagsMusic = [
+  { value: 'guitar', label: 'Kytara' },
+  { value: 'piano', label: 'Piano' },
+  { value: 'synth', label: 'Syntezátor' },
+  { value: 'drums', label: 'Bicí' },
+  { value: 'bass', label: 'Basová kytara' },
+  { value: 'cello', label: 'Čelo' },
+  { value: 'saxophone', label: 'Saxofon' },
+  { value: 'trumpet', label: 'Trubka' },
+  { value: 'accordion', label: 'Akordeon' },
+  { value: 'harp', label: 'Harfa' },
+  { value: 'clarinet', label: 'Klarinet' },
+  { value: 'trombone', label: 'Trombon' },
+  { value: 'ukulele', label: 'Ukulele' },
+  { value: 'mandolin', label: 'Mandolína' },
+  { value: 'flute', label: 'Flétna' },
+  { value: 'violin', label: 'Housle' },
+  { value: 'remix', label: 'Remix' },
+  { value: 'other', label: 'Ostatní' }
 ]

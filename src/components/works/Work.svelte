@@ -1,17 +1,26 @@
 <script>
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { supabase, handleError, getPortraitUrl, getWorkFileUrl } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
+  import { lightboxImage } from '@lib/stores'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
   export let user = {}
   export let data = {}
 
-  const isOwner = user.id === data.owner.id
   let bookmarkId
+  let imageUrl = ''
+  const isOwner = user.id === data.owner.id
   const curatorIds = ['a78d91c6-3af6-4163-befd-e7b5d21d9c0f', 'c3304e31-9687-413f-a478-214c865bf5a2', '2d7898ea-ac7b-4f1b-bf29-a10c28892835', '6d3c87ea-aacc-4fd6-9859-852894fd3092'] // Sargo, Hitomi, Eskel, Eskel localhost
+
+  onMount(() => {
+    if (data.type === 'image') {
+      imageUrl = getWorkFileUrl(data.content)
+    }
+  })
 
   async function addBookmark () {
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id, work_thread: data.thread }, { onConflict: 'user_id, work_id', ignoreDuplicates: true }).select().maybeSingle()
@@ -32,6 +41,11 @@
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
   }
+
+  function showLightbox () {
+    $lightboxImage = imageUrl
+  }
+
   async function updateWorkContent () {
     const { error } = await supabase.from('works').update({ content: data.content }).eq('id', data.id)
     if (error) { return handleError(error) }
@@ -62,7 +76,13 @@
     {/if}
   </div>
 
-  <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  {#if data.type === 'text'}
+    <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
+  {:else if data.type === 'image'}
+    <img src={imageUrl} on:click={showLightbox} alt={data.name} class='media' />
+  {:else if data.type === 'audio'}
+    <audio controls src={getWorkFileUrl(data.content)} class='media'></audio>
+  {/if}
   <div class='details'>
     <div class='date'>Vydáno: {new Date(data.created_at).toLocaleDateString('cs')}</div>
     <div class='author'>
@@ -110,6 +130,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+  .media {
+    max-width: 100%;
+    display: block;
+    margin: 100px auto;
+    cursor: pointer;
   }
     .portrait {
       display: block;

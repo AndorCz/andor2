@@ -28,6 +28,10 @@ export function getPortraitUrl (identityId, hash) {
   return getImageUrl(supabase, path, 'portraits')
 }
 
+export function getWorkFileUrl (path) {
+  return getImageUrl(supabase, path, 'works')
+}
+
 export async function sendPost (method = 'POST', data) {
   if (data.content.trim().length === 0) { return window.showError('Příspěvek nesmí být prázdný') }
   const res = await fetch('/api/post', { method, body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })

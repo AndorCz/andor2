@@ -3,13 +3,20 @@
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
-  import { workTags, workCategoriesText } from '@lib/constants'
+  import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
   import Select from 'svelte-select'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let data = {}
   export let user = {}
+
+  function normalizeTags () {
+    if (Array.isArray(data.tags) && typeof data.tags[0] === 'string') {
+      const source = data.type === 'text' ? workTagsText : data.type === 'image' ? workTagsImage : workTagsMusic
+      data.tags = data.tags.map(tag => source.find(t => t.value === tag) || { value: tag, label: tag })
+    }
+  }
 
   let saving = false
   let originalName
@@ -18,14 +25,29 @@
   let originalTagsString
   let selectedTagsString
   let headlineEl
+  let tagItems = []
+  let categoryItems = []
 
   onMount(() => {
+    if (data.type === 'text') {
+      tagItems = [...workTagsText]
+      categoryItems = [...workCategoriesText]
+    } else if (data.type === 'image') {
+      tagItems = [...workTagsImage]
+      categoryItems = [...workCategoriesImage]
+    } else {
+      tagItems = [...workTagsMusic]
+      categoryItems = [...workCategoriesMusic]
+    }
+
+    normalizeTags()
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
   })
 
   function setOriginal () {
+    normalizeTags()
     originalName = data.name
     originalAnnotation = data.annotation
     originalCategory = data.category
@@ -34,7 +56,7 @@
 
   async function updateWork () {
     saving = true
-    const tags = data.tags ? data.tags.map(t => t.value) : []
+    const tags = data.tags ? data.tags.map(t => t.value ?? t) : []
     const { error } = await supabase.from('works').update({ name: data.name, annotation: data.annotation, category: data.category, tags }).eq('id', data.id)
     if (error) { return handleError(error) }
     setOriginal()
@@ -53,7 +75,6 @@
   }
 
   $: maxTags = data.tags?.length === 3
-  $: tagItems = maxTags ? [] : [...workTags]
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')
 </script>
 
@@ -85,23 +106,27 @@
       <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
-    <h2>Kategorie</h2>
-    <div class='row'>
-      <select id='workCategory' name='workCategory' bind:value={data.category}>
-        {#each workCategoriesText as category}
-          <option value={category.value}>{category.label}</option>
-        {/each}
-      </select>
-      <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+    {#if categoryItems.length}
+      <h2>Kategorie</h2>
+      <div class='row'>
+        <select id='workCategory' name='workCategory' bind:value={data.category}>
+          {#each categoryItems as category}
+            <option value={category.value}>{category.label}</option>
+          {/each}
+        </select>
+        <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
+    {/if}
 
-    <h2>Tagy</h2>
-    <div class='row'>
-      <Select items={tagItems} multiple bind:value={data.tags} placeholder=''>
-        <div slot='empty'>Více tagů nelze přidat</div>
-      </Select>
-      <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
-    </div>
+    {#if tagItems.length}
+      <h2>Tagy</h2>
+      <div class='row'>
+        <Select items={maxTags ? [] : tagItems} multiple bind:value={data.tags} placeholder=''>
+          <div slot='empty'>Více tagů nelze přidat</div>
+        </Select>
+        <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
+      </div>
+    {/if}
 
     <h2>Smazání díla</h2>
     Pozor, toto je nevratná akce.<br><br>
