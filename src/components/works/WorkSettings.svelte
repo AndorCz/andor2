@@ -3,17 +3,10 @@
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
-  import {
-    workTagsText,
-    workTagsImage,
-    workTagsMusic,
-    workCategoriesText,
-    workCategoriesImage,
-    workCategoriesMusic
-  } from '@lib/constants'
+  import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
   import Select from 'svelte-select'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let data = {}
   export let user = {}
@@ -80,7 +73,6 @@
   function showWork () {
     window.location.href = `/work/${data.id}`
   }
-
 
   $: maxTags = data.tags?.length === 3
   $: selectedTagsString = data.tags?.map(t => t.value).join(',')

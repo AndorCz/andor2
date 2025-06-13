@@ -56,7 +56,8 @@ export const workCategoriesImage = [
 export const workCategoriesMusic = [
   { value: 'instrumental', label: 'Instrumentální' },
   { value: 'vocal', label: 'Zpěv' },
-  { value: 'ambient', label: 'Ambientní' },
+  { value: 'orchestral', label: 'Orchestrální' },
+  { value: 'electronic', label: 'Elektronická' },
   { value: 'other', label: 'Ostatní' }
 ]
 
@@ -94,6 +95,20 @@ export const workTagsImage = [
 export const workTagsMusic = [
   { value: 'guitar', label: 'Kytara' },
   { value: 'piano', label: 'Piano' },
-  { value: 'orchestral', label: 'Orchestrální' },
-  { value: 'electronic', label: 'Elektronická' }
+  { value: 'synth', label: 'Syntezátor' },
+  { value: 'drums', label: 'Bicí' },
+  { value: 'bass', label: 'Basová kytara' },
+  { value: 'cello', label: 'Čelo' },
+  { value: 'saxophone', label: 'Saxofon' },
+  { value: 'trumpet', label: 'Trubka' },
+  { value: 'accordion', label: 'Akordeon' },
+  { value: 'harp', label: 'Harfa' },
+  { value: 'clarinet', label: 'Klarinet' },
+  { value: 'trombone', label: 'Trombon' },
+  { value: 'ukulele', label: 'Ukulele' },
+  { value: 'mandolin', label: 'Mandolína' },
+  { value: 'flute', label: 'Flétna' },
+  { value: 'violin', label: 'Housle' },
+  { value: 'remix', label: 'Remix' },
+  { value: 'other', label: 'Ostatní' }
 ]

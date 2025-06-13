@@ -54,7 +54,7 @@ create type work_tag as enum (
   'portrait', 'landscape', 'abstract',
   'guitar', 'piano', 'orchestral', 'electronic'
 );
-create type work_category as enum (
+create or replace type work_category as enum (
   'prose', 'poetry', 'game',
   'painting', 'drawing', 'photo', 'digital',
   'instrumental', 'vocal', 'ambient',
