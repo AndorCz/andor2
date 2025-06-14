@@ -32,6 +32,14 @@
       <div class='inputs'><TextareaExpandable placeholder='Popiš o čem by hra měla být, v jakém světě se odehrává, jakou by měla mít atmosféru apod. Na základě tohoto popisu AI vygeneruje konkrétní příběhové linie.' {user} id='conceptAnnotation' name='conceptAnnotation' minHeight={150} maxlength={350} /></div>
     </div>
 
+    <!-- 2DO: require image, offer generating -->
+    <div class='row'>
+      <div class='labels'><label for='soloImage'>Obrázek</label></div>
+      <div class='inputs'>
+        <input type='file' id='soloImage' name='soloImage' accept='image/*' />
+      </div>
+    </div>
+
     <div class='row'>
       <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
       <div class='inputs'>

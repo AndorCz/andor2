@@ -16,7 +16,7 @@
     { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
   ]
   const gemini = new GoogleGenerativeAI(import.meta.env.PUBLIC_GEMINI)
-  const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash', safetySettings })
+  const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash', safetySettings })
 
   async function generate () {
     const codex = await gatherCodex(game.id)

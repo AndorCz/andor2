@@ -120,6 +120,7 @@ create table solo_concepts (
   story_locations text,
   story_characters text,
   story_plan text,
+  finished_generating boolean not null default false,
   tags public.game_tag[] default '{}'::public.game_tag[],
   upvotes int4 default 0
 );
