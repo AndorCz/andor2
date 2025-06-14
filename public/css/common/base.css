@@ -528,7 +528,7 @@ select {
 	max-width: 100%;
 }
 
-.grecaptcha-badge { 
+.grecaptcha-badge {
 	visibility: hidden !important;
 }
 /* #endregion */

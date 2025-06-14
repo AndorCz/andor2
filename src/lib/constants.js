@@ -38,6 +38,24 @@ export const gameSystems = [
   { value: 'other', label: 'Ostatní' }
 ]
 
+export const gameTags = [
+  { value: 'adventure', label: 'Dobrodružné' },
+  { value: 'combat', label: 'Bojové' },
+  { value: 'detective', label: 'Detektivní' },
+  { value: 'mystery', label: 'Mysteriózní' },
+  { value: 'social', label: 'Společenské' },
+  { value: 'strategy', label: 'Strategie' },
+  { value: 'horror', label: 'Horor' },
+  { value: 'romance', label: 'Romantické' },
+  { value: 'humor', label: 'Humorné' },
+  { value: 'scifi', label: 'Sci-fi' },
+  { value: 'dark', label: 'Temné' },
+  { value: 'fantasy', label: 'Fantasy' },
+  { value: 'historical', label: 'Historické' },
+  { value: 'mature', label: 'Pro dospělé' },
+  { value: 'other', label: 'Ostatní' }
+]
+
 export const workCategoriesText = [
   { value: 'prose', label: 'Próza' },
   { value: 'poetry', label: 'Poezie' },

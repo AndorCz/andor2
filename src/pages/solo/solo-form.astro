@@ -1,0 +1,25 @@
+---
+  import { getOpenAI, createThread, getStoryteller } from '@lib/openai'
+	import Layout from '@layouts/layout.astro'
+  import SoloForm from '@components/solo/SoloForm.svelte'
+
+  const { supabase, user } = Astro.locals
+
+  if (Astro.request.method === 'POST') {
+    const formData = await Astro.request.formData()
+    const name = formData.get('conceptName')
+    const annotation = formData.get('conceptAnnotation')
+
+    if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
+    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, annotation }).select().single()
+    if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+
+    return Astro.redirect(`/solo/${data.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
+  }
+---
+
+<Layout title='Vytvořit herní koncept'>
+  <a href='javascript:history.back()'>zpět</a>
+  <h1>Vytvořit herní koncept</h1>
+  <SoloForm {user} client:only='svelte' />
+</Layout>

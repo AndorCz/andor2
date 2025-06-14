@@ -1,0 +1,10 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import SoloList from '@components/solo/SoloList.svelte'
+
+  const { user } = Astro.locals
+  const concepts = []
+---
+<Layout title='Solo'>
+  <SoloList {user} {concepts} client:only='svelte' />
+</Layout>

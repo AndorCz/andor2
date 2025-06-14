@@ -1,13 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import {
-    workTagsText,
-    workTagsImage,
-    workTagsMusic,
-    workCategoriesText,
-    workCategoriesImage,
-    workCategoriesMusic
-  } from '@lib/constants'
+  import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 

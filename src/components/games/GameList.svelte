@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { isFilledArray, addURLParam } from '@lib/utils'
   import { getSavedStore } from '@lib/stores'
+  import { isFilledArray, addURLParam } from '@lib/utils'
   import { gameCategories, gameSystems } from '@lib/constants'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { tooltip } from '@lib/tooltip'
