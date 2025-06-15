@@ -9,9 +9,10 @@
     const formData = await Astro.request.formData()
     const name = formData.get('conceptName')
     const annotation = formData.get('conceptAnnotation')
+    const description = formData.get('conceptDescription')
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
-    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, annotation }).select().single()
+    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, annotation, description }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // call API to start generating the concept
