@@ -49,6 +49,7 @@ export const gameTags = [
   { value: 'romance', label: 'Romantické' },
   { value: 'humor', label: 'Humorné' },
   { value: 'scifi', label: 'Sci-fi' },
+  { value: 'postapo', label: 'Post-apo' },
   { value: 'dark', label: 'Temné' },
   { value: 'fantasy', label: 'Fantasy' },
   { value: 'historical', label: 'Historické' },

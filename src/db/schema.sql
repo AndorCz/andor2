@@ -44,7 +44,7 @@ create extension if not exists citext;
 create type character_state as enum ('alive', 'unconscious', 'dead', 'deleted');
 create type game_system as enum ('base', 'vampire5', 'yearzero', 'dnd5', 'drd1', 'cyberpunk', 'starwars', 'cthulhu', 'warhammer', 'shadowrun', 'pathfinder', 'mutant', 'gurps', 'fate', 'savage', 'dungeonworld', 'onering', 'other');
 create type game_category as enum ('anime', 'cyberpunk', 'detective', 'based', 'fantasy', 'furry', 'history', 'horror', 'comedy', 'scifi', 'steampunk', 'strategy', 'survival', 'urban', 'relationship', 'other');
-create type game_tag as enum ( 'adventure', 'combat', 'detective', 'mystery', 'social', 'strategy', 'horror', 'romance', 'humor', 'scifi', 'dark', 'fantasy', 'historical', 'mature', 'other' )
+create type game_tag as enum ( 'adventure', 'combat', 'detective', 'mystery', 'social', 'strategy', 'horror', 'romance', 'humor', 'scifi', 'postapo', 'dark', 'fantasy', 'historical', 'mature', 'other' )
 create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ( 'story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project', 'erotica', 'portrait', 'landscape', 'abstract', 'guitar', 'piano', 'orchestral', 'electronic' );
 create type work_category as enum ( 'prose', 'poetry', 'game', 'painting', 'drawing', 'photo', 'digital', 'instrumental', 'vocal', 'ambient', 'other' );
@@ -115,13 +115,13 @@ create table solo_concepts (
   name text not null,
   annotation text,
   image text,
-  image_description text,
   prompt_world text,
+  prompt_story text,
+  prompt_protagonist text,
   prompt_locations text,
   prompt_factions text,
   prompt_characters text,
-  prompt_story text,
-  prompt_protagonist text,
+  prompt_image text,
   story_world text,
   story_locations text,
   story_factions text,
@@ -129,7 +129,8 @@ create table solo_concepts (
   story_plan text,
   finished_generating boolean not null default false,
   tags public.game_tag[] default '{}'::public.game_tag[],
-  upvotes int4 default 0
+  upvotes int4 default 0,
+  constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
 
 create table codex_sections (

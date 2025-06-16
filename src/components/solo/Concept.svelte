@@ -1,0 +1,1 @@
+Detail konceptu solo hry

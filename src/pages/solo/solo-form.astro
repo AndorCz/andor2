@@ -8,15 +8,18 @@
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const name = formData.get('conceptName')
-    const annotation = formData.get('conceptAnnotation')
-    const description = formData.get('conceptDescription')
+    const world = formData.get('promptWorld')
+    const story = formData.get('promptStory')
+    const protagonist = formData.get('promptProtagonist')
+    const locations = formData.get('promptLocations')
+    const factions = formData.get('promptFactions')
+    const characters = formData.get('promptCharacters')
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
-    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, annotation, description }).select().single()
+    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, prompt_world: world, prompt_story: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // call API to start generating the concept
-
     return Astro.redirect(`/solo/${data.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
   }
 ---

@@ -1,6 +1,7 @@
 <script>
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Select from 'svelte-select'
+  import { getSavedStore } from '@lib/stores'
   import { gameTags } from '@lib/constants'
 
   export let user = {}
@@ -9,6 +10,16 @@
   let tagsInputRef
   let showAdvanced = false
 
+  const conceptStore = getSavedStore('newSoloConcept', {
+    conceptName: '',
+    promptWorld: '',
+    promptStory: '',
+    promptProtagonist: '',
+    promptLocations: '',
+    promptFactions: '',
+    promptCharacters: '',
+    promptImage: ''
+  })
   const prepareData = async (event) => {
     event.preventDefault()
     tagsInputRef.value = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : null
@@ -22,26 +33,26 @@
   <form method='POST' autocomplete='off' enctype='multipart/form-data' on:submit={prepareData}>
     <div class='row'>
       <div class='labels'>
-        <label for='gameName'>Název *</label>
+        <label for='conceptName'>Název *</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='gameName' name='gameName' maxlength='80' />
+        <input type='text' id='conceptName' name='conceptName' bind:value={$conceptStore.conceptName} maxlength='80' />
       </div>
     </div>
 
     <div class='row'>
       <div class='labels'><label for='conceptDescription'>Prostředí</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='worldDescription' name='worldDescription' minHeight={75} maxlength={1000} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='promptWorld' name='promptWorld' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptWorld} /></div>
     </div>
 
     <div class='row'>
       <div class='labels'><label for='conceptStory'>Příběh</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' {user} id='conceptStory' name='conceptStory' minHeight={75} maxlength={1000} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' {user} id='promptStory' name='promptStory' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptStory} /></div>
     </div>
 
     <div class='row'>
       <div class='labels'><label for='conceptProtagonist'>Protagonista</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' {user} id='conceptProtagonist' name='conceptProtagonist' minHeight={75} maxlength={1000} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' {user} id='promptProtagonist' name='promptProtagonist' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptProtagonist} /></div>
     </div>
 
     {#if showAdvanced}
@@ -49,23 +60,23 @@
 
       <div class='row'>
         <div class='labels'><label for='conceptLocations'>Místa</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaká místa jsou pro hru důležitá?' {user} id='conceptLocations' name='conceptLocations' minHeight={75} maxlength={1000} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaká místa jsou pro hru důležitá?' {user} id='promptLocations' name='promptLocations' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptLocations} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='conceptFactions'>Frakce</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité?' {user} id='conceptFactions' name='conceptFactions' minHeight={75} maxlength={1000} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité?' {user} id='promptFactions' name='promptFactions' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptFactions} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='conceptCharacters'>Postavy</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaké postavy jsou pro hru důležité?' {user} id='conceptCharacters' name='conceptCharacters' minHeight={75} maxlength={1000} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaké postavy jsou pro hru důležité?' {user} id='promptCharacters' name='promptCharacters' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptCharacters} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='soloImage'>Ilustrace</label></div>
         <div class='inputs'>
-          <TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval' {user} id='soloImage' name='soloImage' minHeight={75} maxlength={350} />
+          <TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval' {user} id='promptImage' name='promptImage' minHeight={75} maxlength={350} bind:value={$conceptStore.promptImage} />
         </div>
       </div>
     {:else}

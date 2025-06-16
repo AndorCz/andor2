@@ -1,0 +1,24 @@
+---
+	import Layout from '@layouts/layout.astro'
+  import Concept from '@components/solo/Concept.svelte'
+  import ConceptSettings from '@components/solo/ConceptSettings.svelte'
+
+  const { supabase, user } = Astro.locals
+  const { conceptId } = Astro.params
+  const showSettings = Astro.url.searchParams.get('settings')
+
+  const { data: concept, error } = await supabase.from('solo_concepts').select('*, author:profiles(*)').eq('id', conceptId).single();
+  if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+---
+
+<Layout title={concept?.name} headerStorage={concept?.custom_header ? `concept-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
+  {(concept ? (
+    showSettings ? (
+      <ConceptSettings {concept} {user} client:only='svelte' />
+    ) : (
+      <Concept {concept} {user} client:only='svelte' />
+    )
+  ) : (
+    <p>Koncept nenalezen</p>
+  ))}
+</Layout>
