@@ -36,7 +36,7 @@
 
 {#if concept.generating}
   <div class='generating'>
-    <video src='/public/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept' />
+    <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept' />
     <h2>Generuji detaily konceptu...</h2>
   </div>
 {:else}
