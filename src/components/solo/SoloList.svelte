@@ -1,9 +1,11 @@
 <script>
   import { onMount } from 'svelte'
-  import { isFilledArray } from '@lib/utils'
+  import { isFilledArray, addURLParam } from '@lib/utils'
 
   export let user = {}
   export let concepts = []
+  export let page = 0
+  export let maxPage = 20
 
   // functions to run only in the browser
   let getHeaderUrl = () => {}
@@ -14,6 +16,11 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
   })
+
+  function triggerPaging (newPage) {
+    const newUrl = addURLParam('page', newPage, true)
+    window.location.href = newUrl
+  }
 </script>
 
 <div class='headline flex'>
@@ -36,9 +43,9 @@
         <div class='name'><a href='./solo/{concept.id}'>{concept.name}</a></div>
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
-          <a href='./user?id={concept.author}' class='user author' title='autor'>
-            {concept.owner_name}
-            {#if concept.owner_portrait}<img src={getPortraitUrl(concept.owner_id, concept.owner_portrait)} class='icon' alt={concept.owner_name} />{/if}
+          <a href='./user?id={concept.author.id}' class='user author' title='autor'>
+            {concept.author.name}
+            {#if concept.author.portrait}<img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />{/if}
           </a>
         </div>
       </div>
@@ -46,6 +53,14 @@
   {/each}
 {:else}
   <p class='info'>Žádné herní koncepty nenalezeny</p>
+{/if}
+
+{#if maxPage > 0}
+  <div class='pagination'>
+    {#each { length: maxPage + 1 } as _, i}
+      <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+    {/each}
+  </div>
 {/if}
 
 <style>

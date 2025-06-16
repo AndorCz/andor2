@@ -130,6 +130,9 @@ create table solo_concepts (
   finished_generating boolean not null default false,
   tags public.game_tag[] default '{}'::public.game_tag[],
   upvotes int4 default 0,
+  generating boolean default false,
+  published boolean default false,
+  created_at timestamp with time zone default current_timestamp,
   constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
 

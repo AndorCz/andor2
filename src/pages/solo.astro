@@ -2,9 +2,18 @@
 	import Layout from '@layouts/layout.astro'
   import SoloList from '@components/solo/SoloList.svelte'
 
-  const { user } = Astro.locals
-  const concepts = []
+  const { supabase, user } = Astro.locals
+  const limit = 20
+  const page = parseInt(Astro.url.searchParams.get('page') || '0')
+
+  const query = supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)', { count: 'exact' })
+  query.order('upvotes', { ascending: false })
+  query.match({published: true })
+  query.range(page * limit, page * limit + limit - 1)
+  const { data: concepts, count, error } = await query
+  const maxPage = Math.ceil(count / limit) - 1
+  if (error) { console.error(error) }
 ---
 <Layout title='Solo'>
-  <SoloList {user} {concepts} client:only='svelte' />
+  <SoloList {user} {concepts} {page} {maxPage} client:only='svelte' />
 </Layout>

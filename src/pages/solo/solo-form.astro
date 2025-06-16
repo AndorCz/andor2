@@ -20,6 +20,13 @@
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // call API to start generating the concept
+    fetch('/api/solo/generateConcept', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conceptId: data.id })
+    })
+
+    // redirect user to the new concept page
     return Astro.redirect(`/solo/${data.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
   }
 ---
