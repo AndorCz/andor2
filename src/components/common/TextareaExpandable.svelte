@@ -27,6 +27,7 @@
   export let mentionList = null
   export let forceBubble = false
   export let autoFocus = false
+  export let cancelClearsValue = true
 
   let tiptap
   let isEmpty = true
@@ -76,8 +77,10 @@
     const val = allowHtml ? tiptap.getHTML() : editorRef.value
     const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
     if (shouldCancel) {
-      value = ''
-      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      if (cancelClearsValue) {
+        value = ''
+        if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      }
       editing = false
     }
   }

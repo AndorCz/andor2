@@ -10,16 +10,7 @@
   let tagsInputRef
   let showAdvanced = false
 
-  const conceptStore = getSavedStore('newSoloConcept', {
-    conceptName: '',
-    promptWorld: '',
-    promptStory: '',
-    promptProtagonist: '',
-    promptLocations: '',
-    promptFactions: '',
-    promptCharacters: '',
-    promptImage: ''
-  })
+  const conceptStore = getSavedStore('newSoloConcept', { conceptName: '', promptWorld: '', promptStory: '', promptProtagonist: '', promptLocations: '', promptFactions: '', promptCharacters: '', promptImage: '' })
   const prepareData = async (event) => {
     event.preventDefault()
     tagsInputRef.value = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : null

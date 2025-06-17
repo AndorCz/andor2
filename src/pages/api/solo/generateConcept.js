@@ -34,7 +34,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
       const basePrompt = {
         text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
-          Tvá úloha je napsat textové podklady pro hru, formátované pomocí HTML značek.
+          Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
           Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"
           Postupně budeme připravovat podklady v těchto částech: 1. Svět, 2. Frakce, 3. Lokace, 4. Postavy, 5. Protagonista, 6. Plán hry.
           Zpracuj vždy jen jednu danou část.
@@ -73,7 +73,7 @@ export const POST = async ({ request, locals, redirect }) => {
       console.log('storyCharacters', storyCharacters)
 
       // Protagonist
-      const promptProtagonist = { text: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu vysvětlí jakou postavu příběh očekává, tedy co může hrát.' }
+      const promptProtagonist = { text: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.' }
       if (conceptData.prompt_protagonist) { promptProtagonist.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_protagonist}"` }
       aiConfig.contents = [basePrompt, promptWorld, storyWorld, promptFactions, storyFactions, promptLocations, storyLocations, promptCharacters, storyCharacters, promptProtagonist]
       const protagonistResponse = await ai.models.generateContent(aiConfig)
@@ -86,9 +86,17 @@ export const POST = async ({ request, locals, redirect }) => {
       const planResponse = await ai.models.generateContent(aiConfig)
       storyPlan = { text: planResponse.text }
       console.log('storyPlan', storyPlan)
-      // save
+
+      // Annotation
+      const promptAnnotation = { text: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu.' }
+      aiConfig.contents = [basePrompt, promptWorld, storyWorld, promptFactions, storyFactions, promptLocations, storyLocations, promptCharacters, storyCharacters, promptProtagonist, storyProtagonist, promptPlan, storyPlan, promptAnnotation]
+      const annotationResponse = await ai.models.generateContent(aiConfig)
+      const storyAnnotation = { text: annotationResponse.text }
+      console.log('storyAnnotation', storyAnnotation)
+
+      // Save
       console.log('Generation done')
-      const { error } = await locals.supabase.from('solo_concepts').update({ generating: false, story_world: storyWorld.text, story_factions: storyFactions.text, story_locations: storyLocations.text, story_characters: storyCharacters.text, story_protagonist: storyProtagonist.text, story_plan: storyPlan.text }).eq('id', conceptData.id)
+      const { error } = await locals.supabase.from('solo_concepts').update({ generating: false, story_world: storyWorld.text, story_factions: storyFactions.text, story_locations: storyLocations.text, story_characters: storyCharacters.text, story_protagonist: storyProtagonist.text, story_plan: storyPlan.text, annotation: storyAnnotation.text }).eq('id', conceptData.id)
       if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
       console.log('Concept saved')
 
