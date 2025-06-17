@@ -46,14 +46,14 @@
     <div class='info'>
       <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
       <ul>
-        <li><span class='material'>{concept.generated_world ? 'check' : 'hourglass_top'}</span>Svět</li>
-        <li><span class='material'>{concept.generated_factions ? 'check' : 'hourglass_top'}</span>Frakce</li>
-        <li><span class='material'>{concept.generated_locations ? 'check' : 'hourglass_top'}</span>Místa</li>
-        <li><span class='material'>{concept.generated_characters ? 'check' : 'hourglass_top'}</span>Postavy</li>
-        <li><span class='material'>{concept.generated_protagonist ? 'check' : 'hourglass_top'}</span>Protagonista</li>
-        <li><span class='material'>{concept.generated_plan ? 'check' : 'hourglass_top'}</span>Plán hry</li>
-        <li><span class='material'>{concept.generated_image ? 'check' : 'hourglass_top'}</span>Ilustrace</li>
-        <li><span class='material'>{concept.annotation ? 'check' : 'hourglass_top'}</span>Anotace</li>
+        <li><span class='material'>{concept.generated_world && concept.generated_world !== 'generating' ? 'check' : 'hourglass_top'}</span>Svět</li>
+        <li><span class='material'>{concept.generated_factions && concept.generated_factions !== 'generating' ? 'check' : 'hourglass_top'}</span>Frakce</li>
+        <li><span class='material'>{concept.generated_locations && concept.generated_locations !== 'generating' ? 'check' : 'hourglass_top'}</span>Místa</li>
+        <li><span class='material'>{concept.generated_characters && concept.generated_characters !== 'generating' ? 'check' : 'hourglass_top'}</span>Postavy</li>
+        <li><span class='material'>{concept.generated_protagonist && concept.generated_protagonist !== 'generating' ? 'check' : 'hourglass_top'}</span>Protagonista</li>
+        <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span>Plán hry</li>
+        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span>Ilustrace</li>
+        <li><span class='material'>{concept.annotation && concept.annotation !== 'generating' ? 'check' : 'hourglass_top'}</span>Anotace</li>
       </ul>
     </div>
   </div>

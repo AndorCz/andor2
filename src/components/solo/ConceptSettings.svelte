@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
+  import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -8,6 +8,7 @@
   export let concept
   export let user
 
+  let checkLoop
   let headlineEl
   let tab = 'prompts'
   let originalValues = {}
@@ -30,12 +31,12 @@
 
       await fetch('/api/solo/generateField', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id, fieldName: field }) })
       // Start checking the generation status
-      const checkLoop = setInterval(async () => {
+      checkLoop = setInterval(async () => {
         const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
         if (error) { handleError(error) }
         if (data && !data.generating) {
           concept = data
-          clearInterval(checkLoop) // Stop checking if generation is done
+          clearInterval(checkLoop) // stop checking if generation is done
         }
       }, 5000)
     }
@@ -51,6 +52,15 @@
     window.location.href = `/solo/${concept.id}`
   }
 
+  onDestroy(() => {
+    if (checkLoop) { clearInterval(checkLoop) }
+  })
+
+  async function deleteConcept () {
+    const { error } = await supabase.from('solo_concepts').delete().eq('id', concept.id)
+    if (error) { return handleError(error) }
+    window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
+  }
 </script>
 
 <div class='headline' bind:this={headlineEl}>
@@ -115,6 +125,12 @@
       <TextareaExpandable {user} id='conceptImage' name='conceptImage' bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={500} />
       <button on:click={() => onSave('prompt_image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
+
+    <h2>Smazání konceptu</h2>
+    Pozor, toto je nevratná akce<br><br>
+    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tento koncept?')) { deleteConcept() } }}>
+      <span class='material'>warning</span><span>Smazat koncept hry</span>
+    </button>
   {/if}
   {#if tab === 'generated'}
     <h2>Anotace</h2>
@@ -187,6 +203,11 @@
     input[type=text] {
       width: 100%;
     }
+
+  .delete {
+    display: flex;
+    gap: 10px;
+  }
 
   @media (max-width: 1200px) {
     .headline {

@@ -32,11 +32,6 @@
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
-
-    // load google fonts api
-    // window.gapi.client.setApiKey('AIzaSyDj3gKPr8w-lAH97ukj5tKEQcUtVXKj1wA')
-    // window.gapi.client.load('https://www.googleapis.com/discovery/v1/apis/webfonts/v1/rest')
-    // window.gapi.load('client')
   })
 
   function setOriginal () {

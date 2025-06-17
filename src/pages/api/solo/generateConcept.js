@@ -11,7 +11,7 @@ export const POST = async ({ request, locals, redirect }) => {
   if (conceptError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(conceptError.message)) }
 
   if (conceptData.generating === false) {
-    const { error: conceptError2 } = await locals.supabase.from('solo_concepts').update({ generating: true }).eq('id', conceptId)
+    const { error: conceptError2 } = await locals.supabase.from('solo_concepts').update({ generating: true, generated_world: 'generating', generated_factions: 'generating', generated_locations: 'generating', generated_characters: 'generating', generated_protagonist: 'generating', generated_plan: 'generating', generated_image: 'generating', annotation: 'generating' }).eq('id', conceptId)
     if (conceptError2) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(conceptError2.message)) }
 
     try {
@@ -23,7 +23,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
       // Save
       const { error: updateError } = await locals.supabase.from('solo_concepts')
-        .update({ generating: false, custom_header: getHash(), generated_world: generatedData.generatedWorld, generated_factions: generatedData.generatedFactions, generated_locations: generatedData.generatedLocations, generated_characters: generatedData.generatedCharacters, generated_protagonist: generatedData.generatedProtagonist, generated_plan: generatedData.generatedPlan, generated_image: generatedData.generatedImage, annotation: generatedData.generatedAnnotation })
+        .update({ generating: false, published: true, custom_header: getHash(), generated_world: generatedData.generatedWorld, generated_factions: generatedData.generatedFactions, generated_locations: generatedData.generatedLocations, generated_characters: generatedData.generatedCharacters, generated_protagonist: generatedData.generatedProtagonist, generated_plan: generatedData.generatedPlan, generated_image: generatedData.generatedImage, annotation: generatedData.generatedAnnotation })
         .eq('id', conceptData.id)
       if (updateError) { return new Response(JSON.stringify({ error: updateError.message }), { status: 500 }) }
       return new Response(JSON.stringify({ success: true }), { status: 200 })
