@@ -26,7 +26,7 @@
 
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable preserveValue {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} cancelClearsValue={false} buttonIcon='done' showButton />
+    <TextareaExpandable {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} cancelClearsValue={false} buttonIcon='done' showButton />
   {:else}
     {#if loading}
       <Loading />

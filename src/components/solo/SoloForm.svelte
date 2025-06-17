@@ -32,7 +32,7 @@
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='conceptDescription'>Prostředí</label></div>
+      <div class='labels'><label for='conceptDescription'>Svět</label></div>
       <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='promptWorld' name='promptWorld' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptWorld} /></div>
     </div>
 
@@ -51,24 +51,22 @@
 
       <div class='row'>
         <div class='labels'><label for='conceptLocations'>Místa</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaká místa jsou pro hru důležitá?' {user} id='promptLocations' name='promptLocations' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptLocations} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaká místa jsou pro hru důležitá? (nepovinné)' {user} id='promptLocations' name='promptLocations' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptLocations} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='conceptFactions'>Frakce</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité?' {user} id='promptFactions' name='promptFactions' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptFactions} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité? (nepovinné)' {user} id='promptFactions' name='promptFactions' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptFactions} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='conceptCharacters'>Postavy</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Jaké postavy jsou pro hru důležité?' {user} id='promptCharacters' name='promptCharacters' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptCharacters} /></div>
+        <div class='inputs'><TextareaExpandable placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' {user} id='promptCharacters' name='promptCharacters' minHeight={75} maxlength={1000} bind:value={$conceptStore.promptCharacters} /></div>
       </div>
 
       <div class='row'>
         <div class='labels'><label for='soloImage'>Ilustrace</label></div>
-        <div class='inputs'>
-          <TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval' {user} id='promptImage' name='promptImage' minHeight={75} maxlength={350} bind:value={$conceptStore.promptImage} />
-        </div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='promptImage' name='promptImage' minHeight={75} maxlength={500} bind:value={$conceptStore.promptImage} /></div>
       </div>
     {:else}
       <center><button type='button' class='small' on:click={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>

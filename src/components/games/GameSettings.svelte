@@ -58,14 +58,6 @@
     const { error } = await supabase.from('games').update({ name: game.name, annotation: game.annotation, category: game.category, system: game.system, open_discussion: game.open_discussion, open_chars: game.open_chars, open_codex: game.open_codex, recruitment_open: game.recruitment_open, context_dice: game.context_dice, welcome_message: welcomeMessage, open_game: game.open_game, fonts: game.fonts }).eq('id', game.id)
     if (error) { return handleError(error) }
     setOriginal()
-    // update AI storyteller if system changed
-    /*
-    if (originalSystem !== game.system) {
-      const res = await fetch('/api/game/updateAI', { method: 'POST', body: JSON.stringify({ owner: game.owner.id, system: game.system, storyteller: game.openai_storyteller, annotation: game.annotation, prompt: game.prompt }), headers: { 'Content-Type': 'application/json' } })
-      const json = await res.json()
-      if (res.error || json.error) { return showError(res.error || json.error) }
-    }
-    */
     showSuccess('Změna hry uložena')
     saving = false
   }
@@ -138,11 +130,6 @@
   }
 </script>
 
-<!--
-<svelte:head>
-  <script src='https://apis.google.com/js/api.js'></script>
-</svelte:head>
--->
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
     <a href='/game/{game.id}' class='backlink'>{game.name}</a>
