@@ -1,9 +1,14 @@
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 import { GoogleGenAI, Modality } from '@google/genai'
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+export const safetySettings = [
+  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }
+]
+export const aiConfig = { model: 'gemini-2.5-flash-preview-05-20', config: { safetySettings } }
 
-function getBasePrompt (conceptData) {
+export function getBasePrompt (conceptData) {
   return {
     text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
       Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
@@ -23,31 +28,7 @@ const promptPlan = '6. Plán hry: Připrav schematickou osnovu příběhu. Popi�
 const promptAnnotation = 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu.\n'
 const promptImage = 'Napiš prosím prompt pro vygenerování poutavého ilustračního obrázku který vystihne atmosféru a estetiku této hry a jejího tématu. Maximální délka tohoto je 480 tokenů.\n'
 
-// Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
-/*
-function getContext (conceptData, exclude) {
-  const context = {
-    basePrompt: getBasePrompt(conceptData),
-    storyWorld: { text: conceptData.storyWorld },
-    storyFactions: { text: conceptData.storyFactions },
-    storyLocations: { text: conceptData.storyLocations },
-    storyCharacters: { text: conceptData.storyCharacters },
-    storyProtagonist: { text: conceptData.storyProtagonist },
-    storyAnnotation: { text: conceptData.storyAnnotation },
-    storyPlan: { text: conceptData.storyPlan }
-  }
-  delete context[exclude]
-  return Object.values(context)
-}
-*/
-
 export async function generateSoloConcept (conceptData) {
-  const safetySettings = [
-    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }
-  ]
-  const aiConfig = { model: 'gemini-2.5-flash-preview-05-20', config: { safetySettings } }
-
   // World
   const messageWorld = { text: promptWorld }
   if (conceptData.prompt_world) { messageWorld.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }

@@ -10,7 +10,7 @@ export const POST = async ({ request, locals, redirect }) => {
   const { data: conceptData, error: conceptError } = await locals.supabase.from('solo_concepts').select().eq('id', conceptId).maybeSingle()
   if (conceptError) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(conceptError.message)) }
 
-  const headerImage = await generateHeaderImage(imagePrompt)
+  const headerImage = await generateHeaderImage({ text: imagePrompt })
   const { error: uploadError } = await locals.supabase.storage
     .from('headers')
     .upload(`solo-${conceptData.id}.png`, headerImage, { contentType: 'image/jpg' })
