@@ -86,7 +86,7 @@
   <div class='wrapper'>
     <a href='/board/{data.id}' class='backlink'>{data.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showBoard} class='material square back' title='Zpět do diskuze' use:tooltip>check</button>
+    <button on:click={showBoard} class='material square back' title='Zpět do diskuze' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>

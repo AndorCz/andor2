@@ -82,7 +82,7 @@
   <div class='wrapper'>
     <a href='/work/{data.id}' class='backlink'>{data.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showWork} class='material square back' title='Zpět do díla' use:tooltip>check</button>
+    <button on:click={showWork} class='material square back' title='Zpět do díla' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>

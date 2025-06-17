@@ -134,7 +134,7 @@
   <div class='wrapper'>
     <a href='/game/{game.id}' class='backlink'>{game.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showGame} class='material square back' title='Zpět do hry' use:tooltip>check</button>
+    <button on:click={showGame} class='material square back' title='Zpět do hry' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>
