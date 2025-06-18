@@ -28,7 +28,7 @@
     }
 
     // If this field should trigger generation, call the API
-    if (['world', 'story', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
+    if (['world', 'plan', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
       // Mark UI as generating
       concept['generated_' + field] = 'generating'
 
@@ -111,8 +111,8 @@
 
     <h2>Příběh</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_story} loading={concept.generated_story === 'generating'} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
-      <button on:click={() => onSave('story', concept.prompt_story)} disabled={concept.generated_story === 'generating' || savingValues.prompt_story || originalValues.prompt_story === concept.prompt_story} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_plan} loading={concept.generated_plan === 'generating'} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
+      <button on:click={() => onSave('plan', concept.prompt_plan)} disabled={concept.generated_plan === 'generating' || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Protagonista</h2>

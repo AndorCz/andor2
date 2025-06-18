@@ -18,6 +18,8 @@ function getContext (conceptData, exclude) {
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
   let conceptData
+  let generatedContent
+  const newData = { generating: false }
   const requestData = await request.json()
   const { conceptId, field, value } = requestData
   try {
@@ -33,21 +35,22 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Prepare AI context and prompt
     const context = getContext(conceptData, field)
-    const fieldMessage = { text: prompts[field] }
-    if (value) { fieldMessage.text += `Vypravěč uvedl toto zadání: "${value}"` }
-    aiConfig.contents = [...context, fieldMessage]
+    if (field !== 'plan') { // plan is going to be generated anyway
+      const fieldMessage = { text: prompts[field] }
+      if (value) { fieldMessage.text += `Vypravěč uvedl toto zadání: "${value}"` }
+      aiConfig.contents = [...context, fieldMessage]
 
-    // Generate field
-    const fieldResponse = await ai.models.generateContent(aiConfig)
-    if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
-      throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
+      // Generate field
+      const fieldResponse = await ai.models.generateContent(aiConfig)
+      if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
+        throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
+      }
+      generatedContent = fieldResponse.text
+      newData['generated_' + field] = generatedContent
     }
 
-    const generatedContent = fieldResponse.text
-    const newData = { ['generated_' + field]: generatedContent, generating: false }
-
-    // Update game plan if necessary
     if (field !== 'image' && field !== 'annotation') {
+      // Update game plan (almost always needed)
       const planMessage = {
         text: `The previous game plan was as follows: "${conceptData.generated_plan}"
         Now the information in the section "${field}" has changed, please update the game plan, if needed.`
@@ -55,6 +58,12 @@ export const POST = async ({ request, locals, redirect }) => {
       aiConfig.contents = [...context, planMessage]
       const planResponse = await ai.models.generateContent({ ...aiConfig, config: { ...aiConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
       newData.generated_plan = planResponse.text
+
+      // Update annotation
+      const annotationMessage = { text: prompts.annotation }
+      aiConfig.contents = [...context, annotationMessage]
+      const annotationResponse = await ai.models.generateContent({ ...aiConfig, config: { ...aiConfig.config } })
+      newData.annotation = annotationResponse.text
     }
 
     // Update header image if necessary

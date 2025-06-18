@@ -37,6 +37,10 @@
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
   }
+
+  function startGame () {
+    window.location.href = `/solo/${concept.id}`
+  }
 </script>
 
 {#if concept.generating}
@@ -65,8 +69,8 @@
     {/if}
   </div>
   <div class='panel annotation'>
-    <h2>Popis</h2>
-    {@html concept.annotation || '<i>Žádný popis</i>'}
+    <p>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
+    <button on:click={startGame} class='large'>Začít hru</button>
   </div>
 {/if}
 
@@ -119,4 +123,8 @@
       align-items: center;
       margin-bottom: 10px;
     }
+  button.large {
+    display: block;
+    margin: auto;
+  }
 </style>
