@@ -4,13 +4,11 @@ import { getBasePrompt, ai, aiConfig } from '@lib/solo/gemini'
 function getContext (conceptData, exclude) {
   const context = {
     basePrompt: getBasePrompt(conceptData),
-    storyWorld: { text: conceptData.storyWorld },
-    storyFactions: { text: conceptData.storyFactions },
-    storyLocations: { text: conceptData.storyLocations },
-    storyCharacters: { text: conceptData.storyCharacters },
-    storyProtagonist: { text: conceptData.storyProtagonist },
-    storyAnnotation: { text: conceptData.storyAnnotation },
-    storyPlan: { text: conceptData.storyPlan }
+    prompt_world: { text: conceptData.generated_world },
+    prompt_factions: { text: conceptData.generated_factions },
+    prompt_locations: { text: conceptData.generated_locations },
+    prompt_characters: { text: conceptData.generated_characters },
+    prompt_protagonist: { text: conceptData.generated_protagonist }
   }
   delete context[exclude]
   return Object.values(context)
@@ -31,18 +29,25 @@ export const POST = async ({ request, locals, redirect }) => {
   const context = getContext(conceptData, fieldName)
   const fieldMessage = { text: conceptData[fieldName] }
   aiConfig.contents = [...context, fieldMessage]
+  console.log('contents', aiConfig.contents)
   const fieldResponse = await ai.models.generateContent(aiConfig)
   if (fieldResponse.error) {
+    await locals.supabase.from('solo_concepts').update({ generating: false }).eq('id', conceptData.id)
     console.error('Error generating field:', fieldResponse.error)
     return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chyba při generování pole: ' + fieldResponse.error.message))
   }
   const generatedContent = fieldResponse.contents[0].text
 
+  // TODO: Regenerate game plan?
+
+  // TODO: Regenerate image?
+
   // Save generated content
   const { error: updateError } = await locals.supabase.from('solo_concepts').update({ [fieldName]: generatedContent, generating: false }).eq('id', conceptData.id)
   if (updateError) {
+    await locals.supabase.from('solo_concepts').update({ generating: false }).eq('id', conceptData.id)
     console.error('Error updating concept:', updateError)
     return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chyba při ukládání generovaného obsahu: ' + updateError.message))
   }
-  return new Response(JSON.stringify({ success: true, generatedContent }), { status: 200 })
+  return new Response(JSON.stringify({ success: true }), { status: 200 })
 }

@@ -27,7 +27,8 @@
     if (['prompt_world', 'prompt_story', 'prompt_protagonist', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_image'].includes(field)) {
       updateData.generating = true
       const generatedField = field.replace('prompt_', 'generated_')
-      updateData[generatedField] = 'generating' // reset generated field
+      updateData[generatedField] = concept[generatedField] = 'generating' // reset generated field
+      updateData.author = user.id // update author to current user
 
       await fetch('/api/solo/generateField', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id, fieldName: field }) })
       // Start checking the generation status
@@ -122,7 +123,7 @@
 
     <h2>Ilustrace</h2>
     <div class='row'>
-      <TextareaExpandable {user} id='conceptImage' name='conceptImage' bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={500} />
+      <TextareaExpandable {user} id='conceptImage' name='conceptImage' bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
       <button on:click={() => onSave('prompt_image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
