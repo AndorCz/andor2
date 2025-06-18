@@ -17,17 +17,11 @@ export const POST = async ({ request, locals, redirect }) => {
       const { error: conceptError2 } = await locals.supabase.from('solo_concepts').update({ generating: true, generated_world: 'generating', generated_factions: 'generating', generated_locations: 'generating', generated_characters: 'generating', generated_protagonist: 'generating', generated_plan: 'generating', generated_image: 'generating', annotation: 'generating' }).eq('id', conceptId)
       if (conceptError2) { throw new Error(conceptError2.message) }
 
-      const { data: generatedData, error: generationError } = await generateSoloConcept(conceptData)
+      const { error: generationError } = await generateSoloConcept(locals.supabase, conceptData)
       if (generationError) { throw new Error(generationError.message) }
-      if (generatedData.headerImageBuffer) {
-        const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, generatedData.headerImageBuffer, { contentType: 'image/jpg' })
-        if (uploadError) { throw new Error(uploadError.message) }
-      }
 
-      // Save
-      const { error: updateError } = await locals.supabase.from('solo_concepts')
-        .update({ generating: false, published: true, custom_header: getHash(), generated_world: generatedData.generatedWorld, generated_factions: generatedData.generatedFactions, generated_locations: generatedData.generatedLocations, generated_characters: generatedData.generatedCharacters, generated_protagonist: generatedData.generatedProtagonist, generated_plan: generatedData.generatedPlan, generated_image: generatedData.generatedImage, annotation: generatedData.generatedAnnotation })
-        .eq('id', conceptData.id)
+      // Release concept
+      const { error: updateError } = await locals.supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash() }).eq('id', conceptData.id)
       if (updateError) { throw new Error(updateError.message) }
 
       return new Response(JSON.stringify({ success: true }), { status: 200 })

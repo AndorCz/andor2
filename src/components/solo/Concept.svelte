@@ -9,19 +9,18 @@
   let checkLoop = null
 
   const isConceptEmpty = () => {
-    return !concept.generated_world || !concept.generated_locations || !concept.generated_factions || !concept.generated_characters || !concept.generated_plan
+    return !concept.generated_world && !concept.generated_protagonist && !concept.generated_locations && !concept.generated_factions && !concept.generated_characters && !concept.generated_plan
   }
 
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
     if (!concept.generating && isConceptEmpty()) {
       concept.generating = true
-      await fetch('/api/solo/generateConcept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id }) })
-
+      fetch('/api/solo/generateConcept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id }) })
       // Save timer to check status every 5 seconds
       checkLoop = setInterval(async () => {
         console.log('checking concept generation status...')
-        const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+        const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()
         if (error) { handleError(error) }
         if (data) { concept = data }
         if (data && !data.generating) {
@@ -55,9 +54,9 @@
         <li><span class='material'>{concept.generated_locations && concept.generated_locations !== 'generating' ? 'check' : 'hourglass_top'}</span>Místa</li>
         <li><span class='material'>{concept.generated_characters && concept.generated_characters !== 'generating' ? 'check' : 'hourglass_top'}</span>Postavy</li>
         <li><span class='material'>{concept.generated_protagonist && concept.generated_protagonist !== 'generating' ? 'check' : 'hourglass_top'}</span>Protagonista</li>
-        <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span>Plán hry</li>
-        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span>Ilustrace</li>
+        <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span>Příběh</li>
         <li><span class='material'>{concept.annotation && concept.annotation !== 'generating' ? 'check' : 'hourglass_top'}</span>Anotace</li>
+        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span>Ilustrace</li>
       </ul>
     </div>
   </div>
@@ -69,7 +68,7 @@
     {/if}
   </div>
   <div class='panel annotation'>
-    <p>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
+    <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
     <button on:click={startGame} class='large'>Začít hru</button>
   </div>
 {/if}
@@ -89,6 +88,7 @@
     .headline button {
       flex-shrink: 0;
     }
+  /* generating */
   .row {
     display: flex;
     flex-direction: row;
@@ -123,6 +123,10 @@
       align-items: center;
       margin-bottom: 10px;
     }
+  /* promo */
+  .perex {
+    line-height: 1.5;
+  }
   button.large {
     display: block;
     margin: auto;
