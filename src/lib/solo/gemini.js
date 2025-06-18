@@ -31,6 +31,8 @@ export const prompts = {
 }
 
 export async function generateSoloConcept (conceptData) {
+  let error
+
   // World
   const worldMessage = { text: prompts.world }
   if (conceptData.prompt_world) { worldMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
@@ -86,34 +88,39 @@ export async function generateSoloConcept (conceptData) {
   const generatedImage = { text: imagePromptResponse.text }
 
   // Generate header image
-  const headerImageBuffer = await generateHeaderImage(generatedImage)
+  const { image, error: imageError } = await generateHeaderImage(generatedImage)
+  if (imageError) { error = imageError.message }
 
   return {
-    generatedWorld: generatedWorld.text,
-    generatedFactions: generatedFactions.text,
-    generatedLocations: generatedLocations.text,
-    generatedCharacters: generatedCharacters.text,
-    generatedProtagonist: generatedProtagonist.text,
-    generatedPlan: generatedPlan.text,
-    generatedAnnotation: generatedAnnotation.text,
-    generatedImage: generatedImage.text,
-    headerImageBuffer
+    error,
+    data: {
+      generatedWorld: generatedWorld.text,
+      generatedFactions: generatedFactions.text,
+      generatedLocations: generatedLocations.text,
+      generatedCharacters: generatedCharacters.text,
+      generatedProtagonist: generatedProtagonist.text,
+      generatedPlan: generatedPlan.text,
+      generatedAnnotation: generatedAnnotation.text,
+      generatedImage: generatedImage.text,
+      headerImageBuffer: image
+    }
   }
 }
 
 export async function generateHeaderImage (imageMessage) {
-  const imageResponse = await ai.models.generateImages({
-    model: 'imagen-3.0-generate-002',
-    prompt: imageMessage,
-    config: { responseModalities: [Modality.IMAGE], safetyFilterLevel: 'BLOCK_ONLY_HIGH', numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true, personGeneration: 'allow_all' }
-  })
-  const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
-  if (headerImageBase64) {
+  try {
+    const imageResponse = await ai.models.generateImages({
+      model: 'imagen-3.0-generate-002',
+      prompt: imageMessage,
+      config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true }
+    })
+    const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
+    if (!headerImageBase64) { throw new Error('No image generated') }
     const bufferImage = Buffer.from(headerImageBase64, 'base64')
-    const croppedBuffer = cropImageBackEnd(bufferImage, 16 / 9, 1024, 576)
-    return croppedBuffer
-  } else {
-    console.error('No image generated:', imageResponse)
-    return null
+    const { data, error } = await cropImageBackEnd(bufferImage, 16 / 9, 1024, 576)
+    return { data, error }
+  } catch (error) {
+    console.error('Error generating header image:', error)
+    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
   }
 }

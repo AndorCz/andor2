@@ -1,5 +1,6 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { showSuccess } from '@lib/toasts'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -19,34 +20,51 @@
   async function onSave (field, value) {
     savingValues['prompt_' + field] = true
 
-    const updateData = { ...concept }
-    updateData['prompt_' + field] = value // update the specific field
-    delete updateData.id // remove ID to avoid conflicts
-
-    // Trigger generation if applicable
-    if (['world', 'story', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
-      updateData.generating = true
-      updateData.author = user.id // update author to current user
-      updateData['generated_' + field] = concept['generated_' + field] = 'generating' // reset generated field
-
-      await fetch('/api/solo/generateField', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id, field, value }) })
-      // Start checking the generation status
-      checkLoop = setInterval(async () => {
-        const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
-        if (error) { handleError(error) }
-        if (data && !data.generating) {
-          concept = data
-          clearInterval(checkLoop) // stop checking if generation is done
-        }
-      }, 5000)
+    // Just save the prompt value
+    const { error } = await supabase.from('solo_concepts').update({ ['prompt_' + field]: value }).eq('id', concept.id)
+    if (error) {
+      savingValues['prompt_' + field] = false
+      return handleError(error)
     }
 
-    const { error } = await supabase.from('solo_concepts').update(updateData).eq('id', concept.id)
-    if (error) { return handleError(error) }
+    // If this field should trigger generation, call the API
+    if (['world', 'story', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
+      // Mark UI as generating
+      concept['generated_' + field] = 'generating'
 
-    savingValues[field] = false
-    originalValues[field] = value // update original values after saving
-    concept[field] = value // update the concept object with the new value
+      // Call generation API
+      const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, field, value }), headers: { 'Content-Type': 'application/json' } })
+
+      if (!response.ok) {
+        const { error } = await response.json()
+        handleError(new Error(`API error: ${error.message || 'Chyba generování pole'}`))
+        concept['generated_' + field] = '' // Reset on error
+        savingValues['prompt_' + field] = false
+        return
+      }
+
+      // Start polling for completion
+      checkLoop = setInterval(async () => {
+        const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+        if (error) {
+          handleError(error)
+          clearInterval(checkLoop)
+          return
+        }
+
+        if (data && !data.generating) {
+          concept = data // Update the full concept with server data
+          savingValues['prompt_' + field] = false
+          clearInterval(checkLoop)
+          showSuccess('Pole "' + field + '" bylo úspěšně aktualizováno a vygenerováno')
+        }
+      }, 5000)
+    } else {
+      // For non-generated fields, update immediately
+      savingValues['prompt_' + field] = false
+      originalValues['prompt_' + field] = value
+      concept['prompt_' + field] = value
+    }
   }
 
   function showConcept () {

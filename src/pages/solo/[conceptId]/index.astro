@@ -11,7 +11,7 @@
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 ---
 
-<Layout title={concept?.name} headerStorage={concept?.custom_header ? `concept-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
+<Layout title={concept?.name} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
   {(concept ? (
     showSettings ? (
       <ConceptSettings {concept} {user} client:only='svelte' />
