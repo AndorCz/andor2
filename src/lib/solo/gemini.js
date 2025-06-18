@@ -27,7 +27,7 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu.\n',
-  image: 'Napiš prosím prompt pro vygenerování poutavého ilustračního obrázku který vystihne atmosféru a estetiku této hry a jejího tématu. Maximální délka tohoto je 480 tokenů.\n'
+  image: 'Napiš prosím prompt pro AI generování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv dobře vystihující téma hry, plus popiš vizuální styl který vystihne její atmosféru a estetiku. Výstup musí být plain-text, jeden odstavec, maximálně o délce 480 tokenů.\n'
 }
 
 export async function generateSoloConcept (conceptData) {
@@ -81,7 +81,7 @@ export async function generateSoloConcept (conceptData) {
   // Image prompt
   const imageMessage = { text: prompts.image }
   if (conceptData.prompt_image) { imageMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_image}"` }
-  aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage, generatedAnnotation, imageMessage]
+  aiConfig.contents = ['Následující text popisuje setting pro TTRPG hru: ', worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage, generatedAnnotation, imageMessage]
   const imagePromptResponse = await ai.models.generateContent(aiConfig)
   const generatedImage = { text: imagePromptResponse.text }
 
@@ -101,14 +101,19 @@ export async function generateSoloConcept (conceptData) {
   }
 }
 
-async function generateHeaderImage (imageMessage) {
+export async function generateHeaderImage (imageMessage) {
   const imageResponse = await ai.models.generateImages({
-    model: 'gemini-2.0-flash-preview-image-generation',
+    model: 'imagen-3.0-generate-002',
     prompt: imageMessage,
-    config: { responseModalities: [Modality.IMAGE], safetyFilterLevel: 'BLOCK_NONE', numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true, personGeneration: 'allow_all' }
+    config: { responseModalities: [Modality.IMAGE], safetyFilterLevel: 'BLOCK_ONLY_HIGH', numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true, personGeneration: 'allow_all' }
   })
   const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
-  const bufferImage = Buffer.from(headerImageBase64, 'base64')
-  const croppedBuffer = cropImageBackEnd(bufferImage, 16 / 9, 1024, 576)
-  return croppedBuffer
+  if (headerImageBase64) {
+    const bufferImage = Buffer.from(headerImageBase64, 'base64')
+    const croppedBuffer = cropImageBackEnd(bufferImage, 16 / 9, 1024, 576)
+    return croppedBuffer
+  } else {
+    console.error('No image generated:', imageResponse)
+    return null
+  }
 }

@@ -42,7 +42,6 @@ export const POST = async ({ request, locals, redirect }) => {
     error = 'Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.'
   }
 
-  console.log('fieldResponse?.[0]:', fieldResponse.candidates?.[0])
   const generatedContent = fieldResponse.text
   console.log('generatedContent:', generatedContent)
   const newData = { ['generated_' + field]: generatedContent, generating: false }
@@ -60,9 +59,10 @@ export const POST = async ({ request, locals, redirect }) => {
 
   // Update header image if necessary
   if (field === 'image') {
-    const headerImageBuffer = await generateHeaderImage(generatedContent)
-    if (headerImageBuffer) {
-      const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, headerImageBuffer, { contentType: 'image/jpg' })
+    const { image, error: imageError } = await generateHeaderImage(generatedContent)
+    if (imageError) { error = imageError.message }
+    if (image) {
+      const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, image, { contentType: 'image/jpg' })
       if (uploadError) { console.error('Error uploading image:', uploadError) }
     }
     newData.custom_header = getHash()
@@ -73,9 +73,9 @@ export const POST = async ({ request, locals, redirect }) => {
   if (updateError) { error = updateError.message }
 
   if (error) {
-    await locals.supabase.from('solo_concepts').update({ generating: false }).eq('id', conceptData.id)
+    await locals.supabase.from('solo_concepts').update({ generating: false, ['generated_' + field]: '' }).eq('id', conceptData.id)
     console.error('Error updating concept:', error)
-    return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chyba při generování obsahu: ' + error))
+    return new Response(JSON.stringify({ error }), { status: 500 })
   }
   return new Response(JSON.stringify({ success: true }), { status: 200 })
 }
