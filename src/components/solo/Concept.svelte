@@ -48,14 +48,14 @@
     <div class='info'>
       <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
       <ul>
-        <li><span class='material'>{concept.generated_world && concept.generated_world !== 'generating' ? 'check' : 'hourglass_top'}</span>Svět</li>
-        <li><span class='material'>{concept.generated_factions && concept.generated_factions !== 'generating' ? 'check' : 'hourglass_top'}</span>Frakce</li>
-        <li><span class='material'>{concept.generated_locations && concept.generated_locations !== 'generating' ? 'check' : 'hourglass_top'}</span>Místa</li>
-        <li><span class='material'>{concept.generated_characters && concept.generated_characters !== 'generating' ? 'check' : 'hourglass_top'}</span>Postavy</li>
-        <li><span class='material'>{concept.generated_protagonist && concept.generated_protagonist !== 'generating' ? 'check' : 'hourglass_top'}</span>Protagonista</li>
-        <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span>Příběh</li>
-        <li><span class='material'>{concept.annotation && concept.annotation !== 'generating' ? 'check' : 'hourglass_top'}</span>Anotace</li>
-        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span>Ilustrace</li>
+        <li><span class='material'>{concept.generated_world && concept.generated_world !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Svět</span></li>
+        <li><span class='material'>{concept.generated_factions && concept.generated_factions !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Frakce</span></li>
+        <li><span class='material'>{concept.generated_locations && concept.generated_locations !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Místa</span></li>
+        <li><span class='material'>{concept.generated_characters && concept.generated_characters !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Postavy</span></li>
+        <li><span class='material'>{concept.generated_protagonist && concept.generated_protagonist !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Protagonista</span></li>
+        <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Příběh</span></li>
+        <li><span class='material'>{concept.annotation && concept.annotation !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Anotace</span></li>
+        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Ilustrace</span></li>
       </ul>
     </div>
   </div>
@@ -82,15 +82,15 @@
     <aside>
       <ul>
         <li>
-          <span>Autor:</span>
+          <span class='label'>Autor:</span>
           <a href='./user?id={concept.author.id}' class='user author' title='autor'>
             {#if concept.author.portrait}<img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />{/if}
             {concept.author.name}
           </a>
         </li>
-        <li><span>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
-        <li><span>Počet her:</span> {concept.game_count}</li>
-        <li><span>Tagy:</span> {getTagNames(concept.tags)}</li>
+        <li><span class='label'>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
+        <li><span class='label'>Počet her:</span> {concept.game_count}</li>
+        <li><span class='label'>Tagy:</span> {getTagNames(concept.tags)}</li>
       </ul>
     </aside>
   </div>
@@ -111,6 +111,15 @@
     .headline button {
       flex-shrink: 0;
     }
+  ul {
+    list-style: none;
+    padding: 0px;
+  }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
   /* generating */
   .row {
     display: flex;
@@ -128,23 +137,14 @@
       margin: 0 auto;
       border-radius: 20px;
     }
+    .generating li .material {
+      display: inline-block;
+      width: 30px;
+    }
   .info {
     flex: 1;
     text-align: left;
   }
-  ul {
-    list-style: none;
-    padding: 0px;
-  }
-    li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    li span {
-      min-width: 90px;
-      color: var(--dim);
-    }
   /* promo */
   p {
     line-height: 1.5;
@@ -156,6 +156,10 @@
       height: 30px;
       margin-bottom: 10px;
     }
+      li .label {
+        color: var(--dim);
+        min-width: 90px;
+      }
     .author {
       display: flex;
       align-items: center;

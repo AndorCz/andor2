@@ -118,7 +118,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     console.log('Generated image prompt:', generatedImagePrompt)
 
     // Generate header image
-    const { image, error: imageError } = await generateHeaderImage(generatedImagePrompt)
+    const { data: image, error: imageError } = await generateHeaderImage(generatedImagePrompt)
     if (imageError) { error = imageError.message }
     console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
     if (image) {
