@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { gameTags } from '@lib/constants'
   import { isFilledArray, addURLParam } from '@lib/utils'
 
   export let user = {}
@@ -16,6 +17,10 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
   })
+
+  function getTags (game) {
+    return game.tags.map(tag => gameTags.find(t => t.value === tag)?.label || tag).join(', ')
+  }
 
   function triggerPaging (newPage) {
     const newUrl = addURLParam('page', newPage, true)
@@ -43,6 +48,7 @@
         <div class='name'><a href='./solo/{concept.id}'>{concept.name}</a></div>
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
+          <div class='tags' title='tagy'>{getTags(concept)}</div>
           <a href='./user?id={concept.author.id}' class='user author' title='autor'>
             {concept.author.name}
             {#if concept.author.portrait}<img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />{/if}

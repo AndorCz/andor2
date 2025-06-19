@@ -22,7 +22,10 @@
 
   onMount(() => {
     originalValues = { ...concept }
-    selectedTags = concept.tags?.map(tag => ({ value: tag, label: tag })) || []
+    selectedTags = concept.tags?.map(tag => {
+      const found = gameTags.find(t => t.value === tag)
+      return found ? { value: found.value, label: found.label } : { value: tag, label: tag }
+    }) || []
   })
 
   async function onSave (field, value) {

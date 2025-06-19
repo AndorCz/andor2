@@ -91,10 +91,7 @@
           </a>
         </li>
         <li><span>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
-        {#if concept.updated_at}
-          <li><span>Poslední úprava:</span> {new Date(concept.updated_at).toLocaleDateString('cs-CZ')}</li>
-        {/if}
-        <li><span>Počet her:</span> {concept.games_count}</li>
+        <li><span>Počet her:</span> {concept.game_count}</li>
         <li><span>Tagy:</span> {concept.tags.length > 0 ? concept.tags.join(', ') : 'Žádné'}</li>
       </ul>
     </aside>
@@ -141,11 +138,15 @@
     list-style: none;
     padding: 0px;
   }
-    ul li {
+    li {
       display: flex;
       align-items: center;
       gap: 10px;
       height: 35px;
+    }
+    li span {
+      width: 90px;
+      color: var(--dim);
     }
   /* promo */
   p {

@@ -130,10 +130,12 @@ create table solo_concepts (
   generated_plan text,
   generated_image text,
   tags public.game_tag[] default '{}'::public.game_tag[],
+  game_count int4 default 0,
   upvotes int4 default 0,
   generating boolean default false,
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
   constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
 
@@ -1539,6 +1541,7 @@ create or replace trigger update_post_updated_at before update on posts for each
 create or replace trigger update_message_updated_at before update on messages for each row execute procedure update_updated_at();
 create or replace trigger add_default_bookmarks after insert on profiles for each row execute function add_default_bookmarks();
 create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
+create or replace trigger update_solo_concept_updated_at before update on solo_concepts for each row execute procedure update_updated_at();
 -- Triggers for thread unread counts
 create or replace trigger increment_unread_after_post_insert after insert on posts for each row execute function increment_unread_counters();
 create or replace trigger decrement_unread_after_post_delete after delete on posts for each row execute procedure decrement_unread_counters();
@@ -1548,6 +1551,7 @@ create or replace trigger decrement_user_message_unread_on_delete after delete o
 -- Triggers for character message unread counts
 create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
 create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
+
 
 -- WEBHOOKS --------------------------------------------
 
