@@ -65,8 +65,8 @@
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='soloImage'>Ilustrace</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='promptImage' name='promptImage' minHeight={75} maxlength={500} bind:value={$conceptStore.promptImage} /></div>
+        <div class='labels'><label for='conceptImage'>Ilustrace</label></div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='conceptImage' name='conceptImage' minHeight={75} maxlength={500} bind:value={$conceptStore.promptImage} /></div>
       </div>
     {:else}
       <center><button type='button' class='small' on:click={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
