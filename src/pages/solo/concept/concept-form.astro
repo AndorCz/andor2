@@ -1,0 +1,42 @@
+---
+  import Layout from '@layouts/layout.astro'
+  import SoloForm from '@components/solo/SoloForm.svelte'
+  import { generateSoloConcept } from '@lib/solo/gemini'
+
+  const { supabase, user } = Astro.locals
+
+  if (Astro.request.method === 'POST') {
+    let conceptData
+    const formData = await Astro.request.formData()
+    const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
+    const fields = ['conceptName', 'promptWorld', 'promptStory', 'conceptImage', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist']
+    const [name, world, story, image, factions, locations, characters, protagonist] = fields.map(field => formData.get(field))
+
+    if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
+    try {
+      // Create the concept record
+      const { data: createdConcept, error } = await supabase.from('solo_concepts').insert({
+        author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_image: image, tags, generating: true, generated_world: 'generating', generated_factions: 'generating', generated_locations: 'generating', generated_characters: 'generating', generated_protagonist: 'generating', generated_plan: 'generating', generated_image: 'generating', annotation: 'generating'
+      }).select().single()
+      if (error) { throw new Error('Error creating concept: ' + error.message) }
+      conceptData = createdConcept
+
+      // Start generation process
+      const { error: generationError } = generateSoloConcept(supabase, conceptData) // fire and forget
+      if (generationError) { throw new Error('Error during concept generation: ' + generationError.message) }
+
+      // Redirect user to the new concept page immediately
+      return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
+    } catch (error) {
+      console.error('Error in concept creation:', error)
+      if (conceptData) { await supabase.from('solo_concepts').update({ generating: false }).eq('id', conceptData.id) }
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba při vytváření konceptu: ' + error.message)}`)
+    }
+  }
+---
+
+<Layout title='Vytvořit herní koncept'>
+  <a href='javascript:history.back()'>zpět</a>
+  <h1>Vytvořit herní koncept</h1>
+  <SoloForm {user} client:only='svelte' />
+</Layout>

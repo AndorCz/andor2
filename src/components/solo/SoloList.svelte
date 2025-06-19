@@ -31,8 +31,8 @@
 <div class='headline flex'>
   <h1>Sólo rychlovky</h1>
   {#if user.id}
-    <a href='./solo/solo-form' class='button desktop'>Vytvořit nový koncept</a>
-    <a href='./solo/solo-form' class='button mobile material'>add</a>
+    <a href='./solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
+    <a href='./solo/concept/concept-form' class='button mobile material'>add</a>
   {/if}
 </div>
 
@@ -45,7 +45,7 @@
         </div>
       {/if}
       <div class='col left'>
-        <div class='name'><a href='./solo/{concept.id}'>{concept.name}</a></div>
+        <div class='name'><a href='./solo/concept/{concept.id}'>{concept.name}</a></div>
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
           <div class='tags' title='tagy'>{getTags(concept)}</div>

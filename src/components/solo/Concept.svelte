@@ -1,5 +1,6 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { gameTags } from '@lib/constants'
   import { getPortraitUrl } from '@lib/database-browser'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
@@ -9,17 +10,10 @@
 
   let checkLoop = null
 
-  const isConceptEmpty = () => {
-    return !concept.generated_world && !concept.generated_protagonist && !concept.generated_locations && !concept.generated_factions && !concept.generated_characters && !concept.generated_plan
-  }
-
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
-    if (!concept.generating && isConceptEmpty()) {
-      concept.generating = true
-      fetch('/api/solo/generateConcept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id }) })
-      // Save timer to check status every 5 seconds
-      checkLoop = setInterval(async () => {
+    if (concept.generating) {
+      checkLoop = setInterval(async () => { // check status every 5 seconds
         console.log('checking concept generation status...')
         const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()
         if (error) { handleError(error) }
@@ -33,6 +27,10 @@
   })
 
   onDestroy(() => { if (checkLoop) { clearInterval(checkLoop) } })
+
+  function getTagNames (tags) {
+    return tags.map(tag => { return gameTags.find(t => t.value === tag).label }).join(', ')
+  }
 
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
@@ -92,7 +90,7 @@
         </li>
         <li><span>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
         <li><span>Počet her:</span> {concept.game_count}</li>
-        <li><span>Tagy:</span> {concept.tags.length > 0 ? concept.tags.join(', ') : 'Žádné'}</li>
+        <li><span>Tagy:</span> {getTagNames(concept.tags)}</li>
       </ul>
     </aside>
   </div>
@@ -142,10 +140,9 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      height: 35px;
     }
     li span {
-      width: 90px;
+      min-width: 90px;
       color: var(--dim);
     }
   /* promo */
@@ -155,6 +152,10 @@
   aside {
     min-width: 250px;
   }
+    aside li {
+      height: 30px;
+      margin-bottom: 10px;
+    }
     .author {
       display: flex;
       align-items: center;

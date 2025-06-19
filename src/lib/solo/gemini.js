@@ -1,3 +1,4 @@
+import { getHash } from '@lib/utils'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 import { GoogleGenAI, Modality } from '@google/genai'
 
@@ -12,6 +13,7 @@ export function getBasePrompt (conceptData) {
   return {
     text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
       Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
+      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.
       Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"`
     // Postupně budeme připravovat podklady v těchto částech: 1. Svět, 2. Frakce, 3. Lokace, 4. Postavy, 5. Protagonista, 6. Plán hry. Důležité: V každé odpovědi zpracuj vždy jen jednu danou část, i kdyby byla velmi krátká. Každá jedna odpověď musí být samostatná kapitola podkladů.
   }
@@ -25,13 +27,15 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
-  image: 'Napiš prosím prompt pro AI generování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv dobře vystihující téma hry, popiš vizuální styl který vystihne její atmosféru a estetiku. Výstup musí být plain-text, bez html, jeden odstavec, maximálně o délce 480 tokenů.\n'
+  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens.\n'
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
   try {
     let error
     let contents
+
+    console.log('Starting concept generation for:', conceptData.id)
 
     // World
     const worldMessage = { text: prompts.world }
@@ -87,7 +91,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
     contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
-    const planResponse = await ai.models.generateContent({ ...aiConfigDefault, contents, config: { ...aiConfigDefault.config, model: 'gemini-2.5-pro', thinkingConfig: { thinkingBudget: 1000 } } })
+    const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
+    const planResponse = await ai2.models.generateContent({ ...aiConfigDefault, contents, config: { model: 'gemini-2.5-pro', safetySettings, thinkingConfig: { thinkingBudget: 1000 } } })
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
@@ -115,11 +120,17 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Generate header image
     const { image, error: imageError } = await generateHeaderImage(generatedImagePrompt)
     if (imageError) { error = imageError.message }
+    console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
     if (image) {
       const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, image, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
     }
-    console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
+
+    // Release concept when generation completes
+    const { error: updateError } = await supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash() }).eq('id', conceptData.id)
+    if (updateError) { throw new Error(updateError.message) }
+    console.log('Concept generation completed and saved, concept id:', conceptData.id)
+
     return { error, data: { success: true } }
   } catch (error) {
     console.error('Error generating solo concept:', error)
@@ -133,6 +144,7 @@ export async function generateHeaderImage (prompt) {
     const imageResponse = await ai.models.generateImages({
       model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true }
     })
+    console.log('Image generation response:', imageResponse)
     const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
     if (!headerImageBase64) { throw new Error('No image generated') }
     const bufferImage = Buffer.from(headerImageBase64, 'base64')

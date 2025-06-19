@@ -89,7 +89,7 @@
   }
 
   function showConcept () {
-    window.location.href = `/solo/${concept.id}`
+    window.location.href = `/solo/concept/${concept.id}`
   }
 
   onDestroy(() => {
@@ -108,7 +108,7 @@
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
-    <a href='/solo/{concept.id}' class='backlink'>{concept.name}</a>
+    <a href='/solo/concept/{concept.id}' class='backlink'>{concept.name}</a>
     <h1>Nastavení</h1>
     <button on:click={showConcept} class='material square back' title='Zpět na koncept' use:tooltip>arrow_back</button>
   </div>
