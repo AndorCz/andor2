@@ -1,21 +1,29 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
+  import Select from 'svelte-select'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let concept
   export let user
 
+  let tags
   let checkLoop
   let headlineEl
+  let selectedTags
   let tab = 'prompts'
-  let originalValues = {}
+  let originalValues = { tags: [] }
   const savingValues = {}
+  const tagItems = [...gameTags]
 
-  onMount(() => { originalValues = { ...concept } })
+  onMount(() => {
+    originalValues = { ...concept }
+    selectedTags = concept.tags?.map(tag => ({ value: tag, label: tag })) || []
+  })
 
   async function onSave (field, value) {
     savingValues['prompt_' + field] = true
@@ -67,6 +75,16 @@
     }
   }
 
+  async function saveTags () {
+    savingValues.tags = true
+    const { error } = await supabase.from('solo_concepts').update({ tags }).eq('id', concept.id)
+    if (error) { return handleError(error) }
+    originalValues.tags = tags
+    concept.tags = tags
+    savingValues.tags = false
+    showSuccess('Tagy byly úspěšně uloženy')
+  }
+
   function showConcept () {
     window.location.href = `/solo/${concept.id}`
   }
@@ -80,6 +98,9 @@
     if (error) { return handleError(error) }
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
   }
+
+  $: maxTags = selectedTags?.length === 3
+  $: tags = selectedTags?.map(tag => tag.value) || []
 </script>
 
 <div class='headline' bind:this={headlineEl}>
@@ -143,6 +164,14 @@
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
       <button on:click={() => onSave('image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Tagy</h2>
+    <div class='row'>
+      <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
+        <div slot='empty'>Více tagů nelze přidat</div>
+      </Select>
+      <button on:click={saveTags} disabled={ savingValues.tags || originalValues.tags.join(',') === tags.join(',')} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazání konceptu</h2>

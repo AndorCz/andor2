@@ -1,8 +1,8 @@
 <script>
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Select from 'svelte-select'
-  import { getSavedStore } from '@lib/stores'
   import { gameTags } from '@lib/constants'
+  import { getSavedStore } from '@lib/stores'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
 
@@ -10,6 +10,7 @@
   let tagsInputRef
   let showAdvanced = false
 
+  const tagItems = [...gameTags]
   const conceptStore = getSavedStore('newSoloConcept', { conceptName: '', promptWorld: '', promptStory: '', promptProtagonist: '', promptLocations: '', promptFactions: '', promptCharacters: '', promptImage: '' })
   const prepareData = async (event) => {
     event.preventDefault()
@@ -73,12 +74,12 @@
     {/if}
 
     <div class='row'>
-      <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
+      <div class='labels'><label for='soloTags'>Tagy<span class='info'>(max 3)</span></label></div>
       <div class='inputs'>
-        <Select items={maxTags ? [] : gameTags} multiple bind:value={selectedTags} placeholder=''>
+        <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
           <div slot='empty'>Více tagů nelze přidat</div>
         </Select>
-        <input type='hidden' name='workTags' bind:this={tagsInputRef} />
+        <input type='hidden' name='soloTags' bind:this={tagsInputRef} />
       </div>
     </div>
 

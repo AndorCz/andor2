@@ -1,5 +1,6 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { getPortraitUrl } from '@lib/database-browser'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
 
@@ -67,9 +68,36 @@
       <button on:click={showSettings} class='material settings square' title='Nastavení konceptu' use:tooltip>settings</button>
     {/if}
   </div>
-  <div class='panel annotation'>
-    <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
-    <button on:click={startGame} class='large'>Začít hru</button>
+  <div class='panel row'>
+    <div class='intro'>
+      <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
+      <details>
+        <summary>Tvoje postava</summary>
+        <p>{@html concept.generated_protagonist}</p>
+      </details>
+      <details>
+        <summary>Svět</summary>
+        <p>{@html concept.generated_world}</p>
+      </details>
+      <button on:click={startGame} class='large'>Začít hru</button>
+    </div>
+    <aside>
+      <ul>
+        <li>
+          <span>Autor:</span>
+          <a href='./user?id={concept.author.id}' class='user author' title='autor'>
+            {#if concept.author.portrait}<img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />{/if}
+            {concept.author.name}
+          </a>
+        </li>
+        <li><span>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
+        {#if concept.updated_at}
+          <li><span>Poslední úprava:</span> {new Date(concept.updated_at).toLocaleDateString('cs-CZ')}</li>
+        {/if}
+        <li><span>Počet her:</span> {concept.games_count}</li>
+        <li><span>Tagy:</span> {concept.tags.length > 0 ? concept.tags.join(', ') : 'Žádné'}</li>
+      </ul>
+    </aside>
   </div>
 {/if}
 
@@ -91,10 +119,8 @@
   /* generating */
   .row {
     display: flex;
-    flex-direction: row;
-    align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 60px;
   }
   .generating {
     text-align: center;
@@ -113,22 +139,49 @@
   }
   ul {
     list-style: none;
-    padding: 0;
-    width: min-content;
-    text-align: left;
+    padding: 0px;
   }
     ul li {
-      gap: 10px;
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      gap: 10px;
+      height: 35px;
     }
   /* promo */
-  .perex {
+  p {
     line-height: 1.5;
   }
+  aside {
+    min-width: 250px;
+  }
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+      .icon {
+        display: block;
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        object-position: center 20%;
+        border-radius: 100%;
+        background-color: var(--background);
+      }
   button.large {
     display: block;
     margin: auto;
+    margin-top: 20px;
+  }
+  details {
+    background: var(--block);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    box-shadow: var(--shadow);
+  }
+  summary {
+    cursor: pointer;
+    font-weight: bold;
   }
 </style>

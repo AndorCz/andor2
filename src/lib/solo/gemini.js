@@ -6,7 +6,7 @@ export const safetySettings = [
   { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
   { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }
 ]
-export const aiConfig = { model: 'gemini-2.5-flash-preview-05-20', config: { safetySettings, thinkingConfig: { thinkingBudget: 0 } } }
+export const aiConfigDefault = { model: 'gemini-2.5-flash-lite-preview-06-17', config: { safetySettings, thinkingConfig: { thinkingBudget: 0 } } }
 
 export function getBasePrompt (conceptData) {
   return {
@@ -24,19 +24,20 @@ export const prompts = {
   characters: '4. Postavy: Popiš konkrétně několik zajímavých postav které budou v příběhu vystupovat.\n',
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
-  annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu.\n',
-  image: 'Napiš prosím prompt pro AI generování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv dobře vystihující téma hry, popiš vizuální styl který vystihne její atmosféru a estetiku. Výstup musí být plain-text, jeden odstavec, maximálně o délce 480 tokenů.\n'
+  annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
+  image: 'Napiš prosím prompt pro AI generování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv dobře vystihující téma hry, popiš vizuální styl který vystihne její atmosféru a estetiku. Výstup musí být plain-text, bez html, jeden odstavec, maximálně o délce 480 tokenů.\n'
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
   try {
     let error
+    let contents
 
     // World
     const worldMessage = { text: prompts.world }
     if (conceptData.prompt_world) { worldMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage]
-    const response = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage]
+    const response = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedWorld = { text: response.text }
     const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text }).eq('id', conceptData.id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
@@ -45,8 +46,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Factions
     const factionsMessage = { text: prompts.factions }
     if (conceptData.prompt_factions) { factionsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_factions}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage]
-    const factionsResponse = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage]
+    const factionsResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedFactions = { text: factionsResponse.text }
     const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text }).eq('id', conceptData.id)
     if (updateErrorFactions) { throw new Error(updateErrorFactions.message) }
@@ -55,8 +56,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Locations
     const locationsMessage = { text: prompts.locations }
     if (conceptData.prompt_locations) { locationsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_locations}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
-    const locationsResponse = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
+    const locationsResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedLocations = { text: locationsResponse.text }
     const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text }).eq('id', conceptData.id)
     if (updateErrorLocations) { throw new Error(updateErrorLocations.message) }
@@ -65,8 +66,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Characters
     const charactersMessage = { text: prompts.characters }
     if (conceptData.prompt_characters) { charactersMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_characters}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
-    const charactersResponse = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
+    const charactersResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedCharacters = { text: charactersResponse.text }
     const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text }).eq('id', conceptData.id)
     if (updateErrorCharacters) { throw new Error(updateErrorCharacters.message) }
@@ -75,8 +76,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Protagonist
     const protagonistMessage = { text: prompts.protagonist }
     if (conceptData.prompt_protagonist) { protagonistMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_protagonist}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
-    const protagonistResponse = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
+    const protagonistResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedProtagonist = { text: protagonistResponse.text }
     const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text }).eq('id', conceptData.id)
     if (updateErrorProtagonist) { throw new Error(updateErrorProtagonist.message) }
@@ -85,8 +86,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Plan
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
-    const planResponse = await ai.models.generateContent({ ...aiConfig, config: { ...aiConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
+    const planResponse = await ai.models.generateContent({ ...aiConfigDefault, contents, config: { ...aiConfigDefault.config, model: 'gemini-2.5-pro', thinkingConfig: { thinkingBudget: 1000 } } })
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
@@ -94,8 +95,8 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     // Annotation
     const annotationMessage = { text: prompts.annotation }
-    aiConfig.contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
-    const annotationResponse = await ai.models.generateContent(aiConfig)
+    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
+    const annotationResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedAnnotation = { text: annotationResponse.text }
     const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text }).eq('id', conceptData.id)
     if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
@@ -104,8 +105,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Image prompt
     const imageMessage = { text: prompts.image }
     if (conceptData.prompt_image) { imageMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_image}"` }
-    aiConfig.contents = [`Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":`, generatedAnnotation, imageMessage]
-    const imagePromptResponse = await ai.models.generateContent(aiConfig)
+    contents = [`Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":`, generatedAnnotation, imageMessage]
+    const imagePromptResponse = await ai.models.generateContent({ ...aiConfigDefault, contents })
     const generatedImagePrompt = imagePromptResponse.text
     const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image: generatedImagePrompt }).eq('id', conceptData.id)
     if (updateErrorImage) { throw new Error(updateErrorImage.message) }

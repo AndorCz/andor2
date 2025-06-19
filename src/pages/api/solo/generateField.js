@@ -1,5 +1,5 @@
 import { getHash } from '@lib/utils'
-import { getBasePrompt, ai, aiConfig, prompts, generateHeaderImage } from '@lib/solo/gemini'
+import { getBasePrompt, ai, aiConfigDefault, prompts, generateHeaderImage } from '@lib/solo/gemini'
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
 function getContext (conceptData, exclude) {
@@ -38,10 +38,9 @@ export const POST = async ({ request, locals, redirect }) => {
     if (field !== 'plan') { // plan is going to be generated anyway
       const fieldMessage = { text: prompts[field] }
       if (value) { fieldMessage.text += `Vypravěč uvedl toto zadání: "${value}"` }
-      aiConfig.contents = [...context, fieldMessage]
 
       // Generate field
-      const fieldResponse = await ai.models.generateContent(aiConfig)
+      const fieldResponse = await ai.models.generateContent({ ...aiConfigDefault, contents: [...context, fieldMessage] })
       if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
         throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
       }
@@ -55,14 +54,12 @@ export const POST = async ({ request, locals, redirect }) => {
         text: `The previous game plan was as follows: "${conceptData.generated_plan}"
         Now the information in the section "${field}" has changed, please update the game plan, if needed.`
       }
-      aiConfig.contents = [...context, planMessage]
-      const planResponse = await ai.models.generateContent({ ...aiConfig, config: { ...aiConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
+      const planResponse = await ai.models.generateContent({ ...aiConfigDefault, contents: [...context, planMessage], config: { ...aiConfigDefault.config, thinkingConfig: { thinkingBudget: 1000 } } })
       newData.generated_plan = planResponse.text
 
       // Update annotation
       const annotationMessage = { text: prompts.annotation }
-      aiConfig.contents = [...context, annotationMessage]
-      const annotationResponse = await ai.models.generateContent({ ...aiConfig, config: { ...aiConfig.config } })
+      const annotationResponse = await ai.models.generateContent({ ...aiConfigDefault, contents: [...context, annotationMessage], config: { ...aiConfigDefault.config } })
       newData.annotation = annotationResponse.text
     }
 

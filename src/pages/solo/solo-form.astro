@@ -15,9 +15,10 @@
     const factions = formData.get('promptFactions')
     const characters = formData.get('promptCharacters')
     const image = formData.get('conceptImage')
+    const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
-    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_image: image }).select().single()
+    const { data, error } = await supabase.from('solo_concepts').insert({ author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_image: image, tags }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // redirect user to the new concept page
