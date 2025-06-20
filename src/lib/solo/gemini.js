@@ -45,7 +45,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedWorld = { text: response.text }
     const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text }).eq('id', conceptData.id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
-    console.log('Generated world:', generatedWorld.text)
+    // console.log('Generated world:', generatedWorld.text)
 
     // Factions
     const factionsMessage = { text: prompts.factions }
@@ -55,7 +55,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedFactions = { text: factionsResponse.text }
     const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text }).eq('id', conceptData.id)
     if (updateErrorFactions) { throw new Error(updateErrorFactions.message) }
-    console.log('Generated factions:', generatedFactions.text)
+    // console.log('Generated factions:', generatedFactions.text)
 
     // Locations
     const locationsMessage = { text: prompts.locations }
@@ -65,7 +65,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedLocations = { text: locationsResponse.text }
     const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text }).eq('id', conceptData.id)
     if (updateErrorLocations) { throw new Error(updateErrorLocations.message) }
-    console.log('Generated locations:', generatedLocations.text)
+    // console.log('Generated locations:', generatedLocations.text)
 
     // Characters
     const charactersMessage = { text: prompts.characters }
@@ -75,7 +75,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedCharacters = { text: charactersResponse.text }
     const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text }).eq('id', conceptData.id)
     if (updateErrorCharacters) { throw new Error(updateErrorCharacters.message) }
-    console.log('Generated characters:', generatedCharacters.text)
+    // console.log('Generated characters:', generatedCharacters.text)
 
     // Protagonist
     const protagonistMessage = { text: prompts.protagonist }
@@ -85,7 +85,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedProtagonist = { text: protagonistResponse.text }
     const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text }).eq('id', conceptData.id)
     if (updateErrorProtagonist) { throw new Error(updateErrorProtagonist.message) }
-    console.log('Generated protagonist:', generatedProtagonist.text)
+    // console.log('Generated protagonist:', generatedProtagonist.text)
 
     // Plan
     const planMessage = { text: prompts.plan }
@@ -96,7 +96,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
-    console.log('Generated plan:', generatedPlan.text)
+    // console.log('Generated plan:', generatedPlan.text)
 
     // Annotation
     const annotationMessage = { text: prompts.annotation }
@@ -105,7 +105,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedAnnotation = { text: annotationResponse.text }
     const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text }).eq('id', conceptData.id)
     if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
-    console.log('Generated annotation:', generatedAnnotation.text)
+    // console.log('Generated annotation:', generatedAnnotation.text)
 
     // Image prompt
     const imageMessage = { text: prompts.image }
@@ -115,12 +115,12 @@ export async function generateSoloConcept (supabase, conceptData) {
     const generatedImagePrompt = imagePromptResponse.text
     const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image: generatedImagePrompt }).eq('id', conceptData.id)
     if (updateErrorImage) { throw new Error(updateErrorImage.message) }
-    console.log('Generated image prompt:', generatedImagePrompt)
+    // console.log('Generated image prompt:', generatedImagePrompt)
 
     // Generate header image
     const { data: image, error: imageError } = await generateHeaderImage(generatedImagePrompt)
     if (imageError) { error = imageError.message }
-    console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
+    // console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
     if (image) {
       const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, image, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
@@ -129,7 +129,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Release concept when generation completes
     const { error: updateError } = await supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash() }).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
-    console.log('Concept generation completed and saved, concept id:', conceptData.id)
+    // console.log('Concept generation completed and saved, concept id:', conceptData.id)
 
     return { error, data: { success: true } }
   } catch (error) {

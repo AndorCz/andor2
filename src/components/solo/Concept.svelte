@@ -77,7 +77,7 @@
         <summary>Svět</summary>
         <p>{@html concept.generated_world}</p>
       </details>
-      <button on:click={startGame} class='large'>Začít hru</button>
+      <button on:click={startGame} class='large'>Začít novou hru</button>
     </div>
     <aside>
       <ul>
