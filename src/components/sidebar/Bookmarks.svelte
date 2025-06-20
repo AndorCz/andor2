@@ -54,20 +54,6 @@
   $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length
 </script>
 
-{#if $bookmarks.solo.length > 0}
-  <a href='/games'><h4>Sólo</h4></a>
-  <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
-    {#each $bookmarks.solo as bookmark}
-      <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
-        <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
-        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-        </svg>
-      </li>
-    {/each}
-  </ul>
-{/if}
-
 {#if $bookmarks.games.length > 0}
   <a href='/games'><h4>Hry</h4></a>
   <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
@@ -79,6 +65,21 @@
             <span class='unread'>{bookmark.unread_game} | {bookmark.unread_discussion}</span>
           {/if}
         </a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
+
+{#if $bookmarks.solo.length > 0}
+  <hr>
+  <a href='/solo'><h4>Sólo</h4></a>
+  <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
+    {#each $bookmarks.solo as bookmark}
+      <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
         <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
           <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
         </svg>

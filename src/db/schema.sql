@@ -359,7 +359,7 @@ create table bookmarks (
   constraint bookmarks_work_id_fkey foreign key (work_id) references works (id) on delete cascade,
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
-  constraint bookmarks_solo_id_fkey foreign key (solo_id) references solo_concepts (id) on delete cascade,
+  constraint bookmarks_solo_id_fkey foreign key (solo_id) references solo_games (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
 );
 
@@ -517,6 +517,7 @@ select
   b.game_id,
   b.board_id,
   b.work_id,
+  b.solo_id,
   b.game_main_thread,
   b.game_discussion_thread,
   b.board_thread,

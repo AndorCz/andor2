@@ -3,9 +3,11 @@
   import Concept from '@components/solo/Concept.svelte'
   import SoloGame from '@components/solo/SoloGame.svelte'
   import ConceptSettings from '@components/solo/ConceptSettings.svelte'
+  import SoloGameSettings from '@components/solo/SoloGameSettings.svelte'
 
   const { soloId } = Astro.params
   const { supabase, user } = Astro.locals
+  const showSettings = Astro.url.searchParams.get('settings')
 
   const { data: soloGame, error: soloError } = await supabase.from('solo_games').select().eq('id', soloId).single()
   if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
@@ -17,7 +19,11 @@
 <Layout title={soloConcept?.name} headerStorage={soloConcept?.custom_header ? `solo-${soloConcept.id}.jpg?hash=${soloConcept.custom_header}` : null}>
   {(soloGame && soloConcept ? (
     user?.id && soloGame.player === user.id ? (
-      <SoloGame {soloGame} {soloConcept} {user} client:only='svelte' />
+      showSettings ? (
+        <SoloGameSettings {soloGame} {user} client:only='svelte' />
+      ) : (
+        <SoloGame {soloGame} {soloConcept} {user} client:only='svelte' />
+      )
     ) : (
       <p>Nepřihlášený uživatel, nebo nemáš přístup k této hře</p>
     )
