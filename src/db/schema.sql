@@ -355,9 +355,11 @@ create table bookmarks (
   constraint unique_user_game unique (user_id, game_id),
   constraint unique_user_board unique (user_id, board_id),
   constraint unique_user_work unique (user_id, work_id),
+  constraint unique_user_solo unique (user_id, solo_id),
   constraint bookmarks_work_id_fkey foreign key (work_id) references works (id) on delete cascade,
   constraint bookmarks_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint bookmarks_board_id_fkey foreign key (board_id) references boards (id) on delete cascade,
+  constraint bookmarks_solo_id_fkey foreign key (solo_id) references solo_concepts (id) on delete cascade,
   constraint bookmarks_user_id_fkey foreign key (user_id) references profiles (id) on delete cascade
 );
 
@@ -508,22 +510,32 @@ create or replace view game_messages as
   from messages
   where messages.sender_character is not null and messages.recipient_character is not null;
 
-create or replace view user_bookmarks as
-  select
-    b.id as bookmark_id, b.user_id, b.game_id, b.board_id, b.work_id, b.game_main_thread, b.game_discussion_thread, b.board_thread, b.work_thread, b.index, g.name as game_name, brd.name as board_name, w.name as work_name, b.created_at as bookmark_created_at,
-    coalesce(g.name, brd.name, w.name) as name,
-    coalesce(ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0) as unread,
-    coalesce(ut_disc.unread_count, 0) as unread_secondary
-  from
-    bookmarks b
+create or replace view public.user_bookmarks as
+select
+  b.id as bookmark_id,
+  b.user_id,
+  b.game_id,
+  b.board_id,
+  b.work_id,
+  b.game_main_thread,
+  b.game_discussion_thread,
+  b.board_thread,
+  b.work_thread,
+  b.index,
+  b.created_at as bookmark_created_at,
+  COALESCE(g.name, brd.name, w.name, s.name) as name,
+  COALESCE( ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0 ) as unread,
+  COALESCE(ut_disc.unread_count, 0) as unread_secondary
+from bookmarks b
   left join games g on b.game_id = g.id
   left join boards brd on b.board_id = brd.id
   left join works w on b.work_id = w.id
+  left join solo_games s on b.solo_id = s.id
   left join unread_threads ut_main on b.game_main_thread = ut_main.thread_id and b.user_id = ut_main.user_id
   left join unread_threads ut_disc on b.game_discussion_thread = ut_disc.thread_id and b.user_id = ut_disc.user_id
   left join unread_threads ut_board on b.board_thread = ut_board.thread_id and b.user_id = ut_board.user_id
   left join unread_threads ut_work on b.work_thread = ut_work.thread_id and b.user_id = ut_work.user_id
-  where b.user_id = auth.uid();
+where b.user_id = auth.uid ();
 
 
 -- FUNCTIONS --------------------------------------------

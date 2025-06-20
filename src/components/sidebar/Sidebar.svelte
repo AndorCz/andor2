@@ -175,9 +175,11 @@
 
   async function loadBookmarksData () {
     const { data, error } = await supabase.from('user_bookmarks').select().eq('user_id', user.id)
-    const groupedData = { games: [], boards: [], works: [] }
+    const groupedData = { solo: [], games: [], boards: [], works: [] }
     data.forEach(item => {
-      if (item.game_id) {
+      if (item.solo_id) {
+        groupedData.solo.push({ ...item, id: item.solo_id })
+      } else if (item.game_id) {
         groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread, unread_discussion: item.unread_secondary })
       } else if (item.board_id) {
         groupedData.boards.push({ ...item, id: item.board_id })

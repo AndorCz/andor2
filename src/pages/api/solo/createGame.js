@@ -1,9 +1,9 @@
 // Create a new game from a solo concept
 
-export const POST = async ({ request, locals, redirect }) => {
+export const GET = async ({ request, locals, redirect }) => {
   try {
-    const requestData = await request.json()
-    const { conceptId } = requestData
+    const { searchParams } = new URL(request.url)
+    const conceptId = searchParams.get('conceptId')
     const referer = request.headers.get('referer')
     if (!locals.user.id || !conceptId) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
 

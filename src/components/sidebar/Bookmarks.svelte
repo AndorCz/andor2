@@ -5,6 +5,7 @@
   import Sortable from 'sortablejs'
 
   let bookmarkNumber
+  let soloEl
   let gamesEl
   let boardsEl
   let worksEl
@@ -12,11 +13,15 @@
   let saving = false
   let showHandles = false
 
+  $bookmarks.solo.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
 
   onMount(() => {
+    if ($bookmarks.games.length) {
+      new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
+    }
     if ($bookmarks.games.length) {
       new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
@@ -48,6 +53,20 @@
 
   $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length
 </script>
+
+{#if $bookmarks.solo.length > 0}
+  <a href='/games'><h4>Sólo</h4></a>
+  <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
+    {#each $bookmarks.solo as bookmark}
+      <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
 {#if $bookmarks.games.length > 0}
   <a href='/games'><h4>Hry</h4></a>

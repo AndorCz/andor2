@@ -44,6 +44,7 @@
     } else {
       isEmpty = value ? value.length === 0 : true
     }
+    setHeight()
   })
 
   function setHeight (node) { // textarea only
@@ -120,7 +121,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble}>
+<div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble} style='--menuOffset:{allowHtml ? 50 : 0}px'>
   {#if allowHtml}
     <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
@@ -130,14 +131,18 @@
     <!-- svelte-ignore a11y-autofocus -->
     <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
-  <div class='buttons' class:hidden={!showButton} >
-    <button type='button' on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
-      <span class='material'>close</span>
-    </button>
-    <button type='button' on:click={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
-      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
-    </button>
-  </div>
+  {#if showButton}
+    <div class='buttons'>
+      {#if editing}
+        <button type='button' on:click={cancelEdit} class='cancel' title='Zrušit'>
+          <span class='material'>close</span>
+        </button>
+      {/if}
+      <button type='button' on:click={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+        <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
+      </button>
+    </div>
+  {/if}
   {#if loading}
     <Loading />
   {/if}
@@ -170,7 +175,7 @@
       position: absolute;
       top: 0px;
       right: 0px;
-      padding-top: 50px; /* to account for wysiwyg menu */
+      padding-top: var(--menuOffset); /* to account for wysiwyg menu */
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -196,9 +201,6 @@
       .cancel {
         visibility: visible;
         border-radius: 0px 10px 0px 10px;
-      }
-      .hidden {
-        visibility: hidden;
       }
       .singleLine button {
         background: none;

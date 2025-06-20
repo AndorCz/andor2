@@ -18,7 +18,7 @@
   let scrollHandlerAttached = false
 
   // Pagination variables
-  const PAGE_SIZE = 20
+  const pageSize = 20
   let isLoading = false
   let messageOffset = 0
   let hasMoreMessages = true
@@ -119,18 +119,18 @@
           .is('sender_character', null)
           .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
           .order('created_at', { ascending: false }) // Descending to get most recent first
-          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
+          .range(messageOffset, messageOffset + pageSize - 1) // Get specific range
       } else { // game messages - filter out those sent by different user
         query = supabase.from('messages').select('*')
           .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id})`)
           .order('created_at', { ascending: false }) // Descending to get most recent first
-          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
+          .range(messageOffset, messageOffset + pageSize - 1) // Get specific range
       }
 
       const { data, error } = await query
       if (error) { return handleError(error) }
 
-      hasMoreMessages = data && data.length >= PAGE_SIZE // Check if we have more messages to load
+      hasMoreMessages = data && data.length >= pageSize // Check if we have more messages to load
       messageOffset += data?.length || 0 // Update offset for next page load
 
       // Add messages to the store (newest messages are loaded first, so we need to prepend them)
@@ -275,13 +275,13 @@
 
         <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
           {#if isLoading && !$messages.length}
-            <div class="loading-indicator">Načítám zprávy...</div>
+            <div class='loadingIndicator'>Načítám zprávy...</div>
           {:else if hasMoreMessages}
-            <div class="loading-more">
+            <div class='loadingMore'>
               {#if isLoading}
-                <div class="loading-indicator">Načítám starší zprávy...</div>
+                <div class='loadingIndicator'>Načítám starší zprávy...</div>
               {:else}
-                <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
+                <div class='loadHint'>Scrollujte nahoru pro načtení starších zpráv</div>
               {/if}
             </div>
           {/if}
@@ -361,12 +361,12 @@
     flex-direction: column;
     border-top: 1px var(--block) solid;
   }
-  .loading-indicator, .load-more-hint {
+  .loadingIndicator, .loadHint {
     text-align: center;
     padding: 10px;
     color: var(--text-muted);
   }
-  .loading-more {
+  .loadingMore {
     min-height: 40px;
   }
   .error {

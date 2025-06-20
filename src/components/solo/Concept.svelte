@@ -37,7 +37,7 @@
   }
 
   function startGame () {
-    window.location.href = `/solo/${concept.id}`
+    window.location.href = `/api/solo/createGame?conceptId=${concept.id}`
   }
 </script>
 
