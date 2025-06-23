@@ -424,9 +424,9 @@ create table contacts (
 create or replace view news_reactions as
   select n.id, n.title, n.content_type, n.content_id, n.image_url, n.subheadline, n.button_text, n.url, n.content, n.published, n.owner, p.id as owner_id, p.name as owner_name, p.portrait as owner_portrait, n.character, n.character_name, n.created_at, r.thumbs, r.frowns, r.shocks, r.hearts, r.laughs
   from news n
-  left join reactions r 
+  left join reactions r
   on n.id = r.item_id and r.item_type = 'news'
-  left join profiles p 
+  left join profiles p
   on n.owner = p.id;
 
 create or replace view discussion_posts_owner as

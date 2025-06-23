@@ -1,10 +1,19 @@
 // Create a new game from a solo concept
-import { ai, aiConfigDefault } from '@lib/solo/gemini'
+import { ai } from '@lib/solo/server-gemini'
+
+const storytellerConfig = {
+  model: 'gemini-2.5-flash',
+  config: {
+    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
+    thinkingConfig: { thinkingBudget: 200 },
+    systemInstruction: 'Jsi vypravěč (storyteller nebo game-master) online TTRPG hry, pro jednoho hráče, v češtině. Výstup piš vždy v HTML, ale používej jen základní styly textu jako tučný text pro přímou řeč. Žádné nadpisy, ikony, seznamy apod. Herní příspěvky by měli mít formu kvalitní beletrie.'
+  }
+}
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
 function getContext (conceptData) {
   const context = {
-    basePrompt: { text: `Jsi vypravěč (storyteller nebo game-master) online TTRPG hry, pro jednoho hráče, v češtině. Budeš vést hru s názvem ${conceptData.name}. Bude následovat připravený popis settingu pro tuto hru. Výstup piš vždy v HTML, ale používej jen základní styly textu jako tučný text pro přímou řeč. Žádné nadpisy, ikony, seznamy apod. Herní příspěvky by měli mít formu kvalitní beletrie.` },
+    basePrompt: { text: `Budeš vést hru s názvem "${conceptData.name}". Nyní bude následovat podrobný popis podkladů (setting) pro tuto hru:` },
     world: { text: conceptData.generated_world },
     factions: { text: conceptData.generated_factions },
     locations: { text: conceptData.generated_locations },
@@ -36,9 +45,10 @@ export const GET = async ({ request, locals, redirect }) => {
     if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(bookmarkError.message)) }
 
     // Generate first post
-    const response = await ai.models.generateContent({ ...aiConfigDefault, contents: [getContext(concept), { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče vtáhne do příběhu.' }] })
+    const context = getContext(concept)
+    const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu. Měl by končit otázkou na to jak se chce hráč zachovat.' }] })
     const firstPost = response.text
-    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'ai' })
+    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'ai-storyteller' })
     if (addPostError) { throw new Error(addPostError.message) }
 
     // Generate first scene image

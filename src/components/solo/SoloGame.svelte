@@ -2,8 +2,10 @@
   import { tooltip } from '@lib/tooltip'
   import { writable } from 'svelte/store'
   import { platform } from '@components/common/MediaQuery.svelte'
+  import { GoogleGenAI } from '@google/genai'
   import { waitForMediaLoad } from '@lib/utils'
   import { afterUpdate, tick } from 'svelte'
+  import { storytellerConfig } from '@lib/solo/gemiini'
   import { supabase, handleError } from '@lib/database-browser'
   import Post from '@components/common/Post.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -12,14 +14,17 @@
   export let soloGame = {}
   // export let soloConcept = {}
 
-  const posts = writable([])
-  const pageSize = 20
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.PUBLIC_GEMINI })
+  const allPosts = writable([])
+  const displayedPosts = writable([])
+  const displayIncrement = 50
+  let chat
   let inputEl
   let postsEl
   let inputValue = ''
   let isLoading = false
   let hasMorePosts = true
-  let postOffset = 0
+  let displayedCount = 50
   let userHasScrolledUp = false
   let distanceFromBottom = 0
   let previousPostsLength = 0
@@ -42,46 +47,70 @@
     userHasScrolledUp = distanceFromBottom > 50 // Threshold to consider as manual scroll
     if (postsEl && hasMorePosts && !isLoading) {
       if (postsEl.scrollTop <= 50) { // 50px threshold from top
-        loadPosts(false) // Load more messages, not initial load
+        // Show more posts from the already loaded set
+        const scrollHeight = postsEl.scrollHeight
+        const scrollPosition = postsEl.scrollTop
+
+        // Increase the number of posts to display
+        displayedCount += displayIncrement
+        updateDisplayedPosts()
+
+        // After the DOM updates, restore the scroll position
+        tick().then(() => {
+          const newScrollHeight = postsEl.scrollHeight
+          postsEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
+        })
       }
     }
   }
 
-  async function loadPosts (initialLoad = true) {
+  // Function to update which posts are displayed based on the display count
+  function updateDisplayedPosts () {
+    if ($allPosts.length <= displayedCount) {
+      // If we have fewer posts than the display count, show all
+      $displayedPosts = [...$allPosts]
+      hasMorePosts = false
+    } else {
+      // Show only the most recent posts
+      $displayedPosts = $allPosts.slice(-displayedCount)
+      hasMorePosts = true
+    }
+  }
+
+  async function loadPosts () {
     isLoading = true
     try {
-      if (initialLoad) {
-        postOffset = 0
-        hasMorePosts = true
-        $posts = []
-      }
-
-      const { data, error } = await supabase.from('posts').select('*').match({ thread: soloGame.thread }).order('created_at', { ascending: false }).range(postOffset, postOffset + pageSize - 1)
+      const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
       if (error) { return handleError(error) }
-
-      hasMorePosts = data && data.length >= pageSize // Check if we have more posts to load
-      postOffset += data?.length || 0 // Update offset for next page load
-
-      // Add posts to the store (newest posts are loaded first, so we need to prepend them)
-      if (initialLoad) {
-        // Reverse to get chronological order (oldest first)
-        $posts = data ? data.reverse() : []
-      } else if (data && data.length > 0) {
-        // When loading more (older) posts, add them to the beginning
-        const scrollHeight = postsEl.scrollHeight
-        const scrollPosition = postsEl.scrollTop
-
-        // Prepend older posts to the beginning
-        $posts = [...data.reverse(), ...$posts]
-
-        // After the DOM updates, restore the scroll position
-        await tick() // ensure DOM is updated
-        const newScrollHeight = postsEl.scrollHeight
-        postsEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
-      }
+      $allPosts = data || []
+      initAIChat(data)
+      updateDisplayedPosts()
     } finally {
       isLoading = false
     }
+  }
+
+  async function initAIChat (posts) {
+    const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
+    chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig })
+
+    /*
+    const stream1 = await chat.sendMessageStream({
+      message: "I have 2 dogs in my house."
+    })
+    for await (const chunk of stream1) {
+      console.log(chunk.text)
+      console.log("_".repeat(80))
+    }
+
+    const stream2 = await chat.sendMessageStream({
+      message: "How many paws are in my house?"
+    })
+    for await (const chunk of stream2) {
+      console.log(chunk.text)
+      console.log("_".repeat(80))
+    }
+    */
   }
 
   async function addPost () {
@@ -89,24 +118,25 @@
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select()
     if (error) { return handleError(error) }
     inputValue = ''
-    $posts = [...$posts, ...newPostData]
+
+    // Add the new post to both stores
+    $allPosts = [...$allPosts, ...newPostData]
+    $displayedPosts = [...$displayedPosts, ...newPostData]
   }
 
   // Reactive statement for scrolling
   $: {
-    if (postsEl && $posts.length) {
+    if (postsEl && $displayedPosts.length) {
       if (!userHasScrolledUp) { // Scroll to bottom for new posts from the other user, or on initial load if not scrolled up
-        if (previousPostsLength === 0 && $posts.length > 0) { // Initial load
+        if (previousPostsLength === 0 && $displayedPosts.length > 0) { // Initial load
           postsEl.scrollTop = postsEl.scrollHeight
         } else { // New message
           waitForMediaLoad(postsEl).then(() => {
-            if (postsEl) {
-              postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' })
-            }
+            if (postsEl) { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }
           })
         }
       }
-      previousPostsLength = $posts.length
+      previousPostsLength = $displayedPosts.length
     } else {
       previousPostsLength = 0
     }
@@ -125,13 +155,13 @@
       <div class='info'>Načítám příspěvky...</div>
     {:then}
       <div class='posts' bind:this={postsEl} on:scroll={handleScroll}>
-        {#if isLoading && !$posts.length}
+        {#if isLoading && !$displayedPosts.length}
           <div class='info'>Načítám příspěvky...</div>
         {:else if hasMorePosts}
           <div class='info'>{#if isLoading}Načítám starší příspěvky...{:else}Scrollujte nahoru pro načtení starších příspěvků{/if}</div>
         {/if}
-        {#if $posts.length > 0}
-          {#each $posts as post (post.id)}
+        {#if $displayedPosts.length > 0}
+          {#each $displayedPosts as post (post.id)}
             <Post {post} {user} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} />
           {/each}
         {:else}
@@ -146,7 +176,6 @@
 <style>
   main {
     position: relative;
-    height: calc(100svh - 40px);
     display: flex;
     flex-direction: column;
   }
@@ -169,6 +198,8 @@
     .posts {
       flex-grow: 1;
       display: flex;
+      justify-content: flex-end;
+      max-height: 100svh;
       overflow-y: auto;
       padding-right: 10px;
       margin-bottom: 10px;
@@ -183,7 +214,7 @@
         color: var(--text-muted);
       }
       .empty {
-        height: 100%;
+        height: 50svh;
         display: flex;
         align-items: center;
         justify-content: center;
