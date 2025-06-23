@@ -2,31 +2,30 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { createSlug } from '@lib/utils'
-  import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
+  import { showSuccess, showError } from '@lib/toasts'
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import HeaderInput from '@components/common/HeaderInput.svelte'
 
-  export let game = {}
-  export let user = {}
+  let { game = $bindable({}), user = {} } = $props()
 
-  let saving = false
-  let originalSystem
-  let originalName
-  let originalCategory
-  let originalOpenDiscussion
-  let originalOpenChars
-  let originalRecruitmentOpen
-  let originalOpenGame
-  let originalOpenCodex
-  let originalAnnotation
-  let originalContextDice
-  let welcomeMessageRef
-  let newCodexSection = ''
-  let newFont = ''
-  let isWelcomeMessageDirty = false
-  let headlineEl
+  let saving = $state(false)
+  let originalSystem = $state()
+  let originalName = $state()
+  let originalCategory = $state()
+  let originalOpenDiscussion = $state()
+  let originalOpenChars = $state()
+  let originalRecruitmentOpen = $state()
+  let originalOpenGame = $state()
+  let originalOpenCodex = $state()
+  let originalAnnotation = $state()
+  let originalContextDice = $state()
+  let welcomeMessageRef = $state()
+  let newCodexSection = $state('')
+  let newFont = $state('')
+  let isWelcomeMessageDirty = $state(false)
+  let headlineEl = $state()
 
   onMount(() => {
     setOriginal()
@@ -129,7 +128,7 @@
   <div class='wrapper'>
     <a href='/game/{game.id}' class='backlink'>{game.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showGame} class='material square back' title='Zpět do hry' use:tooltip>arrow_back</button>
+    <button onclick={showGame} class='material square back' title='Zpět do hry' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>
@@ -145,19 +144,19 @@
       <h2>Název</h2>
       <div class='row'>
         <input type='text' id='gameName' name='gameName' bind:value={game.name} maxlength='80' />
-        <button on:click={updateGame} disabled={saving || (originalName === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalName === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Anotace</h2>
       <div class='row'>
         <TextareaExpandable {user} id='gameAnnotation' name='gameAnnotation' bind:value={game.annotation} maxlength={150} />
-        <button on:click={updateGame} disabled={saving || originalAnnotation === game.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || originalAnnotation === game.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
       <div class='row'>
         <TextareaExpandable bind:this={welcomeMessageRef} {user} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
-        <button on:click={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Kategorie</h2>
@@ -167,7 +166,7 @@
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
-        <button on:click={updateGame} disabled={saving || (originalCategory === game.category)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalCategory === game.category)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Herní systém</h2>
@@ -177,7 +176,7 @@
             <option value={system.value}>{system.label}</option>
           {/each}
         </select>
-        <button on:click={updateGame} disabled={saving || (originalSystem === game.system)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalSystem === game.system)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Nábor</h2>
@@ -186,7 +185,7 @@
           <option value={false}>Uzavřený</option>
           <option value={true}>Otevřený</option>
         </select>
-        <button on:click={updateGame} disabled={saving || (originalRecruitmentOpen === game.recruitment_open)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalRecruitmentOpen === game.recruitment_open)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Viditelnost hry <span class='material' title='Skryje herní příspěvky, postavy a mapy' use:tooltip>info</span></h2>
@@ -195,7 +194,7 @@
           <option value={true}>Veřejná</option>
           <option value={false}>Soukromá</option>
         </select>
-        <button on:click={updateGame} disabled={saving || (originalOpenGame === game.open_game)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalOpenGame === game.open_game)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Viditelnost diskuze</h2>
@@ -204,7 +203,7 @@
           <option value={false}>Soukromá</option>
           <option value={true}>Veřejná</option>
         </select>
-        <button on:click={updateGame} disabled={saving || (originalOpenDiscussion === game.open_discussion)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalOpenDiscussion === game.open_discussion)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Viditelnost postav</h2>
@@ -213,7 +212,7 @@
           <option value={false}>Soukromá</option>
           <option value={true}>Veřejná</option>
         </select>
-        <button on:click={updateGame} disabled={saving || (originalOpenChars === game.open_chars)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalOpenChars === game.open_chars)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Viditelnost kodexu</h2>
@@ -222,7 +221,7 @@
           <option value={true}>Veřejný</option>
           <option value={false}>Soukromý</option>
         </select>
-        <button on:click={updateGame} disabled={saving || (originalOpenCodex === game.open_codex)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalOpenCodex === game.open_codex)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
 
       <h2>Sekce kodexu</h2>
@@ -232,8 +231,8 @@
             <li>
               <div class='section'>
                 <h3>{section.name}</h3>
-                <button class='square material square' on:click={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
-                <button class='square material square' on:click={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
+                <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
+                <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -244,13 +243,13 @@
       <h3><label for='codexSection'>Nová sekce</label></h3>
       <div class='row'>
         <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} />
-        <button class='material square' on:click={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+        <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
       </div>
 
       <h2>Zobrazit hody mezi příspěvky</h2>
       <div class='row'>
         <input type='checkbox' id='contextDice' name='contextDice' bind:checked={game.context_dice} />
-        <button on:click={updateGame} disabled={saving || (originalContextDice === game.context_dice)} class='material square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateGame} disabled={saving || (originalContextDice === game.context_dice)} class='material square' title='Uložit' use:tooltip>check</button>
       </div>
     {/if}
 
@@ -261,7 +260,7 @@
           <li>
             <div class='font'>
               <h3>{font}</h3>
-              <button class='square material square' on:click={() => { removeFont(font) }} title='Odebrat font' use:tooltip>delete</button>
+              <button class='square material square' onclick={() => { removeFont(font) }} title='Odebrat font' use:tooltip>delete</button>
             </div>
           </li>
         {/each}
@@ -272,29 +271,29 @@
     <h3><label for='gameFont'>Nový font</label></h3>
     <div class='row'>
       <input type='text' id='gameFont' name='gameFont' size='40' bind:value={newFont} />
-      <button class='material square' on:click={addFont} disabled={saving || newFont.trim() === ''} title='Přidat font' use:tooltip>add</button>
+      <button class='material square' onclick={addFont} disabled={saving || newFont.trim() === ''} title='Přidat font' use:tooltip>add</button>
     </div>
 
     <h2>Záloha do souboru</h2>
-    <button class='export' on:click={exportGame}>
+    <button class='export' onclick={exportGame}>
       <span class='material'>download</span><span>Stáhnout zálohu</span>
     </button>
 
     {#if game.archived}
       <h2>Obnova hry</h2>
-      <button class='archive' on:click={() => { if (confirm('Opravdu chcete tuto hru vrátit z archivu?')) { toggleArchived() } }}>
+      <button class='archive' onclick={() => { if (confirm('Opravdu chcete tuto hru vrátit z archivu?')) { toggleArchived() } }}>
         <span class='material'>unarchive</span><span>Znovu aktivovat</span>
       </button>
     {:else}
       <h2>Archivace hry <span class='material' title='Hra bude jen pro čtení, lze vrátit' use:tooltip>info</span></h2>
-      <button class='archive' on:click={() => { if (confirm('Opravdu chcete tuto archivovat?')) { toggleArchived() } }}>
+      <button class='archive' onclick={() => { if (confirm('Opravdu chcete tuto archivovat?')) { toggleArchived() } }}>
         <span class='material'>archive</span><span>Archivovat hru</span>
       </button>
     {/if}
 
     <h2>Smazání hry</h2>
     Pozor, toto je nevratná akce.<br><br>
-    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
+    <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
       <span class='material'>warning</span><span>Smazat hru</span>
     </button>
   {:else}

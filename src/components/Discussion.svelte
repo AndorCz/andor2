@@ -9,15 +9,7 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
-  export let user = {}
-  export let data = {}
-  export let canModerate = false
-  export let slug
-  export let contentSection
-  export let isPermitted = true
-  export let thread
-  export let unread = 0
-  export let useIdentities = false
+  let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false } = $props()
 
   const posts = writable([])
   const mentionList = writable([])
@@ -25,14 +17,14 @@
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
-  let textareaRef
-  let textareaValue = $discussionStore.unsent || '' // load unsent post
-  let identitySelect
-  let saving = false
-  let editing = false
-  let page = 0
-  let pages
-  let loading = true
+  let textareaRef = $state()
+  let textareaValue = $state($discussionStore.unsent || '') // load unsent post
+  let identitySelect = $state()
+  let saving = $state(false)
+  let editing = $state(false)
+  let page = $state(0)
+  let pages = $state()
+  let loading = $state(true)
 
   // set identities for discussion
   const getMyCharacters = () => {

@@ -3,14 +3,12 @@
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
-  export let characters = { allGrouped: [], myStranded: [] }
-  export let openConversation
-  export let userStore
+  const { characters = { allGrouped: [], myStranded: [] }, openConversation, userStore } = $props()
 
-  let selected // { character, gameIndex, characterIndex }
+  let selected = $state() // { character, gameIndex, characterIndex }
   // if there are more than 20 characters across all games and stranded, the lists will be collapsed by default
   const listTooLong = isFilledArray(characters.allGrouped) ? (characters.allGrouped.reduce((acc, game) => acc + game.characters.length, 0) + characters.myStranded.length) > 20 : false
-  const expandedLists = {}
+  const expandedLists = $state({})
 
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
@@ -28,7 +26,7 @@
 {#if isFilledArray(characters.allGrouped) || isFilledArray(characters.myStranded)}
   {#if selected}
     <h4 class='row selected'>
-      <button on:click={() => { selected = null }} class='material back'>chevron_left</button>
+      <button onclick={() => { selected = null }} class='material back'>chevron_left</button>
       <a href={`${window.location.origin}/game/character?id=${selected.character.id}`} class='character profile'>
         <div class='name'>{selected.character.name}</div>
       </a>
@@ -38,7 +36,7 @@
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
         {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
           {#if character.state !== 'dead' || $userStore.showDead}
-            <button on:click={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
+            <button onclick={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
               {#if character.portrait}
                 <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
               {:else}
@@ -65,7 +63,7 @@
           <a href={'/game/' + id}>{name}</a>
           {#if listTooLong}
             {#if characters.some(character => character.unread)}<span class='unread badge'></span>{/if}
-            <button on:click={() => toggleList(gameIndex)} class='material plain toggle' class:opened={expandedLists[gameIndex]}>arrow_drop_down</button>
+            <button onclick={() => toggleList(gameIndex)} class='material plain toggle' class:opened={expandedLists[gameIndex]}>arrow_drop_down</button>
           {/if}
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex] || !listTooLong}>
@@ -73,7 +71,7 @@
             {#each characters as character, characterIndex}
               {#if character.state !== 'dead' || $userStore.showDead}
                 <li class='mine'>
-                  <button on:click={() => { selected = { character, gameIndex, characterIndex } }}>
+                  <button onclick={() => { selected = { character, gameIndex, characterIndex } }}>
                     {#if character.portrait}
                       <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
                     {:else}
@@ -103,14 +101,14 @@
           <span>Bez hry</span>
           {#if listTooLong}
             {#if characters.myStranded.some(character => character.unread)}<span class='unread badge'></span>{/if}
-            <button on:click={() => toggleList('stranded')} class='material plain toggle' class:opened={expandedLists.stranded}>arrow_drop_down</button>
+            <button onclick={() => toggleList('stranded')} class='material plain toggle' class:opened={expandedLists.stranded}>arrow_drop_down</button>
           {/if}
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists.stranded || !listTooLong}>
           {#each characters.myStranded as character}
             {#if character.state !== 'dead' || $userStore.showDead}
               <li class='mine'>
-                <button on:click={openProfile(character)}>
+                <button onclick={openProfile(character)}>
                   {#if character.portrait}
                     {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
                   {:else}
@@ -135,10 +133,10 @@
 {/if}
 <div class='bottom'>
   {#if selected}
-    <button class='showDead material square' class:active={$userStore.showDead} on:click={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
+    <button class='showDead material square' class:active={$userStore.showDead} onclick={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
   {:else}
     <div class='row'>
-      <button class='showDead material square' class:active={$userStore.showDead} on:click={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
+      <button class='showDead material square' class:active={$userStore.showDead} onclick={() => { $userStore.showDead = !$userStore.showDead }} title={ $userStore.showDead ? 'Skrýt mrtvé' : 'Zobrazit mrtvé' } use:tooltip>skull</button>
       <a href='/game/character-form' class='button newChar'>Vytvořit postavu</a>
     </div>
   {/if}

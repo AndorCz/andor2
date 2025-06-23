@@ -1,13 +1,13 @@
 <script>
+  import DOMPurify from 'dompurify'
   import { onMount } from 'svelte'
-  import { Render } from '@jill64/svelte-sanitize'
   import { slide } from 'svelte/transition'
   import { getSavedStore } from '@lib/stores'
 
-  export let lastEditorial = null
+  const { lastEditorial = null } = $props()
 
-  let showEditorial = false
-  let userStore
+  let showEditorial = $state(false)
+  let userStore = $state()
 
   onMount(() => {
     userStore = getSavedStore('user')
@@ -26,8 +26,8 @@
   <div id='editorial' transition:slide={{ duration: 300 }}>
     <h4>Editorial</h4>
     <a href={'/work/' + lastEditorial.id}><h2>{lastEditorial.name}</h2></a>
-    <section><Render html={lastEditorial.content} /></section>
-    <button on:click={close} class='close' title='Skrýt'>
+    <section>{@html DOMPurify.sanitize(lastEditorial.content)}</section>
+    <button onclick={close} class='close' title='Skrýt'>
       <span class='material'>check</span>
     </button>
   </div>

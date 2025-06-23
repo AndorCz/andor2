@@ -1,30 +1,28 @@
 <script>
-  import { writable } from 'svelte/store'
-  import { throttle, isFilledArray } from '@lib/utils'
-  import { tick, onMount, onDestroy, afterUpdate } from 'svelte'
-  import { supabase, handleError, sendPost, setRead, getReply } from '@lib/database-browser'
-  import { showSuccess, showError } from '@lib/toasts'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import ChatPost from '@components/chat/ChatPost.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import { mount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
+  import { showSuccess, showError } from '@lib/toasts'
+  import { throttle, isFilledArray } from '@lib/utils'
+  import { supabase, handleError, sendPost, setRead, getReply } from '@lib/database-browser'
 
-  export let user = {}
-  export let unread = 0
+  const { user = {}, unread = 0 } = $props()
 
-  let previousPostsLength = 0
-  let textareaValue = ''
-  let textareaEl
-  let postsEl
-  let replyPostEl
-  let replyPostData
   let channel
-  let editing = false
-  let saving = false
-  let shouldAutoScroll = true
-
-  const mentionList = writable([])
-  const people = writable({})
-  const typing = writable({})
-  const posts = writable([])
+  let posts = $state([])
+  let saving = $state(false)
+  let people = $state({})
+  let postsEl = $state()
+  let editing = $state(false)
+  let textareaEl = $state()
+  let mentionList = $state([])
+  let replyPostEl = $state()
+  let replyPostData = $state()
+  let textareaValue = $state('')
+  let shouldAutoScroll = $state(true)
+  let previousPostsLength = $state(0)
+  const typing = $state({})
   const replies = {}
 
   onMount(async () => {
@@ -38,10 +36,10 @@
         Object.keys(newState).forEach((key) => {
           addPoster({ id: key, name: newState[key][0].user, type: 'user' })
         })
-        $people = newState
+        people = newState
       })
       .on('broadcast', { event: 'typing' }, (data) => { // triggered when someone is typing
-        $typing[data.payload.user] = true
+        typing[data.payload.user] = true
         removeTyping(data.payload.user)
       })
       // .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -51,7 +49,7 @@
       //   // console.log('somebody left', key, leftPresences)
       // })
 
-    $mentionList = await loadAllPosters()
+    mentionList = await loadAllPosters()
     const userStatus = { user: user.name, online_at: new Date().toISOString() }
 
     channel.subscribe(async (status) => {
@@ -60,8 +58,8 @@
     })
   })
 
-  afterUpdate(() => {
-    if (isFilledArray($posts)) {
+  $effect(() => {
+    if (isFilledArray(posts)) {
       removeListeners()
       setupReplyListeners()
     }
@@ -87,7 +85,7 @@
     for (const citeEl of cites) {
       const id = parseInt(citeEl.getAttribute('data-id'))
       // for each cite, load the post from supabase and save it's data
-      replies[id] = await getReply($posts, id)
+      replies[id] = await getReply(posts, id)
       citeEl.addEventListener('pointerdown', addReply)
       citeEl.addEventListener('mouseenter', showReply)
       citeEl.addEventListener('mouseleave', hideReply)
@@ -106,11 +104,11 @@
 
     if (isReplyContainer) { // if the container exists, remove it (toggle reply visibility)
       event.target.parentNode.removeChild(existingContainer)
-    } else { // create a new container for the reply
       const container = document.createElement('div')
       container.classList.add('nestedReply')
       event.target.parentNode.insertBefore(container, event.target.nextSibling)
-      new ChatPost({ target: container, props: { post: replyData, user, iconSize: 0 } })
+      mount(ChatPost, { target: container, props: { post: replyData, user, iconSize: 0 } })
+      setupReplyListeners()
       setupReplyListeners()
     }
   }
@@ -133,8 +131,8 @@
   }
 
   function addPoster (poster) {
-    if (!$mentionList.some((p) => p.id === poster.id)) {
-      $mentionList.push(poster)
+    if (!mentionList.some((p) => p.id === poster.id)) {
+      mentionList.push(poster)
     }
   }
 
@@ -194,7 +192,7 @@
     const query = await supabase.rpc('get_discussion_posts', { _thread: 1, page: 0, _limit: 2000, ascending: true })
     const { data: rpcData, error } = await query
     if (error) { handleError(error) } else {
-      $posts = rpcData.postdata
+      posts = rpcData.postdata
     }
     await seen()
   }
@@ -218,8 +216,7 @@
 
   function removeTyping (name) {
     setTimeout(() => {
-      delete $typing[name]
-      $typing = $typing
+      delete typing[name]
     }, 3000)
   }
 
@@ -228,23 +225,21 @@
   }, 3000)
 
   // Reactive statement for scrolling
-  $: if (postsEl && $posts?.length) {
-    if (previousPostsLength === 0 && $posts.length > 0) {
-      // Instant scroll for the initial load
-      setTimeout(() => { postsEl.scrollTop = postsEl.scrollHeight }, 10)
-      // postsEl.scrollTop = postsEl.scrollHeight
-    } else if (previousPostsLength < $posts.length) {
-      // Smooth scroll for subsequent updates (new messages)
-      tick().then(() => {
+  $effect(() => {
+    if (postsEl && posts?.length) {
+      if (previousPostsLength === 0 && posts.length > 0) {
+        // Instant scroll for the initial load
+        setTimeout(() => { postsEl.scrollTop = postsEl.scrollHeight }, 10)
+      } else if (previousPostsLength < posts.length) {
+        // Smooth scroll for subsequent updates (new messages)
         if (shouldAutoScroll) {
           // Smooth scroll to the bottom
           setTimeout(() => { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }, 10)
-          previousPostsLength = $posts.length // update count
         }
-      })
+      }
+      previousPostsLength = posts.length // Update the length after scrolling
     }
-    previousPostsLength = $posts.length // Update the length after scrolling
-  }
+  })
 </script>
 
 {#await waitForAnimation() then}
@@ -253,9 +248,9 @@
       <span class='loading'>Načítám...</span>
     {:then}
       <div class='posts' bind:this={postsEl} use:handlePostsScroll>
-        {#if $posts.length > 0}
-          {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
-            <ChatPost unread={index >= $posts.length - unread} {user} {post} {onEdit} {onDelete} onReply={triggerReply} />
+        {#if posts.length > 0}
+          {#each posts as post, index (`${post.id}-${post.updated_at}`)}
+            <ChatPost unread={index >= posts.length - unread} {user} {post} {onEdit} {onDelete} onReply={triggerReply} />
           {/each}
         {:else}
           <center>Žádné příspěvky</center>
@@ -263,21 +258,21 @@
       </div>
       <div id='textareaWrapper'>
         <!-- names of present people -->
-        {#if Object.keys($typing).length > 0}
+        {#if Object.keys(typing).length > 0}
           <div class='typing'>
-            {Object.keys($typing).join(' píše, ')} píše
+            {Object.keys(typing).join(' píše, ')} píše
           </div>
         {/if}
-        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable forceBubble allowHtml mentionList={mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
     <!-- names of present people -->
     <div class='people'>
-      {#if Object.keys($people).length > 0}
+      {#if Object.keys(people).length > 0}
         Právě přítomní:
-        {#each Object.values($people) as person}
+        {#each Object.values(people) as person}
           <span class='person user'>{person[0].user}</span>
         {/each}
       {/if}

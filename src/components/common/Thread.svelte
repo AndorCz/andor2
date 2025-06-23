@@ -1,41 +1,45 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
-  import { setRead, getReply } from '@lib/database-browser'
+  import { run } from 'svelte/legacy'
+
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
+  import { setRead, getReply } from '@lib/database-browser'
+  import { onMount, onDestroy, mount } from 'svelte'
   import Post from '@components/common/Post.svelte'
 
-  export let id
-  export let type
-  export let user
-  export let posts
-  export let loading
-  export let contentId
-  export let contentSection
-  export let unread = 0
-  export let canDeleteAll = false
-  export let canModerate = false
-  export let myIdentities = []
-  export let allowReactions = false
-  export let onDelete = null
-  export let onEdit = null
-  export let onModerate = null
-  export let onReply = null
-  export let onPaging = null
-  export let page = 0
-  export let pages = null
-  export let iconSize = 70
-  export let diceMode = 'none' // 'post', 'icon', 'none'
+  let {
+    id,
+    type,
+    user,
+    posts,
+    loading,
+    contentId,
+    contentSection,
+    unread = 0,
+    canDeleteAll = false,
+    canModerate = false,
+    myIdentities = [],
+    allowReactions = false,
+    onDelete = null,
+    onEdit = null,
+    onModerate = null,
+    onReply = null,
+    onPaging = null,
+    page = $bindable(0),
+    pages = null,
+    iconSize = 70,
+    diceMode = 'none'
+  } = $props()
 
-  let lastPostId
-  let threadEl
-  let replyPostEl
-  let replyPostData
+  let lastPostId = $state()
+  let threadEl = $state()
+  let replyPostEl = $state()
+  let replyPostData = $state()
   let lastRefresh = Date.now()
   let autorefreshRunning = false
   let frameId
-  let postCount = 0
+  let postCount = $state(0)
 
   const replies = {}
 
@@ -97,7 +101,7 @@
       const container = document.createElement('div')
       container.classList.add('nestedReply')
       event.target.parentNode.insertBefore(container, event.target.nextSibling)
-      new Post({ target: container, props: { post: replyData, user, iconSize: 0 } })
+      mount(Post, { target: container, props: { post: replyData, user, iconSize: 0 } })
       setupReplyListeners()
     }
   }
@@ -171,14 +175,20 @@
     return false
   }
 
-  $: {
+  run(() => {
     if ($posts) {
       if (!loading && postCount !== $posts.length) { postsUpdate() }
       postCount = $posts.length
     }
-  }
-  $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
-  $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
+  })
+
+  run(() => {
+    if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() }
+  }) // set read for new posts, even for autorefresh
+
+  run(() => {
+    if (contentSection === 'boards' && contentId === 3) { seen() }
+  }) // custom version for 'nahlášení obsahu'
 </script>
 
 <main bind:this={threadEl}>
@@ -204,7 +214,7 @@
     {#if pages}
       <div class='pagination'>
         {#each { length: pages } as _, i}
-          <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+          <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
         {/each}
       </div>
     {/if}

@@ -1,18 +1,17 @@
 <script>
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { supabase, handleError, getPortraitUrl, getWorkFileUrl } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { showSuccess } from '@lib/toasts'
   import { lightboxImage } from '@lib/stores'
+  import { supabase, handleError, getPortraitUrl, getWorkFileUrl } from '@lib/database-browser'
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  export let user = {}
-  export let data = {}
+  let { user = {}, data = $bindable({}) } = $props()
 
-  let bookmarkId
-  let imageUrl = ''
+  let imageUrl = $state('')
+  const bookmarkId = $derived($bookmarks.works.find(b => b.id === data.id)?.bookmark_id)
   const isOwner = user.id === data.owner.id
   const curatorIds = ['a78d91c6-3af6-4163-befd-e7b5d21d9c0f', 'c3304e31-9687-413f-a478-214c865bf5a2', '2d7898ea-ac7b-4f1b-bf29-a10c28892835', '6d3c87ea-aacc-4fd6-9859-852894fd3092'] // Sargo, Hitomi, Eskel, Eskel localhost
 
@@ -55,8 +54,6 @@
   // function getTags (value) {
   //   return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
   // }
-
-  $: bookmarkId = $bookmarks.works.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <main>
@@ -68,10 +65,10 @@
     <h1>{data.name}</h1>
     {#if user.id}
       {#key bookmarkId}
-        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
       {/key}
       {#if isOwner}
-        <button on:click={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
+        <button onclick={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
       {/if}
     {/if}
   </div>
@@ -79,7 +76,7 @@
   {#if data.type === 'text'}
     <EditableLong {user} bind:value={data.content} onSave={updateWorkContent} canEdit={isOwner} allowHtml />
   {:else if data.type === 'image'}
-    <img src={imageUrl} on:click={showLightbox} alt={data.name} class='media' />
+    <img src={imageUrl} onclick={showLightbox} alt={data.name} class='media' />
   {:else if data.type === 'audio'}
     <audio controls src={getWorkFileUrl(data.content)} class='media'></audio>
   {/if}

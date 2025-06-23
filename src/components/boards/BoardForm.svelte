@@ -1,7 +1,7 @@
 <script>
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user = {}
+  const { user = {} } = $props()
 </script>
 
 <h1>Vytvořit diskuzi</h1>

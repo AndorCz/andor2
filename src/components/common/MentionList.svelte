@@ -1,12 +1,10 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
 
-  export let items = []
-  export let command
-  export let onClose
+  const { items = [], command, onClose } = $props()
 
-  let selectedIndex = 0
-  let listElement
+  let selectedIndex = $state(0)
+  let listElement = $state()
 
   const selectItem = (index) => {
     const item = items[index]
@@ -28,7 +26,7 @@
 
 <div bind:this={listElement} class='mentionList'>
   {#each items as item, index}
-    <button class='plain' class:selected={index === selectedIndex} on:click={() => selectItem(index)}>{item.name}</button>
+    <button class='plain' class:selected={index === selectedIndex} onclick={() => selectItem(index)}>{item.name}</button>
   {/each}
 </div>
 

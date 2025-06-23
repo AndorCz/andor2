@@ -3,14 +3,11 @@
   import { gameTags } from '@lib/constants'
   import { isFilledArray, addURLParam } from '@lib/utils'
 
-  export let user = {}
-  export let concepts = []
-  export let page = 0
-  export let maxPage = 20
+  const { user = {}, concepts = [], page = 0, maxPage = 20 } = $props()
 
   // functions to run only in the browser
-  let getHeaderUrl = () => {}
-  let getPortraitUrl = () => {}
+  let getHeaderUrl = $state(() => {})
+  let getPortraitUrl = $state(() => {})
 
   onMount(async () => {
     const databaseBrowser = await import('@lib/database-browser')
@@ -64,7 +61,7 @@
 {#if maxPage > 0}
   <div class='pagination'>
     {#each { length: maxPage + 1 } as _, i}
-      <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+      <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
 {/if}

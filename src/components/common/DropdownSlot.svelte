@@ -1,13 +1,11 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
 
-  export let defaultLabel
-  export let title
-  export let openUp = false
+  const { defaultLabel, title, openUp = false, children } = $props()
 
-  let isOpen = false
-  let openerEl
-  let dropdownEl
+  let isOpen = $state(false)
+  let openerEl = $state()
+  let dropdownEl = $state()
 
   onMount(() => { document.addEventListener('click', handleClickOutside) })
   onDestroy(() => { document.removeEventListener('click', handleClickOutside) })
@@ -21,12 +19,12 @@
   function toggleDropdown (e) { isOpen = !isOpen }
 </script>
 
-<button type='button' bind:this={openerEl} on:click={toggleDropdown} class='dropdown-toggle material' aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
+<button type='button' bind:this={openerEl} onclick={toggleDropdown} class='dropdown-toggle material' aria-haspopup='true' aria-expanded={isOpen.toString()} {title}>
   {defaultLabel}
 </button>
 {#if isOpen}
   <div class='options' class:openUp class:openDown={!openUp} bind:this={dropdownEl}>
-    <slot />
+    {@render children?.()}
   </div>
 {/if}
 

@@ -4,9 +4,9 @@
   import { getSavedStore } from '@lib/stores'
   import { tooltip } from '@lib/tooltip'
 
-  let userStore
-  let latestData = { games: [], works: [], boards: [], characters: [] }
-  let loading = true
+  let loading = $state(true)
+  let userStore = $state()
+  let latestData = $state({ games: [], works: [], boards: [], characters: [] })
 
   onMount(async () => {
     userStore = getSavedStore('user')
@@ -53,7 +53,7 @@
   <div id='latest'>
     <div class='group'>
       <div class='row'>
-        <select value={$userStore.hpGameSort} on:change={onGameSortChange}>
+        <select value={$userStore.hpGameSort} onchange={onGameSortChange}>
           <option value='latestGames'>Nové hry</option>
           <option value='activeGames'>Aktivní hry</option>
         </select>

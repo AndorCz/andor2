@@ -1,23 +1,18 @@
 <script>
+  import DOMPurify from 'dompurify'
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
   import { getPortraitUrl } from '@lib/database-browser'
-  import { Render } from '@jill64/svelte-sanitize'
   import Reactions from '@components/common/Reactions.svelte'
   import ReactionInput from '@components/common/ReactionInput.svelte'
   import ReactionDisplay from '@components/common/ReactionDisplay.svelte'
 
-  export let user
-  export let post
-  export let onEdit
-  export let onDelete
-  export let unread = false
-  export let onReply
+  const { user, post, onEdit, onDelete, unread = false, onReply } = $props()
 
-  let toolbarEl
-  let contentEl
+  let toolbarEl = $state()
+  let contentEl = $state()
   const isMine = post.owner === user.id
   const postStore = writable(post)
 
@@ -43,13 +38,13 @@
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='buttons'>
-          <button on:click={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
-          <button on:click={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
+          <button onclick={() => onEdit(post.id, post.content)} class='material edit' title='Upravit'>edit</button>
+          <button onclick={() => onDelete(post.id)} class='material delete' title='Smazat'>delete</button>
         </div>
       </div>
       <div class='post' use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
         <div class='content' bind:this={contentEl}>
-          <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+          {@html DOMPurify.sanitize($postStore.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
           {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
         </div>
       </div>
@@ -71,7 +66,7 @@
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='rowInner'>
           <ReactionInput {user} itemStore={postStore} type='post' />
-          <button on:click={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
+          <button onclick={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
         </div>
       </div>
       <div class='post' title={formatDate(post.created_at)} use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
@@ -80,7 +75,7 @@
         {/if}
         <div class='name'>{post.owner_name}</div>
         <div class='content' bind:this={contentEl}>
-          <Render html={post.content} />
+          {@html DOMPurify.sanitize(post.content)}
           {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
         </div>
       </div>

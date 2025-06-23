@@ -4,30 +4,36 @@
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
-  export let user = {}
-  export let boards = []
-  export let showHeadline = false
-  export let compactOnly = false
-  export let page = 0
-  export let maxPage = 0
+  const { user = {}, boards = [], showHeadline = false, compactOnly = false, page = 0, maxPage = 0 } = $props()
 
-  let listView = false
+  let listView = $state(false)
   let boardListStore
 
   // functions to run only in the browser
-  let getHeaderUrl = () => {}
-  let getPortraitUrl = () => {}
+  let getHeaderUrl = $state(() => {})
+  let getPortraitUrl = $state(() => {})
 
   onMount(async () => {
     const databaseBrowser = await import('@lib/database-browser')
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
     boardListStore = getSavedStore('boards', { listView: false })
-    listView = $boardListStore.listView
+    let storeValue
+    const unsubscribe = boardListStore.subscribe(v => { storeValue = v })
+    unsubscribe()
+    if (storeValue) {
+      listView = storeValue.listView
+    }
   })
 
   function setListView (val) {
-    listView = $boardListStore.listView = val
+    listView = val
+    if (boardListStore) {
+      boardListStore.update(storeValue => {
+        storeValue.listView = val
+        return storeValue
+      })
+    }
   }
 
   function triggerPaging (newPage) {
@@ -42,8 +48,8 @@
     <h1>Diskuze</h1>
     <div class='buttons'>
       <div class='toggle'>
-        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
+        <button onclick={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+        <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
         <a href='./board/board-form' class='button desktop'>Vytvořit novou diskuzi</a>
@@ -56,19 +62,23 @@
 {#if isFilledArray(boards)}
   {#if listView || compactOnly}
     <table class='list'>
-      <tr><th>název</th><th>příspěvků</th><th>vlastník</th></tr>
-      {#each boards as board}
-        <tr class='board'>
-          <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
-          <td><div class='count'>{board.post_count}</div></td>
-          <td>
-            <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
-              {board.owner_name}
-              {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
-            </a>
-          </td>
-      </tr>
-      {/each}
+      <thead>
+        <tr><th>název</th><th>příspěvků</th><th>vlastník</th></tr>
+      </thead>
+      <tbody>
+        {#each boards as board}
+          <tr class='board'>
+            <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
+            <td><div class='count'>{board.post_count}</div></td>
+            <td>
+              <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
+                {board.owner_name}
+                {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
+              </a>
+            </td>
+        </tr>
+        {/each}
+      </tbody>
     </table>
   {:else}
     {#each boards as board}
@@ -101,7 +111,7 @@
 {#if maxPage > 0}
   <div class='pagination'>
     {#each { length: maxPage + 1 } as _, i}
-      <button on:click={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
+      <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
 {/if}

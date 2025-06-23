@@ -6,20 +6,18 @@
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let map = { name: '', description: '' }
-  export let user
-  export let game
+  let { map = $bindable({ name: '', description: '' }), user, game } = $props()
 
   const mapName = map.name
-  let files
-  let imageInputEl
-  let descriptionTextareaEl
-  let descriptionInputEl
-  let imageGeneratedUrl
-  let imageReady = false
-  let generatingMap = false
-  let formEl
-  let img
+  let files = $state()
+  let imageInputEl = $state()
+  let descriptionTextareaEl = $state()
+  let descriptionInputEl = $state()
+  let imageGeneratedUrl = $state()
+  let imageReady = $state(false)
+  let generatingMap = $state(false)
+  let formEl = $state()
+  let img = $state()
 
   onMount(async () => {
     if (map.id) {
@@ -91,7 +89,7 @@
     </label>
     nebo
     <ButtonLoading label='Generovat z popisu mapy' handleClick={generateMap} loading={generatingMap} disabled={map.description?.length < 20} />
-    <input type='file' accept='image/*' bind:this={imageInputEl} bind:files on:change={showImageFromFile} id='mapImage' name='mapImage' />
+    <input type='file' accept='image/*' bind:this={imageInputEl} bind:files onchange={showImageFromFile} id='mapImage' name='mapImage' />
     <input type='hidden' name='mapGeneratedUrl' bind:value={imageGeneratedUrl} />
   </div>
 
@@ -108,8 +106,7 @@
   {#if img}
     <div id='mapPreview'>
       <h3>Náhled</h3>
-      <!-- svelte-ignore a11y-no-noninteractive-element-interactions a11y-click-events-have-key-events -->
-      <img src={img.src} alt='Náhled mapy' on:click={() => { $lightboxImage = img.src }} />
+      <img src={img.src} alt='Náhled mapy' onclick={() => { $lightboxImage = img.src }} />
     </div>
   {/if}
 
@@ -119,7 +116,7 @@
   </div>
 
   <center>
-    <button type='button' class='large' on:click={submitForm} disabled={!(imageReady && map.name)}>
+    <button type='button' class='large' onclick={submitForm} disabled={!(imageReady && map.name)}>
       {#if map.id}Uložit mapu{:else}Přidat mapu{/if}
     </button>
   </center>

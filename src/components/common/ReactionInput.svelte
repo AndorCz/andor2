@@ -1,9 +1,7 @@
 <script>
   import { supabase, handleError } from '@lib/database-browser'
 
-  export let user
-  export let itemStore
-  export let type = 'post'
+  const { user, itemStore, type = 'post' } = $props()
 
   function getMyReaction (reaction) {
     return $itemStore[reaction]?.findIndex((id) => { return id === user.id })
@@ -28,11 +26,11 @@
 {#if user.id && $itemStore.owner !== user.id}
   {#key $itemStore}
     <span class='reactions'>
-      <button on:click={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if $itemStore.frowns?.length}<span class='count'>{$itemStore.frowns.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if $itemStore.laughs?.length}<span class='count'>{$itemStore.laughs.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'>{#if $itemStore.shocks?.length}<span class='count'>{$itemStore.shocks.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if $itemStore.hearts?.length}<span class='count'>{$itemStore.hearts.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if $itemStore.thumbs?.length}<span class='count'>{$itemStore.thumbs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if $itemStore.frowns?.length}<span class='count'>{$itemStore.frowns.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if $itemStore.laughs?.length}<span class='count'>{$itemStore.laughs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'>{#if $itemStore.shocks?.length}<span class='count'>{$itemStore.shocks.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if $itemStore.hearts?.length}<span class='count'>{$itemStore.hearts.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if $itemStore.thumbs?.length}<span class='count'>{$itemStore.thumbs.length}</span>{/if}</button>
     </span>
   {/key}
 {/if}

@@ -1,12 +1,12 @@
 <script>
-  import { cropImageToBlob } from '@lib/utils'
-  import { headerCrop } from '@lib/stores'
-  import { tooltip } from '@lib/tooltip'
   import Cropper from 'svelte-easy-crop'
+  import { tooltip } from '@lib/tooltip'
+  import { headerCrop } from '@lib/stores'
+  import { cropImageToBlob } from '@lib/utils'
 
   let cropping = false
-  let cropModalEl
-  let cropCoords
+  let cropModalEl = $state()
+  let cropCoords = $state()
   const aspect = 1100 / 226
 
   async function applyCrop () {
@@ -32,16 +32,16 @@
   <div id='veil'></div>
   <div id='cropModal' bind:this={cropModalEl}>
     <Cropper image={$headerCrop.url} {aspect} crop={{ x: 0, y: 0 }} zoom={1} on:cropcomplete={e => { cropCoords = e.detail }} showGrid={false} />
-    <button on:click={endCrop} class='cancel' title='Zrušit' use:tooltip>
+    <button onclick={endCrop} class='cancel' title='Zrušit' use:tooltip>
       <span class='material'>close</span>
     </button>
-    <button on:click={applyCrop} class='save' title='Uložit' use:tooltip>
+    <button onclick={applyCrop} class='save' title='Uložit' use:tooltip>
       <span class='material'>check</span>
     </button>
   </div>
 {/if}
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} />
 
 <style>
   #veil {

@@ -2,9 +2,9 @@
   import { supabase } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import { onMount } from 'svelte'
-  export let oldUserData
 
-  let chars = []
+  let chars = $state([])
+  const { oldUserData } = $props()
   const migratingChars = new Set()
 
   async function handleWorkAction (charId) {
@@ -64,7 +64,7 @@
         {:else if migratingChars.has(char.id_char)}
           <button disabled>Probíhá</button>
         {:else}
-          <button on:click={() => handleWorkAction(char.id_char)}>
+          <button onclick={() => handleWorkAction(char.id_char)}>
             Migrovat
           </button>
         {/if}

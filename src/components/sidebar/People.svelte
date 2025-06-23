@@ -1,17 +1,17 @@
 <script>
+  import { run } from 'svelte/legacy'
+
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, getPortraitUrl, handleError } from '@lib/database-browser'
   import { writable } from 'svelte/store'
 
-  export let user
-  export let users = []
-  export let openConversation
+  const { user, users = [], openConversation } = $props()
 
-  let showContacts = false
+  let showContacts = $state(false)
   const groups = writable({ unread: [], active: [], contacts: [] })
 
-  $: {
+  run(() => {
     const next = { unread: [], active: [], contacts: [] }
     users.forEach(user => {
       if (user.unread) {
@@ -22,7 +22,7 @@
       }
     })
     groups.set(next)
-  }
+  })
 
   async function deleteContact (userId) {
     const { error } = await supabase.from('contacts').delete().match({ owner: user.id, contact_user: userId })
@@ -37,7 +37,7 @@
   <ul class='unread'>
     {#each $groups.unread as user}
       <li>
-        <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
+        <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
             <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
           {:else}
@@ -53,8 +53,8 @@
 {/if}
 
 <h4 class='toggle'>
-  <button on:click={() => { showContacts = false }} class='secondary' class:active={!showContacts}>Online</button>
-  <button on:click={() => { showContacts = true }} class='secondary' class:active={showContacts}>Kontakty</button>
+  <button onclick={() => { showContacts = false }} class='secondary' class:active={!showContacts}>Online</button>
+  <button onclick={() => { showContacts = true }} class='secondary' class:active={showContacts}>Kontakty</button>
 </h4>
 
 {#if !showContacts}
@@ -62,7 +62,7 @@
     <ul class='active'>
       {#each $groups.active as user}
         <li>
-          <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
+          <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
               <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
@@ -82,7 +82,7 @@
     <ul class='contacts'>
       {#each $groups.contacts as user}
         <li class:offline={!user.active} class='row'>
-          <button class='opener' on:click={() => openConversation({ them: user, type: 'user' })}>
+          <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
               <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
@@ -91,7 +91,7 @@
             <span class='name user'>{user.name}</span>
             {#if user.active}<span class='status'></span>{/if}
           </button>
-          <button on:click={() => deleteContact(user.id)} class='material square hide plain' title='Skrýt konverzaci' use:tooltip>visibility_off</button>
+          <button onclick={() => deleteContact(user.id)} class='material square hide plain' title='Skrýt konverzaci' use:tooltip>visibility_off</button>
         </li>
       {/each}
     </ul>

@@ -1,13 +1,15 @@
 <script>
+  import { preventDefault } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
   import { redirectWithToast } from '@lib/utils'
 
-  let email = ''
-  let resetConfirmed = false
-  let password = ''
-  let password2 = ''
+  let email = $state('')
+  let password = $state('')
+  let password2 = $state('')
+  let resetConfirmed = $state(false)
 
   async function resetPassword () {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset' })
@@ -39,7 +41,7 @@
   <h1>Obnovení hesla</h1>
 
   {#if resetConfirmed}
-    <form on:submit|preventDefault={updatePassword}>
+    <form onsubmit={preventDefault(updatePassword)}>
       <div class='row'>
         <label for='password'>Nové heslo</label>
         <input type='password' id='password' bind:value={password} />
@@ -55,7 +57,7 @@
       </center>
     </form>
   {:else}
-    <form on:submit|preventDefault={resetPassword}>
+    <form onsubmit={preventDefault(resetPassword)}>
       <div class='row'>
         <label for='email'>E-mail</label>
         <input type='email' id='email' bind:value={email} />

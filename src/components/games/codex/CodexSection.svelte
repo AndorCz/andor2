@@ -1,4 +1,6 @@
 <script>
+  import { run } from 'svelte/legacy'
+
   import { writable } from 'svelte/store'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
@@ -6,14 +8,11 @@
   import CodexSideMenu from '@components/games/codex/CodexSideMenu.svelte'
   import CodexPage from '@components/games/codex/CodexPage.svelte'
 
-  export let game
-  export let user
-  export let activeSection
-  export let isStoryteller
+  let { game, user, activeSection = $bindable(), isStoryteller } = $props()
 
-  let pages = []
-  let activePage
-  let visiblePageCount = 0
+  let pages = $state([])
+  let activePage = $state()
+  let visiblePageCount = $state(0)
 
   const mentionList = writable([])
   $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
@@ -37,7 +36,7 @@
     await loadData()
   }
 
-  $: if (activeSection) { loadData() }
+  run(() => { if (activeSection) { loadData() } })
 </script>
 
 <div class='wrapper' class:empty={visiblePageCount === 0}>

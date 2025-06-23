@@ -4,13 +4,11 @@
   import { isFilledArray } from '@lib/utils'
   import Map from '@components/games/maps/Map.svelte'
 
-  export let user
-  export let game
-  export let isStoryteller
+  let { user, game = $bindable(), isStoryteller } = $props()
 
   game.maps?.forEach(map => {
-    map.isActive = map.id === game.active_map?.id
     map.isOpen = map.isActive
+    map.isActive = map.id === game.active_map?.id
   })
 
   game.characters?.forEach(character => {
@@ -43,7 +41,7 @@
     {#each game.maps as map}
       {#if (!map.hidden || isStoryteller)}
         <h3>
-          <button on:click={() => { map.isOpen = !map.isOpen }} class='plain'>
+          <button onclick={() => { map.isOpen = !map.isOpen }} class='plain'>
             <span class='material arrow' class:isOpen={map.isOpen}>arrow_drop_down</span>
             <span class='name'>{#if map.hidden}<span class='material'>visibility_off</span>{/if}{map.name}</span>
           </button>

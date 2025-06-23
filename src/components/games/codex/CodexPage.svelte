@@ -1,19 +1,13 @@
 <script>
-  import { writable } from 'svelte/store'
   import { showSuccess, showError } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
   import { formatDate, createSlug, updateURLParam, removeURLParam } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  export let user
-  export let game
-  export let page
-  export let isStoryteller
-  export let onPageChange
+  const { user, game, page, isStoryteller, onPageChange } = $props()
 
-  const mentionList = writable([])
-  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
+  const mentionList = $derived(game.characters.filter(char => char.accepted && char.state === 'alive').map(char => ({ name: char.name, type: 'character', id: char.id })))
 
   async function updatePage () {
     const { error } = await supabase.from('codex_pages').update({ content: page.content }).eq('id', page.id)
@@ -63,8 +57,10 @@
 <footer>
   <div class='meta'>
     <table>
-      <tr><td>Vytvořeno</td><td>{formatDate(page.created_at)}</td></tr>
-      <tr><td>Aktualizováno</td><td>{formatDate(page.updated_at)}</td></tr>
+      <tbody>
+        <tr><td>Vytvořeno</td><td>{formatDate(page.created_at)}</td></tr>
+        <tr><td>Aktualizováno</td><td>{formatDate(page.updated_at)}</td></tr>
+      </tbody>
     </table>
   </div>
   <div class='url'>{#key page.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='Zkopírovat cestu' use:tooltip>content_copy</button></div>

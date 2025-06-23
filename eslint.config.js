@@ -1,4 +1,5 @@
 import globals from 'globals'
+import svelteParser from 'svelte-eslint-parser'
 import eslintPluginSvelte from 'eslint-plugin-svelte'
 
 export default [
@@ -7,7 +8,8 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      parserOptions: { ecmaFeatures: { jsx: true } },
+      parser: svelteParser,
+      parserOptions: { ecmaFeatures: { jsx: false } },
       globals: {
         ...globals.node,
         ...globals.browser,
@@ -16,11 +18,15 @@ export default [
         window: 'readonly'
       }
     },
+    files: [
+      '**/*.svelte', '*.svelte',
+      '**/*.svelte.js', '*.svelte.js'
+    ],
     rules: {
+      'svelte/valid-compile': ['error', { ignoreWarnings: true }],
       'svelte/no-at-html-tags': 'off',
       'no-var': 'warn',
       'object-shorthand': ['warn', 'properties'],
-
       'accessor-pairs': ['error', { setWithoutGet: true, enforceForClassMembers: true }],
       'array-bracket-spacing': ['error', 'never'],
       'array-callback-return': ['error', {
@@ -146,7 +152,7 @@ export default [
       'no-mixed-spaces-and-tabs': 'error',
       'no-multi-spaces': 'error',
       'no-multi-str': 'error',
-      'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
+      'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 1, maxEOF: 0 }],
       'no-new': 'off',
       'no-new-func': 'error',
       'no-new-object': 'error',

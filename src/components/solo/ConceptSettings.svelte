@@ -1,4 +1,6 @@
 <script>
+  import { run } from 'svelte/legacy'
+
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
@@ -8,16 +10,15 @@
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let concept
-  export let user
+  let { concept = $bindable(), user } = $props()
 
-  let tags
+  let tags = $state()
   let checkLoop
-  let headlineEl
-  let selectedTags
-  let tab = 'prompts'
-  let originalValues = { tags: [] }
-  const savingValues = {}
+  let headlineEl = $state()
+  let selectedTags = $state()
+  let tab = $state('prompts')
+  let originalValues = $state({ tags: [] })
+  const savingValues = $state({})
   const tagItems = [...gameTags]
 
   onMount(() => {
@@ -102,21 +103,21 @@
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
   }
 
-  $: maxTags = selectedTags?.length === 3
-  $: tags = selectedTags?.map(tag => tag.value) || []
+  const maxTags = $derived(selectedTags?.length === 3)
+  run(() => { tags = selectedTags?.map(tag => tag.value) || [] })
 </script>
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
     <a href='/solo/concept/{concept.id}' class='backlink'>{concept.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showConcept} class='material square back' title='Zpět na koncept' use:tooltip>arrow_back</button>
+    <button onclick={showConcept} class='material square back' title='Zpět na koncept' use:tooltip>arrow_back</button>
   </div>
 </div>
 
 <nav class='tabs secondary'>
-  <button on:click={() => { tab = 'prompts' }} class={tab === 'prompts' ? 'active' : ''}>Uživatelské vstupy</button>
-  <button on:click={() => { tab = 'generated' }} class={tab === 'generated' ? 'active' : ''}>Generované podklady (spoiler)</button>
+  <button onclick={() => { tab = 'prompts' }} class={tab === 'prompts' ? 'active' : ''}>Uživatelské vstupy</button>
+  <button onclick={() => { tab = 'generated' }} class={tab === 'generated' ? 'active' : ''}>Generované podklady (spoiler)</button>
 </nav>
 
 <main>
@@ -124,62 +125,64 @@
     <h2>Název</h2>
     <div class='row'>
       <input type='text' bind:value={concept.name} maxlength='80' />
-      <button on:click={onSave('name', concept.name)} disabled={savingValues.name || (originalValues.name === concept.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={onSave('name', concept.name)} disabled={savingValues.name || (originalValues.name === concept.name)} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Svět</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_world} loading={concept.generated_world === 'generating'} placeholder='V jakém světě a časovém období se hra odehrává?' maxlength={1000} />
-      <button on:click={() => onSave('world', concept.prompt_world)} disabled={concept.generated_world === 'generating' || savingValues.prompt_world || originalValues.prompt_world === concept.prompt_world} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('world', concept.prompt_world)} disabled={concept.generated_world === 'generating' || savingValues.prompt_world || originalValues.prompt_world === concept.prompt_world} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Příběh</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_plan} loading={concept.generated_plan === 'generating'} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
-      <button on:click={() => onSave('plan', concept.prompt_plan)} disabled={concept.generated_plan === 'generating' || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('plan', concept.prompt_plan)} disabled={concept.generated_plan === 'generating' || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Protagonista</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_protagonist} loading={concept.generated_protagonist === 'generating'} placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' maxlength={1000} />
-      <button on:click={() => onSave('protagonist', concept.prompt_protagonist)} disabled={concept.generated_protagonist === 'generating' || savingValues.prompt_protagonist || originalValues.prompt_protagonist === concept.prompt_protagonist} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('protagonist', concept.prompt_protagonist)} disabled={concept.generated_protagonist === 'generating' || savingValues.prompt_protagonist || originalValues.prompt_protagonist === concept.prompt_protagonist} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Místa</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_locations} loading={concept.generated_locations === 'generating'} placeholder='Jaká místa jsou pro hru důležitá? (nepovinné)' maxlength={1000} />
-      <button on:click={() => onSave('locations', concept.prompt_locations)} disabled={concept.generated_locations === 'generating' || savingValues.prompt_locations || originalValues.prompt_locations === concept.prompt_locations} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('locations', concept.prompt_locations)} disabled={concept.generated_locations === 'generating' || savingValues.prompt_locations || originalValues.prompt_locations === concept.prompt_locations} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Frakce</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_factions} loading={concept.generated_factions === 'generating'} placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité? (nepovinné)' maxlength={1000} />
-      <button on:click={() => onSave('factions', concept.prompt_factions)} disabled={concept.generated_factions === 'generating' || savingValues.prompt_factions || originalValues.prompt_factions === concept.prompt_factions} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('factions', concept.prompt_factions)} disabled={concept.generated_factions === 'generating' || savingValues.prompt_factions || originalValues.prompt_factions === concept.prompt_factions} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Postavy</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_characters} loading={concept.generated_characters === 'generating'} placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' maxlength={1000} />
-      <button on:click={() => onSave('characters', concept.prompt_characters)} disabled={concept.generated_characters === 'generating' || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('characters', concept.prompt_characters)} disabled={concept.generated_characters === 'generating' || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Ilustrace</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
-      <button on:click={() => onSave('image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Tagy</h2>
     <div class='row'>
       <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
-        <div slot='empty'>Více tagů nelze přidat</div>
+        {#snippet empty()}
+                <div >Více tagů nelze přidat</div>
+              {/snippet}
       </Select>
-      <button on:click={saveTags} disabled={ savingValues.tags || originalValues.tags.join(',') === tags.join(',')} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={saveTags} disabled={ savingValues.tags || originalValues.tags.join(',') === tags.join(',')} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazání konceptu</h2>
     Pozor, toto je nevratná akce<br><br>
-    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tento koncept?')) { deleteConcept() } }}>
+    <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat tento koncept?')) { deleteConcept() } }}>
       <span class='material'>warning</span><span>Smazat koncept hry</span>
     </button>
   {/if}
@@ -187,7 +190,7 @@
     <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable {user} id='conceptAnnotation' name='conceptAnnotation' bind:value={concept.annotation} loading={concept.generated_annotation === 'generating'} maxlength={700} />
-      <button on:click={onSave('annotation', concept.annotation)} disabled={concept.generated_annotation === 'generating' || savingValues.annotation || originalValues.annotation === concept.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={onSave('annotation', concept.annotation)} disabled={concept.generated_annotation === 'generating' || savingValues.annotation || originalValues.annotation === concept.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
     <h2>Svět</h2>
     <EditableLong {user} value={concept.generated_world} onSave={(value) => onSave('generated_world', value)} canEdit allowHtml />

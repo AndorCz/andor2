@@ -1,38 +1,42 @@
 <script>
+  import { handlers } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import Editor from '@components/common/Editor.svelte'
   import Loading from '@components/common/Loading.svelte'
 
-  export let user
-  export let id = null
-  export let value = ''
-  export let onSave = null
-  export let onTyping = null
-  export let allowHtml = false
-  export let name = 'textarea'
-  export let disabled = false
-  export let showButton = false
-  export let buttonIcon = 'send'
-  export let buttonTitle = 'Odeslat'
-  export let editing = false
-  export let minHeight = 140
-  export let enterSend = false
-  export let disableEmpty = true
-  export let maxlength = null
-  export let loading = false
-  export let singleLine = false
-  export let placeholder = ''
-  export let fonts = null
-  export let mentionList = null
-  export let forceBubble = false
-  export let autoFocus = false
-  export let cancelClearsValue = true
+  let {
+    user,
+    id = null,
+    value = $bindable(''),
+    onSave = null,
+    onTyping = null,
+    allowHtml = false,
+    name = 'textarea',
+    disabled = false,
+    showButton = false,
+    buttonIcon = 'send',
+    buttonTitle = 'Odeslat',
+    editing = $bindable(false),
+    minHeight = 140,
+    enterSend = false,
+    disableEmpty = true,
+    maxlength = null,
+    loading = false,
+    singleLine = false,
+    placeholder = '',
+    fonts = null,
+    mentionList = null,
+    forceBubble = false,
+    autoFocus = false,
+    cancelClearsValue = true
+  } = $props()
 
   let tiptap
-  let isEmpty = true
-  let editorRef
-  let textareaRef
+  let isEmpty = $state(true)
+  let editorRef = $state()
+  let textareaRef = $state()
   let originalValue = value
   let height = '60px'
 
@@ -119,7 +123,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} />
 
 <div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble} style='--menuOffset:{allowHtml ? 50 : 0}px'>
   {#if allowHtml}
@@ -128,17 +132,16 @@
     {#if maxlength}
       <span class='counter'>{maxlength - (value ? value.length : 0)}</span>
     {/if}
-    <!-- svelte-ignore a11y-autofocus -->
-    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
+    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight oninput={handlers(setHeight, onChange)} onkeyup={onKeyUp} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
   {#if showButton}
     <div class='buttons'>
       {#if editing}
-        <button type='button' on:click={cancelEdit} class='cancel' title='Zrušit'>
+        <button type='button' onclick={cancelEdit} class='cancel' title='Zrušit'>
           <span class='material'>close</span>
         </button>
       {/if}
-      <button type='button' on:click={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+      <button type='button' onclick={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
         <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
       </button>
     </div>

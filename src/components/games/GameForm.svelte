@@ -2,7 +2,7 @@
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user = {}
+  const { user } = $props()
 </script>
 
 {#if user.id}
@@ -48,7 +48,7 @@
     </div>
 
     <center>
-      <button type='submit' class='large' onclick='this.disabled=true; this.form.submit()'>Vytvořit</button>
+      <button type='submit' class='large' onclick={() => { this.disabled = true; this.form.submit() }}>Vytvořit</button>
     </center>
   </form>
 {:else}

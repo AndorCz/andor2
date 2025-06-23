@@ -6,18 +6,15 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { showError } from '@lib/toasts'
 
-  export let isStoryteller
-  export let isGameOwner
-  export let user
-  export let character = { appearance: '', bio: '' }
+  let { isStoryteller, isGameOwner, user, character = $bindable({ appearance: '', bio: '' }) } = $props()
 
-  let formEl
-  let bioInputEl
-  let bioTextareaEl
-  let looksInputEl
-  let looksTextareaEl
-  let generatingPortrait = false
-  let newPortraitBase64
+  let formEl = $state()
+  let bioInputEl = $state()
+  let bioTextareaEl = $state()
+  let looksInputEl = $state()
+  let looksTextareaEl = $state()
+  let generatingPortrait = $state(false)
+  let newPortraitBase64 = $state()
   const isCharacterOwner = user.id === character.player
 
   async function generatePortrait () {
@@ -101,7 +98,7 @@
       </div>
     {/if}
     <center>
-      <button type='button' on:click={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
+      <button type='button' onclick={submitForm} class='large' disabled={!character.name}>{#if character.id}Upravit postavu{:else}Vytvořit postavu{/if}</button>
     </center>
   </form>
 
@@ -110,7 +107,7 @@
       <summary>Smazat postavu</summary>
       <h3>Smazání postavy</h3>
       Pozor, toto je nevratná akce.<br><br>
-      <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto postavu?')) { deleteCharacter() } }}>
+      <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat tuto postavu?')) { deleteCharacter() } }}>
         <span class='material'>warning</span><span>Smazat postavu</span>
       </button>
     </details>

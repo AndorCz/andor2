@@ -2,9 +2,10 @@
   import { supabase } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import { onMount } from 'svelte'
-  export let oldUserData
 
-  let games = []
+  const { oldUserData } = $props()
+
+  let games = $state([])
   const migratingGames = new Set()
 
   onMount(async () => {
@@ -70,7 +71,7 @@
         {:else if game.migrating || migratingGames.has(game.id_game)}
           <button disabled>Probíhá import</button>
         {:else}
-          <button on:click={() => handleGameAction(game.id_game)}>Importovat</button>
+          <button onclick={() => handleGameAction(game.id_game)}>Importovat</button>
         {/if}
       </div>
     </div>

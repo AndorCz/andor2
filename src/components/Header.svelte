@@ -1,18 +1,16 @@
 <script>
+  import { run } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
 
-  export let pathname
-  export let headerStatic
-  export let headerStorage
-  export let showMenu = true
-  export let chatUnread = false
+  const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
 
-  let headerUrl = headerStatic
-  let errorFetchingHeader = false
-  let chatPeople = 0
+  let headerUrl = $state(headerStatic)
+  let errorFetchingHeader = $state(false)
+  let chatPeople = $state(0)
 
   async function getHeaderUrl () {
     try {
@@ -38,14 +36,13 @@
     chatChannel.subscribe()
   })
 
-  $: if (headerStorage) { getHeaderUrl() }
+  run(() => { if (headerStorage) { getHeaderUrl() } })
 </script>
 
 {#if errorFetchingHeader}
   <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
 {:else if pathname !== '/chat'}
   <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
-    <!-- svelte-ignore a11y-missing-content -->
     <a href='/' id='logo'></a>
     {#if showMenu}
       <nav class='tabs'>

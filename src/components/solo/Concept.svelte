@@ -1,12 +1,13 @@
 <script>
+  import { once } from 'svelte/legacy'
+
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { getPortraitUrl } from '@lib/database-browser'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
 
-  export let concept
-  export let user
+  let { concept = $bindable(), user } = $props()
 
   let checkLoop = null
 
@@ -44,7 +45,7 @@
 {#if concept.generating}
   <h1>{concept.name}</h1>
   <div class='generating row'>
-    <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept' />
+    <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
     <div class='info'>
       <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
       <ul>
@@ -63,7 +64,7 @@
   <div class='headline'>
     <h1>{concept.name}</h1>
     {#if user.id === concept.author.id}
-      <button on:click={showSettings} class='material settings square' title='Nastavení konceptu' use:tooltip>settings</button>
+      <button onclick={showSettings} class='material settings square' title='Nastavení konceptu' use:tooltip>settings</button>
     {/if}
   </div>
   <div class='panel row'>
@@ -77,7 +78,7 @@
         <summary>Svět</summary>
         <p>{@html concept.generated_world}</p>
       </details>
-      <button on:click|once={startGame} class='large'>Začít novou hru</button>
+      <button onclick={once(startGame)} class='large'>Začít novou hru</button>
     </div>
     <aside>
       <ul>

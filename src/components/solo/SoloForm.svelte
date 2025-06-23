@@ -1,14 +1,13 @@
 <script>
   import Select from 'svelte-select'
   import { gameTags } from '@lib/constants'
-  // import { getSavedStore } from '@lib/stores'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user = {}
+  const { user = {} } = $props()
 
-  let selectedTags
-  let tagsInputRef
-  let showAdvanced = false
+  let selectedTags = $state()
+  let tagsInputRef = $state()
+  let showAdvanced = $state(false)
 
   const tagItems = [...gameTags]
   // const conceptStore = getSavedStore('newSoloConcept', { conceptName: '', promptWorld: '', promptStory: '', promptProtagonist: '', promptLocations: '', promptFactions: '', promptCharacters: '', promptImage: '' })
@@ -18,11 +17,11 @@
     event.target.submit()
   }
 
-  $: maxTags = selectedTags?.length === 3
+  const maxTags = $derived(selectedTags?.length === 3)
 </script>
 
 {#if user.id}
-  <form method='POST' autocomplete='off' enctype='multipart/form-data' on:submit={prepareData}>
+  <form method='POST' autocomplete='off' enctype='multipart/form-data' onsubmit={prepareData}>
     <div class='row'>
       <div class='labels'>
         <label for='conceptName'>Název *</label>
@@ -48,7 +47,7 @@
     </div>
 
     {#if showAdvanced}
-      <center><button type='button' class='small' on:click={() => { showAdvanced = false }}>Skrýt pokročilé</button></center>
+      <center><button type='button' class='small' onclick={() => { showAdvanced = false }}>Skrýt pokročilé</button></center>
 
       <div class='row'>
         <div class='labels'><label for='conceptLocations'>Místa</label></div>
@@ -70,7 +69,7 @@
         <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='conceptImage' name='conceptImage' minHeight={75} maxlength={500} /></div>
       </div>
     {:else}
-      <center><button type='button' class='small' on:click={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
+      <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
     {/if}
 
     <div class='row'>
@@ -84,7 +83,7 @@
     </div>
 
     <center>
-      <button type='submit' class='large' onclick='this.disabled=true; this.form.submit()'>Vytvořit</button>
+      <button type='submit' class='large' onclick={() => { this.disabled = true; this.form.submit() }}>Vytvořit</button>
     </center>
   </form>
 {:else}

@@ -9,11 +9,10 @@
   import Characters from '@components/sidebar/Characters.svelte'
   import Conversation from '@components/sidebar/Conversation.svelte'
 
-  export let user = {}
-  export let pathname = ''
+  const { user = {}, pathname = '' } = $props()
 
-  let showSidebar = false
-  let loginInProgress = false
+  let showSidebar = $state(false)
+  let loginInProgress = $state(false)
 
   // layout
   let scrollingRegistered = false
@@ -21,29 +20,29 @@
   let heightOverflow = 0
   let lastScrollOffset = 0
   let scrollDelta = 0
-  let sectionEl
-  let stickTop = false
-  let stickBottom = false
+  let sectionEl = $state()
+  let stickTop = $state(false)
+  let stickBottom = $state(false)
   let resizeObserver
 
   // unread
-  let unreadBookmarks = false
-  let unreadUsers = false
-  let unreadCharacters = false
+  let unreadBookmarks = $state(false)
+  let unreadUsers = $state(false)
+  let unreadCharacters = $state(false)
 
   // users
-  let userStore
-  let users = []
-  let activeUsers = 0
-  let email = ''
-  let password = ''
+  let userStore = $state()
+  let users = $state([])
+  let activeUsers = $state(0)
+  let email = $state('')
+  let password = $state('')
 
   // characters
-  let characters = { allGrouped: [], myStranded: [] }
+  let characters = $state({ allGrouped: [], myStranded: [] })
 
   // loading states
-  let loading = false
-  let currentTab = ''
+  let loading = $state(false)
+  let currentTab = $state('')
 
   onMount(async () => {
     userStore = getSavedStore('user')
@@ -265,9 +264,7 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div id='veil' class:active={showSidebar || $activeConversation} on:click={() => { showSidebar = false }}></div>
+<div id='veil' class:active={showSidebar || $activeConversation} onclick={() => { showSidebar = false }}></div>
 
 <aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:chat={pathname === '/chat'}>
   <section bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
@@ -279,16 +276,16 @@
 
         {#if $userStore?.activePanel}
           <div id='tabs'>
-            <button id='booked' class:active={$userStore?.activePanel === 'booked'} on:click={() => { activate('booked') }}>
+            <button id='booked' class:active={$userStore?.activePanel === 'booked'} onclick={() => { activate('booked') }}>
               {#if unreadBookmarks && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
               <span class='material'>bookmark</span><span class='label'>Záložky</span>
             </button>
-            <button id='people' class:active={$userStore?.activePanel === 'people'} on:click={() => { activate('people') }}>
+            <button id='people' class:active={$userStore?.activePanel === 'people'} onclick={() => { activate('people') }}>
               {#if unreadUsers && $userStore.activePanel !== 'people'}<span class='unread badge'></span>{/if}
               <span class='material'>person</span>
               <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
             </button>
-            <button id='characters' class:active={$userStore?.activePanel === 'characters'} on:click={() => { activate('characters') }}>
+            <button id='characters' class:active={$userStore?.activePanel === 'characters'} onclick={() => { activate('characters') }}>
               {#if unreadCharacters && $userStore?.activePanel !== 'characters'}<span class='unread badge'></span>{/if}
               <span class='material'>domino_mask</span>
               <span class='label'>Postavy</span>
@@ -313,8 +310,8 @@
       <div class='login email'>
         <input type='email' class='w100' placeholder='E-mail' bind:value={email} />
         <div class='row'>
-          <input type='password' placeholder='Heslo' bind:value={password} on:keydown={(event) => { if (event.key === 'Enter') signInWithEmail() }} />
-          <button type='submit' class='material confirm' on:click={signInWithEmail} disabled={loginInProgress}>login</button>
+          <input type='password' placeholder='Heslo' bind:value={password} onkeydown={(event) => { if (event.key === 'Enter') signInWithEmail() }} />
+          <button type='submit' class='material confirm' onclick={signInWithEmail} disabled={loginInProgress}>login</button>
         </div>
         <div class='row links'>
           <a href='/signup' class='register'>Registrovat</a>
@@ -332,7 +329,7 @@
 
 {#if !$activeConversation}
   <div id='toggleWrapper'>
-    <button id='sidebarToggle' class='material' on:click={() => { showSidebar = !showSidebar }}>side_navigation</button>
+    <button id='sidebarToggle' class='material' onclick={() => { showSidebar = !showSidebar }}>side_navigation</button>
   </div>
 {/if}
 

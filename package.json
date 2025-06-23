@@ -16,7 +16,6 @@
     "@astrojs/svelte": "5.4.0",
     "@google/genai": "^1.5.1",
     "@google/generative-ai": "0.16.0",
-    "@jill64/svelte-sanitize": "1.2.4",
     "@supabase/ssr": "0.4.0",
     "@supabase/supabase-js": "2.43.4",
     "@tiptap/core": "2.5.1",
@@ -36,6 +35,7 @@
     "@tiptap/suggestion": "2.5.1",
     "astro": "4.9.1",
     "crypto-js": "4.2.0",
+    "dompurify": "^3.2.6",
     "jimp": "^1.6.0",
     "luxon": "3.4.4",
     "notyf": "3.10.0",
@@ -44,15 +44,20 @@
     "pixi.js": "8.0.5",
     "sharp": "^0.34.2",
     "sortablejs": "1.15.2",
-    "svelte": "4.2.18",
+    "svelte": "5.34.7",
     "svelte-easy-crop": "2.0.3",
     "svelte-select": "5.8.3",
     "tippy.js": "6.3.7"
   },
   "devDependencies": {
-    "eslint": "9.2.0",
+    "@types/eslint": "9.6.1",
+    "eslint": "9.16.0",
+    "eslint-config-prettier": "9.1.0",
     "eslint-plugin-astro": "1.1.2",
-    "eslint-plugin-svelte": "2.38.0",
-    "globals": "15.2.0"
+    "eslint-plugin-svelte": "2.46.1",
+    "globals": "15.13.0",
+    "prettier": "3.4.2",
+    "prettier-plugin-svelte": "3.3.2",
+    "svelte-eslint-parser": "1.2.0"
   }
 }

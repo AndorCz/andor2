@@ -1,4 +1,4 @@
-<script context='module'>
+<script module>
   import { readable, derived } from 'svelte/store'
 
   export const breakpoint = readable('l', set => {

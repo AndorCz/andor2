@@ -2,8 +2,7 @@
   import Post from '@components/common/Post.svelte'
   import { platform } from '@components/common/MediaQuery.svelte'
 
-  export let lastPosts = []
-  export let user = {}
+  const { lastPosts = [], user = {} } = $props()
 
   const groups = []
 

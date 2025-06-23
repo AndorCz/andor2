@@ -12,20 +12,15 @@
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
-  export let user = {}
-  export let works = []
-  export let activeTab = 'articles'
-  export let showHeadline = false
-  export let page = 0
-  export let maxPage = 0
+  const { user = {}, works = [], activeTab = 'articles', showHeadline = false, page = 0, maxPage = 0 } = $props()
 
-  let listView = false
+  let listView = $state(false)
   let workListStore
 
   // functions to run only in the browser
-  let getHeaderUrl = () => {}
-  let getPortraitUrl = () => {}
-  let getWorkFileUrl = () => {}
+  let getHeaderUrl = $state(() => {})
+  let getPortraitUrl = $state(() => {})
+  let getWorkFileUrl = $state(() => {})
 
   onMount(async () => {
     const databaseBrowser = await import('@lib/database-browser')
@@ -72,8 +67,8 @@
     <h1>Tvorba</h1>
     <div class='buttons'>
       <div class='toggle'>
-        <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
-        <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
+        <button onclick={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+        <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
         <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button desktop'>Vytvořit nové dílo</a>
@@ -84,13 +79,13 @@
 {/if}
 
 <nav class='tabs secondary'>
-  <button on:click={() => { navigateTab('articles') }} class:active={activeTab === 'articles'}>
+  <button onclick={() => { navigateTab('articles') }} class:active={activeTab === 'articles'}>
     Články
   </button>
-  <button on:click={() => { navigateTab('images') }} class:active={activeTab === 'images'}>
+  <button onclick={() => { navigateTab('images') }} class:active={activeTab === 'images'}>
     Obrázky
   </button>
-  <button on:click={() => { navigateTab('music') }} class:active={activeTab === 'music'}>
+  <button onclick={() => { navigateTab('music') }} class:active={activeTab === 'music'}>
     Hudba
   </button>
 </nav>
@@ -98,21 +93,25 @@
 {#if isFilledArray(works)}
   {#if listView}
     <table class='list'>
-      <tr><th>název</th><th class='category'>kategorie</th><th>tagy</th><th>příspěvků</th><th class='owner'>autor</th></tr>
-      {#each works as work}
-        <tr class='work' class:editorial={work.editorial}>
-          <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
-          <td><div class='category'>{getCategory(work)}</div></td>
-          <td><div class='tags'>{getTags(work)}</div></td>
-          <td><div class='count'>{work.post_count}</div></td>
-          <td>
-            <a href='./user?id={work.owner_id}' class='user owner'>
-              {work.owner_name}
-              {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
-            </a>
-          </td>
-        </tr>
-      {/each}
+      <thead>
+        <tr><th>název</th><th class='category'>kategorie</th><th>tagy</th><th>příspěvků</th><th class='owner'>autor</th></tr>
+      </thead>
+      <tbody>
+        {#each works as work}
+          <tr class='work' class:editorial={work.editorial}>
+            <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
+            <td><div class='category'>{getCategory(work)}</div></td>
+            <td><div class='tags'>{getTags(work)}</div></td>
+            <td><div class='count'>{work.post_count}</div></td>
+            <td>
+              <a href='./user?id={work.owner_id}' class='user owner'>
+                {work.owner_name}
+                {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
+              </a>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
     </table>
   {:else}
     {#each works as work}
@@ -149,7 +148,7 @@
 {#if maxPage > 0}
   <div class='pagination'>
     {#each { length: maxPage + 1 } as _, i}
-      <button on:click={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
+      <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
 {/if}

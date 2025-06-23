@@ -4,11 +4,11 @@
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
 
-  export let soloGame
+  let { soloGame = $bindable() } = $props()
 
-  let headlineEl
-  let originalValues = {}
-  const savingValues = {}
+  let headlineEl = $state()
+  let originalValues = $state({})
+  const savingValues = $state({})
 
   onMount(() => {
     originalValues = { ...soloGame }
@@ -41,7 +41,7 @@
   <div class='wrapper'>
     <a href='/solo/game/{soloGame.id}' class='backlink'>{soloGame.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showGame} class='material square back' title='Zpět na hru' use:tooltip>arrow_back</button>
+    <button onclick={showGame} class='material square back' title='Zpět na hru' use:tooltip>arrow_back</button>
   </div>
 </div>
 
@@ -49,12 +49,12 @@
   <h2>Název</h2>
   <div class='row'>
     <input type='text' bind:value={soloGame.name} maxlength='80' />
-    <button on:click={onSave('name', soloGame.name)} disabled={savingValues.name || (originalValues.name === soloGame.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+    <button onclick={onSave('name', soloGame.name)} disabled={savingValues.name || (originalValues.name === soloGame.name)} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2>Smazání hry</h2>
   Pozor, toto je nevratná akce<br><br>
-  <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
+  <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat tuto hru?')) { deleteGame() } }}>
     <span class='material'>warning</span><span>Smazat hru</span>
   </button>
 </main>

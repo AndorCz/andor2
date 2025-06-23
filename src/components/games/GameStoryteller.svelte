@@ -1,16 +1,14 @@
 <script>
+  import { gatherCodex } from '@lib/ai'
+  import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
   import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
-  import { showSuccess } from '@lib/toasts'
-  import { gatherCodex } from '@lib/ai'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user
-  export let game
-  export let isStoryteller
+  let { user, game = $bindable(), isStoryteller } = $props()
 
-  let generating = false
+  let generating = $state(false)
   const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
     { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
@@ -81,9 +79,9 @@
   <div class='generate'>
     <TextareaExpandable minHeight={50} placeholder='Zde popiš co chceš od AI napsat. Pokud pole nevyplníš, vygenerují se kompletní podklady dle naší šablony.' bind:value={game.prompt} {user} />
     {#if generating}
-      <button on:click={cancel}>Zrušit</button>
+      <button onclick={cancel}>Zrušit</button>
     {:else}
-      <button on:click={generate} loading={generating}>Generovat</button>
+      <button onclick={generate} loading={generating}>Generovat</button>
     {/if}
   </div>
   <EditableLong allowHtml placeholder='Výstup generovaných podkladů' {user} bind:value={game.story} onSave={() => updateGameInfo(false)} canEdit={isStoryteller} loading={generating} />

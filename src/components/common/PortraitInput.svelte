@@ -4,21 +4,22 @@
   import { showError } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
 
-  export let table
-  export let identity = { portrait: null }
-  export let onPortraitChange = null
-  export let newPortraitBase64 = null
+  let {
+    table,
+    minWidth = 100,
+    saveWidth = 140,
+    showDelete = true,
+    displayWidth = 140,
+    saveMinHeight = 100,
+    onPortraitChange = null,
+    displayHeight = $bindable(140),
+    newPortraitBase64 = $bindable(null),
+    identity = $bindable({ portrait: null })
+  } = $props()
 
-  export let displayWidth = 140
-  export let displayHeight = 140
-  export let minWidth = 100
-  export let saveWidth = 140
-  export let saveMinHeight = 100
-  export let showDelete = true
-
-  let files
-  let fileInputEl
-  let uploading = false
+  let files = $state()
+  let fileInputEl = $state()
+  let uploading = $state(false)
   const maxHeight = 1000
 
   async function processPortrait () {
@@ -88,10 +89,10 @@
     {:else}
       <div class='portrait blank' title={`Obrázek bude zmenšený na šířku ${saveWidth} px`}>Nahrát<br>portrét</div>
     {/if}
-    <input type='file' accept='image/*' bind:this={fileInputEl} bind:files on:change={processPortrait} disabled={uploading} />
+    <input type='file' accept='image/*' bind:this={fileInputEl} bind:files onchange={processPortrait} disabled={uploading} />
   </label>
   {#if identity.portrait && showDelete}
-    <button class='clear material clean' on:click={clearPortrait} title='Smazat' use:tooltip>delete</button>
+    <button class='clear material clean' onclick={clearPortrait} title='Smazat' use:tooltip>delete</button>
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
 </div>

@@ -19,9 +19,9 @@
 </script>
 
 <main>
-  <button class='up material' on:click={scrollUp}>arrow_drop_up</button>
+  <button class='up material' onclick={scrollUp}>arrow_drop_up</button>
   <div class='spacer'></div>
-  <button class='down material' on:click={scrollDown}>arrow_drop_down</button>
+  <button class='down material' onclick={scrollDown}>arrow_drop_down</button>
 </main>
 
 <style>

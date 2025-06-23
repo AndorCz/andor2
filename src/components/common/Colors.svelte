@@ -1,7 +1,7 @@
 <script>
   import { getHex } from '@lib/utils'
 
-  export let user = {}
+  const { user = {} } = $props()
 </script>
 
 <datalist id='presetColors'>

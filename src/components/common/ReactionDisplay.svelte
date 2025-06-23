@@ -1,12 +1,10 @@
 <script>
-  import { tooltipContent } from '@lib/tooltip'
   import ReactionInput from '@components/common/ReactionInput.svelte'
+  import { tooltipContent } from '@lib/tooltip'
 
-  export let itemStore
-  export let user = {}
-  export let type
+  const { itemStore, user = {}, type } = $props()
 
-  let toolbarRef
+  let toolbarRef = $state()
 </script>
 
 <div class='toolbar' bind:this={toolbarRef}>

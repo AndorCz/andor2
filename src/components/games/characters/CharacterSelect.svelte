@@ -1,16 +1,10 @@
 <script>
   import { onMount } from 'svelte'
 
-  export let as = 'Jako'
-  export let to = 'Komu'
-  export let myCharacters
-  export let otherCharacters
-  export let activeAudienceIds
-  export let onAudienceSelect
-  export let gameStore
+  const { as = 'Jako', to = 'Komu', myCharacters, otherCharacters, activeAudienceIds, onAudienceSelect, gameStore } = $props()
 
-  let identitySelect
-  let audienceSelect
+  let identitySelect = $state()
+  let audienceSelect = $state()
 
   onMount(() => { // set select value on mount
     if (identitySelect) { // might not exist if no character
@@ -30,7 +24,7 @@
       <option value={character.id} class='character'>{character.name}</option>
     {/each}
   </select>
-  <select size='4' bind:this={audienceSelect} bind:value={$activeAudienceIds} on:change={onAudienceSelect} multiple>
+  <select size='4' bind:this={audienceSelect} bind:value={$activeAudienceIds} onchange={onAudienceSelect} multiple>
     {#each otherCharacters as character}
       <option value={character.id} class='character'>{character.name}</option>
     {/each}

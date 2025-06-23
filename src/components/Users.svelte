@@ -2,12 +2,12 @@
   import { onMount } from 'svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
 
-  let users = []
-  let page = 0
-  let topEl
-  let pages = null
-  let searchEl
-  let total = 0
+  let users = $state([])
+  let page = $state(0)
+  let topEl = $state()
+  let pages = $state(null)
+  let searchEl = $state()
+  let total = $state(0)
   const limit = 100
 
   onMount(() => { loadUsers() })
@@ -38,9 +38,8 @@
 <h1 bind:this={topEl}>
   Uživatelé&nbsp;({total})
   <div class='searchBox'>
-    <!-- svelte-ignore a11y-autofocus -->
-    <input bind:this={searchEl} type='text' size='30' placeholder='vyhledat' autofocus on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-    <button class='material' on:click={handleSearch}>search</button>
+    <input bind:this={searchEl} type='text' size='30' placeholder='vyhledat' autofocus onkeydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+    <button class='material' onclick={handleSearch}>search</button>
   </div>
 </h1>
 
@@ -59,7 +58,7 @@
   </div>
   <div class='pagination'>
     {#each { length: pages } as _, i}
-      <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+      <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
 {:else}

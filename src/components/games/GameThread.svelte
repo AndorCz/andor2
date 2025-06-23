@@ -1,4 +1,6 @@
 <script>
+  import { run } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { sendPost } from '@lib/database-browser'
@@ -11,25 +13,20 @@
   import CharacterSelect from '@components/games/characters/CharacterSelect.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user = {}
-  export let game = {}
-  export let gameStore
-  export let isStoryteller
-  export let isPlayer
-  export let unread = 0
+  const { user = {}, game = {}, gameStore, isStoryteller, isPlayer, unread = 0 } = $props()
 
-  let activeTool = 'post'
-  let textareaRef
-  let searchEl
-  let textareaValue = $gameStore.unsent || '' // load unsent post
-  let saving = false
-  let editing = false
-  let filterActive = false
-  let page = 0
-  let pages
-  let loading = true
-  let searchTerms = ''
-  let diceMode = 'icon'
+  let activeTool = $state('post')
+  let textareaRef = $state()
+  let searchEl = $state()
+  let textareaValue = $state($gameStore.unsent || '') // load unsent post
+  let saving = $state(false)
+  let editing = $state(false)
+  let filterActive = $state(false)
+  let page = $state(0)
+  let pages = $state()
+  let loading = $state(true)
+  let searchTerms = $state('')
+  let diceMode = $state('icon')
   // let generatingPost = false
 
   game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
@@ -42,13 +39,14 @@
   $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
 
   const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
-  let otherCharacters = []
-  $: {
+  let otherCharacters = $state([])
+
+  run(() => {
     otherCharacters = [
       { id: '*', name: 'Všem' },
       ...game.characters.filter((char) => char.accepted && char.state === 'alive')
     ]
-  }
+  })
 
   $gameStore.activeCharacterId = getActiveCharacterId() // set default value
   $activeAudienceIds = getActiveAudience()
@@ -180,16 +178,18 @@
   }
   */
 
-  $: diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
+  run(() => {
+    diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
+  })
 </script>
 
 {#if game.open_game || isStoryteller || isPlayer}
   <main>
     <div class='tabs tertiary tools'>
-      <button on:click={() => { changeTool('post') }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
-      <button on:click={() => { changeTool('maps') }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
-      <button on:click={() => { changeTool('dice') }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
-      <button on:click={() => { changeTool('find') }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
+      <button onclick={() => { changeTool('post') }} class='tab' class:active={activeTool === 'post'}><span class='material'>chat</span>{#if editing}Upravit{:else}Psát{/if}</button>
+      <button onclick={() => { changeTool('maps') }} class='tab' class:active={activeTool === 'maps'}><span class='material'>explore</span>Mapy</button>
+      <button onclick={() => { changeTool('dice') }} class='tab' class:active={activeTool === 'dice'}><span class='material'>casino</span>Kostky</button>
+      <button onclick={() => { changeTool('find') }} class='tab' class:active={activeTool === 'find'}><span class='material'>search</span>Hledat</button>
     </div>
 
     <div class='toolWrapper'>
@@ -199,9 +199,8 @@
         <Maps {user} {game} {isStoryteller} />
       {:else if activeTool === 'find'}
         <div class='searchBox'>
-          <!-- svelte-ignore a11y-autofocus -->
-          <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-          <button class='material' on:click={handleSearch}>search</button>
+          <input type='text' size='30' placeholder='vyhledat' autofocus bind:this={searchEl} onkeydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+          <button class='material' onclick={handleSearch}>search</button>
         </div>
       {:else if activeTool === 'post' && user.id && $gameStore.activeCharacterId}
         {#if game.archived}
@@ -216,9 +215,9 @@
   </main>
 
   {#if searchTerms}
-    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' on:click={async () => { searchTerms = ''; await loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' onclick={async () => { searchTerms = ''; await loadPosts() }}>close</button></h2>
   {:else if filterActive}
-    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' on:click={async () => { $activeAudienceIds = ['*']; await loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' onclick={async () => { $activeAudienceIds = ['*']; await loadPosts() }}>close</button></h2>
   {/if}
   <!--({$activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 

@@ -7,17 +7,16 @@
   import HeaderInput from '@components/common/HeaderInput.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let data = {}
-  export let user = {}
+  let { data = $bindable({}), user = {} } = $props()
 
-  let saving = false
-  let originalName
-  let originalOpen
-  let originalAnnotation
-  let newMod
-  let newBan
-  let newMember
-  let headlineEl
+  let saving = $state(false)
+  let originalName = $state()
+  let originalOpen = $state()
+  let originalAnnotation = $state()
+  let newMod = $state()
+  let newBan = $state()
+  let newMember = $state()
+  let headlineEl = $state()
 
   onMount(() => {
     setOriginal()
@@ -86,20 +85,20 @@
   <div class='wrapper'>
     <a href='/board/{data.id}' class='backlink'>{data.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showBoard} class='material square back' title='Zpět do diskuze' use:tooltip>arrow_back</button>
+    <button onclick={showBoard} class='material square back' title='Zpět do diskuze' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>
   <h2>Název</h2>
   <div class='row'>
     <input type='text' id='boardName' name='boardName' bind:value={data.name} maxlength='80' />
-    <button on:click={updateBoard} disabled={saving || (originalName === data.name)} class='material square' title='Uložit' use:tooltip>check</button>
+    <button onclick={updateBoard} disabled={saving || (originalName === data.name)} class='material square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2>Anotace</h2>
   <div class='row'>
     <TextareaExpandable {user} id='gameAnnotation' name='gameAnnotation' bind:value={data.annotation} maxlength={150} />
-    <button on:click={updateBoard} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
+    <button onclick={updateBoard} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2 class='first'>Vlastní hlavička</h2>
@@ -118,7 +117,7 @@
             <li>
               <div class='ban item'>
                 <h3>{ban.name}</h3>
-                <button class='square material square' on:click={() => { removePerson('bans', ban) }} title='Odebrat uživatele' use:tooltip>delete</button>
+                <button class='square material square' onclick={() => { removePerson('bans', ban) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -130,9 +129,11 @@
     <h3><label for='boardAddBan'>Zakázat přístup</label></h3>
     <div class='row select'>
       <Select bind:value={newBan} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        <div slot='empty'>Uživatel nenalezen</div>
+        {#snippet empty()}
+                <div >Uživatel nenalezen</div>
+              {/snippet}
       </Select>
-      <button class='material square' on:click={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id} title='Přidat uživatele' use:tooltip>add</button>
+      <button class='material square' onclick={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
   {:else}
     <h2>Členové</h2>
@@ -143,7 +144,7 @@
             <li>
               <div class='member item'>
                 <h3>{member.name}</h3>
-                <button class='square material square' on:click={() => { removePerson('members', member) }} title='Odebrat uživatele' use:tooltip>delete</button>
+                <button class='square material square' onclick={() => { removePerson('members', member) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -155,9 +156,11 @@
     <h3><label for='boardAddMember'>Přidat člena</label></h3>
     <div class='row select'>
       <Select bind:value={newMember} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        <div slot='empty'>Uživatel nenalezen</div>
+        {#snippet empty()}
+                <div >Uživatel nenalezen</div>
+              {/snippet}
       </Select>
-      <button class='material square' on:click={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id} title='Přidat uživatele' use:tooltip>add</button>
+      <button class='material square' onclick={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
   {/if}
 
@@ -172,7 +175,7 @@
             <li>
               <div class='mod item'>
                 <h3>{mod.name}</h3>
-                <button class='square material' on:click={() => { removePerson('mods', mod) }} title='Odebrat uživatele' use:tooltip>delete</button>
+                <button class='square material' onclick={() => { removePerson('mods', mod) }} title='Odebrat uživatele' use:tooltip>delete</button>
               </div>
             </li>
           {/each}
@@ -184,9 +187,11 @@
     <h3><label for='boardAddMod'>Přidat správce</label></h3>
     <div class='row select'>
       <Select bind:value={newMod} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        <div slot='empty'>Uživatel nenalezen</div>
+        {#snippet empty()}
+                <div >Uživatel nenalezen</div>
+              {/snippet}
       </Select>
-      <button class='material square' on:click={() => { addPerson('mods', newMod) }} disabled={saving || !newMod?.id}>add</button>
+      <button class='material square' onclick={() => { addPerson('mods', newMod) }} disabled={saving || !newMod?.id}>add</button>
     </div>
 
     <h2>Přístupnost diskuze</h2>
@@ -195,12 +200,12 @@
         <option value={true}>Veřejná</option>
         <option value={false}>Soukromá</option>
       </select>
-      <button on:click={updateBoard} disabled={saving || (originalOpen === data.open)} class='material square' title='Uložit' use:tooltip>check</button>
+      <button onclick={updateBoard} disabled={saving || (originalOpen === data.open)} class='material square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazání diskuze</h2>
     Pozor, toto je nevratná akce.<br><br>
-    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
+    <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat tuto diskuzi?')) { deleteBoard() } }}>
       <span class='material'>warning</span><span>Smazat diskuzi</span>
     </button>
   {/if}

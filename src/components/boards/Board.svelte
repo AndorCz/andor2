@@ -7,13 +7,10 @@
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  export let user = {}
-  export let data = {}
-  export let isMod = false
+  let { user = {}, data = $bindable({}), isMod = false } = $props()
 
   const boardStore = getSavedStore('board-' + data.id)
-
-  let bookmarkId
+  const bookmarkId = $derived($bookmarks.boards.find(b => b.id === data.id)?.bookmark_id)
 
   onMount(() => {
     data.header = data.header || 'Užitečné odkazy, pravidla apod.'
@@ -48,21 +45,19 @@
     $bookmarks.boards = $bookmarks.boards.filter(b => b.id !== data.id)
     showSuccess('Záložka odebrána')
   }
-
-  $: bookmarkId = $bookmarks.boards.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <div class='headline'>
   <h1>{data.name}</h1>
   {#key $boardStore.hideHeader}
-    <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
+    <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
   {/key}
   {#if user.id}
     {#key bookmarkId}
-      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+      <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
     {/key}
     {#if isMod}
-      <button on:click={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
+      <button onclick={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
     {/if}
   {/if}
 </div>

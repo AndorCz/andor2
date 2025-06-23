@@ -2,17 +2,16 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { removeURLParam, isFilledArray, addCharacterNameStyles } from '@lib/utils'
-  import { getSavedStore, bookmarks } from '@lib/stores'
   import { supabase, handleError } from '@lib/database-browser'
+  import { getSavedStore, bookmarks } from '@lib/stores'
+  import { removeURLParam, isFilledArray, addCharacterNameStyles } from '@lib/utils'
   import Discussion from '@components/Discussion.svelte'
   import GameCodex from '@components/games/codex/GameCodex.svelte'
   import GameThread from '@components/games/GameThread.svelte'
   import GameStoryteller from '@components/games/GameStoryteller.svelte'
   import GameCharacters from '@components/games/characters/GameCharacters.svelte'
 
-  export let user = {}
-  export let game = {}
+  let { user = {}, game = $bindable({}) } = $props()
   game.characters = game.characters || []
   game.unread = game.unread || {}
 
@@ -20,9 +19,9 @@
   const isGameOwner = game.owner.id === user.id
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
+  const bookmarkId = $derived($bookmarks.games.find(b => b.id === game.id)?.bookmark_id)
   // let notificationEnabled = game.subscription?.notification || false
-  let emailEnabled = game.subscription?.email || false
-  let bookmarkId
+  let emailEnabled = $state(game.subscription?.email || false)
 
   onMount(() => {
     // tabs are persisted for the purpose of saving with redirect (to astro)
@@ -71,8 +70,6 @@
     if (error) { return handleError(error) }
     showSuccess(emailEnabled ? 'E-maily zapnuty' : 'E-maily vypnuty')
   }
-
-  $: bookmarkId = $bookmarks.games.find(b => b.id === game.id)?.bookmark_id
 </script>
 
 <svelte:head>
@@ -86,7 +83,7 @@
     <h1>{game.name}{#if game.archived}&nbsp;(archiv){/if}</h1>
     {#if user.id}
       {#key bookmarkId}
-        <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
       {/key}
       <!--
       {#key notificationEnabled}
@@ -95,30 +92,30 @@
       -->
       {#if isPlayer}
         {#key emailEnabled}
-          <button on:click={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'mail_off' : 'email'}</button>
+          <button onclick={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'mail_off' : 'email'}</button>
         {/key}
       {/if}
       {#if isGameOwner}
-        <button on:click={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
+        <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
     {/if}
   </div>
 
   <nav class='tabs secondary'>
-    <button on:click={() => { changeTab('codex') }} class={$gameStore.activeTab === 'codex' ? 'active' : ''}>
+    <button onclick={() => { changeTab('codex') }} class={$gameStore.activeTab === 'codex' ? 'active' : ''}>
       Kodex
     </button>
-    <button on:click={() => { changeTab('game') }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={game.unread.gameThread}>
+    <button onclick={() => { changeTab('game') }} class={$gameStore.activeTab === 'game' ? 'active' : ''} class:hasUnread={game.unread.gameThread}>
       Hra{#if game.unread.gameThread && $gameStore.activeTab !== 'game'}<span class='unread count'>{game.unread.gameThread}</span>{/if}
     </button>
-    <button on:click={() => { changeTab('chat') }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={game.unread.gameChat}>
+    <button onclick={() => { changeTab('chat') }} class={$gameStore.activeTab === 'chat' ? 'active' : ''} class:hasUnread={game.unread.gameChat}>
       Diskuze{#if game.unread.gameChat && $gameStore.activeTab !== 'chat'}<span class='unread count'>{game.unread.gameChat}</span>{/if}
     </button>
-    <button on:click={() => { changeTab('chars') }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
+    <button onclick={() => { changeTab('chars') }} class={$gameStore.activeTab === 'chars' ? 'active' : ''}>
       Postavy{#if game.unread.gameCharacters && $gameStore.activeTab !== 'chars'}<span class='unread badge'></span>{/if}
     </button>
     {#if isStoryteller}
-      <button on:click={() => { changeTab('story') }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
+      <button onclick={() => { changeTab('story') }} class={$gameStore.activeTab === 'story' ? 'active' : ''}>
         Vypravěč
       </button>
     {/if}

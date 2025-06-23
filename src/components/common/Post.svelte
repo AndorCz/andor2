@@ -1,32 +1,20 @@
 <script>
+  import DOMPurify from 'dompurify'
   import { onMount } from 'svelte'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { tooltip } from '@lib/tooltip'
   import { writable } from 'svelte/store'
-  import { Render } from '@jill64/svelte-sanitize'
+  import { platform } from '@components/common/MediaQuery.svelte'
   import { formatDate } from '@lib/utils'
   import { lightboxImage } from '@lib/stores'
-  import { tooltip } from '@lib/tooltip'
-  import { platform } from '@components/common/MediaQuery.svelte'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import Reactions from '@components/common/Reactions.svelte'
 
-  export let post
-  export let user = null
-  export let unread = false
-  export let isMyPost = false
-  export let allowReactions = false
-  export let canDeleteAll = false
-  export let canModerate = false
-  export let onModerate = null
-  export let onDelete = null
-  export let onEdit = null
-  export let onReply = null
-  export let iconSize = 70
+  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70 } = $props()
 
-  const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
-
+  let expanded = $state(false)
+  let contentEl = $state()
   const postStore = writable(post)
-  let expanded = false
-  let contentEl
+  const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
 
   onMount(() => {
     checkMeMentioned()
@@ -79,13 +67,11 @@
     </div>
   {/if}
   <div class='body'>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class='header'>
       {#if unread}
         <span class='badge'></span>
       {/if}
-      <span class='title' on:click={onHeaderClick}>
+      <span class='title' onclick={onHeaderClick}>
         {#if post.owner_type === 'user'}
           <a href={'/user?id=' + post.owner} class='user'>{$postStore.owner_name}</a>
         {:else}
@@ -98,25 +84,24 @@
       <span class='toolbar'>
         <span class='time'>{formatDate($postStore.created_at)}</span>
         {#if canModerate}
-          <button on:click={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
+          <button onclick={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
         {/if}
         {#if onEdit && isMyPost}
-          <button on:click={() => onEdit($postStore)} class='material edit' title='Upravit' use:tooltip>edit</button>
+          <button onclick={() => onEdit($postStore)} class='material edit' title='Upravit' use:tooltip>edit</button>
         {/if}
         {#if onDelete && canDelete}
-          <button on:click={() => onDelete($postStore)} class='material delete' title='Smazat' use:tooltip>delete</button>
+          <button onclick={() => onDelete($postStore)} class='material delete' title='Smazat' use:tooltip>delete</button>
         {/if}
         {#if canModerate && !$postStore.moderated}
-          <button on:click={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>
+          <button onclick={triggerModerate} class='material moderate' title='Skrýt všem' use:tooltip>visibility_off</button>
         {/if}
         {#if onReply}
           <span class='sep'></span>
-          <button on:click={() => { onReply($postStore.id, $postStore.owner_name, $postStore.owner) }} class='material reaction reply square' title='Reagovat' use:tooltip>reply</button>
+          <button onclick={() => { onReply($postStore.id, $postStore.owner_name, $postStore.owner) }} class='material reaction reply square' title='Reagovat' use:tooltip>reply</button>
         {/if}
       </span>
     </div>
-    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-    <div class='content' on:click={onImageClick} bind:this={contentEl}>
+    <div class='content' onclick={onImageClick} bind:this={contentEl}>
       {#if $platform === 'mobile'}
         <div class='icon' style='--iconSize: {iconSize}px'>
           {#if $postStore.owner_portrait}
@@ -128,7 +113,7 @@
           {/if}
         </div>
       {/if}
-      <Render html={$postStore.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+      {@html DOMPurify.sanitize($postStore.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
       {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
       <div class='clear'></div>
       {#if allowReactions}

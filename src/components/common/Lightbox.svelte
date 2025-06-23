@@ -9,13 +9,12 @@
 </script>
 
 {#if $lightboxImage}
-  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-  <div class='veil' on:click={close}>
+  <div class='veil' onclick={close}>
     <img src={$lightboxImage} alt='Lightbox' class='lightbox-image'>
   </div>
 {/if}
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} />
 
 <style>
   .veil {

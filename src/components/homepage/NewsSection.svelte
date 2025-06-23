@@ -1,9 +1,7 @@
 <script>
   import { supabase, getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
 
-  export let headline = 'Nové hry'
-  export let slug = 'game'
-  export let table = 'game_list'
+  const { headline = 'Nové hry', slug = 'game', table = 'game_list' } = $props()
 
   async function loadData () {
     const query = supabase.from(table).select('*').eq('published', true)

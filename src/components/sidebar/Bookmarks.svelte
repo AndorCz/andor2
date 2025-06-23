@@ -4,14 +4,14 @@
   import { supabase, handleError } from '@lib/database-browser'
   import Sortable from 'sortablejs'
 
-  let bookmarkNumber
-  let soloEl
-  let gamesEl
-  let boardsEl
-  let worksEl
-  let sorting = false
-  let saving = false
-  let showHandles = false
+  let soloEl = $state()
+  let gamesEl = $state()
+  let boardsEl = $state()
+  let worksEl = $state()
+  let sorting = $state(false)
+  let saving = $state(false)
+  let showHandles = $state(false)
+  const bookmarkNumber = $derived($bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length)
 
   $bookmarks.solo.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
@@ -50,8 +50,6 @@
     const { error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmarkId)
     if (error) { handleError(error) }
   }
-
-  $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length
 </script>
 
 {#if $bookmarks.games.length > 0}
@@ -131,7 +129,7 @@
 {#if bookmarkNumber === 0}
   <div class='empty'>Žádné záložky</div>
 {:else}
-  <button class='reorder' on:click={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
+  <button class='reorder' onclick={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
 {/if}
 
 <style>

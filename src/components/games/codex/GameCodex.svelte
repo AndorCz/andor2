@@ -1,25 +1,22 @@
 <script>
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
-  import { supabase, handleError } from '@lib/database-browser'
-  import { Render } from '@jill64/svelte-sanitize'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
+  import { supabase, handleError } from '@lib/database-browser'
+  import DOMPurify from 'dompurify'
   import EditableLong from '@components/common/EditableLong.svelte'
   import CodexSection from '@components/games/codex/CodexSection.svelte'
 
-  export let user
-  export let game
-  export let isStoryteller
-  export let isPlayer
+  const { user, game, isStoryteller, isPlayer } = $props()
 
-  let sections = [{ slug: 'index', name: 'Úvod' }]
-  let activeSection = sections[0]
-  let indexPageContent
-  let searchEl
-  let searchPhrase = ''
-  let searchResults = []
+  let searchEl = $state()
+  let sections = $state([{ slug: 'index', name: 'Úvod' }])
+  let searchPhrase = $state('')
+  let searchResults = $state([])
+  let activeSection = $derived(sections[0])
+  let indexPageContent = $state()
 
   const mentionList = writable([])
   $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
@@ -82,11 +79,11 @@
       <div class='row'>
         <div class='tabs tertiary codex'>
           {#each sections as section}
-            <button class='section' on:click={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
+            <button class='section' onclick={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
               {section.name}
             </button>
           {/each}
-          <button on:click={() => { activeSection = { slug: 'search' } }} class='search section' class:active={activeSection.slug === 'search'}><span class='material'>search</span>Hledat</button>
+          <button onclick={() => { activeSection = { slug: 'search' } }} class='search section' class:active={activeSection.slug === 'search'}><span class='material'>search</span>Hledat</button>
         </div>
       </div>
     {/if}
@@ -107,15 +104,14 @@
     {:else if activeSection.slug === 'search'}
       <!-- search -->
       <div class='searchBox'>
-        <!-- svelte-ignore a11y-autofocus -->
-        <input type='text' size='30' placeholder='vyhledat' autofocus bind:value={searchPhrase} bind:this={searchEl} on:keydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
-        <button class='material' on:click={handleSearch}>search</button>
+        <input type='text' size='30' placeholder='vyhledat' autofocus bind:value={searchPhrase} bind:this={searchEl} onkeydown={(e) => { if (e.key === 'Enter') { handleSearch() } }} />
+        <button class='material' onclick={handleSearch}>search</button>
       </div>
       {#if searchResults.length}
         {#each searchResults as page}
           <div class='page'>
             <a href={`/game/${game.id}?codex_section=${page.section?.slug || ''}&codex_page=${page.slug || ''}`}>{page.name}</a>
-            <Render html={page.content} />
+            {@html DOMPurify.sanitize(page.content || '')}
           </div>
         {/each}
       {:else}
