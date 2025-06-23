@@ -4,15 +4,16 @@
   import { platform } from '@components/common/MediaQuery.svelte'
   import { GoogleGenAI } from '@google/genai'
   import { waitForMediaLoad } from '@lib/utils'
+  import { getContextString } from '@lib/solo/gemini'
   import { afterUpdate, tick } from 'svelte'
-  import { storytellerConfig } from '@lib/solo/gemiini'
   import { supabase, handleError } from '@lib/database-browser'
+  import { storytellerConfig, storytellerInstructions } from '@lib/solo/gemini'
   import Post from '@components/common/Post.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   export let user = {}
   export let soloGame = {}
-  // export let soloConcept = {}
+  export let soloConcept = {}
 
   const ai = new GoogleGenAI({ apiKey: import.meta.env.PUBLIC_GEMINI })
   const allPosts = writable([])
@@ -23,6 +24,7 @@
   let postsEl
   let inputValue = ''
   let isLoading = false
+  let isGenerating = false
   let hasMorePosts = true
   let displayedCount = 50
   let userHasScrolledUp = false
@@ -83,45 +85,45 @@
       const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
       if (error) { return handleError(error) }
       $allPosts = data || []
-      initAIChat(data)
       updateDisplayedPosts()
+      const history = $allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
+      const context = getContextString(soloConcept)
+      storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
+      chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig })
     } finally {
       isLoading = false
     }
   }
 
-  async function initAIChat (posts) {
-    const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-    chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig })
-
-    /*
-    const stream1 = await chat.sendMessageStream({
-      message: "I have 2 dogs in my house."
-    })
-    for await (const chunk of stream1) {
-      console.log(chunk.text)
-      console.log("_".repeat(80))
-    }
-
-    const stream2 = await chat.sendMessageStream({
-      message: "How many paws are in my house?"
-    })
-    for await (const chunk of stream2) {
-      console.log(chunk.text)
-      console.log("_".repeat(80))
-    }
-    */
-  }
-
   async function addPost () {
     if (inputValue.trim() === '') return
-    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select()
+    if (isGenerating) return // Prevent multiple submissions while generating
+    isGenerating = true
+    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select().single()
     if (error) { return handleError(error) }
     inputValue = ''
 
-    // Add the new post to both stores
-    $allPosts = [...$allPosts, ...newPostData]
-    $displayedPosts = [...$displayedPosts, ...newPostData]
+    // Add the new user post to both stores
+    $allPosts = [...$allPosts, newPostData]
+    $displayedPosts = [...$displayedPosts, newPostData]
+
+    // Send the message to the AI and handle the response
+    const stream = await chat.sendMessageStream({ message: newPostData.content })
+    const aiPost = { owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
+    $allPosts = [...$allPosts, aiPost]
+    $displayedPosts = [...$displayedPosts, aiPost]
+
+    // Process the AI response stream
+    for await (const chunk of stream) {
+      console.log(chunk.text)
+      aiPost.content += chunk.text
+      // Force a reactivity update
+      $displayedPosts = [...$displayedPosts]
+    }
+    // Save the AI-generated post to the database
+    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'ai-storyteller', content: aiPost.content })
+    if (aiError) { return handleError(aiError) }
+    isGenerating = false
   }
 
   // Reactive statement for scrolling
@@ -168,7 +170,7 @@
           <center class='info empty'>Žádné příspěvky</center>
         {/if}
       </div>
-      <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+      <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} disabled={isLoading || isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
     {/await}
   </div>
 </main>

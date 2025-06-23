@@ -1,19 +1,6 @@
 import { getHash } from '@lib/utils'
-import { getBasePrompt, ai, aiConfigDefault, prompts, generateHeaderImage } from '@lib/solo/gemini'
-
-// Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
-function getContext (conceptData, exclude) {
-  const context = {
-    basePrompt: getBasePrompt(conceptData),
-    world: { text: conceptData.generated_world },
-    factions: { text: conceptData.generated_factions },
-    locations: { text: conceptData.generated_locations },
-    characters: { text: conceptData.generated_characters },
-    protagonist: { text: conceptData.generated_protagonist }
-  }
-  delete context[exclude]
-  return Object.values(context)
-}
+import { getContext } from '@lib/solo/gemini'
+import { ai, aiConfigDefault, prompts, generateHeaderImage } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {

@@ -14,10 +14,6 @@ export const assistantConfig = {
   }
 }
 
-export function getBasePrompt (conceptData) {
-  return { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-}
-
 export const prompts = {
   world: '1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh.\n',
   factions: '2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
@@ -26,7 +22,7 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
-  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens.\n'
+  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n'
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
@@ -35,11 +31,12 @@ export async function generateSoloConcept (supabase, conceptData) {
     let contents
 
     console.log('Starting concept generation for:', conceptData.id)
+    const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
 
     // World
     const worldMessage = { text: prompts.world }
     if (conceptData.prompt_world) { worldMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
-    contents = [getBasePrompt(conceptData), worldMessage]
+    contents = [basePrompt, worldMessage]
     const response = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedWorld = { text: response.text }
     const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text }).eq('id', conceptData.id)
@@ -49,7 +46,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Factions
     const factionsMessage = { text: prompts.factions }
     if (conceptData.prompt_factions) { factionsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_factions}"` }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage]
     const factionsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedFactions = { text: factionsResponse.text }
     const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text }).eq('id', conceptData.id)
@@ -59,7 +56,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Locations
     const locationsMessage = { text: prompts.locations }
     if (conceptData.prompt_locations) { locationsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_locations}"` }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
     const locationsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedLocations = { text: locationsResponse.text }
     const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text }).eq('id', conceptData.id)
@@ -69,7 +66,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Characters
     const charactersMessage = { text: prompts.characters }
     if (conceptData.prompt_characters) { charactersMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_characters}"` }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
     const charactersResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedCharacters = { text: charactersResponse.text }
     const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text }).eq('id', conceptData.id)
@@ -79,7 +76,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Protagonist
     const protagonistMessage = { text: prompts.protagonist }
     if (conceptData.prompt_protagonist) { protagonistMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_protagonist}"` }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
     const protagonistResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedProtagonist = { text: protagonistResponse.text }
     const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text }).eq('id', conceptData.id)
@@ -89,7 +86,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Plan
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
     const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
     const planResponse = await ai2.models.generateContent({ ...assistantConfig, contents, model: 'gemini-2.5-pro', config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
     const generatedPlan = { text: planResponse.text }
@@ -99,7 +96,7 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     // Annotation
     const annotationMessage = { text: prompts.annotation }
-    contents = [getBasePrompt(conceptData), worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
+    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
     const annotationResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedAnnotation = { text: annotationResponse.text }
     const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text }).eq('id', conceptData.id)
