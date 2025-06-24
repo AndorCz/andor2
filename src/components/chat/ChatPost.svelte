@@ -1,7 +1,6 @@
 <script>
   import DOMPurify from 'dompurify'
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
   import { getPortraitUrl } from '@lib/database-browser'
@@ -14,7 +13,6 @@
   let toolbarEl = $state()
   let contentEl = $state()
   const isMine = post.owner === user.id
-  const postStore = writable(post)
 
   onMount(() => {
     checkMeMentioned()
@@ -44,8 +42,8 @@
       </div>
       <div class='post' use:tooltipContent={{ content: toolbarEl, trigger: 'click' }}>
         <div class='content' bind:this={contentEl}>
-          {@html DOMPurify.sanitize($postStore.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
-          {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
+          {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
+          {#if post.created_at !== post.updated_at}<span class='edited'>(upraveno)</span>{/if}
         </div>
       </div>
       {#if post.owner_portrait}
@@ -54,7 +52,7 @@
         </a>
       {/if}
     </div>
-    <Reactions {user} itemStore={postStore} type='post' />
+    <Reactions {user} {post} type='post' />
   {:else}
     <div class='rowInner'>
       {#if post.owner_portrait}
@@ -65,7 +63,7 @@
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='rowInner'>
-          <ReactionInput {user} itemStore={postStore} type='post' />
+          <ReactionInput {user} itemStore={post} type='post' />
           <button onclick={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
         </div>
       </div>
@@ -76,11 +74,11 @@
         <div class='name'>{post.owner_name}</div>
         <div class='content' bind:this={contentEl}>
           {@html DOMPurify.sanitize(post.content)}
-          {#if $postStore.created_at !== $postStore.updated_at}<span class='edited'>(upraveno)</span>{/if}
+          {#if post.created_at !== post.updated_at}<span class='edited'>(upraveno)</span>{/if}
         </div>
       </div>
     </div>
-    <ReactionDisplay {user} itemStore={postStore} type='post' />
+    <ReactionDisplay {user} itemStore={post} type='post' />
   {/if}
 </div>
 

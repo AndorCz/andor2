@@ -272,7 +272,7 @@
     <div class='people'>
       {#if Object.keys(people).length > 0}
         Právě přítomní:
-        {#each Object.values(people) as person}
+        {#each Object.values(people) as person (person[0].user)}
           <span class='person user'>{person[0].user}</span>
         {/each}
       {/if}

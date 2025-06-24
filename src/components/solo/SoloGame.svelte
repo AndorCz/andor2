@@ -2,6 +2,7 @@
   import { tick } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
+  import { onDestroy } from 'svelte'
   import { GoogleGenAI } from '@google/genai'
   import { waitForMediaLoad } from '@lib/utils'
   import { getContextString } from '@lib/solo/gemini'
@@ -16,7 +17,6 @@
   let inputEl = $state(null)
   let postsEl = $state(null)
   let allPosts = $state([])
-  let isLoading = $state(false)
   let inputValue = $state('')
   let isGenerating = $state(false)
   let hasMorePosts = $state(true)
@@ -25,15 +25,12 @@
   let userHasScrolledUp = $state(false)
   let distanceFromBottom = $state(0)
   let previousPostsLength = 0
+
   const ai = new GoogleGenAI({ apiKey: import.meta.env.PUBLIC_GEMINI })
   const displayIncrement = 50
 
-  // Ensure the scroll handler is attached after the component is mounted and updated
-  $effect(() => {
-    if (postsEl) {
-      postsEl.addEventListener('scroll', handleScroll)
-      return () => postsEl.removeEventListener('scroll', handleScroll)
-    }
+  onDestroy(() => {
+    if (postsEl) { postsEl.removeEventListener('scroll', handleScroll) }
   })
 
   function showSettings () {
@@ -43,7 +40,7 @@
   function handleScroll () {
     distanceFromBottom = postsEl.scrollHeight - postsEl.scrollTop - postsEl.clientHeight
     userHasScrolledUp = distanceFromBottom > 50 // Threshold to consider as manual scroll
-    if (postsEl && hasMorePosts && !isLoading) {
+    if (postsEl && hasMorePosts) {
       if (postsEl.scrollTop <= 50) { // 50px threshold from top
         // Show more posts from the already loaded set
         const scrollHeight = postsEl.scrollHeight
@@ -76,48 +73,49 @@
   }
 
   async function loadPosts () {
-    isLoading = true
-    try {
-      const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
-      if (error) { return handleError(error) }
-      allPosts = data || []
-      updateDisplayedPosts()
-      const history = allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-      const context = getContextString(soloConcept)
-      storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
-      chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig })
-    } finally {
-      isLoading = false
-    }
+    const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
+    if (error) { return handleError(error) }
+    allPosts = data
+    updateDisplayedPosts()
+    const history = allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
+    const context = getContextString(soloConcept)
+    storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
+    console.log('storytellerConfig', storytellerConfig)
+    chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig.config })
+  }
+
+  function attachScroll (el) {
+    postsEl = el
+    el.addEventListener('scroll', handleScroll)
   }
 
   async function addPost () {
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
-    isGenerating = true
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select().single()
     if (error) { return handleError(error) }
     inputValue = ''
 
     // Add the new user post to both stores
-    allPosts = [...allPosts, newPostData]
-    displayedPosts = [...displayedPosts, newPostData]
+    allPosts.push(newPostData)
+    displayedPosts.push(newPostData)
 
     // Send the message to the AI and handle the response
+    isGenerating = true
     const stream = await chat.sendMessageStream({ message: newPostData.content })
-    const aiPost = { owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
-    allPosts = [...allPosts, aiPost]
-    displayedPosts = [...displayedPosts, aiPost]
+
+    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
+    allPosts.push(tempAiPost)
+    displayedPosts.push(tempAiPost)
+    const reactiveAiPost = displayedPosts.at(-1)
 
     // Process the AI response stream
     for await (const chunk of stream) {
       console.log(chunk.text)
-      aiPost.content += chunk.text
-      // Force a reactivity update
-      displayedPosts = [...displayedPosts]
+      reactiveAiPost.content += chunk.text
     }
     // Save the AI-generated post to the database
-    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'ai-storyteller', content: aiPost.content })
+    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: reactiveAiPost.content })
     if (aiError) { return handleError(aiError) }
     isGenerating = false
   }
@@ -152,21 +150,16 @@
     {#await loadPosts()}
       <div class='info'>Načítám příspěvky...</div>
     {:then}
-      <div class='posts' bind:this={postsEl}>
-        {#if isLoading && !displayedPosts.length}
-          <div class='info'>Načítám příspěvky...</div>
-        {:else if hasMorePosts}
-          <div class='info'>{#if isLoading}Načítám starší příspěvky...{:else}Scrollujte nahoru pro načtení starších příspěvků{/if}</div>
-        {/if}
+      <div class='posts' {@attach attachScroll}>
         {#if displayedPosts.length > 0}
-          {#each displayedPosts as post (post.id)}
+          {#each displayedPosts as post, index (post.id)}
             <Post {post} {user} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} />
           {/each}
         {:else}
           <center class='info empty'>Žádné příspěvky</center>
         {/if}
       </div>
-      <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} disabled={isLoading || isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+      <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
     {/await}
   </div>
 </main>
@@ -174,8 +167,6 @@
 <style>
   main {
     position: relative;
-    display: flex;
-    flex-direction: column;
   }
     .headline {
       display: flex;
@@ -188,20 +179,11 @@
         margin: 0px;
         flex: 1;
       }
-    .content {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-    }
     .posts {
-      flex-grow: 1;
-      display: flex;
-      justify-content: flex-end;
       max-height: 100svh;
       overflow-y: auto;
       padding-right: 10px;
       margin-bottom: 10px;
-      flex-direction: column;
       border-top: 1px var(--block) solid;
     }
       .info {

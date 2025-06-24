@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { formatDate } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
@@ -12,7 +11,6 @@
   let textEl = $state()
   let trimmed = $state(true)
 
-  const newStore = writable(item)
   const iconSize = 70
   const textMaxHeight = 200
 
@@ -85,7 +83,7 @@
             <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {/if}
           {#if item.owner_id !== user.id}
-            <Reactions {user} itemStore={newStore} type='news' />
+            <Reactions {user} post={item} type='news' />
           {/if}
           {#if item.owner}
             <a href='./user?id={item.owner_id}' class='owner user' title='autor'>
@@ -127,7 +125,7 @@
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
       {#if item.owner_id !== user.id}
-        <Reactions {user} itemStore={newStore} type='news' />
+        <Reactions {user} post={item} type='news' />
       {/if}
       {#if item.owner_id}
         <a href='./user?id={item.owner_id}' class='owner user' title='autor'>

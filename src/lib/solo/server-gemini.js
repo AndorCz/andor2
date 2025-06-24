@@ -7,10 +7,10 @@ export const assistantConfig = {
   model: 'gemini-2.5-flash-lite-preview-06-17',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
-    thinkingConfig: { thinkingBudget: 0 }, // fast response
-    systemInstruction: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
+    generationConfig: { thinkingConfig: { thinkingBudget: 0 } }, // fast response
+    systemInstruction: { text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
       Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
-      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.`
+      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.` }
   }
 }
 
