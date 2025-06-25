@@ -1,15 +1,15 @@
 <script>
+  import Post from '@components/common/Post.svelte'
   import { tick } from 'svelte'
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import { onDestroy } from 'svelte'
   import { GoogleGenAI } from '@google/genai'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { waitForMediaLoad } from '@lib/utils'
   import { getContextString } from '@lib/solo/gemini'
   import { supabase, handleError } from '@lib/database-browser'
   import { storytellerConfig, storytellerInstructions } from '@lib/solo/gemini'
-  import Post from '@components/common/Post.svelte'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   const { user = {}, soloGame = {}, soloConcept = {} } = $props()
 
@@ -17,6 +17,7 @@
   let inputEl = $state(null)
   let postsEl = $state(null)
   let allPosts = $state([])
+  let isLoading = $state(true)
   let inputValue = $state('')
   let isGenerating = $state(false)
   let hasMorePosts = $state(true)
@@ -29,12 +30,64 @@
   const ai = new GoogleGenAI({ apiKey: import.meta.env.PUBLIC_GEMINI })
   const displayIncrement = 50
 
-  onDestroy(() => {
-    if (postsEl) { postsEl.removeEventListener('scroll', handleScroll) }
+  onMount(async () => {
+    await loadPosts()
+    // Attach scroll listener after posts are loaded
+    if (postsEl) { postsEl.addEventListener('scroll', handleScroll) }
+    return () => { if (postsEl) { postsEl.removeEventListener('scroll', handleScroll) } }
   })
+
+  async function loadPosts () {
+    isLoading = true
+    const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
+    if (error) { return handleError(error) }
+    allPosts = data
+    updateDisplayedPosts()
+    const history = allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
+    const context = getContextString(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
+    storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
+    chat = ai.chats.create({ model: 'gemini-2.5-pro', history, config: storytellerConfig.config })
+    isLoading = false
+  }
+
+  async function addPost () {
+    if (inputValue.trim() === '') return
+    if (isGenerating) return // Prevent multiple submissions while generating
+    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select().single()
+    if (error) { return handleError(error) }
+    inputValue = ''
+
+    // Add the new user post to both stores
+    allPosts.push(newPostData)
+    displayedPosts.push(newPostData)
+
+    // Send the message to the AI and handle the response
+    isGenerating = true
+    const stream = await chat.sendMessageStream({ message: newPostData.content, config: storytellerConfig.config })
+
+    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
+    allPosts.push(tempAiPost)
+    displayedPosts.push(tempAiPost)
+    const reactiveAiPost = displayedPosts.at(-1)
+
+    // Process the AI response stream
+    for await (const chunk of stream) {
+      console.log(chunk.text)
+      reactiveAiPost.content += chunk.text
+      postsEl.scrollTop = postsEl.scrollHeight // scroll down
+    }
+    // Save the AI-generated post to the database
+    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: reactiveAiPost.content })
+    if (aiError) { return handleError(aiError) }
+    isGenerating = false
+  }
 
   function showSettings () {
     window.location.href = `${window.location.pathname}?settings=true`
+  }
+
+  function showConcept () {
+    window.location.href = `/solo/concept/${soloConcept.id}`
   }
 
   function handleScroll () {
@@ -72,54 +125,6 @@
     }
   }
 
-  async function loadPosts () {
-    const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
-    if (error) { return handleError(error) }
-    allPosts = data
-    updateDisplayedPosts()
-    const history = allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-    const context = getContextString(soloConcept)
-    storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
-    console.log('storytellerConfig', storytellerConfig)
-    chat = ai.chats.create({ model: 'gemini-2.5-flash', history, config: storytellerConfig.config })
-  }
-
-  function attachScroll (el) {
-    postsEl = el
-    el.addEventListener('scroll', handleScroll)
-  }
-
-  async function addPost () {
-    if (inputValue.trim() === '') return
-    if (isGenerating) return // Prevent multiple submissions while generating
-    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select().single()
-    if (error) { return handleError(error) }
-    inputValue = ''
-
-    // Add the new user post to both stores
-    allPosts.push(newPostData)
-    displayedPosts.push(newPostData)
-
-    // Send the message to the AI and handle the response
-    isGenerating = true
-    const stream = await chat.sendMessageStream({ message: newPostData.content })
-
-    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
-    allPosts.push(tempAiPost)
-    displayedPosts.push(tempAiPost)
-    const reactiveAiPost = displayedPosts.at(-1)
-
-    // Process the AI response stream
-    for await (const chunk of stream) {
-      console.log(chunk.text)
-      reactiveAiPost.content += chunk.text
-    }
-    // Save the AI-generated post to the database
-    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: reactiveAiPost.content })
-    if (aiError) { return handleError(aiError) }
-    isGenerating = false
-  }
-
   // Reactive statement for scrolling
   $effect(() => {
     if (postsEl && displayedPosts.length) {
@@ -142,63 +147,74 @@
 <main>
   <div class='headline'>
     <h1>{soloGame.name}</h1>
+    <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>arrow_back</button>
     {#if user.id}
       <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
     {/if}
   </div>
   <div class='content'>
-    {#await loadPosts()}
-      <div class='info'>Načítám příspěvky...</div>
-    {:then}
-      <div class='posts' {@attach attachScroll}>
+    <div class='posts' bind:this={postsEl}>
+      {#if isLoading}
+        <center class='info'>Načítání...</center>
+      {:else}
         {#if displayedPosts.length > 0}
           {#each displayedPosts as post, index (post.id)}
-            <Post {post} {user} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} />
+            <Post {post} {user} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} />
           {/each}
         {:else}
           <center class='info empty'>Žádné příspěvky</center>
         {/if}
-      </div>
+      {/if}
+    </div>
+    <div>
       <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
-    {/await}
+    </div>
   </div>
 </main>
 
 <style>
   main {
-    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
-    .headline {
+    .content {
+      flex: 1;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-      gap: 10px;
+      flex-direction: column;
+      overflow: hidden;
     }
-      h1 {
-        margin: 0px;
-        flex: 1;
-      }
-    .posts {
-      max-height: 100svh;
-      overflow-y: auto;
-      padding-right: 10px;
-      margin-bottom: 10px;
-      border-top: 1px var(--block) solid;
-    }
-      .info {
-        display: block;
-        text-align: center;
-        padding: 20px;
-        font-style: italic;
-        color: var(--text-muted);
-      }
-      .empty {
-        height: 50svh;
+      .headline {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
+        padding-bottom: 20px;
+        gap: 10px;
       }
+        h1 {
+          margin: 0px;
+          flex: 1;
+        }
+      .posts {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 10px;
+        margin-bottom: 10px;
+        border-top: 1px var(--block) solid;
+      }
+        .info {
+          display: block;
+          text-align: center;
+          padding: 20px;
+          font-style: italic;
+          color: var(--text-muted);
+        }
+        .empty {
+          height: 50svh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
   @media (max-width: 1200px) {
     .headline {

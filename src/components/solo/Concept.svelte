@@ -10,6 +10,7 @@
   let { concept = $bindable(), user } = $props()
 
   let checkLoop = null
+  let openGames = $state([])
 
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
@@ -24,6 +25,11 @@
           checkLoop = null
         }
       }, 5000)
+    } else {
+      // Load open games for this concept
+      const { data, error } = await supabase.from('solo_games').select().match({ concept_id: concept.id, player: user.id }).order('created_at', { ascending: false })
+      if (error) { handleError(error) }
+      if (data) { openGames = data }
     }
   })
 
@@ -78,6 +84,16 @@
         <summary>Svět</summary>
         <p>{@html concept.generated_world}</p>
       </details>
+      {#if openGames.length > 0}
+        <div class='games'>
+          <h2>Tvoje rozehrané hry</h2>
+          <ul class='games'>
+            {#each openGames as game (game.id)}
+              <li><a href={`/solo/game/${game.id}`}>{game.name}</a></li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
       <button onclick={once(startGame)} class='large'>Začít novou hru</button>
     </div>
     <aside>
@@ -183,12 +199,28 @@
   details {
     background: var(--block);
     border-radius: 10px;
-    padding: 10px;
     margin-top: 10px;
     box-shadow: var(--shadow);
+    padding: 10px;
   }
-  summary {
-    cursor: pointer;
-    font-weight: bold;
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+  .games h2 {
+    margin-top: 40px;
+    margin-bottom: 0px;
   }
+  .games ul {
+    margin-top: 10px;
+  }
+    .games li a {
+      display: block;
+      width: 100%;
+      background: var(--block);
+      border-radius: 10px;
+      margin-top: 10px;
+      box-shadow: var(--shadow);
+      padding: 10px;
+    }
 </style>

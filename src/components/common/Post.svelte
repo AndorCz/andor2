@@ -8,7 +8,7 @@
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import Reactions from '@components/common/Reactions.svelte'
 
-  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70 } = $props()
+  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, showEdited = true } = $props()
 
   let expanded = $state(false)
   let contentEl = $state()
@@ -112,7 +112,9 @@
         </div>
       {/if}
       {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
-      {#if post.created_at !== post.updated_at}<span class='edited'>(upraveno)</span>{/if}
+      {#if showEdited}
+        {#if post.created_at !== post.updated_at}<span class='edited'>(upraveno)</span>{/if}
+      {/if}
       <div class='clear'></div>
       {#if allowReactions}
         <Reactions {user} {post} type='post' />

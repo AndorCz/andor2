@@ -1,5 +1,5 @@
 ---
-	import Layout from '@layouts/layout.astro'
+	import LayoutSolo from '@layouts/layoutSolo.astro'
   import Concept from '@components/solo/Concept.svelte'
   import SoloGame from '@components/solo/SoloGame.svelte'
   import ConceptSettings from '@components/solo/ConceptSettings.svelte'
@@ -16,7 +16,7 @@
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 ---
 
-<Layout title={soloConcept?.name} headerStorage={soloConcept?.custom_header ? `solo-${soloConcept.id}.jpg?hash=${soloConcept.custom_header}` : null}>
+<LayoutSolo title={soloConcept?.name} headerStorage={soloConcept?.custom_header ? `solo-${soloConcept.id}.jpg?hash=${soloConcept.custom_header}` : null}>
   {(soloGame && soloConcept ? (
     user?.id && soloGame.player === user.id ? (
       showSettings ? (

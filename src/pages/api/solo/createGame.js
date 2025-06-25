@@ -34,7 +34,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate first post
     const context = getContext(concept)
-    const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu. Měl by končit otázkou na to jak se chce hráč zachovat.' }] })
+    const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
     const firstPost = response.text
     const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'ai-storyteller' })
     if (addPostError) { throw new Error(addPostError.message) }
