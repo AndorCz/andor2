@@ -72,9 +72,14 @@
 
     // Process the AI response stream
     for await (const chunk of stream) {
-      console.log(chunk.text)
-      reactiveAiPost.content += chunk.text
-      postsEl.scrollTop = postsEl.scrollHeight // scroll down
+      if (chunk.text) {
+        reactiveAiPost.content += chunk.text
+        postsEl.scrollTop = postsEl.scrollHeight // scroll down
+      } else { // Figure out reason for stopping
+        if (chunk.candidates && chunk.candidates[0].finishReason) {
+          console.log('Finish reason:', chunk.candidates[0].finishReason)
+        }
+      }
     }
     // Save the AI-generated post to the database
     const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: reactiveAiPost.content })
