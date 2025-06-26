@@ -22,7 +22,8 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
-  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n'
+  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n',
+  storytellerImage: 'Please write a prompt for AI to generate an illustration image of a storyteller NPC for this game. The image should be in the same style as the main game image, and should be a portrait of a mysterious silhouette, someone who could be a concealed god-like figure in this world. A spirit, an empty cape, a flying light, a cloud, matrix-like digital being etc. Whatever fits the game theme. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art.\n'
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
@@ -114,16 +115,29 @@ export async function generateSoloConcept (supabase, conceptData) {
     // console.log('Generated image prompt:', generatedImagePrompt)
 
     // Generate header image
-    const { data: image, error: imageError } = await generateHeaderImage(generatedImagePrompt)
-    if (imageError) { error = imageError.message }
+    const { data: headerImage, error: headerImageError } = await generateImage(generatedImagePrompt, '16:9', 1100, 226)
+    if (headerImageError) { error = headerImageError.message }
     // console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
-    if (image) {
-      const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.png`, image, { contentType: 'image/jpg' })
+    if (headerImage) {
+      const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
+      if (uploadError) { throw new Error(uploadError.message) }
+    }
+
+    // Add storyteller npc
+    const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), image: getHash() }
+    const { data: npcData, error: npcError } = await locals.supabase.from('npcs').insert(npc).select().single()
+    if (npcError) { throw new Error('Chyba při vytváření NPC: ' + npcError.message) }
+
+    // Generate storyteller image
+    const { data: storytellerImage, error: storytellerImageError } = await generateImage(prompts.storytellerImage, '9:16', 140, 352) // generated size is 768x1408
+    if (storytellerImageError) { error = storytellerImageError.message }
+    if (storytellerImage) {
+      const { error: uploadError } = await supabase.storage.from('npcs').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
     }
 
     // Release concept when generation completes
-    const { error: updateError } = await supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash() }).eq('id', conceptData.id)
+    const { error: updateError } = await supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash(), storyteller: npcData.id }).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
     // console.log('Concept generation completed and saved, concept id:', conceptData.id)
 
@@ -134,20 +148,19 @@ export async function generateSoloConcept (supabase, conceptData) {
   }
 }
 
-export async function generateHeaderImage (prompt) {
-  console.log('Generating header image with message:', prompt)
+export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
   try {
     const imageResponse = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio: '16:9', includeRaiReason: true }
+      model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio, includeRaiReason: true }
     })
-    console.log('Image generation response:', imageResponse)
     const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
     if (!headerImageBase64) { throw new Error('No image generated') }
     const bufferImage = Buffer.from(headerImageBase64, 'base64')
-    const { data, error } = await cropImageBackEnd(bufferImage, 16 / 9, 1024, 576)
+    const { data, error } = await cropImageBackEnd(bufferImage, cropWidth, cropHeight)
     return { data, error }
   } catch (error) {
-    console.error('Error generating header image:', error)
+    console.error('Error generating image:', error)
     return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
   }
 }
+

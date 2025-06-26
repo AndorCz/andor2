@@ -44,7 +44,7 @@ export const POST = async ({ request, locals }) => {
             }
             if (chunk.candidates && chunk.candidates[0].finishReason) { finishReason = chunk.candidates[0].finishReason }
           }
-          await locals.supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: finalText, note: finishReason })
+          await locals.supabase.from('posts').insert({ thread: soloGame.thread, owner: soloConcept.storyteller, owner_type: 'npc', content: finalText, note: finishReason })
           isClosed = true
           controller.close()
         } catch (error) {

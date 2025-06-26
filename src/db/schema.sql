@@ -115,6 +115,7 @@ create table solo_concepts (
   name text not null,
   annotation text,
   custom_header text,
+  storyteller uuid,
   prompt_world text,
   prompt_protagonist text,
   prompt_locations text,
@@ -136,6 +137,7 @@ create table solo_concepts (
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
+  constraint solo_concepts_st_fkey foreign key (storyteller) references npcs(id) on delete prevent,
   constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
 
@@ -232,6 +234,22 @@ create table characters (
   state public.character_state not null default 'alive'::character_state,
   constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
   constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
+);
+
+create table npcs (
+  id uuid not null primary key default gen_random_uuid(),
+  solo_game int4,
+  solo_concept int4,
+  portrait text,
+  name text,
+  bio text,
+  appearance text,
+  storyteller_notes text,
+  storyteller boolean not null default false,
+  state public.character_state not null default 'alive'::character_state,
+  created_at timestamp with time zone default current_timestamp,
+  constraint npcs_solo_concept_fkey foreign key (solo_concept) references solo_concepts (id) on delete cascade,
+  constraint npcs_solo_game_fkey foreign key (solo_game) references solo_games (id) on delete cascade
 );
 
 create table works (
@@ -454,10 +472,12 @@ create or replace view posts_owner as
     case
       when p.owner_type = 'user' then profiles.name
       when p.owner_type = 'character' then characters.name
+      when p.owner_type = 'npc' then npcs.name
     end as owner_name,
     case
       when p.owner_type = 'user' then profiles.portrait
       when p.owner_type = 'character' then characters.portrait
+      when p.owner_type = 'npc' then npcs.portrait
     end as owner_portrait,
     get_character_names (p.audience) as audience_names,
     reactions.*
@@ -466,6 +486,7 @@ create or replace view posts_owner as
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
     left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
+    left join npcs on p.owner = npcs.id and p.owner_type = 'npc'
   order by p.created_at desc;
 
 create or replace view game_posts_owner as
@@ -1604,6 +1625,10 @@ insert into storage.buckets (id, name, public) values ('portraits', 'portraits',
 insert into storage.buckets (id, name, public) values ('posts', 'posts', true);
 insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
 insert into storage.buckets (id, name, public) values ('works', 'works', true);
+insert into storage.buckets (id, name, public) values ('news', 'news', true);
+insert into storage.buckets (id, name, public) values ('npcs', 'npcs', true);
+insert into storage.buckets (id, name, public) values ('locations', 'locations', true);
+insert into storage.buckets (id, name, public) values ('items', 'items', true);
 
 
 -- SEED  --------------------------------------------

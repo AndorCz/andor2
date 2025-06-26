@@ -36,7 +36,7 @@
 
   async function loadPosts () {
     isLoading = true
-    const { data, error } = await supabase.from('posts').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
+    const { data, error } = await supabase.from('posts_owner').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
     if (error) { return handleError(error) }
     allPosts = data
     updateDisplayedPosts()
@@ -58,7 +58,7 @@
 
     // Generate AI response via backend
     isGenerating = true
-    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
+    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'npc', content: '', created_at: new Date().toISOString() }
     allPosts.push(tempAiPost)
     displayedPosts.push(tempAiPost)
     const reactiveAiPost = displayedPosts.at(-1)

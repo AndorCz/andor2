@@ -1,9 +1,9 @@
 import { Jimp } from 'jimp'
 
-export async function cropImageBackEnd (buffer) {
+export async function cropImageBackEnd (buffer, w, h) {
   try {
     const image = await Jimp.read(buffer)
-    image.cover({ w: 1100, h: 226 }) // resize/crop to header size (centered)
+    image.cover({ w, h }) // resize/crop to header size (centered)
     return { data: await image.getBuffer('image/jpeg') }
   } catch (error) {
     console.error('Error cropping image:', error)

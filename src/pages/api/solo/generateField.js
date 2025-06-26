@@ -1,6 +1,6 @@
 import { getHash } from '@lib/utils'
 import { getContext } from '@lib/solo/gemini'
-import { ai, assistantConfig, prompts, generateHeaderImage } from '@lib/solo/server-gemini'
+import { ai, assistantConfig, prompts, generateImage } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
@@ -52,7 +52,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update header image if necessary
     if (field === 'image') {
-      const { data: image, error: imageError } = await generateHeaderImage(generatedContent)
+      const { data: image, error: imageError } = await generateImage(generatedContent, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
       if (image) {
         const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, image, { contentType: 'image/jpg' })

@@ -34,7 +34,7 @@
 </div>
 
 {#if isFilledArray(concepts)}
-  {#each concepts as concept}
+  {#each concepts as concept (concept.id)}
     <div class='block'>
       {#if concept.custom_header}
         <div class='col image'>
@@ -60,7 +60,7 @@
 
 {#if maxPage > 0}
   <div class='pagination'>
-    {#each { length: maxPage + 1 } as _, i}
+    {#each { length: maxPage + 1 } as _, i (i)}
       <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>

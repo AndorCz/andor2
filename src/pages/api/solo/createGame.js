@@ -36,10 +36,20 @@ export const GET = async ({ request, locals, redirect }) => {
     const context = getContext(concept)
     const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
     const firstPost = response.text
-    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'ai-storyteller' })
-    if (addPostError) { throw new Error(addPostError.message) }
 
-    // Generate first scene image
+    // Generate illustration for the first post
+    const { data: sceneImage, error: sceneImageError } = await generateImage('', '16:9', 1408, 768)
+    if (sceneImageError) { error = sceneImageError.message }
+    if (sceneImage) {
+      const { data: uploadData, error: uploadError } = await supabase.storage.from('locations').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
+      if (uploadError) { throw new Error(uploadError.message) }
+      // const imageUrl = supabase.storage.from('locations').getPublicUrl(uploadData.path).publicURL
+      firstPost += `<p><img src='${uploadData.fullPath}' alt='Scene Image' /></p>`
+    }
+
+    // Save the first post with the image
+    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'npc', owner: concept.storyteller })
+    if (addPostError) { throw new Error(addPostError.message) }
 
     // Redirect to the new game page
     return redirect(`/solo/game/${gameData.id}?toastType=success&toastText=${encodeURIComponent('Nová hra byla úspěšně vytvořena!')}`)
