@@ -263,7 +263,7 @@ create table posts (
   content text,
   important boolean default false,
   audience uuid[],
-  openai_post text,
+  note text,
   moderated boolean default false,
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,

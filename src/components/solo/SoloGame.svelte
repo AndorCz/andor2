@@ -4,7 +4,6 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import { GoogleGenAI } from '@google/genai'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { waitForMediaLoad } from '@lib/utils'
   import { getContextString } from '@lib/solo/gemini'
@@ -13,7 +12,6 @@
 
   const { user = {}, soloGame = {}, soloConcept = {} } = $props()
 
-  let chat
   let inputEl = $state(null)
   let postsEl = $state(null)
   let allPosts = $state([])
@@ -27,7 +25,6 @@
   let distanceFromBottom = $state(0)
   let previousPostsLength = 0
 
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.PUBLIC_GEMINI })
   const displayIncrement = 50
 
   onMount(async () => {
@@ -43,10 +40,8 @@
     if (error) { return handleError(error) }
     allPosts = data
     updateDisplayedPosts()
-    const history = allPosts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
     const context = getContextString(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
     storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
-    chat = ai.chats.create({ model: 'gemini-2.5-pro', history, config: storytellerConfig.config })
     isLoading = false
   }
 
@@ -61,30 +56,39 @@
     allPosts.push(newPostData)
     displayedPosts.push(newPostData)
 
-    // Send the message to the AI and handle the response
+    // Generate AI response via backend
     isGenerating = true
-    const stream = await chat.sendMessageStream({ message: newPostData.content, config: storytellerConfig.config })
-
     const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'ai-storyteller', content: '', created_at: new Date().toISOString() }
     allPosts.push(tempAiPost)
     displayedPosts.push(tempAiPost)
     const reactiveAiPost = displayedPosts.at(-1)
 
-    // Process the AI response stream
-    for await (const chunk of stream) {
-      if (chunk.text) {
-        reactiveAiPost.content += chunk.text
-        postsEl.scrollTop = postsEl.scrollHeight // scroll down
-      } else { // Figure out reason for stopping
-        if (chunk.candidates && chunk.candidates[0].finishReason) {
-          console.log('Finish reason:', chunk.candidates[0].finishReason)
-        }
+    try {
+      const res = await fetch('/api/solo/generatePost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ soloId: soloGame.id, message: newPostData.content })
+      })
+      if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        const text = decoder.decode(value)
+        text.split('\n\n').forEach(line => {
+          const match = line.match(/^data: (.*)$/)
+          if (match) {
+            reactiveAiPost.content += match[1].replace(/\[line-break\]/g, '\n')
+            postsEl.scrollTop = postsEl.scrollHeight
+          }
+        })
       }
+    } catch (err) {
+      handleError(err)
+    } finally {
+      isGenerating = false
     }
-    // Save the AI-generated post to the database
-    const { error: aiError } = await supabase.from('posts').insert({ thread: soloGame.thread, owner_type: 'ai-storyteller', content: reactiveAiPost.content })
-    if (aiError) { return handleError(aiError) }
-    isGenerating = false
   }
 
   function showSettings () {
