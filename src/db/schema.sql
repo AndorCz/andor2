@@ -116,6 +116,7 @@ create table solo_concepts (
   annotation text,
   custom_header text,
   storyteller uuid,
+  protagonist_names text[],
   prompt_world text,
   prompt_protagonist text,
   prompt_locations text,

@@ -1,6 +1,6 @@
 import { getHash } from '@lib/utils'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
-import { GoogleGenAI, Modality } from '@google/genai'
+import { GoogleGenAI, Modality, Type } from '@google/genai'
 
 export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
 export const assistantConfig = {
@@ -22,8 +22,9 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
-  image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n',
-  storytellerImage: 'Please write a prompt for AI to generate an illustration image of a storyteller NPC for this game. The image should be in the same style as the main game image, and should be a portrait of a mysterious silhouette, someone who could be a concealed god-like figure in this world. A spirit, an empty cape, a flying light, a cloud, matrix-like digital being etc. Whatever fits the game theme. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art.\n'
+  protagonistNames: 'Napiš 20 různorodých jmen pro postavu, kterou bude hráč hrát. Osm jmen mužských, osm ženských, čtyři neutrální. Jména by měla by ladit s atmosférou světa a pokrývat pestrost jeho kultur.\n',
+  headerImage: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n',
+  storytellerImage: 'Please write a prompt for AI to generate an illustration image of a storyteller NPC for this game. The image should be in the same style as the main game image, and should be a portrait of a mysterious silhouette, someone who could be a concealed god-like figure in this world. A spirit, an empty cape, a flying light, a cloud, matrix-like digital being etc. Whatever fits the game theme. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art.\n',
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
@@ -85,11 +86,12 @@ export async function generateSoloConcept (supabase, conceptData) {
     // console.log('Generated protagonist:', generatedProtagonist.text)
 
     // Plan
+    const planConfig = { config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } }
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
     const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
-    const planResponse = await ai2.models.generateContent({ ...assistantConfig, contents, model: 'gemini-2.5-pro', config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
+    const planResponse = await ai2.models.generateContent({ ...assistantConfig, ...planConfig, contents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
@@ -104,10 +106,18 @@ export async function generateSoloConcept (supabase, conceptData) {
     if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
     // console.log('Generated annotation:', generatedAnnotation.text)
 
-    // Image prompt
-    const imageMessage = { text: prompts.image }
+    // Protagonist names
+    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
+    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, worldMessage, generatedWorld, protagonistMessage, generatedProtagonist, { text: prompts.protagonistNames }]
+    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantConfig, ...structuredConfig, contents })
+    console.log('Generated protagonist names:', protagonistNamesResponse.text)
+    const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: protagonistNamesResponse.text }).eq('id', conceptData.id)
+    if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
+
+    // Header image prompt
+    const imageMessage = { text: prompts.headerImage }
     if (conceptData.prompt_image) { imageMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_image}"` }
-    contents = [`Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":`, generatedAnnotation, imageMessage]
+    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, imageMessage]
     const imagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedImagePrompt = imagePromptResponse.text
     const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image: generatedImagePrompt }).eq('id', conceptData.id)
@@ -123,13 +133,20 @@ export async function generateSoloConcept (supabase, conceptData) {
       if (uploadError) { throw new Error(uploadError.message) }
     }
 
+    // Storyteller image prompt
+    const storytellerImageMessage = { text: prompts.storytellerImage }
+    contents = [{ text: `Následující text popisuje TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, storytellerImageMessage]
+    const storytellerImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
+    const generatedStorytellerImagePrompt = storytellerImagePromptResponse.text
+    // console.log('Generated storyteller image prompt:', generatedStorytellerImagePrompt)
+
     // Add storyteller npc
     const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), image: getHash() }
     const { data: npcData, error: npcError } = await locals.supabase.from('npcs').insert(npc).select().single()
     if (npcError) { throw new Error('Chyba při vytváření NPC: ' + npcError.message) }
 
     // Generate storyteller image
-    const { data: storytellerImage, error: storytellerImageError } = await generateImage(prompts.storytellerImage, '9:16', 140, 352) // generated size is 768x1408
+    const { data: storytellerImage, error: storytellerImageError } = await generateImage(generatedStorytellerImagePrompt, '9:16', 140, 352) // generated size is 768x1408
     if (storytellerImageError) { error = storytellerImageError.message }
     if (storytellerImage) {
       const { error: uploadError } = await supabase.storage.from('npcs').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })

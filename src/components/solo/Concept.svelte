@@ -62,7 +62,7 @@
         <li><span class='material'>{concept.generated_protagonist && concept.generated_protagonist !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Protagonista</span></li>
         <li><span class='material'>{concept.generated_plan && concept.generated_plan !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Příběh</span></li>
         <li><span class='material'>{concept.annotation && concept.annotation !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Anotace</span></li>
-        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Ilustrace</span></li>
+        <li><span class='material'>{concept.generated_image && concept.generated_image !== 'generating' ? 'check' : 'hourglass_top'}</span><span class='wide'>Obrázky</span></li>
       </ul>
     </div>
   </div>
