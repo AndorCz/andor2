@@ -22,9 +22,9 @@ export const prompts = {
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
-  protagonistNames: 'Napiš 20 různorodých jmen pro postavu, kterou bude hráč hrát. Osm jmen mužských, osm ženských, čtyři neutrální. Jména by měla by ladit s atmosférou světa a pokrývat pestrost jeho kultur.\n',
-  headerImage: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n',
-  storytellerImage: 'Please write a prompt for AI to generate an illustration image of a storyteller NPC for this game. The image should be in the same style as the main game image, and should be a portrait of a mysterious silhouette, someone who could be a concealed god-like figure in this world. A spirit, an empty cape, a flying light, a cloud, matrix-like digital being etc. Whatever fits the game theme. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art.\n',
+  protagonist_names: 'Napiš 10 různorodých jmen pro postavu, kterou bude hráč hrát. Čtyři jména jasně mužská, čtyři jasně ženská, dvě neutrální. Jména by měla by ladit s atmosférou světa. Použij buď jazyky daného světa, nebo stylová jména česká. Jména by měla být většinou včetně příjmení, s přezdívkou, výjimečně jen jedno jméno samotné.\n',
+  header_image: 'Please write a prompt for AI to generate an illustration image for this game. Come up with an interesting motif that well describes the theme of the game, describe a visual style that captures its atmosphere and aesthetics. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art. \n',
+  storyteller_image: 'Please write a prompt for AI to generate an illustration image of a storyteller NPC for this game. The image should be in the same style as the main game image, and should be a portrait of a mysterious silhouette, someone who could be a concealed god-like figure in this world. A spirit, an empty cape, a flying light, a cloud, matrix-like digital being etc. Whatever fits the game theme. The output must be plain-text, in english, without html, single paragraph, maximum length 480 tokens. The style should be professional digital artwork, like from ArtStation or AAA game concept art.\n',
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
@@ -34,6 +34,7 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     console.log('Starting concept generation for:', conceptData.id)
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
+    // const generating = ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_plan', 'annotation', 'protagonist_names', 'generated_image_prompt', 'header_image', 'storyteller_image']
 
     // World
     const worldMessage = { text: prompts.world }
@@ -41,7 +42,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage]
     const response = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedWorld = { text: response.text }
-    const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_world'), 1)
+    const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
     // console.log('Generated world:', generatedWorld.text)
 
@@ -51,7 +53,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage]
     const factionsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedFactions = { text: factionsResponse.text }
-    const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_factions'), 1)
+    const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorFactions) { throw new Error(updateErrorFactions.message) }
     // console.log('Generated factions:', generatedFactions.text)
 
@@ -61,7 +64,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
     const locationsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedLocations = { text: locationsResponse.text }
-    const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_locations'), 1)
+    const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorLocations) { throw new Error(updateErrorLocations.message) }
     // console.log('Generated locations:', generatedLocations.text)
 
@@ -71,7 +75,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
     const charactersResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedCharacters = { text: charactersResponse.text }
-    const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_characters'), 1)
+    const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorCharacters) { throw new Error(updateErrorCharacters.message) }
     // console.log('Generated characters:', generatedCharacters.text)
 
@@ -81,7 +86,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
     const protagonistResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedProtagonist = { text: protagonistResponse.text }
-    const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_protagonist'), 1)
+    const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonist) { throw new Error(updateErrorProtagonist.message) }
     // console.log('Generated protagonist:', generatedProtagonist.text)
 
@@ -93,7 +99,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
     const planResponse = await ai2.models.generateContent({ ...assistantConfig, ...planConfig, contents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
-    const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1)
+    const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
     // console.log('Generated plan:', generatedPlan.text)
 
@@ -102,7 +109,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
     const annotationResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedAnnotation = { text: annotationResponse.text }
-    const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('annotation'), 1)
+    const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
     // console.log('Generated annotation:', generatedAnnotation.text)
 
@@ -110,9 +118,10 @@ export async function generateSoloConcept (supabase, conceptData) {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, worldMessage, generatedWorld, protagonistMessage, generatedProtagonist, { text: prompts.protagonistNames }]
     const protagonistNamesResponse = await ai.models.generateContent({ ...assistantConfig, ...structuredConfig, contents })
-    console.log('Generated protagonist names:', protagonistNamesResponse.text)
-    const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: protagonistNamesResponse.text }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1)
+    const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
+    // console.log('Generated protagonist names:', protagonistNamesResponse.text)
 
     // Header image prompt
     const imageMessage = { text: prompts.headerImage }
@@ -120,7 +129,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, imageMessage]
     const imagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedImagePrompt = imagePromptResponse.text
-    const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image: generatedImagePrompt }).eq('id', conceptData.id)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_image_prompt'), 1)
+    const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image_prompt: generatedImagePrompt, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorImage) { throw new Error(updateErrorImage.message) }
     // console.log('Generated image prompt:', generatedImagePrompt)
 
@@ -132,12 +142,14 @@ export async function generateSoloConcept (supabase, conceptData) {
       const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
     }
+    conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1)
 
     // Storyteller image prompt
     const storytellerImageMessage = { text: prompts.storytellerImage }
     contents = [{ text: `Následující text popisuje TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, storytellerImageMessage]
     const storytellerImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
     const generatedStorytellerImagePrompt = storytellerImagePromptResponse.text
+    conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image_prompt'), 1)
     // console.log('Generated storyteller image prompt:', generatedStorytellerImagePrompt)
 
     // Add storyteller npc
@@ -148,13 +160,14 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Generate storyteller image
     const { data: storytellerImage, error: storytellerImageError } = await generateImage(generatedStorytellerImagePrompt, '9:16', 140, 352) // generated size is 768x1408
     if (storytellerImageError) { error = storytellerImageError.message }
+    conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1)
     if (storytellerImage) {
       const { error: uploadError } = await supabase.storage.from('npcs').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
     }
 
     // Release concept when generation completes
-    const { error: updateError } = await supabase.from('solo_concepts').update({ generating: false, published: true, custom_header: getHash(), storyteller: npcData.id }).eq('id', conceptData.id)
+    const { error: updateError } = await supabase.from('solo_concepts').update({ published: true, generating: conceptData.generating, custom_header: getHash(), storyteller: npcData.id }).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
     // console.log('Concept generation completed and saved, concept id:', conceptData.id)
 

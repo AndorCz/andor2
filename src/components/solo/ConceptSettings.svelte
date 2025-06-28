@@ -31,52 +31,62 @@
   async function onSave (field, value) {
     savingValues[field] = true
 
-    // Just save the prompt value
+    // First save the value
     const { error } = await supabase.from('solo_concepts').update({ [field]: value }).eq('id', concept.id)
-    if (error) {
-      savingValues[field] = false
-      return handleError(error)
-    }
+    if (error) { handleError(error) }
 
-    // If this field should trigger generation, call the API
-    const fieldPlain = field.replace('prompt_', '')
-    if (['world', 'plan', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(fieldPlain)) {
-      // Mark UI as generating
-      concept['generated_' + fieldPlain] = 'generating'
+    if (['protagonist_names', 'world', 'plan', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
+      // Differentiate between prompted and unprompted fields
+      const targetField = field === 'protagonist_names' ? field : field.replace('prompt_', 'generated_')
+      const requestData = { conceptId: concept.id, targetField, value }
+      if (field !== 'protagonist_names') { requestData.promptField = field }
+      concept.generating.push(targetField) // mark UI as generating
 
       // Call generation API
-      const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, field, value }), headers: { 'Content-Type': 'application/json' } })
-
+      const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify(requestData), headers: { 'Content-Type': 'application/json' } })
       if (!response.ok) {
         const { error } = await response.json()
         handleError(new Error(`API error: ${error.message || 'Chyba generování pole'}`))
-        concept['generated_' + fieldPlain] = '' // Reset on error
-        savingValues[field] = false
-        return
+        concept[targetField] = '' // Reset on error
+      } else {
+        // Start polling for completion
+        checkLoop = setInterval(async () => {
+          const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+          if (error) {
+            handleError(error)
+            clearInterval(checkLoop)
+          }
+          if (data && !data.generating.includes(targetField)) {
+            concept = data // Update the full concept with server data
+            savingValues[field] = false
+            clearInterval(checkLoop)
+            showSuccess(`Pole "${field}" bylo úspěšně aktualizováno a vygenerováno`)
+          }
+        }, 5000)
       }
-
-      // Start polling for completion
-      checkLoop = setInterval(async () => {
-        const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
-        if (error) {
-          handleError(error)
-          clearInterval(checkLoop)
-          return
-        }
-
-        if (data && !data.generating) {
-          concept = data // Update the full concept with server data
-          savingValues['prompt_' + fieldPlain] = false
-          clearInterval(checkLoop)
-          showSuccess('Pole "' + fieldPlain + '" bylo úspěšně aktualizováno a vygenerováno')
-        }
-      }, 5000)
     } else {
       // For non-generated fields, update immediately
-      savingValues[field] = false
       originalValues[field] = value
       concept[field] = value
+      savingValues[field] = false
     }
+  }
+
+  async function regenerateNames () {
+    savingValues.protagonist_names = true
+    const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, targetField: 'protagonist_names' }), headers: { 'Content-Type': 'application/json' } })
+    if (!response.ok) {
+      const { error } = await response.json()
+      savingValues.protagonist_names = false
+      return handleError(new Error(`API error: ${error.message || 'Chyba generování jmen protagonisty'}`))
+    }
+    const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+    if (error) {
+      savingValues.protagonist_names = false
+      return handleError(error)
+    }
+    concept.protagonist_names = data.protagonist_names
+    savingValues.protagonist_names = false
   }
 
   async function saveTags () {
@@ -130,60 +140,65 @@
 
     <h2>Svět</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_world} loading={concept.generated_world === 'generating'} placeholder='V jakém světě a časovém období se hra odehrává?' maxlength={1000} />
+      <TextareaExpandable {user} bind:value={concept.prompt_world} loading={concept.generating.includes('prompt_world')} placeholder='V jakém světě a časovém období se hra odehrává?' maxlength={1000} />
       <button onclick={() => onSave('prompt_world', concept.prompt_world)} disabled={concept.generated_world === 'generating' || savingValues.prompt_world || originalValues.prompt_world === concept.prompt_world} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Příběh</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_plan} loading={concept.generated_plan === 'generating'} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
-      <button onclick={() => onSave('prompt_plan', concept.prompt_plan)} disabled={concept.generated_plan === 'generating' || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_plan} loading={concept.generating.includes('prompt_plan')} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
+      <button onclick={() => onSave('prompt_plan', concept.prompt_plan)} disabled={concept.generating.includes('prompt_plan') || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Hráčská postava</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_protagonist} loading={concept.generated_protagonist === 'generating'} placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' maxlength={1000} />
-      <button onclick={() => onSave('prompt_protagonist', concept.prompt_protagonist)} disabled={concept.generated_protagonist === 'generating' || savingValues.prompt_protagonist || originalValues.prompt_protagonist === concept.prompt_protagonist} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_protagonist} loading={concept.generating.includes('prompt_protagonist')} placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' maxlength={1000} />
+      <button onclick={() => onSave('prompt_protagonist', concept.prompt_protagonist)} disabled={concept.generating.includes('prompt_protagonist') || savingValues.prompt_protagonist || originalValues.prompt_protagonist === concept.prompt_protagonist} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Nabídka jmen pro hlavní postavu</h2>
     <div>
       <div class='columns'>
-        {#each concept.protagonist_names as name, index (index)}
-          <div class='name row'>
-            <input type='text' bind:value={concept.protagonist_names[index]} placeholder='Jméno' />
-            {#if concept.protagonist_names.length > 1}<button onclick={() => { concept.protagonist_names.splice(index, 1) }} class='material delete square' title='Smazat jméno' use:tooltip>delete</button>{/if}
-          </div>
-        {/each}
+        {#if Array.isArray(concept.protagonist_names)}
+          {#each concept.protagonist_names as name, index (index)}
+            <div class='name row'>
+              <input type='text' bind:value={concept.protagonist_names[index]} placeholder='Jméno' />
+              {#if concept.protagonist_names.length > 1}<button onclick={() => { concept.protagonist_names.splice(index, 1) }} class='material delete square' title='Smazat jméno' use:tooltip>delete</button>{/if}
+            </div>
+          {/each}
+        {:else}
+          <center class='info'>Jména se právě generují...</center>
+        {/if}
       </div>
       <center>
         <button onclick={() => { concept.protagonist_names.push('') }} class='add'>Přidat jméno</button>
-        <button onclick={() => onSave('protagonist_names', concept.protagonist_names)} disabled={savingValues.protagonist_names || originalValues.protagonist_names.join(',') === concept.protagonist_names.join(',')} class='save'>Uložit jména</button>
+        <button onclick={regenerateNames} class='add'>Přegenerovat</button>
+        <button onclick={() => onSave('protagonist_names', concept.protagonist_names)} disabled={concept.generating.includes('protagonist_names') || savingValues.protagonist_names || originalValues.protagonist_names.join(',') === concept.protagonist_names.join(',')} class='save'>Uložit jména</button>
       </center>
     </div>
 
     <h2>Místa</h2>
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_locations} loading={concept.generated_locations === 'generating'} placeholder='Jaká místa jsou pro hru důležitá? (nepovinné)' maxlength={1000} />
-      <button onclick={() => onSave('prompt_locations', concept.prompt_locations)} disabled={concept.generated_locations === 'generating' || savingValues.prompt_locations || originalValues.prompt_locations === concept.prompt_locations} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={() => onSave('prompt_locations', concept.prompt_locations)} disabled={concept.generating.includes('prompt_locations') || savingValues.prompt_locations || originalValues.prompt_locations === concept.prompt_locations} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Frakce</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_factions} loading={concept.generated_factions === 'generating'} placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité? (nepovinné)' maxlength={1000} />
-      <button onclick={() => onSave('prompt_factions', concept.prompt_factions)} disabled={concept.generated_factions === 'generating' || savingValues.prompt_factions || originalValues.prompt_factions === concept.prompt_factions} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_factions} loading={concept.generating.includes('prompt_factions')} placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité? (nepovinné)' maxlength={1000} />
+      <button onclick={() => onSave('prompt_factions', concept.prompt_factions)} disabled={concept.generating.includes('prompt_factions') || savingValues.prompt_factions || originalValues.prompt_factions === concept.prompt_factions} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Postavy</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_characters} loading={concept.generated_characters === 'generating'} placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' maxlength={1000} />
-      <button onclick={() => onSave('prompt_characters', concept.prompt_characters)} disabled={concept.generated_characters === 'generating' || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_characters} loading={concept.generating.includes('prompt_characters')} placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' maxlength={1000} />
+      <button onclick={() => onSave('prompt_characters', concept.prompt_characters)} disabled={concept.generating.includes('prompt_characters') || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Ilustrace</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_image} loading={concept.generated_image === 'generating'} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
-      <button onclick={() => onSave('prompt_image', concept.prompt_image)} disabled={concept.generated_image === 'generating' || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.prompt_image} loading={concept.generating.includes('prompt_image')} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
+      <button onclick={() => onSave('prompt_image', concept.prompt_image)} disabled={concept.generating.includes('prompt_image') || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Tagy</h2>
@@ -219,7 +234,7 @@
     <h2>Plán hry</h2>
     <EditableLong {user} value={concept.generated_plan} onSave={(value) => onSave('generated_plan', value)} canEdit allowHtml />
     <h2>Ilustrace</h2>
-    <EditableLong {user} value={concept.generated_image} onSave={(value) => onSave('generated_image', value)} canEdit allowHtml />
+    <EditableLong {user} value={concept.generated_image_prompt} onSave={(value) => onSave('generated_image_prompt', value)} canEdit allowHtml />
   {/if}
 </main>
 
