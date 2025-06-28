@@ -1,7 +1,6 @@
 import { Type } from '@google/genai'
 import { getHash } from '@lib/utils'
-import { getContext } from '@lib/solo/gemini'
-import { ai, assistantConfig, prompts, generateImage } from '@lib/solo/server-gemini'
+import { ai, assistantConfig, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {

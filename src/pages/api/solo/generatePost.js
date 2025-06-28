@@ -1,5 +1,4 @@
-import { ai } from '@lib/solo/server-gemini'
-import { getContextString, storytellerInstructions, storytellerConfig } from '@lib/solo/gemini'
+import { ai, getContextString, storytellerInstructions, storytellerConfig } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
   try {
@@ -44,7 +43,8 @@ export const POST = async ({ request, locals }) => {
             }
             if (chunk.candidates && chunk.candidates[0].finishReason) { finishReason = chunk.candidates[0].finishReason }
           }
-          await locals.supabase.from('posts').insert({ thread: soloGame.thread, owner: soloConcept.storyteller, owner_type: 'npc', content: finalText, note: finishReason })
+          const { error: postError } = await locals.supabase.from('posts').insert({ thread: soloGame.thread, owner: soloConcept.storyteller, owner_type: 'npc', content: finalText, note: finishReason })
+          if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
           isClosed = true
           controller.close()
         } catch (error) {

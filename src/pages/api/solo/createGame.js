@@ -1,6 +1,6 @@
 // Create a new game from a solo concept
-import { ai, generateImage, prompts } from '@lib/solo/server-gemini'
-import { getContext, storytellerInstructions } from '@lib/solo/gemini'
+import { getHash } from '@lib/utils'
+import { ai, generateImage, prompts, assistantConfig, getContext, storytellerInstructions } from '@lib/solo/server-gemini'
 
 const storytellerConfig = {
   model: 'gemini-2.5-flash',
@@ -33,7 +33,7 @@ export const GET = async ({ request, locals, redirect }) => {
     if (gameError) { throw new Error('Chyba při vytváření nové hry: ' + gameError.message) }
 
     // Create a new player character
-    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player_id: locals.user.id, solo_game: gameData.id, portrait: getHash() }).select().single()
+    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getHash() }).select().single()
     if (characterError) { throw new Error('Chyba při vytváření postavy: ' + characterError.message) }
 
     // Add game to bookmarks
@@ -61,12 +61,13 @@ export const GET = async ({ request, locals, redirect }) => {
     const firstImagePrompt = { text: prompts.first_image + `Text herního příspěvku k vyobrazení: ${firstPost}` }
     const firstImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, firstImagePrompt] })
     const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, '16:9', 1408, 768)
-    if (sceneImageError) { error = sceneImageError.message }
+    if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
-      const { data: uploadData, error: uploadError } = await supabase.storage.from('locations').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
+      const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('locations').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
-      // const imageUrl = supabase.storage.from('locations').getPublicUrl(uploadData.path).publicURL
-      firstPost += `<p><img src='${uploadData.fullPath}' alt='Scene Image' /></p>`
+      // const imageUrl = locals.supabase.storage.from('locations').getPublicUrl(uploadData.path).publicURL
+      console.log('uploadData.fullPath', uploadData.fullPath)
+      firstPost += `<p><img src='${uploadData.fullPath}' alt='Scene illustration' /></p>`
     }
 
     // Save the first post with the image

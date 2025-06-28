@@ -6,9 +6,7 @@
   import { platform } from '@components/common/MediaQuery.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { waitForMediaLoad } from '@lib/utils'
-  import { getContextString } from '@lib/solo/gemini'
   import { supabase, handleError } from '@lib/database-browser'
-  import { storytellerConfig, storytellerInstructions } from '@lib/solo/gemini'
 
   const { user = {}, soloGame = {}, soloConcept = {} } = $props()
 
@@ -40,8 +38,6 @@
     if (error) { return handleError(error) }
     allPosts = data
     updateDisplayedPosts()
-    const context = getContextString(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
-    storytellerConfig.config.systemInstruction = storytellerInstructions + '\n\n' + context
     isLoading = false
   }
 

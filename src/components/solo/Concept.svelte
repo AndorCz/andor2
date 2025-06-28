@@ -1,6 +1,5 @@
 <script>
   import { once } from 'svelte/legacy'
-
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { getPortraitUrl } from '@lib/database-browser'

@@ -2,18 +2,6 @@ import { getHash } from '@lib/utils'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 import { GoogleGenAI, Modality, Type } from '@google/genai'
 
-export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
-export const assistantConfig = {
-  model: 'gemini-2.5-flash-lite-preview-06-17',
-  config: {
-    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
-    generationConfig: { thinkingConfig: { thinkingBudget: 0 } }, // fast response
-    systemInstruction: { text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
-      Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
-      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.` }
-  }
-}
-
 export const prompts = {
   world: '1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh.\n',
   factions: '2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
@@ -27,6 +15,70 @@ export const prompts = {
   first_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
   storyteller_image: 'Napiš pro AI prompt k vygenerování portrétu pro NPC vypravěče této TTRPG hry. Obrázek by měl být ve stejném stylu jako hlavní obrázek hry a měl by být portrétem tajemné siluety, někoho, kdo by mohl být skrytou božskou bytostí v tomto světě. Duch, prázdný plášť, létající světlo, mrak, digitální bytost jako z Matrixu atd. Cokoliv, co se hodí k tématu hry. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
   protagonist_image: 'Napiš pro AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n'
+}
+
+export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+export const assistantConfig = {
+  model: 'gemini-2.5-flash-lite-preview-06-17',
+  config: {
+    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
+    generationConfig: { thinkingConfig: { thinkingBudget: 0 } }, // fast response
+    systemInstruction: { text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
+      Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
+      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.` }
+  }
+}
+
+export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-master) online TTRPG hry.
+  Herní styl: Hra je pro jednoho hráče, v češtině. Hraje se bez pravidlového systému, čistý roleplaying, tedy vypravěč (ty) vše rozhodne způsobem který je realistický a vede buď k zajímavému pokračování příběhu, nebo konci hry.
+  Výstup: Piš vždy v HTML formátu, ale používej jen základní tagy, jako odkazy a tučný text pro přímou řeč. Žádné nadpisy, ikony, seznamy apod.
+  Literární styl: Text vždy rozděluj do krátkých odstavců, po dvou až třech větách. Herní příspěvek by nikdy neměl být delší než tři odstavce. Jakmile napíšeš významnou novou informaci, ukonči příspěvek, aby měl hráči možnost brzy zareagovat svou akcí.
+  Zákaz: Nikdy nepiš přímo seznam možností co může udělat. Nikdy předem neprozrazuj plán příběhu, pokud příspěvek nezačíná slovem "debug".
+  Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další části plánu hry. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.`
+
+export const storytellerConfig = {
+  model: 'gemini-2.5-flash',
+  config: {
+    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
+    thinkingConfig: { thinkingBudget: 200 },
+    systemInstruction: storytellerInstructions,
+    generationConfig: { responseMimeType: 'text/html' }
+  }
+}
+
+export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
+  try {
+    const imageResponse = await ai.models.generateImages({
+      model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio, includeRaiReason: true }
+    })
+    const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
+    if (!headerImageBase64) { throw new Error('No image generated') }
+    const bufferImage = Buffer.from(headerImageBase64, 'base64')
+    const { data, error } = await cropImageBackEnd(bufferImage, cropWidth, cropHeight)
+    return { data, error }
+  } catch (error) {
+    console.error('Error generating image:', error)
+    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
+  }
+}
+
+// Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
+export function getContext (conceptData, exclude) {
+  const context = {
+    basePrompt: { text: `Hra se bude jmenovat "${decodeURIComponent(conceptData.name)}". Zde jsou podklady (setting) pro tuto hru:` },
+    world: { text: conceptData.generated_world },
+    factions: { text: conceptData.generated_factions },
+    locations: { text: conceptData.generated_locations },
+    characters: { text: conceptData.generated_characters },
+    protagonist: { text: conceptData.generated_protagonist }
+  }
+  if (exclude) { delete context[exclude] }
+  return Object.values(context)
+}
+
+export function getContextString (conceptData, exclude) {
+  const context = getContext(conceptData, exclude)
+  return context.map(item => item.text).join('\n\n')
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
@@ -179,20 +231,3 @@ export async function generateSoloConcept (supabase, conceptData) {
     return { error: { message: 'Chyba při generování konceptu: ' + error.message } }
   }
 }
-
-export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
-  try {
-    const imageResponse = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio, includeRaiReason: true }
-    })
-    const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
-    if (!headerImageBase64) { throw new Error('No image generated') }
-    const bufferImage = Buffer.from(headerImageBase64, 'base64')
-    const { data, error } = await cropImageBackEnd(bufferImage, cropWidth, cropHeight)
-    return { data, error }
-  } catch (error) {
-    console.error('Error generating image:', error)
-    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
-  }
-}
-
