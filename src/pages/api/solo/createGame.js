@@ -24,6 +24,10 @@ export const GET = async ({ request, locals, redirect }) => {
     if (conceptError) { throw new Error('Chyba při načítání konceptu: ' + conceptError.message) }
     if (!concept) { throw new Error('Koncept nebyl nalezen') }
 
+    // Increment the concept's play count
+    const { error: incrementError } = await locals.supabase.from('solo_concepts').update({ game_count: (concept.game_count || 0) + 1 }).eq('id', concept.id)
+    if (incrementError) { throw new Error('Chyba při aktualizaci počtu her: ' + incrementError.message) }
+
     // Create a new game
     const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').insert({ concept_id: concept.id, name: concept.name, player: locals.user.id }).select().single()
     if (gameError) { throw new Error('Chyba při vytváření nové hry: ' + gameError.message) }

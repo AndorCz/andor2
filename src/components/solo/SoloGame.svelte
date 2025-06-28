@@ -156,7 +156,7 @@
 <main>
   <div class='headline'>
     <h1>{soloGame.name}</h1>
-    <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>arrow_back</button>
+    <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>info</button>
     {#if user.id}
       <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
     {/if}

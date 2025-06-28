@@ -11,6 +11,7 @@
 
   let checkLoop = null
   let openGames = $state([])
+  let selectedName = $state(concept.protagonist_names[0])
 
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
@@ -44,7 +45,7 @@
   }
 
   function startGame () {
-    window.location.href = `/api/solo/createGame?conceptId=${concept.id}`
+    window.location.href = `/api/solo/createGame?conceptId=${concept.id}&protagonistName=${encodeURIComponent(selectedName)}`
   }
 </script>
 
@@ -81,13 +82,24 @@
     <div class='intro'>
       <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
       <details>
-        <summary>Tvoje postava</summary>
-        <p>{@html concept.generated_protagonist}</p>
-      </details>
-      <details>
         <summary>Svět</summary>
         <p>{@html concept.generated_world}</p>
       </details>
+      <details>
+        <summary>Tvoje postava</summary>
+        <p>{@html concept.generated_protagonist}</p>
+      </details>
+      <div class='names'>
+        <h3>Jméno postavy</h3>
+        <div class='grid'>
+          {#each concept.protagonist_names as name (name)}
+            <label title='Jméno protagonisty'>
+              <input type='radio' name='protagonist_name' value={name} bind:group={selectedName} />
+              <span>{name}</span>
+            </label>
+          {/each}
+        </div>
+      </div>
       {#if openGames.length > 0}
         <div class='games'>
           <h2>Tvoje rozehrané hry</h2>
@@ -211,6 +223,30 @@
     summary {
       cursor: pointer;
       font-weight: bold;
+    }
+  .names {
+    padding: 20px;
+    background: var(--block);
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+    .names h3 {
+      margin-top: 0px;
+    }
+    .names label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .names input {
+      width: 20px;
+      height: 20px;
+    }
+    .names .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
     }
   .games h2 {
     margin-top: 40px;

@@ -13,7 +13,6 @@ export const POST = async ({ request, locals, redirect }) => {
   if (!prompts[fieldName]) { throw new Error(`Prompt pro pole "${fieldName}" nebyl nalezen`) }
 
   try {
-    const newData = {}
     const referer = request.headers.get('referer')
     if (!locals.user.id || !conceptId) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
 
@@ -24,6 +23,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Prepare AI context and prompt
     const context = getContext(conceptData, fieldName)
+    const newData = { generating: [] }
 
     // Update the requested field
     if (fieldName !== 'plan') { // plan is going to be generated anyway
