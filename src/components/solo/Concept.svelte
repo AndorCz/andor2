@@ -45,7 +45,7 @@
   }
 
   function startGame () {
-    window.location.href = `/api/solo/createGame?conceptId=${concept.id}&protagonistName=${encodeURIComponent(selectedName)}`
+    window.location.href = `/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`
   }
 </script>
 

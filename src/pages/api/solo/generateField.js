@@ -61,7 +61,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update header image if requested
     if (fieldName === 'image') {
-      const { data: image, error: imageError } = await generateImage(generatedContent, '16:9', 1100, 226)
+      const { data: image, error: imageError } = await generateImage(value, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
       if (image) {
         const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, image, { contentType: 'image/jpg' })

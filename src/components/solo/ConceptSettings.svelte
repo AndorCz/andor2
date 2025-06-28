@@ -61,6 +61,7 @@
             savingValues[field] = false
             clearInterval(checkLoop)
             showSuccess(`Pole "${field}" bylo úspěšně aktualizováno a vygenerováno`)
+            if (field === 'image') { window.location.reload() } // Reload to show new image
           }
         }, 5000)
       }

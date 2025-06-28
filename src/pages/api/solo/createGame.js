@@ -1,6 +1,5 @@
 // Create a new game from a solo concept
-
-import { ai } from '@lib/solo/server-gemini'
+import { ai, generateImage, prompts } from '@lib/solo/server-gemini'
 import { getContext, storytellerInstructions } from '@lib/solo/gemini'
 
 const storytellerConfig = {
@@ -16,8 +15,9 @@ export const GET = async ({ request, locals, redirect }) => {
   try {
     const { searchParams } = new URL(request.url)
     const conceptId = searchParams.get('conceptId')
+    const characterName = searchParams.get('characterName')
     const referer = request.headers.get('referer')
-    if (!locals.user.id || !conceptId) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
+    if (!locals.user.id || !conceptId || !characterName) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení, data o konceptu nebo jméno postavy')) }
 
     // Check if the concept exists
     const { data: concept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', conceptId).single()
@@ -32,17 +32,35 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').insert({ concept_id: concept.id, name: concept.name, player: locals.user.id }).select().single()
     if (gameError) { throw new Error('Chyba při vytváření nové hry: ' + gameError.message) }
 
+    // Create a new player character
+    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player_id: locals.user.id, solo_game: gameData.id, portrait: getHash() }).select().single()
+    if (characterError) { throw new Error('Chyba při vytváření postavy: ' + characterError.message) }
+
     // Add game to bookmarks
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, solo_id: gameData.id }, { onConflict: 'user_id, solo_id', ignoreDuplicates: true })
     if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(bookmarkError.message)) }
 
-    // Generate first post
+    // Context generation
     const context = getContext(concept)
+
+    // Generate player character portrait
+    const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
+    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, characterImagePromptMessage] })
+    const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, '9:16', 140, 352)
+    if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
+    if (portraitImage) {
+      const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg' })
+      if (uploadError) { throw new Error('Chyba při nahrávání portrétu: ' + uploadError.message) }
+    }
+
+    // Generate first post
     const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
     const firstPost = response.text
 
     // Generate illustration for the first post
-    const { data: sceneImage, error: sceneImageError } = await generateImage('', '16:9', 1408, 768)
+    const firstImagePrompt = { text: prompts.first_image + `Text herního příspěvku k vyobrazení: ${firstPost}` }
+    const firstImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, firstImagePrompt] })
+    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, '16:9', 1408, 768)
     if (sceneImageError) { error = sceneImageError.message }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await supabase.storage.from('locations').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })

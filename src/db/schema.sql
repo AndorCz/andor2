@@ -221,6 +221,7 @@ create table boards (
 create table characters (
   id uuid not null primary key default gen_random_uuid(),
   game int4,
+  solo_game integer null,
   player uuid,
   portrait text,
   name text,
@@ -233,8 +234,10 @@ create table characters (
   accepted boolean not null default false,
   created_at timestamp with time zone default current_timestamp,
   state public.character_state not null default 'alive'::character_state,
-  constraint characters_game_fkey foreign key (game) references games (id) on delete cascade,
-  constraint characters_player_fkey foreign key (player) references profiles (id) on delete cascade
+  constraint characters_game_fkey foreign KEY (game) references games (id) on delete set null,
+  constraint characters_player_fkey foreign KEY (player) references profiles (id) on delete CASCADE,
+  constraint characters_solo_game_fkey foreign KEY (solo_game) references solo_games (id) on delete CASCADE,
+  constraint characters_name_check check ((length(name) < 50))
 );
 
 create table npcs (
