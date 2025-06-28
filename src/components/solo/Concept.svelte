@@ -23,6 +23,7 @@
         if (data && !data.generating) {
           clearInterval(checkLoop)
           checkLoop = null
+          window.location.reload()
         }
       }, 5000)
     } else {

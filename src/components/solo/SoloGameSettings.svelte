@@ -4,19 +4,19 @@
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError, deleteStorageFolder } from '@lib/database-browser'
 
-  let { soloGame = $bindable() } = $props()
+  let { game = $bindable() } = $props()
 
   let headlineEl = $state()
   let originalValues = $state({})
   const savingValues = $state({})
 
   onMount(() => {
-    originalValues = { ...soloGame }
+    originalValues = { ...game }
   })
 
   async function onSave (field, value) {
     savingValues[field] = true
-    const { error } = await supabase.from('solo_games').update({ [field]: value }).eq('id', soloGame.id)
+    const { error } = await supabase.from('solo_games').update({ [field]: value }).eq('id', game.id)
     if (error) {
       handleError(error)
     } else {
@@ -27,20 +27,20 @@
   }
 
   function showGame () {
-    window.location.href = `/solo/game/${soloGame.id}`
+    window.location.href = `/solo/game/${game.id}`
   }
 
   async function deleteGame () {
-    const { error } = await supabase.from('solo_games').delete().eq('id', soloGame.id)
+    const { error } = await supabase.from('solo_games').delete().eq('id', game.id)
     if (error) { return handleError(error) }
-    deleteStorageFolder('scenes', soloGame.id)
+    deleteStorageFolder('scenes', game.id)
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 </script>
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
-    <a href='/solo/game/{soloGame.id}' class='backlink'>{soloGame.name}</a>
+    <a href='/solo/game/{game.id}' class='backlink'>{game.name}</a>
     <h1>Nastavení</h1>
     <button onclick={showGame} class='material square back' title='Zpět na hru' use:tooltip>arrow_back</button>
   </div>
@@ -49,8 +49,8 @@
 <main>
   <h2>Název</h2>
   <div class='row'>
-    <input type='text' bind:value={soloGame.name} maxlength='80' />
-    <button onclick={onSave('name', soloGame.name)} disabled={savingValues.name || (originalValues.name === soloGame.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+    <input type='text' bind:value={game.name} maxlength='80' />
+    <button onclick={onSave('name', game.name)} disabled={savingValues.name || (originalValues.name === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2>Smazání hry</h2>

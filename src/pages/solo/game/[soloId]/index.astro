@@ -9,20 +9,21 @@
   const { supabase, user } = Astro.locals
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: soloGame, error: soloError } = await supabase.from('solo_games').select().eq('id', soloId).single()
-  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
+  if (!user) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Uživatel nepřihlášen')}`) }
+  if (!soloId) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí id hry')}`) }
 
-  const { data: soloConcept, error } = await supabase.from('solo_concepts').select().eq('id', soloGame.concept_id).single()
-  if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+  const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
+  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
+  const { game, concept, character } = soloData
 ---
 
-<LayoutSolo title={soloConcept?.name} headerStorage={soloConcept?.custom_header ? `solo-${soloConcept.id}.jpg?hash=${soloConcept.custom_header}` : null}>
-  {(soloGame && soloConcept ? (
-    user?.id && soloGame.player === user.id ? (
+<LayoutSolo title={concept?.name} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
+  {(game && concept ? (
+    user?.id && game.player === user.id ? (
       showSettings ? (
-        <SoloGameSettings {soloGame} {user} client:only='svelte' />
+        <SoloGameSettings {game} {user} client:only='svelte' />
       ) : (
-        <SoloGame {soloGame} {soloConcept} {user} client:only='svelte' />
+        <SoloGame {game} {character} {concept} {user} client:only='svelte' />
       )
     ) : (
       <p>Nepřihlášený uživatel, nebo nemáš přístup k této hře</p>

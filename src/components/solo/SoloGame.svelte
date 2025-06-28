@@ -8,7 +8,7 @@
   import { waitForMediaLoad } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
 
-  const { user = {}, soloGame = {}, soloConcept = {} } = $props()
+  const { user = {}, game = {}, character = {}, concept = {} } = $props()
 
   let inputEl = $state(null)
   let postsEl = $state(null)
@@ -34,7 +34,7 @@
 
   async function loadPosts () {
     isLoading = true
-    const { data, error } = await supabase.from('posts_owner').select().match({ thread: soloGame.thread }).order('created_at', { ascending: true })
+    const { data, error } = await supabase.from('posts_owner').select().match({ thread: game.thread }).order('created_at', { ascending: true })
     if (error) { return handleError(error) }
     allPosts = data
     updateDisplayedPosts()
@@ -44,7 +44,7 @@
   async function addPost () {
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
-    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: soloGame.thread, owner: user.id, owner_type: 'user', content: inputValue }).select().single()
+    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
     if (error) { return handleError(error) }
     inputValue = ''
 
@@ -63,7 +63,7 @@
       const res = await fetch('/api/solo/generatePost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soloId: soloGame.id, message: newPostData.content })
+        body: JSON.stringify({ soloId: game.id, message: newPostData.content })
       })
       if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
       const reader = res.body.getReader()
@@ -92,7 +92,7 @@
   }
 
   function showConcept () {
-    window.location.href = `/solo/concept/${soloConcept.id}`
+    window.location.href = `/solo/concept/${concept.id}`
   }
 
   function handleScroll () {
@@ -151,7 +151,7 @@
 
 <main>
   <div class='headline'>
-    <h1>{soloGame.name}</h1>
+    <h1>{game.name}</h1>
     <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>info</button>
     {#if user.id}
       <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
