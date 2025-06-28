@@ -63,9 +63,9 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, '16:9', 1408, 768)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
-      const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('locations').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
+      const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
-      // const imageUrl = locals.supabase.storage.from('locations').getPublicUrl(uploadData.path).publicURL
+      // const imageUrl = locals.supabase.storage.from('scenes').getPublicUrl(uploadData.path).publicURL
       console.log('uploadData.fullPath', uploadData.fullPath)
       firstPost += `<p><img src='${uploadData.fullPath}' alt='Scene illustration' /></p>`
     }

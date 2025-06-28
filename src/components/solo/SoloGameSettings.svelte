@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError } from '@lib/database-browser'
+  import { supabase, handleError, deleteStorageFolder } from '@lib/database-browser'
 
   let { soloGame = $bindable() } = $props()
 
@@ -33,6 +33,7 @@
   async function deleteGame () {
     const { error } = await supabase.from('solo_games').delete().eq('id', soloGame.id)
     if (error) { return handleError(error) }
+    deleteStorageFolder('scenes', soloGame.id)
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 </script>

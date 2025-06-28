@@ -62,3 +62,12 @@ export async function userAutocomplete (name) {
   if (error) { return handleError(error) }
   return data
 }
+
+export async function deleteStorageFolder (bucket, folder) {
+  const { data: listData, error: listError } = await supabase.storage.from(bucket).list(folder)
+  if (listError) { return listError }
+  const filesToRemove = listData.map((file) => `${folder}/${file.name}`)
+  const { error: removeError } = await supabase.storage.from(bucket).remove(filesToRemove)
+  if (removeError) { return removeError }
+  return { data: { success: true } }
+}

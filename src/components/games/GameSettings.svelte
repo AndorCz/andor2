@@ -153,7 +153,7 @@
         <button onclick={updateGame} disabled={saving || originalAnnotation === game.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
 
-      <h2>Uvítací zpráva <span class='material' title={'Příjde novým hráčům, od vypravěče který je přijal do hry'} use:tooltip>info</span></h2>
+      <h2>Uvítací zpráva <span class='material' title='Příjde novým hráčům, od vypravěče který je přijal do hry' use:tooltip>info</span></h2>
       <div class='row'>
         <TextareaExpandable bind:this={welcomeMessageRef} {user} id='gameWelcomeMessage' name='gameWelcomeMessage' value={game.welcome_message} maxlength={150} allowHtml onTyping={() => { isWelcomeMessageDirty = true }} />
         <button onclick={updateGame} disabled={saving || !isWelcomeMessageDirty} class='material save square' title='Uložit' use:tooltip>check</button>
@@ -162,7 +162,7 @@
       <h2>Kategorie</h2>
       <div class='row'>
         <select id='gameCategory' name='gameCategory' bind:value={game.category}>
-          {#each gameCategories as category}
+          {#each gameCategories as category (category.value)}
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
@@ -172,7 +172,7 @@
       <h2>Herní systém</h2>
       <div class='row'>
         <select id='gameSystem' name='gameSystem' bind:value={game.system}>
-          {#each gameSystems as system}
+          {#each gameSystems as system (system.value)}
             <option value={system.value}>{system.label}</option>
           {/each}
         </select>
@@ -227,7 +227,7 @@
       <h2>Sekce kodexu</h2>
       {#if game.codexSections && game.codexSections.length}
         <ul>
-          {#each game.codexSections as section}
+          {#each game.codexSections as section (section.id)}
             <li>
               <div class='section'>
                 <h3>{section.name}</h3>
@@ -256,7 +256,7 @@
     <h2>Fonty <span class='material' title='Umožní další fonty z Google Fonts. Pozor, každý font navíc o něco zpomalí načítání hry všem hráčům' use:tooltip>info</span></h2>
     {#if game.fonts && game.fonts.length}
       <ul>
-        {#each game.fonts as font}
+        {#each game.fonts as font (font)}
           <li>
             <div class='font'>
               <h3>{font}</h3>

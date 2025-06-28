@@ -5,7 +5,7 @@
   import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError } from '@lib/database-browser'
+  import { supabase, handleError, deleteStorageFolder } from '@lib/database-browser'
   import Select from 'svelte-select'
   import EditableLong from '@components/common/EditableLong.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -111,6 +111,12 @@
   async function deleteConcept () {
     const { error } = await supabase.from('solo_concepts').delete().eq('id', concept.id)
     if (error) { return handleError(error) }
+
+    // Delete images
+    deleteStorageFolder('npcs', concept.id)
+    const { error: removeError } = await supabase.storage.from('headers').remove(`solo-${concept.id}.jpg`)
+    if (removeError) { return handleError(removeError) }
+
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
   }
 

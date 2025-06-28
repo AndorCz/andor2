@@ -216,7 +216,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     if (storytellerImageError) { error = storytellerImageError.message }
     conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1)
     if (storytellerImage) {
-      const { error: uploadError } = await supabase.storage.from('npcs').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+      const { error: uploadError } = await supabase.storage.from('npcs').upload(`${conceptData.id}/${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
     }
 

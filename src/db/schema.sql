@@ -1135,7 +1135,7 @@ begin
         ) as characters
       from user_games ug
       join (
-        select 
+        select
           c.*,
           (
             select json_agg(
@@ -1631,7 +1631,7 @@ insert into storage.buckets (id, name, public) values ('maps', 'maps', true);
 insert into storage.buckets (id, name, public) values ('works', 'works', true);
 insert into storage.buckets (id, name, public) values ('news', 'news', true);
 insert into storage.buckets (id, name, public) values ('npcs', 'npcs', true);
-insert into storage.buckets (id, name, public) values ('locations', 'locations', true);
+insert into storage.buckets (id, name, public) values ('scenes', 'scenes', true);
 insert into storage.buckets (id, name, public) values ('items', 'items', true);
 
 
