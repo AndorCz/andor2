@@ -44,7 +44,7 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Update game plan (almost always needed)
-    if (fieldName !== 'protagonist_names' && fieldName !== 'image' && fieldName !== 'annotation') {
+    if (fieldName !== 'protagonist_names' && fieldName !== 'header_image' && fieldName !== 'storyteller_image' && fieldName !== 'annotation') {
       const planMessage = {
         text: `The previous game plan was as follows: "${conceptData.generated_plan}"
         Now the information in the section "${fieldName}" has changed, please update the game plan, if needed.`
@@ -59,13 +59,25 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Update header image if requested
-    if (fieldName === 'image') {
-      const { data: image, error: imageError } = await generateImage(value, '16:9', 1100, 226)
+    if (fieldName === 'header_image') {
+      const { data: headerImage, error: imageError } = await generateImage(value, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
-      if (image) {
-        const { error: uploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, image, { contentType: 'image/jpg' })
-        if (uploadError) { throw new Error(uploadError.message) }
+      if (headerImage) {
+        const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
+        if (headerUploadError) { throw new Error(headerUploadError.message) }
         newData.custom_header = getHash()
+      }
+    }
+
+    // Update storyteller image if requested
+    if (fieldName === 'storyteller_image') {
+      const { data: storytellerImage, error: imageError } = await generateImage(value, '9:16', 140, 352)
+      if (imageError) { throw new Error(imageError.message) }
+      if (storytellerImage) {
+        const { error: storytellerUploadError } = await locals.supabase.storage.from('npcs').upload(`${conceptData.id}/${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+        if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
+        const { error: storytellerUpdateError } = await locals.supabase.from('npcs').update({ portrait: getHash() }).eq('id', conceptData.storyteller)
+        if (storytellerUpdateError) { throw new Error(storytellerUpdateError.message) }
       }
     }
 

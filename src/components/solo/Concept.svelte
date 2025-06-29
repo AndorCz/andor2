@@ -3,6 +3,7 @@
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
+  import { isFilledArray } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
@@ -13,7 +14,7 @@
   let checkLoop = null
   let openGames = $state([])
   let creatingGame = $state(false)
-  let selectedName = $state(concept.protagonist_names[0])
+  let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
 
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
@@ -24,6 +25,7 @@
         if (error) { handleError(error) }
         if (data) { concept = data }
         if (data && !data.generating) {
+          selectedName = isFilledArray(data.protagonist_names) ? data.protagonist_names[0] : ''
           clearInterval(checkLoop)
           checkLoop = null
           window.location.reload()
@@ -77,12 +79,12 @@
         <li><span class='material'>{concept.generating.includes('generated_locations') ? 'hourglass_top' : 'check'}</span><span class='wide'>Místa</span></li>
         <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
         <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
-        <li><span class='material'>{concept.generating.includes('annotating') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
-        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
+        <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
         <li><span class='material'>{concept.generating.includes('generated_image_prompt') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
-        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('storyteller_image_prompt') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
+        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
+        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
         <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
       </ul>
     </div>

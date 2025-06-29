@@ -1,6 +1,6 @@
 import { getHash } from '@lib/utils'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
-import { GoogleGenAI, Modality, Type } from '@google/genai'
+import { GoogleGenAI, Type } from '@google/genai'
 
 export const prompts = {
   world: '1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh.\n',
@@ -47,9 +47,11 @@ export const storytellerConfig = {
 }
 
 export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
+  console.log('prompt', prompt)
+  if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const imageResponse = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-002', prompt, config: { responseModalities: [Modality.IMAGE], numberOfImages: 1, aspectRatio, includeRaiReason: true }
+      model: 'imagen-3.0-generate-002', prompt, config: { numberOfImages: 1, aspectRatio, includeRaiReason: true }
     })
     const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
     if (!headerImageBase64) { throw new Error('No image generated') }
@@ -88,142 +90,112 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     console.log('Starting concept generation for:', conceptData.id)
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    // const generating = ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_plan', 'annotation', 'protagonist_names', 'generated_image_prompt', 'header_image', 'storyteller_image']
+    const chat = ai.chats.create({ ...assistantConfig, history: [{ role: 'user', parts: [basePrompt] }] })
 
     // World
-    const worldMessage = { text: prompts.world }
-    if (conceptData.prompt_world) { worldMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
-    contents = [basePrompt, worldMessage]
-    const response = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedWorld = { text: response.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_world'), 1)
-    const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: generatedWorld.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_world) { prompts.world += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
+    const responseWorld = await chat.sendMessage({ message: prompts.world })
+    const { error: updateErrorWorld } = await supabase.from('solo_concepts').update({ generated_world: responseWorld.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
-    // console.log('Generated world:', generatedWorld.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_world'), 1) // Done
 
     // Factions
-    const factionsMessage = { text: prompts.factions }
-    if (conceptData.prompt_factions) { factionsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_factions}"` }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage]
-    const factionsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedFactions = { text: factionsResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_factions'), 1)
-    const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: generatedFactions.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_factions) { prompts.factions += `Vypravěč uvedl toto zadání: "${conceptData.prompt_factions}"` }
+    const responseFactions = await chat.sendMessage({ message: prompts.factions })
+    const { error: updateErrorFactions } = await supabase.from('solo_concepts').update({ generated_factions: responseFactions.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorFactions) { throw new Error(updateErrorFactions.message) }
-    // console.log('Generated factions:', generatedFactions.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_factions'), 1) // Done
 
     // Locations
-    const locationsMessage = { text: prompts.locations }
-    if (conceptData.prompt_locations) { locationsMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_locations}"` }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage]
-    const locationsResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedLocations = { text: locationsResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_locations'), 1)
-    const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: generatedLocations.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_locations) { prompts.locations += `Vypravěč uvedl toto zadání: "${conceptData.prompt_locations}"` }
+    const responseLocations = await chat.sendMessage({ message: prompts.locations })
+    const { error: updateErrorLocations } = await supabase.from('solo_concepts').update({ generated_locations: responseLocations.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorLocations) { throw new Error(updateErrorLocations.message) }
-    // console.log('Generated locations:', generatedLocations.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_locations'), 1) // Done
 
     // Characters
-    const charactersMessage = { text: prompts.characters }
-    if (conceptData.prompt_characters) { charactersMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_characters}"` }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage]
-    const charactersResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedCharacters = { text: charactersResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_characters'), 1)
-    const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: generatedCharacters.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_characters) { prompts.characters += `Vypravěč uvedl toto zadání: "${conceptData.prompt_characters}"` }
+    const responseCharacters = await chat.sendMessage({ message: prompts.characters })
+    const { error: updateErrorCharacters } = await supabase.from('solo_concepts').update({ generated_characters: responseCharacters.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorCharacters) { throw new Error(updateErrorCharacters.message) }
-    // console.log('Generated characters:', generatedCharacters.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_characters'), 1) // Done
 
     // Protagonist
-    const protagonistMessage = { text: prompts.protagonist }
-    if (conceptData.prompt_protagonist) { protagonistMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_protagonist}"` }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage]
-    const protagonistResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedProtagonist = { text: protagonistResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_protagonist'), 1)
-    const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: generatedProtagonist.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_protagonist) { prompts.protagonist += `Vypravěč uvedl toto zadání: "${conceptData.prompt_protagonist}"` }
+    const responseProtagonist = await chat.sendMessage({ message: prompts.protagonist })
+    const { error: updateErrorProtagonist } = await supabase.from('solo_concepts').update({ generated_protagonist: responseProtagonist.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonist) { throw new Error(updateErrorProtagonist.message) }
-    // console.log('Generated protagonist:', generatedProtagonist.text)
-
-    // Plan
-    const planConfig = { config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } }
-    const planMessage = { text: prompts.plan }
-    if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage]
-    const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
-    const planResponse = await ai2.models.generateContent({ ...assistantConfig, ...planConfig, contents, model: 'gemini-2.5-pro' })
-    const generatedPlan = { text: planResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1)
-    const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)
-    if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
-    // console.log('Generated plan:', generatedPlan.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_protagonist'), 1) // Done
 
     // Annotation
-    const annotationMessage = { text: prompts.annotation }
-    contents = [basePrompt, worldMessage, generatedWorld, factionsMessage, generatedFactions, locationsMessage, generatedLocations, charactersMessage, generatedCharacters, protagonistMessage, generatedProtagonist, planMessage, generatedPlan, annotationMessage]
-    const annotationResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedAnnotation = { text: annotationResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('annotation'), 1)
-    const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: generatedAnnotation.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    const responseAnnotation = await chat.sendMessage({ message: prompts.annotation })
+    const { error: updateErrorAnnotation } = await supabase.from('solo_concepts').update({ annotation: responseAnnotation.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
-    // console.log('Generated annotation:', generatedAnnotation.text)
-
-    // Protagonist names
-    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
-    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, worldMessage, generatedWorld, protagonistMessage, generatedProtagonist, { text: prompts.protagonistNames }]
-    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantConfig, ...structuredConfig, contents })
-    conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1)
-    const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
-    if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
-    // console.log('Generated protagonist names:', protagonistNamesResponse.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('annotation'), 1) // Done
 
     // Header image prompt
-    const imageMessage = { text: prompts.headerImage }
-    if (conceptData.prompt_image) { imageMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_image}"` }
-    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, imageMessage]
-    const imagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedImagePrompt = imagePromptResponse.text
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_image_prompt'), 1)
-    const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_image_prompt: generatedImagePrompt, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (conceptData.prompt_header_image) { prompts.header_image += `Vypravěč uvedl toto zadání: "${conceptData.prompt_header_image}"` }
+    const responseHeaderImagePrompt = await chat.sendMessage({ message: prompts.header_image })
+    const { error: updateErrorImage } = await supabase.from('solo_concepts').update({ generated_header_image: responseHeaderImagePrompt.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorImage) { throw new Error(updateErrorImage.message) }
-    // console.log('Generated image prompt:', generatedImagePrompt)
-
-    // Generate header image
-    const { data: headerImage, error: headerImageError } = await generateImage(generatedImagePrompt.text, '16:9', 1100, 226)
-    if (headerImageError) { error = headerImageError.message }
-    // console.log('Generated header image:', image ? 'Image generated successfully' : 'No image generated')
-    if (headerImage) {
-      const { error: uploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
-      if (uploadError) { throw new Error(uploadError.message) }
-    }
-    conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_header_image'), 1) // Done
 
     // Storyteller image prompt
-    const storytellerImageMessage = { text: prompts.storytellerImage }
-    contents = [{ text: `Následující text popisuje TTRPG hru pod názvem "${conceptData.name}":` }, generatedAnnotation, generatedWorld, storytellerImageMessage]
-    const storytellerImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents })
-    const generatedStorytellerImagePrompt = storytellerImagePromptResponse.text
-    conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image_prompt'), 1)
-    // console.log('Generated storyteller image prompt:', generatedStorytellerImagePrompt)
+    if (conceptData.prompt_storyteller_image) { prompts.storyteller_image += `Vypravěč uvedl toto zadání: "${conceptData.prompt_storyteller_image}"` }
+    const responseStorytellerImagePrompt = await chat.sendMessage({ message: prompts.storyteller_image })
+    const { error: updateErrorStorytellerImage } = await supabase.from('solo_concepts').update({ generated_storyteller_image: responseStorytellerImagePrompt.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (updateErrorStorytellerImage) { throw new Error(updateErrorStorytellerImage.message) }
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_storyteller_image'), 1) // Done
 
     // Add storyteller npc
     const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), image: getHash() }
     const { data: npcData, error: npcError } = await locals.supabase.from('npcs').insert(npc).select().single()
     if (npcError) { throw new Error('Chyba při vytváření NPC: ' + npcError.message) }
 
-    // Generate storyteller image
-    const { data: storytellerImage, error: storytellerImageError } = await generateImage(generatedStorytellerImagePrompt.text, '9:16', 140, 352) // generated size is 768x1408
-    if (storytellerImageError) { error = storytellerImageError.message }
-    conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1)
-    if (storytellerImage) {
-      const { error: uploadError } = await supabase.storage.from('npcs').upload(`${conceptData.id}/${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
-      if (uploadError) { throw new Error(uploadError.message) }
+    // Generate header image
+    const { data: headerImage, error: headerImageError } = await generateImage(responseHeaderImagePrompt.text, '16:9', 1100, 226)
+    if (headerImageError) { error = headerImageError.message }
+    if (headerImage) {
+      const { error: headerUploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
+      if (headerUploadError) { throw new Error(headerUploadError.message) }
     }
+    conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1) // Done
+
+    // Generate storyteller image
+    const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, '9:16', 140, 352) // generated size is 768x1408
+    if (storytellerImageError) { error = storytellerImageError.message }
+    if (storytellerImage) {
+      const { error: storytellerUploadError } = await supabase.storage.from('npcs').upload(`${conceptData.id}/${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+      if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
+    }
+    conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1) // Done
+
+    // Protagonist names
+    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
+    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedWorld, generatedProtagonist, { text: prompts.protagonist_names }]
+    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantConfig, ...structuredConfig, contents })
+    conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1)
+    const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
+    if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
+    console.log('Generated protagonist names:', protagonistNamesResponse.text)
+
+    // Plan
+    const planConfig = { config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } }
+    const planMessage = { text: prompts.plan }
+    if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
+    contents = [basePrompt, generatedWorld, generatedFactions, generatedLocations, generatedCharacters, generatedProtagonist, planMessage]
+    const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
+    const planResponse = await ai2.models.generateContent({ ...assistantConfig, ...planConfig, contents, model: 'gemini-2.5-pro' })
+    const generatedPlan = { text: planResponse.text }
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1)
+    const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)
+    if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
+    console.log('Generated plan:', generatedPlan.text)
 
     // Release concept when generation completes
     const { error: updateError } = await supabase.from('solo_concepts').update({ published: true, generating: conceptData.generating, custom_header: getHash(), storyteller: npcData.id }).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
-    // console.log('Concept generation completed and saved, concept id:', conceptData.id)
+    console.log('Concept generation completed and saved, concept id:', conceptData.id)
 
     return { error, data: { success: true } }
   } catch (error) {

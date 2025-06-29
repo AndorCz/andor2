@@ -35,7 +35,7 @@
     const { error } = await supabase.from('solo_concepts').update({ [field]: value }).eq('id', concept.id)
     if (error) { handleError(error) }
 
-    if (['protagonist_names', 'world', 'plan', 'protagonist', 'locations', 'factions', 'characters', 'image'].includes(field)) {
+    if (['protagonist_names', 'world', 'plan', 'protagonist', 'locations', 'factions', 'characters', 'header_image', 'storyteller_image'].includes(field)) {
       // Differentiate between prompted and unprompted fields
       const targetField = field === 'protagonist_names' ? field : field.replace('prompt_', 'generated_')
       const requestData = { conceptId: concept.id, targetField, value }
@@ -61,7 +61,7 @@
             savingValues[field] = false
             clearInterval(checkLoop)
             showSuccess(`Pole "${field}" bylo úspěšně aktualizováno a vygenerováno`)
-            if (field === 'image') { window.location.reload() } // Reload to show new image
+            if (field === 'header_image') { window.location.reload() } // Reload to show new image
           }
         }, 5000)
       }
@@ -202,10 +202,16 @@
       <button onclick={() => onSave('prompt_characters', concept.prompt_characters)} disabled={concept.generating.includes('prompt_characters') || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
-    <h2>Ilustrace</h2>
+    <h2>Obrázek do hlavičky</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_image} loading={concept.generating.includes('prompt_image')} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
-      <button onclick={() => onSave('prompt_image', concept.prompt_image)} disabled={concept.generating.includes('prompt_image') || savingValues.prompt_image || originalValues.prompt_image === concept.prompt_image} class='material save square' title='Uložit' use:tooltip>check</button>
+      <TextareaExpandable {user} bind:value={concept.headerImage} loading={concept.generating.includes('header_image')} placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' maxlength={1000} />
+      <button onclick={() => onSave('headerImage', concept.headerImage)} disabled={concept.generating.includes('header_image') || savingValues.headerImage || originalValues.headerImage === concept.headerImage} class='material save square' title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Ikonka vypravěče</h2>
+    <div class='row'>
+      <TextareaExpandable {user} bind:value={concept.storytellerImage} loading={concept.generating.includes('storyteller_image')} placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' maxlength={1000} />
+      <button onclick={() => onSave('storytellerImage', concept.storytellerImage)} disabled={concept.generating.includes('storyteller_image') || savingValues.storytellerImage || originalValues.storytellerImage === concept.storytellerImage} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Tagy</h2>
@@ -240,8 +246,10 @@
     <EditableLong {user} value={concept.generated_protagonist} onSave={(value) => onSave('generated_protagonist', value)} canEdit allowHtml />
     <h2>Plán hry</h2>
     <EditableLong {user} value={concept.generated_plan} onSave={(value) => onSave('generated_plan', value)} canEdit allowHtml />
-    <h2>Ilustrace</h2>
-    <EditableLong {user} value={concept.generated_image_prompt} onSave={(value) => onSave('generated_image_prompt', value)} canEdit allowHtml />
+    <h2>Obrázek hlavičky</h2>
+    <EditableLong {user} value={concept.generated_header_image} onSave={(value) => onSave('generated_header_image', value)} canEdit allowHtml />
+    <h2>Ikonka vypravěče</h2>
+    <EditableLong {user} value={concept.generated_storyteller_image} onSave={(value) => onSave('generated_storyteller_image', value)} canEdit allowHtml />
   {/if}
 </main>
 

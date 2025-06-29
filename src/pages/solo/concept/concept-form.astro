@@ -9,15 +9,15 @@
     let conceptData
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
-    const fields = ['conceptName', 'promptWorld', 'promptStory', 'conceptImage', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist']
-    const [name, world, story, image, factions, locations, characters, protagonist] = fields.map(field => formData.get(field))
+    const fields = ['conceptName', 'promptWorld', 'promptStory', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'headerImage', 'storytellerImage']
+    const [name, world, story, factions, locations, characters, protagonist, headerImage, storytellerImage] = fields.map(field => formData.get(field))
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
     try {
       // Create the concept record
       const { data: createdConcept, error } = await supabase.from('solo_concepts').insert({
-        author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_image: image, tags,
-        generating: ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_plan', 'annotation', 'protagonist_names', 'generated_image_prompt', 'header_image', 'storyteller_image_prompt', 'storyteller_image']
+        author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: headerImage, tags,
+        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'header_image', 'storyteller_image']
       }).select().single()
       if (error) { throw new Error('Error creating concept: ' + error.message) }
       conceptData = createdConcept

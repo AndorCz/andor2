@@ -31,17 +31,17 @@
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='conceptDescription'>Svět</label></div>
+      <div class='labels'><label for='promptWorld'>Svět</label></div>
       <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='promptWorld' name='promptWorld' minHeight={75} maxlength={1000} /></div>
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='conceptStory'>Příběh</label></div>
+      <div class='labels'><label for='promptStory'>Příběh</label></div>
       <div class='inputs'><TextareaExpandable placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' {user} id='promptStory' name='promptStory' minHeight={75} maxlength={1000} /></div>
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='conceptProtagonist'>Protagonista</label></div>
+      <div class='labels'><label for='promptProtagonist'>Protagonista</label></div>
       <div class='inputs'><TextareaExpandable placeholder='Koho hráč hraje? Je něčím omezen výběr postavy?' {user} id='promptProtagonist' name='promptProtagonist' minHeight={75} maxlength={1000} /></div>
     </div>
 
@@ -49,23 +49,28 @@
       <center><button type='button' class='small' onclick={() => { showAdvanced = false }}>Skrýt pokročilé</button></center>
 
       <div class='row'>
-        <div class='labels'><label for='conceptLocations'>Místa</label></div>
+        <div class='labels'><label for='promptLocations'>Místa</label></div>
         <div class='inputs'><TextareaExpandable placeholder='Jaká místa jsou pro hru důležitá? (nepovinné)' {user} id='promptLocations' name='promptLocations' minHeight={75} maxlength={1000} /></div>
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='conceptFactions'>Frakce</label></div>
+        <div class='labels'><label for='promptFactions'>Frakce</label></div>
         <div class='inputs'><TextareaExpandable placeholder='Jaké frakce, organizace nebo skupiny jsou ve hře důležité? (nepovinné)' {user} id='promptFactions' name='promptFactions' minHeight={75} maxlength={1000} /></div>
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='conceptCharacters'>Postavy</label></div>
+        <div class='labels'><label for='promptCharacters'>Postavy</label></div>
         <div class='inputs'><TextareaExpandable placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' {user} id='promptCharacters' name='promptCharacters' minHeight={75} maxlength={1000} /></div>
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='conceptImage'>Ilustrace</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='conceptImage' name='conceptImage' minHeight={75} maxlength={500} /></div>
+        <div class='labels'><label for='headerImage'>Obrázek do hlavičky</label></div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='headerImage' name='headerImage' minHeight={75} maxlength={500} /></div>
+      </div>
+
+      <div class='row'>
+        <div class='labels'><label for='storytellerImage'>Avatar vypravěče</label></div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' {user} id='storytellerImage' name='storytellerImage' minHeight={75} maxlength={500} /></div>
       </div>
     {:else}
       <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
