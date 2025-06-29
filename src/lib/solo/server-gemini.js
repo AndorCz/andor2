@@ -18,14 +18,14 @@ export const prompts = {
 }
 
 export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
-export const assistantConfig = {
+export const assistantParams = {
   model: 'gemini-2.5-flash-lite-preview-06-17',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
     generationConfig: { thinkingConfig: { thinkingBudget: 0 } }, // fast response
-    systemInstruction: { text: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
+    systemInstruction: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
       Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
-      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.` }
+      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.`
   }
 }
 
@@ -36,7 +36,7 @@ export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-ma
   Zákaz: Nikdy nepiš přímo seznam možností co může udělat. Nikdy předem neprozrazuj plán příběhu, pokud příspěvek nezačíná slovem "debug".
   Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další části plánu hry. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.`
 
-export const storytellerConfig = {
+export const storytellerParams = {
   model: 'gemini-2.5-flash',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
@@ -90,7 +90,9 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     console.log('Starting concept generation for:', conceptData.id)
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    const chat = ai.chats.create({ ...assistantConfig, history: [{ role: 'user', parts: [basePrompt] }] })
+    const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [basePrompt] }] })
+
+    // const chat = ai.chats.create({ model: 'gemini-2.5-pro', config: { ...storytellerParams.config, systemInstruction: storytellerInstructions + '\n\n' + context }, history })
 
     // World
     if (conceptData.prompt_world) { prompts.world += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
@@ -173,19 +175,19 @@ export async function generateSoloConcept (supabase, conceptData) {
     // Protagonist names
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedWorld, generatedProtagonist, { text: prompts.protagonist_names }]
-    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantConfig, ...structuredConfig, contents })
+    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents })
     conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1)
     const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
     console.log('Generated protagonist names:', protagonistNamesResponse.text)
 
     // Plan
-    const planConfig = { config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } }
+    const planConfig = { config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } }
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
     contents = [basePrompt, generatedWorld, generatedFactions, generatedLocations, generatedCharacters, generatedProtagonist, planMessage]
     const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
-    const planResponse = await ai2.models.generateContent({ ...assistantConfig, ...planConfig, contents, model: 'gemini-2.5-pro' })
+    const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
     conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1)
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)

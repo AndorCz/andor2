@@ -1,8 +1,8 @@
 // Create a new game from a solo concept
 import { getHash, getImageUrl } from '@lib/utils'
-import { ai, generateImage, prompts, assistantConfig, getContext, storytellerInstructions } from '@lib/solo/server-gemini'
+import { ai, generateImage, prompts, assistantParams, getContext, storytellerInstructions } from '@lib/solo/server-gemini'
 
-const storytellerConfig = {
+const storytellerParams = {
   model: 'gemini-2.5-flash',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
@@ -45,7 +45,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate player character portrait
     const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
-    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, characterImagePromptMessage] })
+    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, characterImagePromptMessage] })
     const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, '9:16', 140, 352)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
@@ -54,12 +54,12 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
     let firstPost = response.text
 
     // Generate illustration for the first post
     const firstImagePrompt = { text: prompts.first_image + `Text herního příspěvku k vyobrazení: ${firstPost}` }
-    const firstImagePromptResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, firstImagePrompt] })
+    const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, firstImagePrompt] })
     const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, '16:9', 1408, 768)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {

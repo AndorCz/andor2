@@ -1,6 +1,6 @@
 ---
   import Layout from '@layouts/layout.astro'
-  import SoloForm from '@components/solo/SoloForm.svelte'
+  import ConceptForm from '@components/solo/ConceptForm.svelte'
   import { generateSoloConcept } from '@lib/solo/server-gemini'
 
   const { supabase, user } = Astro.locals
@@ -39,5 +39,5 @@
 <Layout title='Vytvořit herní koncept'>
   <a href='javascript:history.back()'>zpět</a>
   <h1>Vytvořit herní koncept</h1>
-  <SoloForm {user} client:only='svelte' />
+  <ConceptForm {user} client:only='svelte' />
 </Layout>

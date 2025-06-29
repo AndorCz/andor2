@@ -1,6 +1,6 @@
 import { Type } from '@google/genai'
 import { getHash } from '@lib/utils'
-import { ai, assistantConfig, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
+import { ai, assistantParams, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
@@ -31,11 +31,11 @@ export const POST = async ({ request, locals, redirect }) => {
 
       // Structured config for protagonist_names
       if (fieldName === 'protagonist_names') {
-        assistantConfig.config = { ...assistantConfig.config, responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' }
+        assistantParams.config = { ...assistantParams.config, responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' }
       }
 
       // Generate field
-      const fieldResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, fieldMessage] })
+      const fieldResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, fieldMessage] })
       if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
         throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
       }
@@ -49,12 +49,12 @@ export const POST = async ({ request, locals, redirect }) => {
         text: `The previous game plan was as follows: "${conceptData.generated_plan}"
         Now the information in the section "${fieldName}" has changed, please update the game plan, if needed.`
       }
-      const planResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, planMessage], config: { ...assistantConfig.config, thinkingConfig: { thinkingBudget: 1000 } } })
+      const planResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, planMessage], config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } })
       newData.generated_plan = planResponse.text
 
       // Update annotation
       const annotationMessage = { text: prompts.annotation }
-      const annotationResponse = await ai.models.generateContent({ ...assistantConfig, contents: [...context, annotationMessage], config: { ...assistantConfig.config } })
+      const annotationResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, annotationMessage], config: { ...assistantParams.config } })
       newData.annotation = annotationResponse.text
     }
 
