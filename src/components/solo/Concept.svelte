@@ -80,11 +80,11 @@
         <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
         <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
         <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_image_prompt') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
-        <li><span class='material'>{concept.generating.includes('storyteller_image_prompt') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
         <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
-        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
+        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
       </ul>
     </div>

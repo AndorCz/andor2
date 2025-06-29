@@ -9,8 +9,8 @@
     let conceptData
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
-    const fields = ['conceptName', 'promptWorld', 'promptStory', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'headerImage', 'storytellerImage']
-    const [name, world, story, factions, locations, characters, protagonist, headerImage, storytellerImage] = fields.map(field => formData.get(field))
+    const fields = ['conceptName', 'promptWorld', 'promptStory', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage']
+    const [name, world, story, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage] = fields.map(field => formData.get(field))
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
     try {

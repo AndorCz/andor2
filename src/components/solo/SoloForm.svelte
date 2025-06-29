@@ -64,13 +64,13 @@
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='headerImage'>Obrázek do hlavičky</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='headerImage' name='headerImage' minHeight={75} maxlength={500} /></div>
+        <div class='labels'><label for='promptHeaderImage'>Obrázek do hlavičky</label></div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně obrázek který by hru nejlépe vystihoval (nepovinné)' {user} id='promptHeaderImage' name='promptHeaderImage' minHeight={75} maxlength={500} /></div>
       </div>
 
       <div class='row'>
-        <div class='labels'><label for='storytellerImage'>Avatar vypravěče</label></div>
-        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' {user} id='storytellerImage' name='storytellerImage' minHeight={75} maxlength={500} /></div>
+        <div class='labels'><label for='promptStorytellerImage'>Avatar vypravěče</label></div>
+        <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' {user} id='promptStorytellerImage' name='promptStorytellerImage' minHeight={75} maxlength={500} /></div>
       </div>
     {:else}
       <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>

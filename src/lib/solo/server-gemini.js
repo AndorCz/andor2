@@ -9,7 +9,7 @@ export const prompts = {
   characters: '4. Postavy: Popiš konkrétně několik zajímavých postav které budou v příběhu vystupovat.\n',
   protagonist: '5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jedna věta popisu vzhledu, seznam vybavení, seznam dovedností a jedna věta o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   plan: '6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
-  annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez html.\n',
+  annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez HTML.\n',
   protagonist_names: 'Napiš 10 různorodých jmen pro postavu, kterou bude hráč hrát. Čtyři jména jasně mužská, čtyři jasně ženská, dvě neutrální. Jména by měla by ladit s atmosférou světa. Použij buď jazyky daného světa, nebo stylová jména česká. Jména by měla být většinou včetně příjmení, s přezdívkou, výjimečně jen jedno jméno samotné.\n',
   header_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv, který dobře popisuje téma hry, popiš vizuální styl, který vystihuje její atmosféru a estetiku. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. \n',
   first_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
@@ -149,7 +149,7 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     // Add storyteller npc
     const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), image: getHash() }
-    const { data: npcData, error: npcError } = await locals.supabase.from('npcs').insert(npc).select().single()
+    const { data: npcData, error: npcError } = await supabase.from('npcs').insert(npc).select().single()
     if (npcError) { throw new Error('Chyba při vytváření NPC: ' + npcError.message) }
 
     // Generate header image
