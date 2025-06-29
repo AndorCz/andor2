@@ -14,7 +14,7 @@
 
   onMount(async () => {
     // Call generation API and periodically check if the concept is done generating
-    if (concept.generating) {
+    if (concept.generating.length > 0) {
       checkLoop = setInterval(async () => { // check status every 5 seconds
         console.log('checking concept generation status...')
         const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()

@@ -12,8 +12,19 @@
   if (!user) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Uživatel nepřihlášen')}`) }
   if (!soloId) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí id hry')}`) }
 
-  const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
+  /*
+  const { data: game, error: soloError } = await supabase.from('solo_games').select().eq('id', soloId).single()
   if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
+
+  const { data: concept, error: conceptError } = await supabase.from('solo_concepts').select().eq('id', game.concept_id).single()
+  if (conceptError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + conceptError.message)}`) }
+
+  const { data: character, error: characterError } = await supabase.from('characters').select().match({ solo_game: game.id, player: user.id }).single()
+  if (characterError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + characterError.message)}`) }
+  */
+
+  const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
+  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.error)}`) }
   const { game, concept, character } = soloData
 ---
 

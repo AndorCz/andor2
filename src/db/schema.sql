@@ -1007,20 +1007,21 @@ $$ language plpgsql;
 
 create or replace function get_solo_game (solo_id int4) returns json as $$
 declare
-  solo_game json;
+  solo_game_var json;
   solo_concept json;
   solo_character json;
 begin
-  select to_jsonb(g) into solo_game from solo_games g where g.id = solo_id;
+  select to_jsonb(g) into solo_game_var from solo_games g where g.id = solo_id;
   if not found then return json_build_object('error', 'Solo game not found'); end if;
 
-  select to_jsonb(c) into solo_concept from solo_concepts c where c.id = solo_game->>'concept_id';
+  select to_jsonb(c) into solo_concept from solo_concepts c where c.id = (solo_game_var->>'concept_id')::int;
   if not found then return json_build_object('error', 'Solo concept not found'); end if;
 
-  select to_jsonb(ch) into solo_character from characters ch where ch.solo_game = solo_game->>'id' and ch.player = auth.uid();
+  select to_jsonb(ch) into solo_character from characters ch
+  where ch.solo_game = (solo_game_var->>'id')::int and ch.player = auth.uid();
   if not found then return json_build_object('error', 'Solo character not found'); end if;
 
-  return json_build_object( 'game', solo_game, 'concept', solo_concept, 'character', solo_character );
+  return json_build_object( 'game', solo_game_var, 'concept', solo_concept, 'character', solo_character );
 end;
 $$ language plpgsql;
 
