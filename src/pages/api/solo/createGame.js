@@ -38,7 +38,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Add game to bookmarks
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, solo_id: gameData.id }, { onConflict: 'user_id, solo_id', ignoreDuplicates: true })
-    if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(bookmarkError.message)) }
+    if (bookmarkError) { throw new Error('Chyba při přidávání záložky: ' + bookmarkError.message) }
 
     // Context generation
     const context = getContext(concept)
@@ -55,7 +55,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate first post
     const response = await ai.models.generateContent({ ...storytellerConfig, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
-    const firstPost = response.text
+    let firstPost = response.text
 
     // Generate illustration for the first post
     const firstImagePrompt = { text: prompts.first_image + `Text herního příspěvku k vyobrazení: ${firstPost}` }
@@ -74,8 +74,8 @@ export const GET = async ({ request, locals, redirect }) => {
     const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'npc', owner: concept.storyteller })
     if (addPostError) { throw new Error(addPostError.message) }
 
-    // Redirect to the new game page
-    return redirect(`/solo/game/${gameData.id}?toastType=success&toastText=${encodeURIComponent('Nová hra byla úspěšně vytvořena!')}`)
+    // Return success object
+    return new Response(JSON.stringify({ success: true, gameId: gameData.id }), { status: 200 })
   } catch (error) {
     console.error('API Error in creating new game:', error)
     return new Response(JSON.stringify({ error: { message: 'Chyba při vytváření nové hry: ' + error.message } }), { status: 500 })

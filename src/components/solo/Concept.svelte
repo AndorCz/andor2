@@ -2,14 +2,17 @@
   import { once } from 'svelte/legacy'
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
+  import { showSuccess } from '@lib/toasts'
   import { getPortraitUrl } from '@lib/database-browser'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
+  import Loading from '@components/common/Loading.svelte'
 
   let { concept = $bindable(), user } = $props()
 
   let checkLoop = null
   let openGames = $state([])
+  let creatingGame = $state(false)
   let selectedName = $state(concept.protagonist_names[0])
 
   onMount(async () => {
@@ -44,8 +47,21 @@
     window.location.href = `${window.location.pathname}?settings=true`
   }
 
-  function startGame () {
-    window.location.href = `/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`
+  async function startGame () {
+    creatingGame = true
+    try {
+      const response = await fetch(`/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`, { method: 'GET' })
+      const data = await response.json()
+      if (!response.ok || data.error) { throw new Error(data.error) }
+      if (data.success) {
+        showSuccess('Hra byla úspěšně vytvořena')
+        window.location.href = `/solo/game/${data.gameId}`
+      }
+    } catch (error) {
+      handleError(error.message)
+    } finally {
+      creatingGame = false
+    }
   }
 </script>
 
@@ -110,7 +126,11 @@
           </ul>
         </div>
       {/if}
-      <button onclick={once(startGame)} class='large'>Začít novou hru</button>
+      {#if creatingGame}
+        <Loading />
+      {:else}
+        <button onclick={once(startGame)} class='large'>Začít novou hru</button>
+      {/if}
     </div>
     <aside>
       <ul>

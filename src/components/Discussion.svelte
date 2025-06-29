@@ -171,7 +171,7 @@
           {#if useIdentities}
             <div class='senderWrapper'>
               <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
-                {#each identities as identity}
+                {#each identities as identity (identity.id)}
                   <option value={identity.id} class={identity.type}>{identity.name}</option>
                 {/each}
               </select>
@@ -184,7 +184,7 @@
         {#if useIdentities}
           <h3 class='sender'>Identita</h3>
           <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
-            {#each identities as identity}
+            {#each identities as identity (identity.id)}
               <option value={identity.id}>{identity.name}</option>
             {/each}
           </select>
