@@ -24,7 +24,7 @@
         const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()
         if (error) { handleError(error) }
         if (data) { concept = data }
-        if (data && !data.generating) {
+        if (data && data.generating.length === 0) {
           selectedName = isFilledArray(data.protagonist_names) ? data.protagonist_names[0] : ''
           clearInterval(checkLoop)
           checkLoop = null
@@ -82,10 +82,10 @@
         <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
         <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
-        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
         <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
+        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
       </ul>
     </div>
   </div>

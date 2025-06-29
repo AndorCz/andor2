@@ -1,15 +1,6 @@
 // Create a new game from a solo concept
 import { getHash, getImageUrl } from '@lib/utils'
-import { ai, generateImage, prompts, assistantParams, getContext, storytellerInstructions } from '@lib/solo/server-gemini'
-
-const storytellerParams = {
-  model: 'gemini-2.5-flash',
-  config: {
-    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
-    thinkingConfig: { thinkingBudget: 200 },
-    systemInstruction: storytellerInstructions
-  }
-}
+import { ai, generateImage, prompts, assistantParams, storytellerParams, getContext } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
   try {

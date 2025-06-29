@@ -5,14 +5,18 @@
 
   const { user = {} } = $props()
 
+  let formRef = $state()
   let selectedTags = $state()
   let tagsInputRef = $state()
   let showAdvanced = $state(false)
+  let submitButtonRef = $state()
 
   const tagItems = [...gameTags]
   const prepareData = async (event) => {
     event.preventDefault()
-    tagsInputRef.value = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : null
+    submitButtonRef.disabled = true
+    const tagsString = selectedTags?.length ? selectedTags.map(tag => tag.value).join(',') : ''
+    tagsInputRef.value = tagsString
     event.target.submit()
   }
 
@@ -20,7 +24,7 @@
 </script>
 
 {#if user.id}
-  <form method='POST' autocomplete='off' enctype='multipart/form-data' onsubmit={prepareData}>
+  <form bind:this={formRef} method='POST' autocomplete='off' enctype='multipart/form-data' onsubmit={prepareData}>
     <div class='row'>
       <div class='labels'>
         <label for='conceptName'>Název *</label>
@@ -87,7 +91,7 @@
     </div>
 
     <center>
-      <button type='submit' class='large' onclick={() => { this.disabled = true; this.form.submit() }}>Vytvořit</button>
+      <button type='submit' class='large' bind:this={submitButtonRef}>Vytvořit</button>
     </center>
   </form>
 {:else}

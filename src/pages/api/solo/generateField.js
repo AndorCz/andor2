@@ -35,6 +35,7 @@ export const POST = async ({ request, locals, redirect }) => {
       }
 
       // Generate field
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for bug in @google/genai
       const fieldResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, fieldMessage] })
       if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
         throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
@@ -49,21 +50,23 @@ export const POST = async ({ request, locals, redirect }) => {
         text: `The previous game plan was as follows: "${conceptData.generated_plan}"
         Now the information in the section "${fieldName}" has changed, please update the game plan, if needed.`
       }
-      const planResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, planMessage], config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } })
+      const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for bug in @google/genai
+      const planResponse = await ai2.models.generateContent({ ...assistantParams, contents: [...context, planMessage], config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } })
       newData.generated_plan = planResponse.text
 
       // Update annotation
       const annotationMessage = { text: prompts.annotation }
-      const annotationResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, annotationMessage], config: { ...assistantParams.config } })
+      const annotationResponse = await ai2.models.generateContent({ ...assistantParams, contents: [...context, annotationMessage], config: { ...assistantParams.config } })
       newData.annotation = annotationResponse.text
     }
 
     // Update header image if requested
     if (fieldName === 'header_image') {
-      const { data: headerImage, error: imageError } = await generateImage(value, '16:9', 1100, 226)
+      const prompt = prompts.header_image + (value ? `Vypravěč uvedl toto zadání: "${value}"` : '')
+      const { data: headerImage, error: imageError } = await generateImage(prompt, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
       if (headerImage) {
-        const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
+        const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
         if (headerUploadError) { throw new Error(headerUploadError.message) }
         newData.custom_header = getHash()
       }
@@ -71,10 +74,11 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update storyteller image if requested
     if (fieldName === 'storyteller_image') {
-      const { data: storytellerImage, error: imageError } = await generateImage(value, '9:16', 140, 352)
+      const prompt = prompts.storyteller_image + (value ? `Vypravěč uvedl toto zadání: "${value}"` : '')
+      const { data: storytellerImage, error: imageError } = await generateImage(prompt, '9:16', 140, 352)
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
-        const { error: storytellerUploadError } = await locals.supabase.storage.from('npcs').upload(`${conceptData.id}/${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+        const { error: storytellerUploadError } = await locals.supabase.storage.from('npcs').upload(`${conceptData.id}/${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
         if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
         const { error: storytellerUpdateError } = await locals.supabase.from('npcs').update({ portrait: getHash() }).eq('id', conceptData.storyteller)
         if (storytellerUpdateError) { throw new Error(storytellerUpdateError.message) }

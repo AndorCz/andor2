@@ -12,20 +12,20 @@ export const prompts = {
   annotation: 'Napiš jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez HTML.\n',
   protagonist_names: 'Napiš 10 různorodých jmen pro postavu, kterou bude hráč hrát. Čtyři jména jasně mužská, čtyři jasně ženská, dvě neutrální. Jména by měla by ladit s atmosférou světa. Použij buď jazyky daného světa, nebo stylová jména česká. Jména by měla být většinou včetně příjmení, s přezdívkou, výjimečně jen jedno jméno samotné.\n',
   header_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv, který dobře popisuje téma hry, popiš vizuální styl, který vystihuje její atmosféru a estetiku. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. \n',
-  first_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
   storyteller_image: 'Napiš pro AI prompt k vygenerování portrétu pro NPC vypravěče této TTRPG hry. Obrázek by měl být ve stejném stylu jako hlavní obrázek hry a měl by být portrétem tajemné siluety, někoho, kdo by mohl být skrytou božskou bytostí v tomto světě. Duch, prázdný plášť, létající světlo, mrak, digitální bytost jako z Matrixu atd. Cokoliv, co se hodí k tématu hry. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
+  first_image: 'Napiš pro AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n',
   protagonist_image: 'Napiš pro AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.\n'
 }
 
 export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+export const assistantInstructions = 'Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce. Tvá úloha je napsat textové podklady pro hru. Důležité: Výstupem každé zprávy musí být samotný text podkladů. Odpověz POUZE a VÝHRADNĚ čistým HTML kódem. Tvá odpověď nesmí obsahovat markdown bloky. Tvá odpověď musí začínat znakem "<" a končit znakem ">". Nesmí obsahovat absolutně žádný jiný text ani formátování okolo. Pokud použiješ přímou řeč k hráči, buď neformální a tykej.'
 export const assistantParams = {
   model: 'gemini-2.5-flash-lite-preview-06-17',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
-    generationConfig: { thinkingConfig: { thinkingBudget: 0 } }, // fast response
-    systemInstruction: `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
-      Tvá úloha je napsat textové podklady pro hru. Výstupem každé zprávy musí být samotný text podkladů, formátovaný pomocí HTML značek, bez oslovení, úvodu nebo obalení do Markdown bloku.
-      Pokud použiješ přímou řeč k hráči, buď neformální a tykej.`
+    thinkingConfig: { thinkingBudget: 0 }, // fast response
+    responseMimeType: 'text/plain',
+    systemInstruction: assistantInstructions
   }
 }
 
@@ -41,13 +41,11 @@ export const storytellerParams = {
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
     thinkingConfig: { thinkingBudget: 200 },
-    systemInstruction: storytellerInstructions,
-    generationConfig: { responseMimeType: 'text/html' }
+    systemInstruction: storytellerInstructions
   }
 }
 
 export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
-  console.log('prompt', prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const imageResponse = await ai.models.generateImages({
@@ -85,14 +83,8 @@ export function getContextString (conceptData, exclude) {
 
 export async function generateSoloConcept (supabase, conceptData) {
   try {
-    let error
-    let contents
-
-    console.log('Starting concept generation for:', conceptData.id)
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [basePrompt] }] })
-
-    // const chat = ai.chats.create({ model: 'gemini-2.5-pro', config: { ...storytellerParams.config, systemInstruction: storytellerInstructions + '\n\n' + context }, history })
+    const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
     // World
     if (conceptData.prompt_world) { prompts.world += `Vypravěč uvedl toto zadání: "${conceptData.prompt_world}"` }
@@ -150,22 +142,22 @@ export async function generateSoloConcept (supabase, conceptData) {
     conceptData.generating.splice(conceptData.generating.indexOf('generated_storyteller_image'), 1) // Done
 
     // Add storyteller npc
-    const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), image: getHash() }
+    const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), portrait: getHash() }
     const { data: npcData, error: npcError } = await supabase.from('npcs').insert(npc).select().single()
-    if (npcError) { throw new Error('Chyba při vytváření NPC: ' + npcError.message) }
+    if (npcError) { throw new Error(npcError.message) }
 
-    // Generate header image
+    // Header image
     const { data: headerImage, error: headerImageError } = await generateImage(responseHeaderImagePrompt.text, '16:9', 1100, 226)
-    if (headerImageError) { error = headerImageError.message }
+    if (headerImageError) { throw new Error(headerImageError.message) }
     if (headerImage) {
       const { error: headerUploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
       if (headerUploadError) { throw new Error(headerUploadError.message) }
     }
     conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1) // Done
 
-    // Generate storyteller image
+    // Storyteller image
     const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, '9:16', 140, 352) // generated size is 768x1408
-    if (storytellerImageError) { error = storytellerImageError.message }
+    if (storytellerImageError) { throw new Error(storytellerImageError.message) }
     if (storytellerImage) {
       const { error: storytellerUploadError } = await supabase.storage.from('npcs').upload(`${conceptData.id}/${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
       if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
@@ -174,32 +166,30 @@ export async function generateSoloConcept (supabase, conceptData) {
 
     // Protagonist names
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
-    contents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, generatedWorld, generatedProtagonist, { text: prompts.protagonist_names }]
-    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents })
-    conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1)
+    const protagonistContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.protagonist_names }]
+    const protagonistNamesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: protagonistContents })
     const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
-    console.log('Generated protagonist names:', protagonistNamesResponse.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1) // Done
 
     // Plan
     const planConfig = { config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } }
     const planMessage = { text: prompts.plan }
     if (conceptData.prompt_plan) { planMessage.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
-    contents = [basePrompt, generatedWorld, generatedFactions, generatedLocations, generatedCharacters, generatedProtagonist, planMessage]
+    const planContents = [basePrompt, { text: responseWorld.text }, { text: responseFactions.text }, { text: responseLocations.text }, { text: responseCharacters.text }, { text: responseProtagonist.text }, planMessage]
     const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
-    const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents, model: 'gemini-2.5-pro' })
+    const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents: planContents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
-    conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1)
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
-    console.log('Generated plan:', generatedPlan.text)
+    conceptData.generating.splice(conceptData.generating.indexOf('generated_plan'), 1) // Done
 
     // Release concept when generation completes
     const { error: updateError } = await supabase.from('solo_concepts').update({ published: true, generating: conceptData.generating, custom_header: getHash(), storyteller: npcData.id }).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
     console.log('Concept generation completed and saved, concept id:', conceptData.id)
 
-    return { error, data: { success: true } }
+    return { data: { success: true } }
   } catch (error) {
     console.error('Error generating solo concept:', error)
     return { error: { message: 'Chyba při generování konceptu: ' + error.message } }
