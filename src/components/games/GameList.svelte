@@ -1,18 +1,18 @@
 <script>
-  import { onMount } from 'svelte'
   import { get } from 'svelte/store'
+  import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { getSavedStore } from '@lib/stores'
   import { isFilledArray, addURLParam } from '@lib/utils'
   import { gameCategories, gameSystems } from '@lib/constants'
   import { platform as platformStore } from '@components/common/MediaQuery.svelte'
-  import { tooltip } from '@lib/tooltip'
 
   const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0 } = $props()
 
   let listView = $state(false)
   let gameListStore
-  let activeTab = $state('open')
   let sort = $state('new')
+  let activeTab = $state('open')
   const platform = $derived($platformStore)
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
@@ -104,7 +104,7 @@
     <table class='list'>
       <thead><tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr></thead>
       <tbody>
-        {#each games as game}
+        {#each games as game (game.id)}
           <tr class='gameLine'>
             <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
             <td><div class='category'>{getCategory(game.category)}</div></td>
@@ -121,7 +121,7 @@
       </tbody>
     </table>
   {:else}
-    {#each games as game}
+    {#each games as game (game.id)}
       <div class='block'>
         {#if game.custom_header}
           <div class='col image'>
@@ -132,10 +132,10 @@
           <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
           <div class='annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
           <div class='meta'>
-            <div class='category' title='kategorie'>{getCategory(game.category)}</div>
-            {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
-            <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
-            <a href='./user?id={game.owner_id}' class='user owner' title='vlastník'>
+            <div class='category' title='kategorie' use:tooltip>{getCategory(game.category)}</div>
+            {#if game.system !== 'base'}<div class='system' title='systém' use:tooltip>{getSystem(game.system)}</div>{/if}
+            <div class='count' title='příspěvků' use:tooltip>{game.post_count}<span class='material ico'>chat</span></div>
+            <a href='./user?id={game.owner_id}' class='user owner' title='vlastník' use:tooltip>
               {game.owner_name}
               {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
             </a>
@@ -150,7 +150,7 @@
 
 {#if maxPage > 0}
   <div class='pagination'>
-    {#each { length: maxPage + 1 } as _, i}
+    {#each { length: maxPage + 1 } as _, i (i)}
       <button onclick={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
     {/each}
   </div>

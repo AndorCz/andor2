@@ -148,7 +148,6 @@ create table solo_games (
   name text not null,
   player uuid not null,
   thread int4,
-  character_state public.character_state not null default 'alive'::character_state,
   created_at timestamp with time zone default current_timestamp,
   constraint solo_games_concept_fkey foreign key (concept_id) references solo_concepts(id) on delete cascade,
   constraint solo_games_player_fkey foreign key (player) references profiles(id) on delete cascade,
@@ -504,7 +503,7 @@ create or replace view game_posts_owner as
   order by p.created_at desc;
 
 create or replace view board_list as
-  select b.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
+  select b.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count, max(p.created_at) as last_post
   from boards b
     left join threads t on b.thread = t.id
     left join profiles pr on b.owner = pr.id

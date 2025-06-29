@@ -1,9 +1,12 @@
 <script>
   import { onMount } from 'svelte'
+  import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { isFilledArray, addURLParam } from '@lib/utils'
 
   const { user = {}, concepts = [], page = 0, maxPage = 20 } = $props()
+
+  let sort = $state('games')
 
   // functions to run only in the browser
   let getHeaderUrl = $state(() => {})
@@ -13,10 +16,18 @@
     const databaseBrowser = await import('@lib/database-browser')
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
+
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
   })
 
   function getTags (game) {
     return game.tags.map(tag => gameTags.find(t => t.value === tag)?.label || tag).join(', ')
+  }
+
+  function setSort (e) {
+    const newUrl = addURLParam('sort', e.target.value, true)
+    window.location.href = newUrl
   }
 
   function triggerPaging (newPage) {
@@ -27,10 +38,18 @@
 
 <div class='headline flex'>
   <h1>Sólo rychlovky</h1>
-  {#if user.id}
-    <a href='./solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
-    <a href='./solo/concept/concept-form' class='button mobile material'>add</a>
-  {/if}
+    <div class='buttons'>
+      <select bind:value={sort} onchange={setSort}>
+        <option value='games'>Dle popularity</option>
+        <option value='new'>Dle data</option>
+        <option value='name'>Dle názvu</option>
+        <option value='author'>Dle autora</option>
+      </select>
+      {#if user.id}
+        <a href='./solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
+        <a href='./solo/concept/concept-form' class='button mobile material'>add</a>
+      {/if}
+    </div>
 </div>
 
 {#if isFilledArray(concepts)}
@@ -45,8 +64,9 @@
         <div class='name'><a href='./solo/concept/{concept.id}'>{concept.name}</a></div>
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
-          <div class='tags' title='tagy'>{getTags(concept)}</div>
-          <a href='./user?id={concept.author.id}' class='user author' title='autor'>
+          <div class='games' title='počet her' use:tooltip>{concept.game_count}</div>
+          <div class='tags' title='tagy' use:tooltip>{getTags(concept)}</div>
+          <a href='./user?id={concept.author.id}' class='user author' title='autor' use:tooltip>
             {concept.author.name}
             {#if concept.author.portrait}<img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />{/if}
           </a>
@@ -74,6 +94,18 @@
   .headline {
     justify-content: space-between;
   }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+  }
+    .buttons select {
+      width: fit-content;
+      padding: 10px;
+      padding-right: 35px;
+      font-size: 16px;
+    }
+
   .mobile { display: none }
   .desktop { display: block }
 

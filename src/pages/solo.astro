@@ -4,10 +4,19 @@
 
   const { supabase, user } = Astro.locals
   const limit = 20
+
   const page = parseInt(Astro.url.searchParams.get('page') || '0')
+  const sort = Astro.url.searchParams.get('sort') || 'popular'
 
   const query = supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)', { count: 'exact' })
-  query.order('upvotes', { ascending: false })
+
+  switch (sort) {
+    case 'name': query.order('name'); break
+    case 'new': query.order('created_at', { ascending: false }); break
+    case 'games': query.order('game_count', { ascending: false }); break
+    case 'author': query.order('author'); break
+  }
+
   query.match({published: true })
   query.range(page * limit, page * limit + limit - 1)
   const { data: concepts, count, error } = await query

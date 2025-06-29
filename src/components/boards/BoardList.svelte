@@ -1,11 +1,12 @@
 <script>
   import { onMount } from 'svelte'
-  import { getSavedStore } from '@lib/stores'
-  import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
+  import { getSavedStore } from '@lib/stores'
+  import { isFilledArray, addURLParam } from '@lib/utils'
 
   const { user = {}, boards = [], showHeadline = false, compactOnly = false, page = 0, maxPage = 0 } = $props()
 
+  let sort = $state('active')
   let listView = $state(false)
   let boardListStore
 
@@ -18,6 +19,10 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
     boardListStore = getSavedStore('boards', { listView: false })
+
+    const sortParam = new URL(window.location).searchParams.get('sort')
+    if (sortParam) { sort = sortParam }
+
     let storeValue
     const unsubscribe = boardListStore.subscribe(v => { storeValue = v })
     unsubscribe()
@@ -36,6 +41,11 @@
     }
   }
 
+  function setSort (e) {
+    const newUrl = addURLParam('sort', e.target.value, true)
+    window.location.href = newUrl
+  }
+
   function triggerPaging (newPage) {
     const url = new URL(window.location)
     url.searchParams.set('page', newPage)
@@ -47,6 +57,13 @@
   <div class='headline flex'>
     <h1>Diskuze</h1>
     <div class='buttons'>
+      <select bind:value={sort} onchange={setSort}>
+        <option value='active'>Dle aktivity</option>
+        <option value='new'>Dle data</option>
+        <option value='name'>Dle názvu</option>
+        <option value='count'>Dle příspěvků</option>
+        <option value='owner'>Dle vlastníka</option>
+      </select>
       <div class='toggle'>
         <button onclick={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
@@ -66,7 +83,7 @@
         <tr><th>název</th><th>příspěvků</th><th>vlastník</th></tr>
       </thead>
       <tbody>
-        {#each boards as board}
+        {#each boards as board (board.id)}
           <tr class='board'>
             <td><div class='name'><a href='./board/{board.id}'>{board.name}</a></div></td>
             <td><div class='count'>{board.post_count}</div></td>
@@ -81,7 +98,7 @@
       </tbody>
     </table>
   {:else}
-    {#each boards as board}
+    {#each boards as board (board.id)}
       <div class='block'>
         {#if board.custom_header}
           <div class='col image'>
@@ -92,9 +109,9 @@
           <div class='name'><a href='./board/{board.id}'>{board.name}</a></div>
           <div class='annotation' title={board.annotation} use:tooltip>{board.annotation || ''}</div>
           <div class='meta'>
-            <div class='count' title='příspěvků'>{board.post_count}<span class='material ico'>chat</span></div>
+            <div class='count' title='počet příspěvků' use:tooltip>{board.post_count}<span class='material ico'>chat</span></div>
             {#if ![1, 2, 3].includes(board.id)}
-              <a href='./user?id={board.owner_id}' class='user owner' title='vlastník'>
+              <a href='./user?id={board.owner_id}' class='user owner' title='vlastník' use:tooltip>
                 <span>{board.owner_name}</span>
                 {#if board.owner_portrait}<img src={getPortraitUrl(board.owner_id, board.owner_portrait)} class='icon' alt={board.owner_name} />{/if}
               </a>
@@ -110,7 +127,7 @@
 
 {#if maxPage > 0}
   <div class='pagination'>
-    {#each { length: maxPage + 1 } as _, i}
+    {#each { length: maxPage + 1 } as _, i (i)}
       <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
@@ -131,6 +148,12 @@
     display: flex;
     gap: 20px;
   }
+    .buttons select {
+      width: fit-content;
+      padding: 10px;
+      padding-right: 35px;
+      font-size: 16px;
+    }
   .name a:first-letter {
     text-transform: uppercase;
   }

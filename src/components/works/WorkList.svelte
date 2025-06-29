@@ -1,16 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import {
-    workTagsText,
-    workTagsImage,
-    workTagsMusic,
-    workCategoriesText,
-    workCategoriesImage,
-    workCategoriesMusic
-  } from '@lib/constants'
-  import { getSavedStore } from '@lib/stores'
-  import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
+  import { isFilledArray } from '@lib/utils'
+  import { getSavedStore } from '@lib/stores'
+  import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
 
   const { user = {}, works = [], activeTab = 'articles', showHeadline = false, page = 0, maxPage = 0 } = $props()
 
@@ -97,7 +90,7 @@
         <tr><th>název</th><th class='category'>kategorie</th><th>tagy</th><th>příspěvků</th><th class='owner'>autor</th></tr>
       </thead>
       <tbody>
-        {#each works as work}
+        {#each works as work (work.id)}
           <tr class='work' class:editorial={work.editorial}>
             <td><div class='name'><a href='./work/{work.id}'>{work.name}</a></div></td>
             <td><div class='category'>{getCategory(work)}</div></td>
@@ -114,7 +107,7 @@
       </tbody>
     </table>
   {:else}
-    {#each works as work}
+    {#each works as work (work.id)}
       <div class='block' class:editorial={work.editorial}>
         {#if work.custom_header || work.type === 'image'}
           <div class='col image'>
@@ -129,10 +122,10 @@
           <div class='name'><a href='./work/{work.id}'>{work.name}</a></div>
           <div class='annotation' title={work.annotation} use:tooltip>{work.annotation || ''}</div>
           <div class='meta'>
-            <div class='category' title='kategorie'>{getCategory(work)}</div>
-            <div class='tags' title='tagy'>{getTags(work)}</div>
-            <div class='count' title='příspěvků'>{work.post_count}<span class='material ico'>chat</span></div>
-            <a href='./user?id={work.owner_id}' class='owner user' title='autor'>
+            <div class='category' title='kategorie' use:tooltip>{getCategory(work)}</div>
+            <div class='tags' title='tagy' use:tooltip>{getTags(work)}</div>
+            <div class='count' title='příspěvků' use:tooltip>{work.post_count}<span class='material ico'>chat</span></div>
+            <a href='./user?id={work.owner_id}' class='owner user' title='autor' use:tooltip>
               <span>{work.owner_name}</span>
               {#if work.owner_portrait}<img src={getPortraitUrl(work.owner_id, work.owner_portrait)} class='icon' alt={work.owner_name} />{/if}
             </a>
@@ -147,7 +140,7 @@
 
 {#if maxPage > 0}
   <div class='pagination'>
-    {#each { length: maxPage + 1 } as _, i}
+    {#each { length: maxPage + 1 } as _, i (i)}
       <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>

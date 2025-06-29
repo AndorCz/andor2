@@ -4,10 +4,22 @@
 
   const { supabase, user } = Astro.locals
 
+  const sort = Astro.url.searchParams.get('sort') || 'active'
   const page = parseInt(Astro.url.searchParams.get('page') || '0')
   const limit = 20
 
-  const { data: openBoards, count: openCount, error: openError } = await supabase.from('board_list').select('*', { count: 'exact' }).match({ open: true, published: true }).order('id', { ascending: false }).range(page * limit, page * limit + limit - 1)
+  let query = supabase.from('board_list').select('*', { count: 'exact' }).match({ open: true, published: true })
+
+  switch (sort) {
+    case 'name': query.order('name'); break
+    case 'new': query.order('created_at', { ascending: false }); break
+    case 'active': query.not('last_post', 'is', null).order('last_post', { ascending: false }); break
+    case 'count': query.order('post_count', { ascending: false }); break
+    case 'owner': query.order('owner_name'); break
+  }
+
+  const { data: openBoards, count: openCount, error: openError } = await query.range(page * limit, page * limit + limit - 1)
+
   const maxPage = Math.ceil(openCount / limit) - 1
   if (openError) { console.error(openError) }
 
