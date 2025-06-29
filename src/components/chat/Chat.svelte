@@ -263,7 +263,7 @@
             {Object.keys(typing).join(' píše, ')} píše
           </div>
         {/if}
-        <TextareaExpandable forceBubble allowHtml mentionList={mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
+        <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
       <span class='error'>Konverzaci se nepodařilo načíst</span>

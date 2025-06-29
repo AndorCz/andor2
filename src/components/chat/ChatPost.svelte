@@ -8,7 +8,7 @@
   import ReactionInput from '@components/common/ReactionInput.svelte'
   import ReactionDisplay from '@components/common/ReactionDisplay.svelte'
 
-  const { user, post, onEdit, onDelete, unread = false, onReply } = $props()
+  const { user = {}, post = {}, onEdit, onDelete, unread = false, onReply } = $props()
 
   let toolbarEl = $state()
   let contentEl = $state()
@@ -63,7 +63,7 @@
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='rowInner'>
-          <ReactionInput {user} itemStore={post} type='post' />
+          <ReactionInput {user} {post} type='post' />
           <button onclick={() => { onReply(post.id, post.owner_name, post.owner) }} class='material reply square'>reply</button>
         </div>
       </div>
@@ -78,7 +78,7 @@
         </div>
       </div>
     </div>
-    <ReactionDisplay {user} itemStore={post} type='post' />
+    <ReactionDisplay {user} {post} type='post' />
   {/if}
 </div>
 

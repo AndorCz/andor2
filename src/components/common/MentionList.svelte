@@ -25,7 +25,7 @@
 </script>
 
 <div bind:this={listElement} class='mentionList'>
-  {#each items as item, index}
+  {#each items as item, index (index)}
     <button class='plain' class:selected={index === selectedIndex} onclick={() => selectItem(index)}>{item.name}</button>
   {/each}
 </div>

@@ -1,7 +1,7 @@
 <script>
   import { supabase, handleError } from '@lib/database-browser'
 
-  const { user, post, type = 'post' } = $props()
+  const { user = {}, post = {}, type = 'post' } = $props()
 
   function getMyReaction (reaction) {
     return post[reaction]?.findIndex((id) => { return id === user.id })
@@ -45,16 +45,17 @@
 <style>
   .reactions {
     display: flex;
-    align-post: center;
+    align-items: center;
   }
     .reaction {
       position: relative;
       opacity: 0.7;
       display: flex;
       height: 40px;
+      min-width: 40px;
       padding: 0px 7px;
       justify-content: center;
-      align-post: center;
+      align-items: center;
     }
       button.reaction {
         background: none;
@@ -73,6 +74,7 @@
       }
     .reaction img {
       width: 20px;
+      min-width: 20px;
       fill: var(--dim);
     }
       .reaction .count {
