@@ -31,7 +31,7 @@
 {:then items}
   <div id='news'>
     <h3>{headline}</h3>
-    {#each items as item}
+    {#each items as item (item.id)}
       <div class='item'>
         {#if item.custom_header}
           <img src={getHeaderUrl(slug, item.id, item.custom_header)} alt={item.name} class='image' />
@@ -55,6 +55,7 @@
     {/each}
   </div>
 {:catch error}
+  {console.error(error)}
   <p>{error.message}</p>
 {/await}
 

@@ -20,7 +20,7 @@
         </div>
       {/if}
     </div>
-    <div class='bubble' onclick={onImageClickInPost} use:tooltipContent={{ content: toolbarEl, trigger: 'click', placement: isMine ? 'left' : 'right', interactive: true, arrow: true }} >
+    <div class='bubble' onclick={onImageClickInPost} use:tooltipContent={{ content: toolbarEl, trigger: 'click', placement: 'top', interactive: true, arrow: true }} >
       <div class='content'>{@html DOMPurify.sanitize(message.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}</div>
       {#if isMessageUnread(message) && !isMine}
         <span class='badge'></span>

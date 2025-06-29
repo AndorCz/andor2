@@ -140,6 +140,8 @@
         <button type='button' onclick={cancelEdit} class='cancel' title='Zrušit'>
           <span class='material'>close</span>
         </button>
+      {:else}
+        <span class='placeholder'></span>
       {/if}
       <button type='button' onclick={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
         <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
@@ -196,6 +198,11 @@
       }
       button {
         padding: 10px 15px;
+      }
+      .placeholder {
+        width: 1px;
+        height: 1px;
+        visibility: hidden;
       }
       .save {
         border-radius: 10px 0px 10px 0px;

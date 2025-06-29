@@ -9,26 +9,25 @@
   const { user, clearUnread } = $props()
 
   let channel
-  let previousMessagesLength = $state(0)
   let inputEl = $state(null)
   let messagesEl = $state(null)
   let textareaValue = $state('')
+  let previousMessagesLength = 0
 
   // Pagination variables
   const pageSize = 20
   let isLoading = $state(false)
-  let messageOffset = $state(0)
   let hasMoreMessages = $state(true)
-  let userHasScrolledUp = $state(false)
-  let distanceFromBottom = $state(0)
+  let userHasScrolledUp = false
+  let distanceFromBottom = 0
+  let messageOffset = 0
 
   let messages = $state([])
-  const them = $derived($activeConversation.them)
-  const us = $derived($activeConversation.type === 'character' ? $activeConversation.us : user)
-  const senderColumn = $derived($activeConversation.type === 'character' ? 'sender_character' : 'sender_user')
-  const recipientColumn = $derived($activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user')
-
-  const sortedIds = $derived([us.id, them.id].sort()) // create a unique channel name, the same for both participants
+  const them = $activeConversation.them
+  const us = $activeConversation.type === 'character' ? $activeConversation.us : user
+  const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
+  const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
+  const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
   function handleScroll () {
     distanceFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
@@ -40,7 +39,8 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
+    await loadMessages() // Initial load of messages
     // init conversation, listen for new messages in the conversation. we can listen to only 'us' in the recipient column
     const filter = `${recipientColumn}=eq.${us.id}` // not possible to filter for two columns at the moment, so we have to filter the sender on the client-side
     channel = supabase
@@ -238,9 +238,9 @@
   <div id='conversation'>
     <button onclick={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
     {#if us.id && them.id}
-      {#await loadMessages()}
+      {#if isLoading}
         <span class='loading'>Načítám konverzaci...</span>
-      {:then}
+      {:else}
         <h2>
           {#if them.portrait}
             <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
@@ -276,9 +276,7 @@
           {/if}
         </div>
         <TextareaExpandable forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editingMessage ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
-      {:catch error}
-        <span class='error'>Konverzaci se nepodařilo načíst</span>
-      {/await}
+      {/if}
     {:else}
       <span class='error'>Konverzace nenalezena</span>
     {/if}

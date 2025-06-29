@@ -266,6 +266,7 @@
         <TextareaExpandable forceBubble allowHtml {mentionList} autoFocus {user} bind:this={textareaEl} bind:value={textareaValue} bind:editing={editing} disabled={saving} onSave={submitPost} onTyping={handleTyping} showButton={true} minHeight={30} enterSend singleLine disableEmpty />
       </div>
     {:catch error}
+      {console.error(error)}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
     <!-- names of present people -->
