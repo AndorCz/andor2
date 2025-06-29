@@ -102,9 +102,20 @@
         <p>{@html concept.generated_world}</p>
       </details>
       <details>
-        <summary>Tvoje postava</summary>
+        <summary>Postava</summary>
         <p>{@html concept.generated_protagonist}</p>
       </details>
+      {#if openGames.length > 0}
+        <div class='games'>
+          <h2>Tvoje rozehrané hry</h2>
+          <ul class='games'>
+            {#each openGames as game (game.id)}
+              <li><a href={`/solo/game/${game.id}`}>{game.name}</a></li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+      <h2>Nová hra</h2>
       <div class='names'>
         <h3>Jméno postavy</h3>
         <div class='grid'>
@@ -116,21 +127,13 @@
           {/each}
         </div>
       </div>
-      {#if openGames.length > 0}
-        <div class='games'>
-          <h2>Tvoje rozehrané hry</h2>
-          <ul class='games'>
-            {#each openGames as game (game.id)}
-              <li><a href={`/solo/game/${game.id}`}>{game.name}</a></li>
-            {/each}
-          </ul>
-        </div>
-      {/if}
-      {#if creatingGame}
-        <Loading />
-      {:else}
-        <button onclick={once(startGame)} class='large'>Začít novou hru</button>
-      {/if}
+      <div class='create'>
+        {#if creatingGame}
+          <Loading />
+        {:else}
+          <button onclick={once(startGame)} class='large'>Začít novou hru</button>
+        {/if}
+      </div>
     </div>
     <aside>
       <ul>
@@ -228,10 +231,12 @@
         border-radius: 100%;
         background-color: var(--background);
       }
-  button.large {
-    display: block;
-    margin: auto;
-    margin-top: 20px;
+  .create {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
   }
   details {
     background: var(--block);
@@ -269,7 +274,6 @@
       gap: 10px;
     }
   .games h2 {
-    margin-top: 40px;
     margin-bottom: 0px;
   }
   .games ul {

@@ -151,7 +151,7 @@ create table solo_games (
   created_at timestamp with time zone default current_timestamp,
   constraint solo_games_concept_fkey foreign key (concept_id) references solo_concepts(id) on delete cascade,
   constraint solo_games_player_fkey foreign key (player) references profiles(id) on delete cascade,
-  constraint solo_games_thread_fkey foreign key (thread) references threads(id) on delete cascade
+  constraint solo_games_thread_fkey foreign KEY (thread) references threads (id) on update CASCADE on delete CASCADE
 );
 
 create table codex_sections (
@@ -1612,7 +1612,6 @@ create or replace trigger add_board_thread before insert on boards for each row 
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_thread();
 -- Triggers for solo games
 create or replace trigger add_solo_game_thread before insert on solo_games for each row execute function add_thread();
-create or replace trigger delete_solo_game_thread after delete on solo_games for each row execute procedure delete_thread();
 create or replace trigger update_solo_concept_updated_at before update on solo_concepts for each row execute procedure update_updated_at();
 -- Triggers for works
 create or replace trigger add_work_thread before insert on works for each row execute function add_thread();

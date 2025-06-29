@@ -1,5 +1,5 @@
 // Create a new game from a solo concept
-import { getHash } from '@lib/utils'
+import { getHash, getImageUrl } from '@lib/utils'
 import { ai, generateImage, prompts, assistantConfig, getContext, storytellerInstructions } from '@lib/solo/server-gemini'
 
 const storytellerConfig = {
@@ -65,9 +65,8 @@ export const GET = async ({ request, locals, redirect }) => {
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
-      // const imageUrl = locals.supabase.storage.from('scenes').getPublicUrl(uploadData.path).publicURL
-      console.log('uploadData.fullPath', uploadData.fullPath)
-      firstPost += `<p><img src='${uploadData.fullPath}' alt='Scene illustration' /></p>`
+      const imageUrl = getImageUrl(locals.supabase, uploadData.path, 'scenes')
+      firstPost += `<p><img src='${imageUrl}' alt='Scene illustration' /></p>`
     }
 
     // Save the first post with the image

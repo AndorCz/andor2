@@ -54,7 +54,7 @@
 
     // Generate AI response via backend
     isGenerating = true
-    const tempAiPost = { id: `ai-${Date.now()}`, owner_type: 'npc', content: '', created_at: new Date().toISOString() }
+    const tempAiPost = { id: `ai-${Date.now()}`, owner: character.id, owner_type: 'npc', content: '', created_at: new Date().toISOString() }
     allPosts.push(tempAiPost)
     displayedPosts.push(tempAiPost)
     const reactiveAiPost = displayedPosts.at(-1)
@@ -132,9 +132,9 @@
 
   // Reactive statement for scrolling
   $effect(() => {
-    if (postsEl && displayedPosts.length) {
+    if (postsEl && displayedPosts.length > 1) { // Skip for first post
       if (!userHasScrolledUp) { // Scroll to bottom for new posts from the other user, or on initial load if not scrolled up
-        if (previousPostsLength === 0 && displayedPosts.length > 0) { // Initial load
+        if (previousPostsLength === 0 && displayedPosts.length > 1) { // Initial load
           postsEl.scrollTop = postsEl.scrollHeight
         } else { // New message
           waitForMediaLoad(postsEl).then(() => {
@@ -171,7 +171,7 @@
         {/if}
       {/if}
     </div>
-    <div>
+    <div class='input'>
       <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
     </div>
   </div>
@@ -220,6 +220,9 @@
           align-items: center;
           justify-content: center;
         }
+  .input {
+    padding: 0px 5px;
+  }
 
   @media (max-width: 1200px) {
     .headline {
