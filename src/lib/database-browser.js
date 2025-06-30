@@ -23,9 +23,12 @@ export function getHeaderUrl (type, id, hash) {
   return getImageUrl(supabase, `${type}-${id}.jpg?hash=${hash}`, 'headers')
 }
 
-export function getPortraitUrl (identityId, hash) {
-  const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
-  return getImageUrl(supabase, path, 'portraits')
+export function getPortraitUrl (identityId, hash, ownerType) {
+  if (ownerType === 'npc') {
+    return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'npcs')
+  } else {
+    return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'portraits')
+  }
 }
 
 export function getWorkFileUrl (path) {
@@ -68,6 +71,6 @@ export async function deleteStorageFolder (bucket, folder) {
   if (listError) { return listError }
   const filesToRemove = listData.map((file) => `${folder}/${file.name}`)
   const { error: removeError } = await supabase.storage.from(bucket).remove(filesToRemove)
-  if (removeError) { return removeError }
+  if (removeError) { return { error: removeError } }
   return { data: { success: true } }
 }

@@ -113,7 +113,8 @@
     if (error) { return handleError(error) }
 
     // Delete images
-    deleteStorageFolder('npcs', concept.id)
+    const { error: folderError } = await deleteStorageFolder('npcs', concept.id)
+    if (folderError) { return handleError(folderError) }
     const { error: removeError } = await supabase.storage.from('headers').remove(`solo-${concept.id}.jpg`)
     if (removeError) { return handleError(removeError) }
 

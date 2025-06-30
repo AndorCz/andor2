@@ -50,6 +50,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate illustration for the first post
     const firstImagePrompt = { text: prompts.first_image + `Text herního příspěvku k vyobrazení: ${firstPost}` }
+    console.log('First image prompt:', firstImagePrompt.text)
     const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, firstImagePrompt] })
     const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, '16:9', 1408, 768)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
@@ -57,7 +58,7 @@ export const GET = async ({ request, locals, redirect }) => {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
       const imageUrl = getImageUrl(locals.supabase, uploadData.path, 'scenes')
-      firstPost += `<p><img src='${imageUrl}' alt='Scene illustration' /></p>`
+      firstPost = `<p><img src='${imageUrl}' alt='Scene illustration' /></p>` + firstPost
     }
 
     // Save the first post with the image

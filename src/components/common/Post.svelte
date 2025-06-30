@@ -56,7 +56,7 @@
   {#if $platform === 'desktop'}
     <div class='icon' style='--iconSize: {iconSize}px'>
       {#if post.owner_portrait}
-        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        <img src={getPortraitUrl(post.owner, post.owner_portrait, post.owner_type)} class='portrait' alt={post.owner_name} />
       {:else if post.owner_type === 'character'}
         <img src='/default_char.jpg' class='portrait' alt={post.owner_name} />
       {:else}

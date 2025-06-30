@@ -33,7 +33,10 @@
   async function deleteGame () {
     const { error } = await supabase.from('solo_games').delete().eq('id', game.id)
     if (error) { return handleError(error) }
-    deleteStorageFolder('scenes', game.id)
+    const { error: removeError } = await supabase.storage.from('npcs').remove(game.storyteller + '.jpg')
+    if (removeError) { return handleError(removeError) }
+    const { error: folderError } = await deleteStorageFolder('scenes', game.id)
+    if (folderError) { return handleError(folderError) }
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 </script>
