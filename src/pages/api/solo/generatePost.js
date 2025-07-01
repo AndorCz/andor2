@@ -1,4 +1,4 @@
-import { ai, getContextString, storytellerInstructions, storytellerParams } from '@lib/solo/server-gemini'
+import { ai, storytellerInstructions, storytellerParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
   try {
@@ -20,7 +20,7 @@ export const POST = async ({ request, locals }) => {
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
     history.push({ role: 'user', parts: [{ text: message }] })
 
-    const context = getContextString(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
+    const context = getContext(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
     const config = { ...storytellerParams.config, systemInstruction: storytellerInstructions + '\n\n' + context }
 
     const chat = ai.chats.create({ model: 'gemini-2.5-pro', history, config })

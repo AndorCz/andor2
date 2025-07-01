@@ -84,7 +84,7 @@
         <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
         <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
         <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
-        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména protagonistů</span></li>
+        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
         <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
       </ul>
     </div>
@@ -101,11 +101,15 @@
       <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
       <details>
         <summary>Svět</summary>
-        <p>{@html concept.generated_world}</p>
+        <div class='inner'>
+          <p>{@html concept.generated_world}</p>
+        </div>
       </details>
       <details>
         <summary>Postava</summary>
-        <p>{@html concept.generated_protagonist}</p>
+        <div class='inner'>
+          <p>{@html concept.generated_protagonist}</p>
+        </div>
       </details>
       {#if openGames.length > 0}
         <div class='games'>
@@ -245,11 +249,15 @@
     border-radius: 10px;
     margin-top: 10px;
     box-shadow: var(--shadow);
-    padding: 10px;
   }
     summary {
       cursor: pointer;
       font-weight: bold;
+      padding: 15px;
+    }
+    .inner {
+      padding: 15px;
+      padding-top: 0px;
     }
   .names {
     padding: 20px;

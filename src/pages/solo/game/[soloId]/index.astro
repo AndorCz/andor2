@@ -9,26 +9,22 @@
   const { supabase, user } = Astro.locals
   const showSettings = Astro.url.searchParams.get('settings')
 
-  if (!user) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Uživatel nepřihlášen')}`) }
   if (!soloId) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí id hry')}`) }
 
   const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
+  console.error('Solo game data:', soloData, 'Error:', soloError)
   if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.error)}`) }
-  const { game, concept, character } = soloData
+  const { game, concept, character, storyteller } = soloData
 ---
 
 <LayoutSolo title={concept?.name} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
   {(game && concept ? (
-    user?.id && game.player === user.id ? (
-      showSettings ? (
-        <SoloGameSettings {game} {user} client:only='svelte' />
-      ) : (
-        <SoloGame {game} {character} {concept} {user} client:only='svelte' />
-      )
+    showSettings ? (
+      <SoloGameSettings {game} {user} client:only='svelte' />
     ) : (
-      <p>Nepřihlášený uživatel, nebo nemáš přístup k této hře</p>
+      <SoloGame {game} {character} {storyteller} {concept} {user} readonly={game.player !== user.id} client:only='svelte' />
     )
   ) : (
     <p>Hra nenalezena</p>
   ))}
-</Layout>
+</LayoutSolo>

@@ -8,7 +8,7 @@
   import { waitForMediaLoad } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
 
-  const { user = {}, game = {}, character = {}, concept = {} } = $props()
+  const { user = {}, game = {}, character = {}, storyteller = {}, concept = {}, readonly } = $props()
 
   let inputEl = $state(null)
   let postsEl = $state(null)
@@ -45,6 +45,8 @@
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
+    newPostData.owner_name = character.name
+    newPostData.owner_portrait = character.portrait
     if (error) { return handleError(error) }
     inputValue = ''
 
@@ -54,7 +56,7 @@
 
     // Generate AI response via backend
     isGenerating = true
-    const tempAiPost = { id: `ai-${Date.now()}`, owner: character.id, owner_type: 'npc', content: '', created_at: new Date().toISOString() }
+    const tempAiPost = { id: `ai-${Date.now()}`, owner: storyteller.id, owner_type: 'npc', owner_name: storyteller.name, owner_portrait: storyteller.portrait, content: '', created_at: new Date().toISOString() }
     allPosts.push(tempAiPost)
     displayedPosts.push(tempAiPost)
     const reactiveAiPost = displayedPosts.at(-1)
@@ -171,9 +173,11 @@
         {/if}
       {/if}
     </div>
-    <div class='input'>
-      <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
-    </div>
+    {#if !readonly}
+      <div class='input'>
+        <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+      </div>
+    {/if}
   </div>
 </main>
 

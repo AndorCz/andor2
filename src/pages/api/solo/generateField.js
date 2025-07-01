@@ -1,69 +1,52 @@
 import { Type } from '@google/genai'
 import { getHash } from '@lib/utils'
-import { ai, assistantParams, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
+import { GoogleGenAI } from '@google/genai'
+import { assistantParams, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
-  let conceptData
-  let generatedContent
-  const requestData = await request.json()
-  const { conceptId, promptField, targetField, value } = requestData
-  const fieldName = promptField ? promptField.replace('prompt_', '') : targetField
-  if (!prompts[fieldName]) { throw new Error(`Prompt pro pole "${fieldName}" nebyl nalezen`) }
-
   try {
-    const referer = request.headers.get('referer')
-    if (!locals.user.id || !conceptId) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
+    const { conceptId, field, value } = await request.json()
+    if (!locals.user.id || !conceptId || !field) { return redirect(request.headers.get('referer') + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
 
     // Mark concept as generating and get current data
-    const { data: dbData, error: markingError } = await locals.supabase.from('solo_concepts').update({ generating: [targetField] }).eq('id', conceptId).select().single()
+    const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update({ generating: field }).eq('id', conceptId).select().single()
     if (markingError) { throw new Error(markingError.message) }
-    conceptData = dbData
 
-    // Prepare AI context and prompt
-    const context = getContext(conceptData, fieldName)
-    const newData = { generating: [] }
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+    const generationParams = { ...assistantParams }
 
-    // Update the requested field
-    if (fieldName !== 'plan') { // plan is going to be generated anyway
-      const fieldMessage = { text: prompts[fieldName] }
-      if (value) { fieldMessage.text += `Vypravěč uvedl toto zadání: "${value}"` }
-
-      // Structured config for protagonist_names
-      if (fieldName === 'protagonist_names') {
-        assistantParams.config = { ...assistantParams.config, responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' }
-      }
-
-      // Generate field
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for bug in @google/genai
-      const fieldResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, fieldMessage] })
-      if (fieldResponse.candidates?.[0].finish_reason === 'SAFETY') {
-        throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.')
-      }
-      generatedContent = fieldName === 'protagonist_names' ? JSON.parse(fieldResponse.text) : fieldResponse.text
-      newData[targetField] = generatedContent
+    // Set common parameters for generation
+    if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
+      generationParams.config.systemInstruction += getContext(conceptData, field)
+      generationParams.contents = [{ text: prompts[field], role: 'user' }]
+      if (value) { generationParams.contents[0].text += `Vypravěč uvedl toto zadání: "${value}"` }
     }
 
-    // Update game plan (almost always needed)
-    if (fieldName !== 'protagonist_names' && fieldName !== 'header_image' && fieldName !== 'storyteller_image' && fieldName !== 'annotation') {
-      const planMessage = {
-        text: `The previous game plan was as follows: "${conceptData.generated_plan}"
-        Now the information in the section "${fieldName}" has changed, please update the game plan, if needed.`
-      }
-      const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for bug in @google/genai
-      const planResponse = await ai2.models.generateContent({ ...assistantParams, contents: [...context, planMessage], config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } })
-      newData.generated_plan = planResponse.text
+    // Structured output for names
+    if (field === 'protagonist_names') {
+      generationParams.config.responseSchema = { type: Type.ARRAY, items: { type: Type.STRING } }
+      generationParams.config.responseMimeType = 'application/json'
+    }
 
-      // Update annotation
-      const annotationMessage = { text: prompts.annotation }
-      const annotationResponse = await ai2.models.generateContent({ ...assistantParams, contents: [...context, annotationMessage], config: { ...assistantParams.config } })
-      newData.annotation = annotationResponse.text
+    // Generate new content
+    const newData = { generating: [] }
+    const modelResponse = ai.models.generateContent(generationParams)
+    if (modelResponse.candidates?.[0].finish_reason === 'SAFETY') { throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.') }
+    // const responseLast = modelResponse.candidates?.[0]?.content?.parts?.[0]?.text || modelResponse.text // probably not needed
+    console.log('response', modelResponse.text)
+
+    // Update game plan if needed
+    if (['prompt_world', 'prompt_factions', 'prompt_locations', 'prompt_characters', 'prompt_protagonist', 'prompt_plan'].includes(field)) {
+      generationParams.model = 'gemini-2.5-flash'
+      generationParams.config.thinkingConfig = { thinkingBudget: 1000 }
+      const planResponse = await ai.models.generateContent(generationParams)
+      newData.generated_plan = planResponse.text
     }
 
     // Update header image if requested
-    if (fieldName === 'header_image') {
-      const prompt = prompts.header_image + (value ? `Vypravěč uvedl toto zadání: "${value}"` : '')
-      const { data: headerImage, error: imageError } = await generateImage(prompt, '16:9', 1100, 226)
+    if (field === 'prompt_header_image') {
+      const { data: headerImage, error: imageError } = await generateImage(newData.prompt_header_image, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
       if (headerImage) {
         const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
@@ -73,9 +56,8 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Update storyteller image if requested
-    if (fieldName === 'storyteller_image') {
-      const prompt = prompts.storyteller_image + (value ? `Vypravěč uvedl toto zadání: "${value}"` : '')
-      const { data: storytellerImage, error: imageError } = await generateImage(prompt, '9:16', 140, 352)
+    if (field === 'prompt_storyteller_image') {
+      const { data: storytellerImage, error: imageError } = await generateImage(newData.prompt_storyteller_image, '9:16', 140, 352)
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
         const { error: storytellerUploadError } = await locals.supabase.storage.from('npcs').upload(`${conceptData.id}/${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
@@ -86,13 +68,15 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Save generated content
+    const target = field.replace('prompt_', 'generated_')
+    newData[target] = field === 'protagonist_names' ? JSON.parse(modelResponse.text) : modelResponse.text
     const { error: updateError } = await locals.supabase.from('solo_concepts').update(newData).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 })
   } catch (error) {
     console.error('Error in generateField API:', error)
-    await locals.supabase.from('solo_concepts').update({ generating: [] }).eq('id', conceptData.id)
+    await locals.supabase.from('solo_concepts').update({ generating: [] }).eq('id', await request.json().conceptId)
     return new Response(JSON.stringify({ error: { message: 'Chyba při generování pole: ' + error.message } }), { status: 500 })
   }
 }

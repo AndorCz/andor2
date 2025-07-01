@@ -36,7 +36,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate player character portrait
     const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
-    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, characterImagePromptMessage] })
+    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [{ text: context }, characterImagePromptMessage] })
     const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, '9:16', 140, 352)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
