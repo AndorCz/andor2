@@ -1,7 +1,7 @@
 import { Type } from '@google/genai'
 import { getHash, clone } from '@lib/utils'
 import { GoogleGenAI } from '@google/genai'
-import { assistantParams, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
+import { assistantParams, prompts, generateImage, fieldNames, getContext } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
@@ -22,7 +22,7 @@ export const POST = async ({ request, locals, redirect }) => {
     if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
       generationParams.config.systemInstruction += getContext(conceptData, field)
       generationParams.contents = [{ text: prompts[field], role: 'user' }]
-      if (value) { generationParams.contents[0].text += `Vypravěč uvedl toto zadání: "${value}"` }
+      if (value) { generationParams.contents[0].text += `\nVypravěč uvedl toto zadání: "${value}"` }
     }
 
     // Structured output for names
@@ -35,7 +35,6 @@ export const POST = async ({ request, locals, redirect }) => {
     const modelResponse = await ai.models.generateContent(generationParams)
     if (modelResponse.candidates?.[0].finish_reason === 'SAFETY') { throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.') }
     // const responseLast = modelResponse.candidates?.[0]?.content?.parts?.[0]?.text || modelResponse.text // probably not needed
-    console.log('response', modelResponse.text)
 
     const newData = { generating: [] }
     const target = field.replace('prompt_', 'generated_')
@@ -45,6 +44,15 @@ export const POST = async ({ request, locals, redirect }) => {
     if (['prompt_world', 'prompt_factions', 'prompt_locations', 'prompt_characters', 'prompt_protagonist', 'prompt_plan'].includes(field)) {
       generationParams.model = 'gemini-2.5-flash'
       generationParams.config.thinkingConfig = { thinkingBudget: 1000 }
+
+      // If a plan-relevant field have changed, include it in the plan prompt
+      let prompt = prompts.prompt_plan
+      if (field !== 'prompt_plan') {
+        prompt = `${fieldNames[field]}: ${newData[target]}\n\n${prompts.prompt_plan}`
+      }
+      if (conceptData.prompt_plan) { prompt += `\nVypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
+      generationParams.contents = [{ text: prompt, role: 'user' }]
+
       const planResponse = await ai.models.generateContent(generationParams)
       newData.generated_plan = planResponse.text
     }
