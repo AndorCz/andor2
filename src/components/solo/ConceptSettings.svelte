@@ -47,7 +47,7 @@
             concept = data // Update the full concept with server data
             console.log('concept', concept)
             if (field === 'prompt_header_image' || field === 'prompt_storyteller_image') { window.location.reload() } // Reload to show new image
-            showSuccess(`Pole "${field}" bylo úspěšně aktualizováno a vygenerováno`)
+            showSuccess('Pole bylo úspěšně aktualizováno a podklady přegenerovány')
             clearInterval(checkLoop)
           }
         }, 5000)
@@ -232,7 +232,7 @@
     </button>
   {/if}
   {#if tab === 'generated'}
-    <p>Pole na této stránce jsou automaticky generovaná. Můžeš je upravit ručně, ale mohou být přegenerovaná úpravou vstupů na předchozí záložce.</p>
+    <p class='info'>Pole na této stránce jsou automaticky generovaná. Můžeš je upravit ručně, ale mohou být přegenerovaná úpravou vstupů na předchozí záložce.</p>
     <h2>Svět</h2>
     <EditableLong {user} value={concept.generated_world} onSave={(value) => onSave('generated_world', value)} canEdit allowHtml />
     <h2>Frakce</h2>
@@ -327,6 +327,9 @@
       width: 70px;
       height: fit-content;
     }
+  p.info {
+    padding-top: 40px;
+  }
 
   @media (max-width: 1200px) {
     .headline {

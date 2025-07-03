@@ -171,6 +171,7 @@
         padding: 0px;
         padding-left: 15px;
         padding-top: 15px;
+        padding-right: 30px;
       }
     .withButton {
       padding-right: 80px;

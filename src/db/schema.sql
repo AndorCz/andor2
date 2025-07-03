@@ -1006,7 +1006,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_solo_game (solo_id int4) returns json as $$
+create or replace function get_solo_game (solo_id uuid) returns json as $$
 declare
   solo_game_var json;
   solo_concept_var json;

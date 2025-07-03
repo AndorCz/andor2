@@ -1,4 +1,4 @@
-import { ai, storytellerInstructions, storytellerParams } from '@lib/solo/server-gemini'
+import { ai, storytellerInstructions, storytellerParams, getContext } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
   try {

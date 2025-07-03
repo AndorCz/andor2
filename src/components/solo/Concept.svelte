@@ -54,13 +54,13 @@
     try {
       const response = await fetch(`/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`, { method: 'GET' })
       const data = await response.json()
-      if (!response.ok || data.error) { throw new Error(data.error) }
+      if (!response.ok || data.error) { throw new Error(data.error.message) }
       if (data.success) {
         showSuccess('Hra byla úspěšně vytvořena')
         window.location.href = `/solo/game/${data.gameId}`
       }
     } catch (error) {
-      handleError(error.message)
+      handleError(error)
     } finally {
       creatingGame = false
     }
