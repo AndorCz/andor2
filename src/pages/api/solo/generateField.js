@@ -1,5 +1,5 @@
 import { Type } from '@google/genai'
-import { getHash } from '@lib/utils'
+import { getHash, clone } from '@lib/utils'
 import { GoogleGenAI } from '@google/genai'
 import { assistantParams, prompts, generateImage, getContext } from '@lib/solo/server-gemini'
 
@@ -9,12 +9,14 @@ export const POST = async ({ request, locals, redirect }) => {
     const { conceptId, field, value } = await request.json()
     if (!locals.user.id || !conceptId || !field) { return redirect(request.headers.get('referer') + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
 
-    // Mark concept as generating and get current data
-    const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update({ generating: field }).eq('id', conceptId).select().single()
+    // Save updated field data, mark concept as generating and load current concept data
+    const updatedConcept = { generating: [field] }
+    if (typeof value === 'string' && field !== 'protagonist_names') { updatedConcept[field] = value } // If value is provided, update the field with it
+    const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update(updatedConcept).eq('id', conceptId).select().single()
     if (markingError) { throw new Error(markingError.message) }
 
     const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
-    const generationParams = { ...assistantParams }
+    const generationParams = clone(assistantParams)
 
     // Set common parameters for generation
     if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
@@ -30,11 +32,14 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Generate new content
-    const newData = { generating: [] }
-    const modelResponse = ai.models.generateContent(generationParams)
+    const modelResponse = await ai.models.generateContent(generationParams)
     if (modelResponse.candidates?.[0].finish_reason === 'SAFETY') { throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.') }
     // const responseLast = modelResponse.candidates?.[0]?.content?.parts?.[0]?.text || modelResponse.text // probably not needed
     console.log('response', modelResponse.text)
+
+    const newData = { generating: [] }
+    const target = field.replace('prompt_', 'generated_')
+    newData[target] = field === 'protagonist_names' ? JSON.parse(modelResponse.text) : modelResponse.text
 
     // Update game plan if needed
     if (['prompt_world', 'prompt_factions', 'prompt_locations', 'prompt_characters', 'prompt_protagonist', 'prompt_plan'].includes(field)) {
@@ -46,7 +51,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update header image if requested
     if (field === 'prompt_header_image') {
-      const { data: headerImage, error: imageError } = await generateImage(newData.prompt_header_image, '16:9', 1100, 226)
+      const { data: headerImage, error: imageError } = await generateImage(newData.generated_header_image, '16:9', 1100, 226)
       if (imageError) { throw new Error(imageError.message) }
       if (headerImage) {
         const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
@@ -57,10 +62,10 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update storyteller image if requested
     if (field === 'prompt_storyteller_image') {
-      const { data: storytellerImage, error: imageError } = await generateImage(newData.prompt_storyteller_image, '9:16', 140, 352)
+      const { data: storytellerImage, error: imageError } = await generateImage(newData.generated_storyteller_image, '9:16', 140, 352)
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
-        const { error: storytellerUploadError } = await locals.supabase.storage.from('npcs').upload(`${conceptData.id}/${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
+        const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
         if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
         const { error: storytellerUpdateError } = await locals.supabase.from('npcs').update({ portrait: getHash() }).eq('id', conceptData.storyteller)
         if (storytellerUpdateError) { throw new Error(storytellerUpdateError.message) }
@@ -68,8 +73,6 @@ export const POST = async ({ request, locals, redirect }) => {
     }
 
     // Save generated content
-    const target = field.replace('prompt_', 'generated_')
-    newData[target] = field === 'protagonist_names' ? JSON.parse(modelResponse.text) : modelResponse.text
     const { error: updateError } = await locals.supabase.from('solo_concepts').update(newData).eq('id', conceptData.id)
     if (updateError) { throw new Error(updateError.message) }
 

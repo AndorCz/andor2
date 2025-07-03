@@ -23,12 +23,8 @@ export function getHeaderUrl (type, id, hash) {
   return getImageUrl(supabase, `${type}-${id}.jpg?hash=${hash}`, 'headers')
 }
 
-export function getPortraitUrl (identityId, hash, ownerType) {
-  if (ownerType === 'npc') {
-    return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'npcs')
-  } else {
-    return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'portraits')
-  }
+export function getPortraitUrl (identityId, hash) {
+  return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'portraits')
 }
 
 export function getWorkFileUrl (path) {

@@ -52,7 +52,6 @@ export const storytellerParams = {
 export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
-    console.log('prompt', prompt)
     const imageResponse = await ai.models.generateImages({
       model: 'imagen-3.0-generate-002', prompt, config: { numberOfImages: 1, aspectRatio, includeRaiReason: true }
     })
@@ -168,7 +167,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, '9:16', 140, 352) // generated size is 768x1408
     if (storytellerImageError) { throw new Error(storytellerImageError.message) }
     if (storytellerImage) {
-      const { error: storytellerUploadError } = await supabase.storage.from('npcs').upload(`${conceptData.id}/${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+      const { error: storytellerUploadError } = await supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
       if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
     }
     conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1) // Done

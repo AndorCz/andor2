@@ -140,7 +140,7 @@ create table solo_concepts (
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
-  constraint solo_concepts_st_fkey foreign key (storyteller) references npcs(id) on delete prevent,
+  constraint solo_concepts_st_fkey foreign key (storyteller) references npcs(id) on delete set null,
   constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
 

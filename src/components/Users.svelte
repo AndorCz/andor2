@@ -45,7 +45,7 @@
 
 {#if users.length}
   <div class='users'>
-    {#each users as user}
+    {#each users as user (user.id)}
       <div class='user'>
         {#if user.portrait}
           <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
@@ -57,7 +57,7 @@
     {/each}
   </div>
   <div class='pagination'>
-    {#each { length: pages } as _, i}
+    {#each { length: pages } as _, i (i)}
       <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
