@@ -23,6 +23,7 @@
   import TextStyle from '@tiptap/extension-text-style'
   import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
+  import HorizontalRule from '@tiptap/extension-horizontal-rule'
   import StarterKit from '@tiptap/starter-kit'
   import EditorMenu from '@components/common/EditorMenu.svelte'
   import DropdownSlot from '@components/common/DropdownSlot.svelte'
@@ -57,6 +58,7 @@
       TextStyle,
       StarterKit,
       Underline,
+      HorizontalRule,
       FontSize,
       Reply,
       Youtube,
