@@ -740,9 +740,28 @@ $$ language plpgsql security definer;
 
 
 create or replace function add_game_threads () returns trigger as $$
+declare
+  v_owner uuid := coalesce(new.owner, auth.uid());
 begin
   insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
   insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
+
+  if v_owner is not null then
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.discussion_thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.discussion_thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.game_thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.game_thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+  end if;
+
   return new;
 end;
 $$ language plpgsql;
@@ -758,8 +777,20 @@ $$ language plpgsql;
 
 
 create or replace function add_thread () returns trigger as $$
+declare
+  v_owner uuid := coalesce(new.owner, new.player, auth.uid());
 begin
   insert into threads (name) values (new.name) returning id into new.thread;
+
+  if v_owner is not null then
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+  end if;
+
   return new;
 end;
 $$ language plpgsql;
@@ -847,9 +878,28 @@ $$ language plpgsql security definer;
 
 
 create or replace function add_game_threads () returns trigger as $$
+declare
+  v_owner uuid := coalesce(new.owner, auth.uid());
 begin
   insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
   insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
+
+  if v_owner is not null then
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.discussion_thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.discussion_thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.game_thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.game_thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+  end if;
+
   return new;
 end;
 $$ language plpgsql;
@@ -865,8 +915,20 @@ $$ language plpgsql;
 
 
 create or replace function add_thread () returns trigger as $$
+declare
+  v_owner uuid := coalesce(new.owner, new.player, auth.uid());
 begin
   insert into threads (name) values (new.name) returning id into new.thread;
+
+  if v_owner is not null then
+    insert into read_threads (user_id, thread_id, read_at)
+      values (v_owner, new.thread, now())
+      on conflict (user_id, thread_id) do nothing;
+    insert into unread_threads (user_id, thread_id, unread_count)
+      values (v_owner, new.thread, 0)
+      on conflict (user_id, thread_id) do nothing;
+  end if;
+
   return new;
 end;
 $$ language plpgsql;
@@ -1411,8 +1473,13 @@ $$ language plpgsql;
 
 create or replace function thread_read (p_user_id uuid, p_thread_id int4) returns void as $$
 begin
-  insert into read_threads (user_id, thread_id, read_at) values (p_user_id, p_thread_id, now()) on conflict (user_id, thread_id) do update set read_at = now();
-  update unread_threads set unread_count = 0 where user_id = p_user_id and thread_id = p_thread_id;
+  insert into read_threads (user_id, thread_id, read_at)
+    values (p_user_id, p_thread_id, now())
+    on conflict (user_id, thread_id) do update set read_at = now();
+
+  insert into unread_threads (user_id, thread_id, unread_count)
+    values (p_user_id, p_thread_id, 0)
+    on conflict (user_id, thread_id) do update set unread_count = 0;
 end;
 $$ language plpgsql;
 
