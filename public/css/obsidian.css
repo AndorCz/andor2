@@ -43,6 +43,9 @@ code {
   background: black;
   color: #AAA;
 }
+hr {
+	border-top: 1px solid var(--overlay);
+}
 
 /* FORM */
 
