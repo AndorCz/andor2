@@ -213,7 +213,7 @@
     {/each}
     {#if pages}
       <div class='pagination'>
-        {#each { length: pages } as _, i}
+        {#each { length: pages } as _, i (i)}
           <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
         {/each}
       </div>

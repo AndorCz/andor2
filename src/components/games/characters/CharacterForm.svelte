@@ -6,7 +6,8 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { showError } from '@lib/toasts'
 
-  let { isStoryteller, isGameOwner, user, character = $bindable({ appearance: '', bio: '' }) } = $props()
+  let { isStoryteller, isGameOwner, user, character = $bindable() } = $props()
+  console.log('character', character)
 
   let formEl = $state()
   let bioInputEl = $state()

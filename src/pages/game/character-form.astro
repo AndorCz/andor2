@@ -7,7 +7,7 @@
   const id = Astro.url.searchParams.get('id') || ''
 
   let gameId = Astro.url.searchParams.get('game')
-  let character:any = {}
+  let character = { bio: '', appearance: '', name: '' }
   let isGameOwner = false
   let isStoryteller = false
 
@@ -32,8 +32,8 @@
     try {
       const data = await Astro.request.formData()
       character.name = data.get('charName') || 'Beze jména'
-      character.appearance = data.get('charLooks') || ''
       character.bio = data.get('charBio') || ''
+      character.appearance = data.get('charLooks') || ''
       character.storyteller = data.get('storyteller') || false
       character.player = user.id
       if (character.storyteller) { character.accepted = true }

@@ -6,7 +6,7 @@
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { map = $bindable({ name: '', description: '' }), user, game } = $props()
+  let { map = $bindable(), user, game } = $props()
 
   const mapName = map.name
   let files = $state()

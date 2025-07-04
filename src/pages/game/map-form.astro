@@ -7,7 +7,7 @@
   const { mapId, gameId } = Object.fromEntries(Astro.url.searchParams)
   let isStoryteller = false
   let game = {}
-  let map = {}
+  let map = { name: '', description: '' }
   const edit = !!mapId
 
   if (gameId) {
@@ -30,7 +30,7 @@
       const name = formData.get('mapName')
       const hidden = formData.get('mapHidden')
       const description = formData.get('mapDescription')
-      
+
       let image = formData.get('mapImage')
       const imageUrl = formData.get('mapGeneratedUrl')
       if (imageUrl) {
