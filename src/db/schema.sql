@@ -471,6 +471,7 @@ create or replace view discussion_posts_owner as
     left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
   order by p.created_at desc;
 
+
 create or replace view posts_owner as
   select
     p.*,
@@ -494,6 +495,7 @@ create or replace view posts_owner as
     left join npcs on p.owner = npcs.id and p.owner_type = 'npc'
   order by p.created_at desc;
 
+
 create or replace view game_posts_owner as
   select
     p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.updated_at, p.important,
@@ -504,6 +506,7 @@ create or replace view game_posts_owner as
   where games.id is not null
   order by p.created_at desc;
 
+
 create or replace view board_list as
   select b.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count, max(p.created_at) as last_post
   from boards b
@@ -512,6 +515,7 @@ create or replace view board_list as
     left join posts p on t.id = p.thread
   group by b.id, pr.id, pr.name
   order by b.created_at desc;
+
 
 create or replace view game_list as
   select g.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count, max(p.created_at) as last_post
@@ -522,6 +526,7 @@ create or replace view game_list as
   group by g.id, pr.id, pr.name
   order by g.created_at desc;
 
+
 create or replace view work_list as
   select w.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count
   from works w
@@ -531,10 +536,12 @@ create or replace view work_list as
   group by w.id, pr.id, pr.name
   order by w.created_at desc;
 
+
 create or replace view game_messages as
   select messages.id, messages.sender_user, messages.recipient_user, messages.content, messages.read, messages.moderated, messages.created_at, messages.sender_character, messages.recipient_character
   from messages
   where messages.sender_character is not null and messages.recipient_character is not null;
+
 
 create or replace view public.user_bookmarks as
 select
@@ -551,7 +558,7 @@ select
   b.index,
   b.created_at as bookmark_created_at,
   COALESCE(g.name, brd.name, w.name, s.name) as name,
-  COALESCE( ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0 ) as unread,
+  COALESCE(ut_main.unread_count, ut_board.unread_count, ut_work.unread_count, 0) as unread,
   COALESCE(ut_disc.unread_count, 0) as unread_secondary
 from bookmarks b
   left join games g on b.game_id = g.id
@@ -608,8 +615,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function increment_unread_counters()
-returns trigger as $$
+create or replace function increment_unread_counters () returns trigger as $$
 declare
   affected_users record;
 begin
@@ -674,52 +680,6 @@ end;
 $$ language plpgsql;
 
 
-create or replace function add_codex_index () returns trigger as $$
-begin
-  insert into codex_pages (game, name, slug) values (new.id, 'Úvod', 'index');
-  return new;
-end;
-$$ language plpgsql security definer;
-
-
-create or replace function reject_character (character_id uuid) returns void as $$
-begin
-  if not is_players_character(character_id) and not is_storyteller((select game from characters where id = character_id)) then raise exception 'Nejsi vypravěč hry, ani vlastník postavy'; end if;
-  update characters set game = null, accepted = false where id = character_id;
-end;
-$$ language plpgsql security definer;
-
-
-create or replace function claim_character (character_id uuid) returns void as $$
-declare
-  character_row characters%ROWTYPE;
-begin
-  select * into character_row from characters where id = character_id;
-  if character_row.open is false then raise exception 'Postava není volná'; end if;
-  update characters set player = auth.uid(), open = false where id = character_id;
-end;
-$$ language plpgsql security definer;
-
-
-create or replace function hand_over_character (character_id uuid, new_owner uuid) returns uuid as $$
-declare
-  character_row characters%ROWTYPE;
-begin
-  select * into character_row from characters where id = character_id;
-  if auth.uid() != character_row.player then raise exception 'Není tvoje postava'; end if;
-  -- create a new character with the same data for the player to keep (except for the game columns)
-  character_row.id := gen_random_uuid();
-  character_row.game := null;
-  character_row.accepted := false;
-  character_row.storyteller := false;
-  insert into characters values (character_row.*);
-  -- update the original character to change the player
-  update characters set player = new_owner where id = character_id;
-  return character_row.id;
-end;
-$$ language plpgsql security definer;
-
-
 create or replace function take_over_character (character_id uuid) returns uuid as $$
 declare
   character_row characters%ROWTYPE;
@@ -761,7 +721,6 @@ begin
       values (v_owner, new.game_thread, 0)
       on conflict (user_id, thread_id) do nothing;
   end if;
-
   return new;
 end;
 $$ language plpgsql;
@@ -777,20 +736,10 @@ $$ language plpgsql;
 
 
 create or replace function add_thread () returns trigger as $$
-declare
-  v_owner uuid := coalesce(new.owner, new.player, auth.uid());
 begin
   insert into threads (name) values (new.name) returning id into new.thread;
-
-  if v_owner is not null then
-    insert into read_threads (user_id, thread_id, read_at)
-      values (v_owner, new.thread, now())
-      on conflict (user_id, thread_id) do nothing;
-    insert into unread_threads (user_id, thread_id, unread_count)
-      values (v_owner, new.thread, 0)
-      on conflict (user_id, thread_id) do nothing;
-  end if;
-
+  insert into read_threads (user_id, thread_id, read_at) values (auth.uid(), new.thread, now()) on conflict (user_id, thread_id) do nothing;
+  insert into unread_threads (user_id, thread_id, unread_count) values (auth.uid(), new.thread, 0) on conflict (user_id, thread_id) do nothing;
   return new;
 end;
 $$ language plpgsql;
@@ -800,14 +749,6 @@ create or replace function delete_thread () returns trigger as $$
 begin
   delete from threads where id = old.thread;
   return old;
-end;
-$$ language plpgsql;
-
-
-create or replace function add_storyteller () returns trigger as $$
-begin
-  insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);
-  return new;
 end;
 $$ language plpgsql;
 
@@ -858,90 +799,7 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function take_over_character (character_id uuid) returns uuid as $$
-declare
-  character_row characters%ROWTYPE;
-begin
-  select * into character_row from characters where id = character_id;
-  if is_storyteller(character_row.game) is false then raise exception 'Nejsi vypravěč'; end if;
-  -- create a new character with the same data for the player to keep (except for the game columns)
-  character_row.id := gen_random_uuid();
-  character_row.game := null;
-  character_row.accepted := false;
-  character_row.storyteller := false;
-  insert into characters values (character_row.*);
-  -- update the original character to change the player
-  update characters set player = auth.uid() where id = character_id;
-  return character_row.id;
-end;
-$$ language plpgsql security definer;
-
-
-create or replace function add_game_threads () returns trigger as $$
-declare
-  v_owner uuid := coalesce(new.owner, auth.uid());
-begin
-  insert into threads (name) values (new.name || ' - discussion') returning id into new.discussion_thread;
-  insert into threads (name) values (new.name || ' - game') returning id into new.game_thread;
-
-  if v_owner is not null then
-    insert into read_threads (user_id, thread_id, read_at)
-      values (v_owner, new.discussion_thread, now())
-      on conflict (user_id, thread_id) do nothing;
-    insert into unread_threads (user_id, thread_id, unread_count)
-      values (v_owner, new.discussion_thread, 0)
-      on conflict (user_id, thread_id) do nothing;
-
-    insert into read_threads (user_id, thread_id, read_at)
-      values (v_owner, new.game_thread, now())
-      on conflict (user_id, thread_id) do nothing;
-    insert into unread_threads (user_id, thread_id, unread_count)
-      values (v_owner, new.game_thread, 0)
-      on conflict (user_id, thread_id) do nothing;
-  end if;
-
-  return new;
-end;
-$$ language plpgsql;
-
-
-create or replace function delete_game_threads () returns trigger as $$
-begin
-  delete from threads where id = old.discussion_thread;
-  delete from threads where id = old.game_thread;
-  return old;
-end;
-$$ language plpgsql;
-
-
-create or replace function add_thread () returns trigger as $$
-declare
-  v_owner uuid := coalesce(new.owner, new.player, auth.uid());
-begin
-  insert into threads (name) values (new.name) returning id into new.thread;
-
-  if v_owner is not null then
-    insert into read_threads (user_id, thread_id, read_at)
-      values (v_owner, new.thread, now())
-      on conflict (user_id, thread_id) do nothing;
-    insert into unread_threads (user_id, thread_id, unread_count)
-      values (v_owner, new.thread, 0)
-      on conflict (user_id, thread_id) do nothing;
-  end if;
-
-  return new;
-end;
-$$ language plpgsql;
-
-
-create or replace function delete_thread () returns trigger as $$
-begin
-  delete from threads where id = old.thread;
-  return old;
-end;
-$$ language plpgsql;
-
-unction get_character_names (audience_ids uuid[]) returns text[] as $$
+create or replace function get_character_names (audience_ids uuid[]) returns text[] as $$
 declare
   names text[];
 begin
@@ -962,7 +820,7 @@ begin
   into total_count
   from discussion_posts_owner po
   where po.thread = _thread;
-  
+
   -- get the paginated posts
   select json_agg(t)
   into postdata
@@ -970,7 +828,7 @@ begin
     select po.*, get_character_names(po.audience) as audience_names
     from discussion_posts_owner po
     where po.thread = _thread
-    order by 
+    order by
       case when ascending then po.created_at end asc,
       case when not ascending then po.created_at end desc
     limit _limit
@@ -995,17 +853,15 @@ begin
   select count(*)
   into total_count
   from discussion_posts_owner po
-  where po.thread = _thread
-    and (po.owner = user_id or user_id = any (po.audience));
-  
+  where po.thread = _thread and (po.owner = user_id or user_id = any (po.audience));
+
   -- get the paginated posts
   select json_agg(t)
   into postdata
   from (
     select po.*, get_character_names(po.audience) as audience_names
     from discussion_posts_owner po
-    where po.thread = _thread
-      and (po.owner = user_id or user_id = any (po.audience))
+    where po.thread = _thread and (po.owner = user_id or user_id = any (po.audience))
     order by po.created_at desc
     limit _limit
     offset page * _limit
@@ -1018,6 +874,7 @@ begin
   );
 end;
 $$ language plpgsql;
+
 
 create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
   returns json as $$
@@ -1052,7 +909,7 @@ begin
       -- search content and owner character name
       and (_search is null or (lower(p.content) like '%' || search_lower || '%') or (lower(p.owner_name) like '%' || search_lower || '%'))
     ), ordered_posts as (
-      select 
+      select
         to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post,
         get_character_names(fp.audience) as audience_names
       from filtered_posts fp
@@ -1261,13 +1118,13 @@ begin
     stranded_characters as (
       select json_agg(
         json_build_object(
-          'name', c.name, 
-          'id', c.id, 
-          'state', c.state, 
-          'portrait', c.portrait, 
+          'name', c.name,
+          'id', c.id,
+          'state', c.state,
+          'portrait', c.portrait,
           'unread', coalesce((
-            select sum(ucmc.unread_count) 
-            from unread_character_message_counts ucmc 
+            select sum(ucmc.unread_count)
+            from unread_character_message_counts ucmc
             where ucmc.recipient_character_id = c.id
             ), 0
           )
@@ -1301,14 +1158,14 @@ $$ language plpgsql;
 
 
 create or replace function get_user_data () returns json as $$
-declare 
+declare
   user_uuid uuid := auth.uid();
 begin
   return (
-    with 
+    with
       unread_users as (
-        select distinct uumc.sender_user_id as id 
-        from unread_user_message_counts uumc 
+        select distinct uumc.sender_user_id as id
+        from unread_user_message_counts uumc
         where uumc.recipient_user_id = user_uuid and uumc.unread_count > 0
       ),
       contact_ids as (select contact_user as id from public.contacts where owner = user_uuid ),
@@ -1323,7 +1180,7 @@ begin
           exists(select 1 from contact_ids c where c.id = p.id) as contacted,
           p.last_activity > now() - interval '5 minutes' as active,
           coalesce((
-            select uumc.unread_count 
+            select uumc.unread_count
             from unread_user_message_counts uumc
             where uumc.sender_user_id = p.id and uumc.recipient_user_id = user_uuid
           ), 0) as unread
@@ -1449,7 +1306,7 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function delete_my_character(character_id uuid)
+create or replace function delete_my_character (character_id uuid)
 returns void as $$
 begin
   -- first, try to update characters that are part of a game
@@ -1504,11 +1361,11 @@ $$ language plpgsql;
 
 create or replace function add_default_bookmarks () returns trigger as $$
 begin
-  insert into bookmarks (user_id, board_id, board_thread) 
+  insert into bookmarks (user_id, board_id, board_thread)
   select new.id, b.id, b.thread from boards b where b.id = 1;
-  insert into bookmarks (user_id, board_id, board_thread) 
+  insert into bookmarks (user_id, board_id, board_thread)
   select new.id, b.id, b.thread from boards b where b.id = 2;
-  insert into bookmarks (user_id, board_id, board_thread) 
+  insert into bookmarks (user_id, board_id, board_thread)
   select new.id, b.id, b.thread from boards b where b.id = 3;
   return new;
 end;
@@ -1571,7 +1428,7 @@ $$ language plpgsql security definer;
 
 create or replace function update_transfer_message (character_id uuid, game_id integer, new_content text) returns boolean as $$
 begin
-  update messages 
+  update messages
   set content = (
     select case
       when content like '%' || '/api/game/acceptCharacter?gameId=' || game_id || '&characterId=' || character_id || '%' then
@@ -1601,7 +1458,9 @@ begin
 end;
 $$ language plpgsql security definer;
 
+
 -- Functions and Triggers for Message Unread Counts
+
 
 create or replace function increment_unread_user_message_count () returns trigger as $$
 begin
@@ -1614,6 +1473,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+
 
 create or replace function decrement_unread_user_message_count () returns trigger as $$
 declare
@@ -1635,6 +1495,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 create or replace function increment_unread_character_message_count () returns trigger as $$
 begin
   if new.recipient_character is not null and new.sender_character is not null then
@@ -1646,6 +1507,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+
 
 create or replace function decrement_unread_character_message_count () returns trigger as $$
 declare

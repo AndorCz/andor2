@@ -30,7 +30,7 @@
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba vložení díla: ' + error.message)}`) }
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, work_id: data.id, work_thread: data.thread }, { onConflict: 'user_id, work_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba přidání záložky: ' + bookmarkError.message)}`) }
 
     // get thread of board id 999

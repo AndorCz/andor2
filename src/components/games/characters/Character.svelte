@@ -41,7 +41,7 @@
     if (error) { return handleError(error) }
 
     // add bookmark to the new player
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
 
     // send welcome message to the new player
@@ -157,7 +157,7 @@
       const { error } = await supabase.rpc('claim_character', { character_id: character.id })
       if (error) { return handleError(error) }
 
-      const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+      const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
       if (upsertError) { return handleError(upsertError) }
 
       if (user.id !== game.owner.id) {

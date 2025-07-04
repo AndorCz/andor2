@@ -8,7 +8,7 @@
 
   const showSettings = Astro.url.searchParams.get('settings')
 
-  const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, header, owner:profiles(id, name), custom_header, open, mods, members, bans').eq('id', boardId).single()
+  const { data: boardData, error } = await supabase.from('boards').select('id, name, thread, annotation, header, owner:profiles(id, name), custom_header, open, mods, members, bans').eq('id', boardId).single()
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
   let hasAccess = boardData.open

@@ -69,7 +69,7 @@
     <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
     {#if data.mods.length}
       {#await supabase.rpc('get_user_names', { ids: data.mods }).single() then mods}
-        {#each mods.data as mod}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
+        {#each mods.data as mod (mod.id)}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
       {/await}
     {/if}
   </p>

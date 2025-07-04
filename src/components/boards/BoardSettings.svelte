@@ -7,7 +7,7 @@
   import HeaderInput from '@components/common/HeaderInput.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { data = $bindable({}), user = {} } = $props()
+  let { data = $bindable(), user = {} } = $props()
 
   let saving = $state(false)
   let originalName = $state()
@@ -113,7 +113,7 @@
     {#if data.bans && data.bans.length}
       {#await getNames(data.bans) then list}
         <ul>
-          {#each list as ban}
+          {#each list as ban (ban.id)}
             <li>
               <div class='ban item'>
                 <h3>{ban.name}</h3>
@@ -140,7 +140,7 @@
     {#if data.members && data.members.length}
       {#await getNames(data.members) then list}
         <ul>
-          {#each list as member}
+          {#each list as member (member.id)}
             <li>
               <div class='member item'>
                 <h3>{member.name}</h3>
@@ -171,7 +171,7 @@
     {#if data.mods && data.mods.length}
       {#await getNames(data.mods) then list}
         <ul>
-          {#each list as mod}
+          {#each list as mod (mod.id)}
             <li>
               <div class='mod item'>
                 <h3>{mod.name}</h3>
@@ -188,8 +188,8 @@
     <div class='row select'>
       <Select bind:value={newMod} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
         {#snippet empty()}
-                <div >Uživatel nenalezen</div>
-              {/snippet}
+          <div >Uživatel nenalezen</div>
+        {/snippet}
       </Select>
       <button class='material square' onclick={() => { addPerson('mods', newMod) }} disabled={saving || !newMod?.id}>add</button>
     </div>
