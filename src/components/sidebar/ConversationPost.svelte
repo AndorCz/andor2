@@ -81,7 +81,7 @@
   }
   .content {
     font-size: 0.95em;
-    line-height: 1.4;
+    line-height: 1.2;
   }
   .content :global(img) {
     max-width: 100%;

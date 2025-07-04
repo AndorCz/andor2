@@ -210,7 +210,7 @@ input[type=text], input[type=email], input[type=password], textarea, input[type=
 }
 
 textarea, .ProseMirror {
-	line-height: 140%;
+	line-height: 120%;
 	font-size: var(--fontSizeInput);
 }
 
