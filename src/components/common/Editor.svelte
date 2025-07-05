@@ -12,8 +12,8 @@
   import { EnterKeyHandler } from '@lib/editor/enter'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
-  import { resizeImage, getImageUrl } from '@lib/utils'
   import { Editor, mergeAttributes } from '@tiptap/core'
+  import { resizeImage, getImageUrl } from '@lib/utils'
   import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
@@ -23,32 +23,20 @@
   import TextStyle from '@tiptap/extension-text-style'
   import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
-  import HorizontalRule from '@tiptap/extension-horizontal-rule'
   import StarterKit from '@tiptap/starter-kit'
   import EditorMenu from '@components/common/EditorMenu.svelte'
   import DropdownSlot from '@components/common/DropdownSlot.svelte'
+  import HorizontalRule from '@tiptap/extension-horizontal-rule'
 
-  let {
-    user,
-    triggerSave,
-    value = $bindable(''),
-    onKeyUp = null,
-    onChange = null,
-    minHeight = 140,
-    enterSend = false,
-    fonts = null,
-    mentionList = null,
-    forceBubble = false,
-    singleLine = false
-  } = $props()
+  let { user, triggerSave, value = $bindable(''), onKeyUp = null, onChange = null, minHeight = 140, enterSend = false, fonts = null, mentionList = null, forceBubble = false, singleLine = false } = $props()
 
+  let menuEl = $state()
   let editor = $state()
   let editorEl = $state()
-  let menuEl = $state()
   let isBubble = $state(true)
-  let bubbleElImage = $state()
   let isFocused = $state(false)
   let wasFocused = $state(false)
+  let bubbleElImage = $state()
   let timeout
   // let debug = ''
 

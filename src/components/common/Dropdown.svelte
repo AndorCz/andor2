@@ -1,18 +1,17 @@
 <script>
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
 
-  let { title, options = [], iconsOnly = false, selected = $bindable(null), defaultLabel, openUp = false } = $props()
+  let { title, options = [], iconsOnly = false, onselect, selected = $bindable(), defaultLabel, openUp = false } = $props()
 
   let x = $state(20)
   let isOpen = $state(false)
   let dropdownEl = $state()
-  const dispatch = createEventDispatcher()
 
   onMount(() => { document.addEventListener('click', handleClickOutside) })
   onDestroy(() => { document.removeEventListener('click', handleClickOutside) })
 
   function selectOption (option) {
-    dispatch('select', option)
+    onselect(option)
     selected = option.value
     isOpen = false
   }
@@ -46,7 +45,7 @@
   </span>
   {#if isOpen}
     <div class='options' style={`left: ${x - 10}px;`} class:openUp class:openDown={!openUp}>
-      {#each getUnselectedOptions() as option}
+      {#each getUnselectedOptions() as option, index (index)}
         <button type='button' onclick={() => selectOption(option)} class:label={!iconsOnly} class={iconsOnly && 'material'} class:selected={option.value === selected}>
           {#if iconsOnly}
             {option.icon}

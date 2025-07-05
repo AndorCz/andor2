@@ -1,61 +1,35 @@
 <script>
+  import { onDestroy } from 'svelte'
   import Dropdown from '@components/common/Dropdown.svelte'
 
-  const { fonts, editor, isBubble = false, isBottom = false } = $props()
+  const { editor, fonts, isBubble = false, isBottom = false } = $props()
 
-  let menuEl
-
-  const editorState = $state({
-    headingLevel: undefined,
-    textAlign: 'left',
-    fontFamily: undefined,
-    canDecreaseSize: false,
-    canIncreaseSize: false,
-    isBold: false,
-    canToggleBold: false,
-    isItalic: false,
-    canToggleItalic: false,
-    isUnderline: false,
-    canToggleUnderline: false,
-    isStrike: false,
-    canToggleStrike: false,
-    isSelectionEmpty: true,
-    color: undefined,
-    isLink: false
-  })
+  let menuEl = $state()
+  let isInitialized = $state(false)
+  let currentStyle = $state()
+  let currentAlign = $state('left')
+  let currentColor = $state('#c4b6ab')
+  const alignments = ['left', 'center', 'right', 'justify']
 
   $effect(() => {
-    if (editor) {
-      const handler = () => {
-        editorState.headingLevel = editor.getAttributes('heading').level
-        const alignments = ['left', 'center', 'right', 'justify']
-        editorState.textAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
-        editorState.fontFamily = editor.getAttributes('textStyle').fontFamily
-        editorState.canDecreaseSize = editor.can().chain().focus().decreaseSize().run()
-        editorState.canIncreaseSize = editor.can().chain().focus().increaseSize().run()
-        editorState.isBold = editor.isActive('bold')
-        editorState.canToggleBold = editor.can().chain().focus().toggleBold().run()
-        editorState.isItalic = editor.isActive('italic')
-        editorState.canToggleItalic = editor.can().chain().focus().toggleItalic().run()
-        editorState.isUnderline = editor.isActive('underline')
-        editorState.canToggleUnderline = editor.can().chain().focus().toggleUnderline().run()
-        editorState.isStrike = editor.isActive('strike')
-        editorState.canToggleStrike = editor.can().chain().focus().toggleStrike().run()
-        editorState.isSelectionEmpty = editor.state.selection.empty
-        editorState.color = editor.getAttributes('textStyle').color
-        editorState.isLink = editor.isActive('link')
-      }
-      editor.on('selectionUpdate', handler)
-      handler() // set initial state
-
-      return () => {
-        editor.off('selectionUpdate', handler)
-      }
+    if (editor && !isInitialized) {
+      editor.on('selectionUpdate', () => {
+        // check for headings and paragraph
+        const headingLevel = editor.getAttributes('heading').level
+        currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
+        currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
+        console.log('alignment', currentAlign)
+        // check for current color
+        currentColor = editor.getAttributes('textStyle').color || '#c4b6ab'
+        console.log('currentColor', currentColor)
+      })
+      isInitialized = true
     }
   })
 
-  const currentStyle = $derived(editorState.headingLevel ? `heading${editorState.headingLevel}` : 'paragraph')
-  const currentAlign = $derived(editorState.textAlign)
+  onDestroy(() => {
+    if (editor) { editor.off('selectionUpdate') }
+  })
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
@@ -71,31 +45,41 @@
     { value: 'justify', icon: 'format_align_justify' }
   ]
 
-  const baseFontOptions = [
-    { value: 'sans-serif', label: "<span class='sansserif'>Bezpatkové</span>" },
-    { value: 'monospace', label: "<span class='monospace'>Strojové</span>" },
-    { value: '"Lucida Handwriting", cursive', label: "<span class='cursive'>Psané</span>" },
-    { value: 'caveat', label: "<span class='caveat'>Caveat</span>" },
-    { value: 'orbitron', label: "<span class='orbitron'>Orbitron</span>" }
-  ]
+  const fontOptions = $derived(() => {
+    const options = [
+      { value: 'sans-serif', label: "<span class='sansserif'>Bezpatkové</span>" },
+      { value: 'monospace', label: "<span class='monospace'>Strojové</span>" },
+      { value: '"Lucida Handwriting", cursive', label: "<span class='cursive'>Psané</span>" },
+      { value: 'caveat', label: "<span class='caveat'>Caveat</span>" },
+      { value: 'orbitron', label: "<span class='orbitron'>Orbitron</span>" }
+    ]
 
-  const fontOptions = $derived(fonts ? [...baseFontOptions, ...fonts.map(font => ({ value: font, label: `<span style='font-family: ${font}'>${font}</span>` }))] : baseFontOptions)
+    if (fonts) {
+      fonts.forEach(font => {
+        options.push({ value: font, label: `<span style='font-family: ${font}'>${font}</span>` })
+      })
+    }
+
+    return options
+  })
 
   function handleStyleSelect (selectedOption) {
-    switch (selectedOption.detail.value) {
+    switch (selectedOption.value) {
       case 'heading1': editor.chain().focus().setHeading({ level: 1 }).run(); break
       case 'heading2': editor.chain().focus().setHeading({ level: 2 }).run(); break
       case 'heading3': editor.chain().focus().setHeading({ level: 3 }).run(); break
       default: editor.chain().focus().setParagraph().run()
     }
+    currentStyle = selectedOption.value
   }
 
   function handleAlignSelect (selectedOption) {
-    editor.chain().focus().setTextAlign(selectedOption.detail.value).run()
+    editor.chain().focus().setTextAlign(selectedOption.value).run()
+    currentAlign = selectedOption.value
   }
 
   function handleFontSelect (selectedOption) {
-    editor.chain().focus().setFontFamily(selectedOption.detail.value).run()
+    editor.chain().focus().setFontFamily(selectedOption.value).run()
   }
 
   function setLink () {
@@ -116,26 +100,26 @@
 <div class='menu' class:bubble={isBubble} bind:this={menuEl}>
   {#if editor}
     <!-- buttons need to have type=button to not submit forms the editor might be in -->
-    <span><Dropdown openUp={isBottom} selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} on:select={handleStyleSelect} title='Styl' /></span>
-    <span><Dropdown openUp={isBottom} selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} on:select={handleAlignSelect} title='Zarovnání' /></span>
-    <span><Dropdown openUp={isBottom} selected={editorState.fontFamily} defaultLabel='brand_family' options={fontOptions} on:select={handleFontSelect} title='Font' /></span>
+    <span><Dropdown openUp={isBottom} selected={currentStyle} defaultLabel='format_paragraph' iconsOnly options={styleOptions} onselect={handleStyleSelect} title='Styl' /></span>
+    <span><Dropdown openUp={isBottom} selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} onselect={handleAlignSelect} title='Zarovnání' /></span>
+    <span><Dropdown openUp={isBottom} selected={editor.getAttributes('textStyle').fontFamily} defaultLabel='brand_family' options={fontOptions} onselect={handleFontSelect} title='Font' /></span>
     <span class='sep'></span>
-    <button type='button' class='material' onclick={() => editor.chain().focus().decreaseSize().run()} disabled={!editorState.canDecreaseSize}>text_decrease</button>
-    <button type='button' class='material' onclick={() => editor.chain().focus().increaseSize().run()} disabled={!editorState.canIncreaseSize}>text_increase</button>
+    <button type='button' class='material' onclick={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
+    <button type='button' class='material' onclick={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
     <span class='sep'></span>
-    <button type='button' onclick={() => editor.chain().focus().toggleBold().run()} disabled={!editorState.canToggleBold} class={editorState.isBold ? 'material active' : 'material'} title='Tučně'>format_bold</button>
-    <button type='button' onclick={() => editor.chain().focus().toggleItalic().run()} disabled={!editorState.canToggleItalic} class={editorState.isItalic ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
-    <button type='button' onclick={() => editor.chain().focus().toggleUnderline().run()} disabled={!editorState.canToggleUnderline} class={editorState.isUnderline ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
-    <button type='button' onclick={() => editor.chain().focus().toggleStrike().run()} disabled={!editorState.canToggleStrike} class={editorState.isStrike ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
-    <button type='button' onclick={resetTextStyle} title='Reset stylů textu' class='material' disabled={editorState.isSelectionEmpty}>format_clear</button>
+    <button type='button' onclick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} class={editor.isActive('bold') ? 'material active' : 'material'} title='Tučně'>format_bold</button>
+    <button type='button' onclick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} class={editor.isActive('italic') ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
+    <button type='button' onclick={() => editor.chain().focus().toggleUnderline().run()} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={editor.isActive('underline') ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
+    <button type='button' onclick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} class={editor.isActive('strike') ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
+    <button type='button' onclick={resetTextStyle} title='Reset stylů textu' class='material' disabled={editor.state.selection.empty}>format_clear</button>
     <span class='sep'></span>
     <button type='button' onclick={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
     <span class='sep'></span>
-    <input type='color' class='button' list='presetColors' oninput={event => editor.chain().focus().setColor(event.target.value).run()} value={editorState.color || '#c4b6ab'} title='Barva' />
-    <button type='button' onclick={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editorState.color} title='Reset barvy'>format_color_reset</button>
+    <input type='color' class='button' list='presetColors' oninput={event => editor.chain().focus().setColor(event.target.value).run()} value={currentColor} title='Barva' />
+    <button type='button' onclick={() => editor.chain().focus().unsetColor().run()} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
     <span class='sep'></span>
     <button type='button' onclick={setLink} class='material' title='Odkaz'>link</button>
-    <button type='button' onclick={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editorState.isLink} title='Zrušit odkaz'>link_off</button>
+    <button type='button' onclick={() => editor.chain().focus().unsetLink().run()} class='material' disabled={!editor.isActive('link')} title='Zrušit odkaz'>link_off</button>
   {/if}
 </div>
 
