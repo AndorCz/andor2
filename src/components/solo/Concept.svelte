@@ -92,11 +92,13 @@
 {:else}
   <div class='headline'>
     <h1>{concept.name}</h1>
-    {#if user.id === concept.author.id}
-      <button onclick={showSettings} class='material settings square' title='Nastavení konceptu' use:tooltip>settings</button>
-    {/if}
+    <div class='buttons'>
+      {#if user.id === concept.author.id}
+        <button onclick={showSettings} class='material settings square' title='Nastavení konceptu' use:tooltip>settings</button>
+      {/if}
+    </div>
   </div>
-  <div class='panel row'>
+  <div class='content'>
     <div class='intro'>
       <p class='perex'>{@html concept.annotation || '<i>Žádný popis</i>'}</p>
       <details>
@@ -168,134 +170,162 @@
   }
     h1 {
       flex: 1;
-      margin: 0;
+      margin: 0px;
     }
     .headline button {
       flex-shrink: 0;
     }
-  ul {
-    list-style: none;
-    padding: 0px;
-  }
-    li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-  /* generating */
-  .row {
+  .content {
     display: flex;
-    justify-content: center;
-    gap: 60px;
+    flex-direction: row;
   }
-  .generating {
-    text-align: center;
-    align-items: center;
-    margin-top: 20px;
-  }
-    .generating video {
-      width: 320px;
-      height: 320px;
-      display: block;
-      margin: 0 auto;
-      border-radius: 20px;
+    ul {
+      list-style: none;
+      padding: 0px;
     }
-    .generating li .material {
-      display: inline-block;
-      width: 30px;
-    }
-  .info {
-    flex: 1;
-    text-align: left;
-  }
-  /* promo */
-  p {
-    line-height: 1.5;
-  }
-  aside {
-    min-width: 250px;
-  }
-    aside li {
-      height: 30px;
-      margin-bottom: 10px;
-    }
-      li .label {
-        color: var(--dim);
-        min-width: 90px;
+      li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-    .author {
+    /* generating */
+    .row {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      justify-content: center;
+      gap: 60px;
     }
-      .icon {
+    .generating {
+      text-align: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+      .generating video {
+        width: 320px;
+        height: 320px;
         display: block;
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        object-position: center 20%;
-        border-radius: 100%;
-        background-color: var(--background);
+        margin: 0 auto;
+        border-radius: 20px;
       }
-  .create {
-    margin-top: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-  details {
-    background: var(--block);
-    border-radius: 10px;
-    margin-top: 10px;
-    box-shadow: var(--shadow);
-  }
-    summary {
-      cursor: pointer;
-      font-weight: bold;
-      padding: 15px;
+      .generating li .material {
+        display: inline-block;
+        width: 30px;
+      }
+    .info {
+      flex: 1;
+      text-align: left;
     }
-    .inner {
-      padding: 15px;
-      padding-top: 0px;
+    /* promo */
+    p {
+      line-height: 1.5;
     }
-  .names {
-    padding: 20px;
-    background: var(--block);
-    border-radius: 10px;
-    margin-top: 10px;
-  }
-    .names h3 {
-      margin-top: 0px;
+    aside {
+      min-width: 250px;
     }
-    .names label {
+      aside li {
+        height: 30px;
+        margin-bottom: 10px;
+      }
+        li .label {
+          color: var(--dim);
+          min-width: 90px;
+        }
+      .author {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+        .icon {
+          display: block;
+          width: 40px;
+          height: 40px;
+          object-fit: cover;
+          object-position: center 20%;
+          border-radius: 100%;
+          background-color: var(--background);
+        }
+    .create {
+      margin-top: 40px;
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 10px;
-      cursor: pointer;
+      position: relative;
     }
-    .names input {
-      width: 20px;
-      height: 20px;
-    }
-    .names .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px;
-    }
-  .games h2 {
-    margin-bottom: 0px;
-  }
-  .games ul {
-    margin-top: 10px;
-  }
-    .games li a {
-      display: block;
-      width: 100%;
+    details {
       background: var(--block);
       border-radius: 10px;
       margin-top: 10px;
       box-shadow: var(--shadow);
+    }
+      summary {
+        cursor: pointer;
+        font-weight: bold;
+        padding: 15px;
+      }
+      .inner {
+        padding: 15px;
+        padding-top: 0px;
+      }
+    .names {
+      padding: 20px;
+      background: var(--block);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+      .names h3 {
+        margin-top: 0px;
+      }
+      .names label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+      .names input {
+        width: 20px;
+        height: 20px;
+      }
+      .names .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+      }
+    .games h2 {
+      margin-bottom: 0px;
+    }
+    .games ul {
+      margin-top: 10px;
+    }
+      .games li a {
+        display: block;
+        width: 100%;
+        background: var(--block);
+        border-radius: 10px;
+        margin-top: 10px;
+        box-shadow: var(--shadow);
+        padding: 10px;
+      }
+
+  @media (max-width: 500px) {
+    .headline {
+      margin-top: 20px;
+    }
+    .buttons {
+      display: flex;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
+    .content {
+      flex-direction: column;
+    }
+    aside {
+      margin-top: 20px;
       padding: 10px;
     }
+  }
 </style>
