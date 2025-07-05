@@ -11,12 +11,12 @@
 
   let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false } = $props()
 
-  const posts = writable([])
   const mentionList = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
+  let posts = $state([])
   let textareaRef = $state()
   let textareaValue = $state($discussionStore.unsent || '') // load unsent post
   let identitySelect = $state()
@@ -66,7 +66,7 @@
     if (error) { return handleError(error) }
     const { postdata, count } = rpcData
     if (postdata) {
-      $posts = postdata
+      posts = postdata
     }
     pages = Math.ceil(count / limit)
     loading = false

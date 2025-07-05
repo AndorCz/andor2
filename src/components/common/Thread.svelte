@@ -54,7 +54,7 @@
 
   // update listeners for replies, even for new posts
   function postsUpdate () {
-    if ($posts.length !== 0) {
+    if (posts.length !== 0) {
       removeListeners()
       setupReplyListeners()
     }
@@ -77,7 +77,7 @@
       for (const citeEl of cites) {
         const id = parseInt(citeEl.getAttribute('data-id'))
         // for each cite, load the post from supabase and save it's data
-        replies[id] = await getReply($posts, id)
+        replies[id] = await getReply(posts, id)
         citeEl.addEventListener('pointerdown', addReply)
         citeEl.addEventListener('mouseenter', showReply)
         citeEl.addEventListener('mouseleave', hideReply)
@@ -137,7 +137,7 @@
 
   function seen () {
     setRead(user.id, id)
-    if (isFilledArray($posts)) { lastPostId = $posts[0].id }
+    if (isFilledArray(posts)) { lastPostId = posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
       if (bookmark) {
@@ -176,14 +176,14 @@
   }
 
   run(() => {
-    if ($posts) {
-      if (!loading && postCount !== $posts.length) { postsUpdate() }
-      postCount = $posts.length
+    if (posts) {
+      if (!loading && postCount !== posts.length) { postsUpdate() }
+      postCount = posts.length
     }
   })
 
   run(() => {
-    if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() }
+    if (isFilledArray(posts) && posts[0].id !== lastPostId) { seen() }
   }) // set read for new posts, even for autorefresh
 
   run(() => {
@@ -194,8 +194,8 @@
 <main bind:this={threadEl}>
   {#if loading && !user.autorefresh}
     <p class='info'>Načítám příspěvky...</p>
-  {:else if isFilledArray($posts)}
-    {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
+  {:else if isFilledArray(posts)}
+    {#each posts as post, index (`${post.id}-${post.updated_at}`)}
       {#if shouldDisplayUnreadLine(index)}
         <hr class='unreadLine' />
       {/if}

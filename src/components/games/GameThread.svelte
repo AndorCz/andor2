@@ -22,6 +22,7 @@
   let saving = $state(false)
   let editing = $state(false)
   let filterActive = $state(false)
+  let posts = $state([])
   let page = $state(0)
   let pages = $state()
   let loading = $state(true)
@@ -32,7 +33,6 @@
   game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
 
   const activeAudienceIds = writable()
-  const posts = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
 
   const mentionList = writable([])
@@ -100,7 +100,7 @@
     }
     const json = await res.json()
     if (res.error || json.error) { return showError(res.error || json.error) }
-    $posts = json.posts
+    posts = json.posts
     pages = Math.ceil(json.count / limit)
     loading = false
   }
