@@ -1,6 +1,4 @@
 <script>
-  import { run } from 'svelte/legacy'
-
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
@@ -8,29 +6,7 @@
   import { onMount, onDestroy, mount } from 'svelte'
   import Post from '@components/common/Post.svelte'
 
-  let {
-    id,
-    type,
-    user,
-    posts,
-    loading,
-    contentId,
-    contentSection,
-    unread = 0,
-    canDeleteAll = false,
-    canModerate = false,
-    myIdentities = [],
-    allowReactions = false,
-    onDelete = null,
-    onEdit = null,
-    onModerate = null,
-    onReply = null,
-    onPaging = null,
-    page = $bindable(0),
-    pages = null,
-    iconSize = 70,
-    diceMode = 'none'
-  } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
   let lastPostId = $state()
   let threadEl = $state()
@@ -38,8 +14,8 @@
   let replyPostData = $state()
   let lastRefresh = Date.now()
   let autorefreshRunning = false
-  let frameId
   let postCount = $state(0)
+  let frameId
 
   const replies = {}
 
@@ -136,6 +112,7 @@
   }
 
   function seen () {
+    console.log('SEEN')
     setRead(user.id, id)
     if (isFilledArray(posts)) { lastPostId = posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
@@ -161,34 +138,19 @@
     frameId = requestAnimationFrame(refresh)
   }
 
-  let unreadFound = false
-  let firstReadFound = false
-  function shouldDisplayUnreadLine (index) {
-    if (index < unread) {
-      unreadFound = true
-      return false
-    }
-    if (unreadFound && !firstReadFound) {
-      firstReadFound = true
-      return true
-    }
-    return false
-  }
-
-  run(() => {
-    if (posts) {
-      if (!loading && postCount !== posts.length) { postsUpdate() }
+  $effect(() => {
+    if (isFilledArray(posts)) {
+      if (loading === false && postCount !== posts.length) {
+        postsUpdate()
+        if (posts[0].id !== lastPostId) {
+          seen() // set read for new posts, even for autorefresh
+        } else if (contentSection === 'boards' && contentId === 3) {
+          seen() // custom version for 'nahlášení obsahu'
+        }
+      }
       postCount = posts.length
     }
   })
-
-  run(() => {
-    if (isFilledArray(posts) && posts[0].id !== lastPostId) { seen() }
-  }) // set read for new posts, even for autorefresh
-
-  run(() => {
-    if (contentSection === 'boards' && contentId === 3) { seen() }
-  }) // custom version for 'nahlášení obsahu'
 </script>
 
 <main bind:this={threadEl}>
@@ -196,7 +158,7 @@
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray(posts)}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
-      {#if shouldDisplayUnreadLine(index)}
+      {#if index === unread && unread > 0}
         <hr class='unreadLine' />
       {/if}
       {#if post.dice}

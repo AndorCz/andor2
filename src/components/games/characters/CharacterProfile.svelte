@@ -1,6 +1,4 @@
 <script>
-  import { run } from 'svelte/legacy'
-
   import DOMPurify from 'dompurify'
   import EditableLong from '@components/common/EditableLong.svelte'
   import { getHex } from '@lib/utils'
@@ -14,8 +12,7 @@
   let originalStoryteller = $state(character.storyteller)
   let originalColor = $state(character.color)
 
-  let hexColor = $state(getHex(character.color)) // Initialize hexColor with the current color
-  run(() => { hexColor = getHex(character.color) }) // Update hexColor whenever character.color changes
+  const hexColor = $derived(getHex(character.color))
 
   async function updateStorytellerNotes (notes) {
     const { error } = await supabase.from('characters').update({ storyteller_notes: notes }).eq('id', character.id)
@@ -50,9 +47,9 @@
     <h2>Životopis</h2>
     <p class='content bio'>
       {#if isPlayer || isStoryteller || character.open}
-      {@html DOMPurify.sanitize(character.bio || '')}
+        {@html DOMPurify.sanitize(character.bio || '')}
       {:else}
-        <p>Jen vlastník postavy a vypravěč může číst životopis</p>
+        Jen vlastník postavy a vypravěč může číst životopis
       {/if}
     </p>
 
@@ -64,7 +61,7 @@
 
     {#if isPlayer || isStoryteller}
       {#if character.storyteller_notes || isStoryteller}
-        <h2>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
+        <h2>Poznámky vypravěče <span class='material' title='Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.' use:tooltip>info</span></h2>
         <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} {user} value={character.storyteller_notes} allowHtml />
       {/if}
     {/if}

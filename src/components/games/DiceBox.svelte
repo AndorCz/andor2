@@ -1,12 +1,10 @@
 <script>
-  import { run } from 'svelte/legacy'
-
   import { onMount } from 'svelte'
   import { showError, showSuccess } from '@lib/toasts'
   import DiceBox from '@3d-dice/dice-box-threejs'
   import CharacterSelect from '@components/games/characters/CharacterSelect.svelte'
 
-  const { game, threadId, gameStore, activeAudienceIds, onRoll, onAudienceSelect, myCharacters, otherCharacters } = $props()
+  let { game, threadId, gameStore, activeAudienceIds = $bindable(), onRoll, onAudienceSelect, myCharacters, otherCharacters } = $props()
 
   let diceBox
   let notation = $state('')
@@ -16,6 +14,10 @@
 
   onMount(() => {
     if (!game.archived) {
+      // sanitize dice values
+      Object.keys($gameStore.dice).forEach(type => {
+        $gameStore.dice[type] = Number($gameStore.dice[type].toString().replace(/[^0-9]/g, ''))
+      })
       diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
       diceBox.initialize()
     }
@@ -26,7 +28,7 @@
     const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
     if (diceNotation) {
       // rolls are happening on the server
-      const audience = $activeAudienceIds.includes('*') ? null : $activeAudienceIds // clean '*' from audience
+      const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
       const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
@@ -61,11 +63,12 @@
     showSuccess('Kostky byly zkopírovány do schránky')
   }
 
-  // sanitize dice values
-  run(() => { Object.keys($gameStore.dice).forEach(type => { $gameStore.dice[type] = Number($gameStore.dice[type].toString().replace(/[^0-9]/g, '')) }) })
-
-  // parse dice values into dice notation
-  run(() => { if ($gameStore) { notation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',') } })
+  $effect.pre(() => {
+    // parse values into dice notation
+    if ($gameStore) {
+      notation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
+    }
+  })
 </script>
 
 {#if game.archived}
@@ -127,7 +130,7 @@
       </div>
     </div>
 
-    <CharacterSelect as={'Hodit za'} to={'Hod se zobrazí'} {onAudienceSelect} {myCharacters} {otherCharacters} {activeAudienceIds} {gameStore} />
+    <CharacterSelect as='Hodit za' to='Hod se zobrazí' {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
 
     <div class='row'>
       <div class='notation'>

@@ -128,7 +128,7 @@
 
     <h2>Vlastní barvy</h2>
     <ul>
-      {#each user.colors as color, index}
+      {#each user.colors as color, index (index)}
         <li>
           <div class='rowInner'>
             <input type='color' id='color' name='color' value={getHex(color)} oninput={(e) => { user.colors[index] = getHex(e.target.value) }} />

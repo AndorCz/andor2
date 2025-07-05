@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
 
-  const { as = 'Jako', to = 'Komu', myCharacters, otherCharacters, activeAudienceIds, onAudienceSelect, gameStore } = $props()
+  let { as = 'Jako', to = 'Komu', myCharacters, otherCharacters, activeAudienceIds = $bindable(), onAudienceSelect, gameStore } = $props()
 
   let identitySelect = $state()
   let audienceSelect = $state()
@@ -20,12 +20,12 @@
 </div>
 <div class='selectWrapper'>
   <select size='4' bind:this={identitySelect} bind:value={$gameStore.activeCharacterId}>
-    {#each myCharacters as character}
+    {#each myCharacters as character (character.id)}
       <option value={character.id} class='character'>{character.name}</option>
     {/each}
   </select>
-  <select size='4' bind:this={audienceSelect} bind:value={$activeAudienceIds} onchange={onAudienceSelect} multiple>
-    {#each otherCharacters as character}
+  <select size='4' bind:this={audienceSelect} bind:value={activeAudienceIds} onchange={onAudienceSelect} multiple>
+    {#each otherCharacters as character (character.id)}
       <option value={character.id} class='character'>{character.name}</option>
     {/each}
   </select>

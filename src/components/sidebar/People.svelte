@@ -1,17 +1,15 @@
 <script>
-  import { run } from 'svelte/legacy'
-
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, getPortraitUrl, handleError } from '@lib/database-browser'
-  import { writable } from 'svelte/store'
 
   const { user, users = [], openConversation } = $props()
 
+  let groups = $state({ unread: [], active: [], contacts: [] })
   let showContacts = $state(false)
-  const groups = writable({ unread: [], active: [], contacts: [] })
 
-  run(() => {
+  onMount(() => {
     const next = { unread: [], active: [], contacts: [] }
     users.forEach(user => {
       if (user.unread) {
@@ -21,21 +19,21 @@
         if (user.contacted) { next.contacts.push(user) }
       }
     })
-    groups.set(next)
+    groups = next
   })
 
   async function deleteContact (userId) {
     const { error } = await supabase.from('contacts').delete().match({ owner: user.id, contact_user: userId })
     if (error) { return handleError(error) }
-    groups.update(g => ({ ...g, contacts: g.contacts.filter(contact => contact.id !== userId) }))
+    groups = { ...groups, contacts: groups.contacts.filter(contact => contact.id !== userId) }
     showSuccess('Konverzace odebrána')
   }
 </script>
 
-{#if $groups.unread.length}
+{#if groups.unread.length}
   <h4>Nepřečtené</h4>
   <ul class='unread'>
-    {#each $groups.unread as user}
+    {#each groups.unread as user (user.id)}
       <li>
         <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
@@ -58,9 +56,9 @@
 </h4>
 
 {#if !showContacts}
-  {#if $groups.active.length}
+  {#if groups.active.length}
     <ul class='active'>
-      {#each $groups.active as user}
+      {#each groups.active as user (user.id)}
         <li>
           <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
@@ -78,9 +76,9 @@
     <div class='empty'>Nikdo není online</div>
   {/if}
 {:else}
-  {#if $groups.contacts.length}
+  {#if groups.contacts.length}
     <ul class='contacts'>
-      {#each $groups.contacts as user}
+      {#each groups.contacts as user (user.id)}
         <li class:offline={!user.active} class='row'>
           <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}

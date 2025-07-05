@@ -1,6 +1,4 @@
 <script>
-  import { run } from 'svelte/legacy'
-
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
@@ -9,8 +7,8 @@
   const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
 
   let headerUrl = $state(headerStatic)
-  let errorFetchingHeader = $state(false)
   let chatPeople = $state(0)
+  let errorFetchingHeader = $state(false)
 
   async function getHeaderUrl () {
     try {
@@ -34,9 +32,8 @@
       chatPeople = Object.keys(newState).length
     })
     chatChannel.subscribe()
+    if (headerStorage) { getHeaderUrl() }
   })
-
-  run(() => { if (headerStorage) { getHeaderUrl() } })
 </script>
 
 {#if errorFetchingHeader}

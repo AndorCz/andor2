@@ -1,6 +1,5 @@
 <script>
   import Select from 'svelte-select'
-  import { run } from 'svelte/legacy'
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
@@ -14,7 +13,6 @@
 
   let checkLoop
   let tab = $state('prompts')
-  let tags = $state()
   let headlineEl = $state()
   let selectedTags = $state()
   const savingValues = $state({})
@@ -115,7 +113,7 @@
   }
 
   const maxTags = $derived(selectedTags?.length === 3)
-  run(() => { tags = selectedTags?.map(tag => tag.value) || [] })
+  const tags = $derived(selectedTags?.map(tag => tag.value) || [])
 </script>
 
 <div class='headline' bind:this={headlineEl}>

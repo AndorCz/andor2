@@ -64,11 +64,11 @@
     const { data: rpcData, error } = await query
     if (error) { return handleError(error) }
     const { postdata, count } = rpcData
+    loading = false
     if (postdata) {
       posts = postdata
     }
     pages = Math.ceil(count / limit)
-    loading = false
   }
 
   function getIdentity () {

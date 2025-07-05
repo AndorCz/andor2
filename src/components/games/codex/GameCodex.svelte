@@ -107,7 +107,7 @@
         <button class='material' onclick={handleSearch}>search</button>
       </div>
       {#if searchResults.length}
-        {#each searchResults as page (page.slug)}
+        {#each searchResults as page (page.id)}
           <div class='page'>
             <a href={`/game/${game.id}?codex_section=${page.section?.slug || ''}&codex_page=${page.slug || ''}`}>{page.name}</a>
             {@html DOMPurify.sanitize(page.content || '')}

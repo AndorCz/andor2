@@ -1,6 +1,4 @@
 <script>
-  import { run } from 'svelte/legacy'
-
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { showError } from '@lib/toasts'
@@ -11,25 +9,24 @@
 
   let { user, game, character, isStoryteller, actionsVisible = $bindable(false) } = $props()
 
-  let actionsAvailable = $state(false)
   let newOwner = $state()
   let showTransfer = $state(false)
 
   // buttons
-  let showLeaveButton = $state(false)
-  let showClaimButton = $state(false)
-  let showRejectButton = $state(false)
-  let showFreeButton = $state(false)
-  let showTakeOverButton = $state(false)
-  let showTransferButton = $state(false)
-  let showCancelTransferButton = $state(false)
-  let showKillButton = $state(false)
-  let showAcceptButton = $state(false)
-  let showRejectStorytellerButton = $state(false)
-  let showReviveButton = $state(false)
-  let showDeleteButton = $state(false)
-
   const isPlayer = character.player.id === user.id
+  const showLeaveButton = $derived(character.state === 'alive' && isPlayer && character.accepted && !isStoryteller)
+  const showClaimButton = $derived(character.state === 'alive' && user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.open && character.player.id !== user.id && !character.transfer_to)
+  const showRejectButton = $derived(character.state === 'alive' && isPlayer && !character.accepted && !isStoryteller)
+  const showFreeButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id === user.id)
+  const showTakeOverButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id !== user.id)
+  const showTransferButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && character.player.id === user.id && !character.transfer_to)
+  const showCancelTransferButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && character.transfer_to)
+  const showKillButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.transfer_to)
+  const showAcceptButton = $derived(character.state === 'alive' && isStoryteller && !character.accepted)
+  const showRejectStorytellerButton = $derived(character.state === 'alive' && isStoryteller && !character.accepted)
+  const showReviveButton = $derived(character.state === 'dead' && isStoryteller)
+  const showDeleteButton = $derived(character.state === 'dead' && isStoryteller)
+  const actionsAvailable = $derived(showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton)
 
   async function charactersChanged (event) {
     const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game.id)
@@ -219,22 +216,6 @@
     if (name.length < 3) { return [] }
     return await userAutocomplete(name)
   }
-
-  run(() => { showLeaveButton = character.state === 'alive' && isPlayer && character.accepted && !isStoryteller })
-  run(() => { showClaimButton = character.state === 'alive' && user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.open && character.player.id !== user.id && !character.transfer_to })
-  run(() => { showRejectButton = character.state === 'alive' && isPlayer && !character.accepted && !isStoryteller })
-  run(() => { showFreeButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id === user.id })
-  run(() => { showTakeOverButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id !== user.id })
-  run(() => { showTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.player.id === user.id && !character.transfer_to })
-  run(() => { showCancelTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.transfer_to })
-  run(() => { showKillButton = character.state === 'alive' && isStoryteller && character.accepted && !character.transfer_to })
-  run(() => { showAcceptButton = character.state === 'alive' && isStoryteller && !character.accepted })
-  run(() => { showRejectStorytellerButton = character.state === 'alive' && isStoryteller && !character.accepted })
-  run(() => { showReviveButton = character.state === 'dead' && isStoryteller })
-  run(() => { showDeleteButton = character.state === 'dead' && isStoryteller })
-  run(() => {
-    actionsAvailable = showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton
-  })
 </script>
 
 <tr class='char'>
