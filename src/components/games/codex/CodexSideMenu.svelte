@@ -5,12 +5,9 @@
   import { showError, showSuccess } from '@lib/toasts'
   import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
 
-  const { game, activeSection, isStoryteller } = $props()
+  let { pages, game, activeSection, isStoryteller, visiblePageCount = $bindable(), activePage = $bindable() } = $props()
 
-  let pages = $state([])
-  let activePage = $state()
-  let visiblePageCount = $state(0)
-
+  let initialized = $state(false)
   let saving = $state(false)
   let sorting = $state(false)
   let isSortable = $state(false)
@@ -22,9 +19,10 @@
   )
 
   $effect(() => {
-    if (pageListEl && sortedPages.length && !isSortable) {
+    if (!initialized && pageListEl && sortedPages.length && !isSortable) {
       new Sortable(pageListEl, { animation: 150, handle: '.handle', onStart, onEnd })
       isSortable = true
+      initialized = true
     }
   })
 
@@ -80,7 +78,7 @@
       </li>
     </ul>
     <ul id='pageList' bind:this={pageListEl} class:showHandles class:saving>
-      {#each sortedPages as item}
+      {#each sortedPages as item (item.id)}
         {#if !item.hidden || isStoryteller}
           <li class:active={item.id === activePage?.id} data-id={item.id}>
             <button onclick={() => { activatePage(item) }} class='name plain' class:hidden={item.hidden}>

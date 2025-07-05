@@ -7,7 +7,6 @@
   import { showError } from '@lib/toasts'
 
   let { isStoryteller, isGameOwner, user, character = $bindable() } = $props()
-  console.log('character', character)
 
   let formEl = $state()
   let bioInputEl = $state()

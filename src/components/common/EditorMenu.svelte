@@ -18,10 +18,8 @@
         const headingLevel = editor.getAttributes('heading').level
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
         currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
-        console.log('alignment', currentAlign)
         // check for current color
         currentColor = editor.getAttributes('textStyle').color || '#c4b6ab'
-        console.log('currentColor', currentColor)
       })
       isInitialized = true
     }
