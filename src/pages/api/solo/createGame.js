@@ -53,7 +53,6 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate illustration for the first post
     const firstImagePrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost}` }
-    console.log('\n\nFirst image prompt:', firstImagePrompt.text)
     const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, firstImagePrompt] })
     const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, 1408, 768)
     if (sceneImageError) { throw new Error(sceneImageError.message) }

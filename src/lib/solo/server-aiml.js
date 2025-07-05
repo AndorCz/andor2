@@ -2,7 +2,6 @@
 import { cropImageBackEnd } from '@lib/solo/server-utils.js'
 
 export async function generateImage (prompt, cropWidth, cropHeight) {
-  console.log('\n\nGenerating image with prompt:', prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   const width = Math.ceil(cropWidth / 32) * 32
   const height = Math.ceil(cropHeight / 32) * 32

@@ -178,6 +178,7 @@
   .content {
     display: flex;
     flex-direction: row;
+    gap: 40px;
   }
     ul {
       list-style: none;

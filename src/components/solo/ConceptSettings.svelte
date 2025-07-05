@@ -38,12 +38,10 @@
         const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, field, value }), headers: { 'Content-Type': 'application/json' } })
         if (!response.ok) { throw new Error(`API error: ${(await response.json()).error.message || 'Chyba generování pole'}`) }
         checkLoop = setInterval(async () => {
-          console.log(`Kontrola generování pole: ${field}`)
           const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
           if (error) { throw error }
           if (data && !data.generating.includes(field)) {
             concept = data // Update the full concept with server data
-            console.log('concept', concept)
             if (field === 'prompt_header_image' || field === 'prompt_storyteller_image') { window.location.reload() } // Reload to show new image
             showSuccess('Pole bylo úspěšně aktualizováno a podklady přegenerovány')
             clearInterval(checkLoop)
