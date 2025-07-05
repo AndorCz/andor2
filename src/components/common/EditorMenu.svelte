@@ -3,19 +3,21 @@
   import Dropdown from '@components/common/Dropdown.svelte'
 
   const { editor, fonts, isBubble = false, isBottom = false } = $props()
+  const alignments = ['left', 'center', 'right', 'justify']
+  const defaultColor = '#c4b6ab'
 
   let menuEl = $state()
   let isInitialized = $state(false)
   let currentStyle = $state()
-  let currentAlign = $state('left')
-  let currentColor = $state('#c4b6ab')
+  let currentAlign = $state(alignments[0])
+  let currentColor = $state(defaultColor)
   let currentFont = $state()
   let isUnderline = $state(false)
   let isItalic = $state(false)
   let isStrike = $state(false)
   let isBold = $state(false)
   let isLink = $state(false)
-  const alignments = ['left', 'center', 'right', 'justify']
+  let selectionEmpty = $state(0)
 
   $effect(() => {
     if (editor && !isInitialized) {
@@ -23,14 +25,15 @@
         // update current styles
         const headingLevel = editor.getAttributes('heading').level
         currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
-        currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || 'left'
-        currentColor = editor.getAttributes('textStyle').color || '#c4b6ab'
+        currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || alignments[0]
+        currentColor = editor.getAttributes('textStyle').color || defaultColor
         currentFont = editor.getAttributes('textStyle').fontFamily
         isBold = editor.isActive('bold')
         isItalic = editor.isActive('italic')
         isUnderline = editor.isActive('underline')
         isStrike = editor.isActive('strike')
         isLink = editor.isActive('link')
+        selectionEmpty = editor.state.selection.empty
       })
       isInitialized = true
     }
@@ -114,7 +117,7 @@
     isItalic = false
     isUnderline = false
     isStrike = false
-    currentColor = '#c4b6ab'
+    currentColor = defaultColor
   }
 </script>
 
@@ -132,12 +135,12 @@
     <button type='button' onclick={() => { editor.chain().focus().toggleItalic().run(); isItalic = !isItalic }} disabled={!editor.can().chain().focus().toggleItalic().run()} class={isItalic ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
     <button type='button' onclick={() => { editor.chain().focus().toggleUnderline().run(); isUnderline = !isUnderline }} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={isUnderline ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
     <button type='button' onclick={() => { editor.chain().focus().toggleStrike().run(); isStrike = !isStrike }} disabled={!editor.can().chain().focus().toggleStrike().run()} class={isStrike ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
-    <button type='button' onclick={resetTextStyle} title='Reset stylů textu' class='material' disabled={editor.state.selection.empty}>format_clear</button>
+    <button type='button' onclick={resetTextStyle} title='Reset stylů textu' class='material' disabled={selectionEmpty}>format_clear</button>
     <span class='sep'></span>
     <button type='button' onclick={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>
     <span class='sep'></span>
     <input type='color' class='button' list='presetColors' oninput={event => { editor.chain().focus().setColor(event.target.value).run(); currentColor = event.target.value }} value={currentColor} title='Barva' />
-    <button type='button' onclick={() => { editor.chain().focus().unsetColor().run(); currentColor = '#c4b6ab' }} class='material' disabled={!editor.getAttributes('textStyle').color} title='Reset barvy'>format_color_reset</button>
+    <button type='button' onclick={() => { editor.chain().focus().unsetColor().run(); currentColor = defaultColor }} class='material' disabled={currentColor === defaultColor} title='Reset barvy'>format_color_reset</button>
     <span class='sep'></span>
     <button type='button' onclick={setLink} class='material' title='Odkaz'>link</button>
     <button type='button' onclick={() => { editor.chain().focus().unsetLink().run(); isLink = false }} class='material' disabled={!isLink} title='Zrušit odkaz'>link_off</button>

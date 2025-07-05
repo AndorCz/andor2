@@ -8,13 +8,13 @@
 
   let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
+  let postCount = $state(0)
   let lastPostId = $state()
   let threadEl = $state()
   let replyPostEl = $state()
   let replyPostData = $state()
   let lastRefresh = Date.now()
   let autorefreshRunning = false
-  let postCount = $state(0)
   let frameId
 
   const replies = {}
@@ -22,6 +22,7 @@
   onMount(async () => {
     if (user.autorefresh) { refresh() }
     setRead(user.id, id)
+    if (isFilledArray(posts)) { postCount = posts.length }
   })
 
   onDestroy(() => {
@@ -112,7 +113,6 @@
   }
 
   function seen () {
-    console.log('SEEN')
     setRead(user.id, id)
     if (isFilledArray(posts)) { lastPostId = posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
@@ -143,6 +143,11 @@
       if (loading === false && postCount !== posts.length) {
         postsUpdate()
         if (posts[0].id !== lastPostId) {
+          // If this is autorefresh and we have new posts, increment unread
+          if (user.autorefresh && postCount > 0 && posts.length > postCount) {
+            const newPostsCount = posts.length - postCount
+            unread += newPostsCount
+          }
           seen() // set read for new posts, even for autorefresh
         } else if (contentSection === 'boards' && contentId === 3) {
           seen() // custom version for 'nahlášení obsahu'
