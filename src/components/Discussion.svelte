@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
@@ -11,11 +10,11 @@
 
   let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false } = $props()
 
-  const mentionList = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
+  let mentionList = $state([])
   let posts = $state([])
   let textareaRef = $state()
   let textareaValue = $state($discussionStore.unsent || '') // load unsent post
@@ -47,8 +46,8 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    $mentionList = await loadAllPosters()
-    if (isFilledArray($mentionList) && isFilledArray(data.characters)) {
+    mentionList = await loadAllPosters()
+    if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
       addCharacterNameStyles(data.characters)
     }
   })

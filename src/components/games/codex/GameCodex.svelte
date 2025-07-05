@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
   import { showSuccess } from '@lib/toasts'
   import { updateURLParam } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
@@ -18,8 +17,8 @@
   let activeSection = $derived(sections[0])
   let indexPageContent = $state()
 
-  const mentionList = writable([])
-  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
+  let mentionList = $state([])
+  mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
 
   onMount(() => {
     if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
@@ -78,7 +77,7 @@
     {#if sections.length > 1}
       <div class='row'>
         <div class='tabs tertiary codex'>
-          {#each sections as section}
+          {#each sections as section (section.id)}
             <button class='section' onclick={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
               {section.name}
             </button>
@@ -108,7 +107,7 @@
         <button class='material' onclick={handleSearch}>search</button>
       </div>
       {#if searchResults.length}
-        {#each searchResults as page}
+        {#each searchResults as page (page.slug)}
           <div class='page'>
             <a href={`/game/${game.id}?codex_section=${page.section?.slug || ''}&codex_page=${page.slug || ''}`}>{page.name}</a>
             {@html DOMPurify.sanitize(page.content || '')}

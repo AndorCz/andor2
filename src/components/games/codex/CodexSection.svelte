@@ -1,7 +1,5 @@
 <script>
   import { run } from 'svelte/legacy'
-
-  import { writable } from 'svelte/store'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -14,8 +12,8 @@
   let activePage = $state()
   let visiblePageCount = $state(0)
 
-  const mentionList = writable([])
-  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
+  let mentionList = $state([])
+  mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
 
   async function loadData () {
     const { data: pagesData, error } = await supabase.from('codex_pages').select('*').match({ game: game.id, section: activeSection.id })

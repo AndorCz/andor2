@@ -1,6 +1,5 @@
 <script>
   import { run } from 'svelte/legacy'
-
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import { sendPost } from '@lib/database-browser'
@@ -35,8 +34,8 @@
   const activeAudienceIds = writable()
   const limit = unread > 50 ? Math.min(unread, 500) : 50
 
-  const mentionList = writable([])
-  $mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
+  let mentionList = $state([])
+  mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
 
   const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
   let otherCharacters = $state([])
