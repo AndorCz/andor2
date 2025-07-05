@@ -154,10 +154,12 @@
 <main>
   <div class='headline'>
     <h1>{game.name}</h1>
-    <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>info</button>
-    {#if user.id}
-      <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
-    {/if}
+    <div class='buttons'>
+      <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>info</button>
+      {#if user.id}
+        <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
+      {/if}
+    </div>
   </div>
   <div class='content'>
     <div class='posts' bind:this={postsEl}>
@@ -244,5 +246,21 @@
     .content {
       padding: 10px 0px;
     }
+    .headline {
+      margin-top: 0px;
+      padding-bottom: 0px;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
   }
 </style>

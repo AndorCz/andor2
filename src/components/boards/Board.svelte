@@ -49,17 +49,19 @@
 
 <div class='headline'>
   <h1>{data.name}</h1>
-  {#key $boardStore.hideHeader}
-    <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
-  {/key}
-  {#if user.id}
-    {#key bookmarkId}
-      <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+  <div class='buttons'>
+    {#key $boardStore.hideHeader}
+      <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
     {/key}
-    {#if isMod}
-      <button onclick={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
+    {#if user.id}
+      {#key bookmarkId}
+        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+      {/key}
+      {#if isMod}
+        <button onclick={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
+      {/if}
     {/if}
-  {/if}
+  </div>
 </div>
 
 {#if !$boardStore.hideHeader}
@@ -102,5 +104,21 @@
     .headline {
       margin-top: 20px;
     }
+  }
+  @media (max-width: 500px) {
+    .headline {
+      padding-bottom: 0px;
+    }
+    .buttons {
+      display: flex;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
   }
 </style>

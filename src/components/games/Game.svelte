@@ -82,22 +82,24 @@
   <div class='headline'>
     <h1>{game.name}{#if game.archived}&nbsp;(archiv){/if}</h1>
     {#if user.id}
-      {#key bookmarkId}
-        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
-      {/key}
-      <!--
-      {#key notificationEnabled}
-        <button on:click={toggleNotification} class='material square' class:active={notificationEnabled} title={notificationEnabled ? 'Zrušit notifikace' : 'Dostávat notifikace'} use:tooltip>{notificationEnabled ? 'notifications_off' : 'notifications'}</button>
-      {/key}
-      -->
-      {#if isPlayer}
-        {#key emailEnabled}
-          <button onclick={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'mail_off' : 'email'}</button>
+      <div class='buttons'>
+        {#key bookmarkId}
+          <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
         {/key}
-      {/if}
-      {#if isGameOwner}
-        <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
-      {/if}
+        <!--
+        {#key notificationEnabled}
+          <button on:click={toggleNotification} class='material square' class:active={notificationEnabled} title={notificationEnabled ? 'Zrušit notifikace' : 'Dostávat notifikace'} use:tooltip>{notificationEnabled ? 'notifications_off' : 'notifications'}</button>
+        {/key}
+        -->
+        {#if isPlayer}
+          {#key emailEnabled}
+            <button onclick={toggleEmail} class='material square' class:active={emailEnabled} title={emailEnabled ? 'Zrušit e-maily' : 'Dostávat e-mailem nové příspěvky'} use:tooltip>{emailEnabled ? 'mail_off' : 'email'}</button>
+          {/key}
+        {/if}
+        {#if isGameOwner}
+          <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
+        {/if}
+      </div>
     {/if}
   </div>
 
@@ -194,5 +196,16 @@
     .content {
       padding: 10px 0px;
     }
+    .buttons {
+      display: flex;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
   }
 </style>

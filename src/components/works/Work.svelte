@@ -50,10 +50,6 @@
     if (error) { return handleError(error) }
     showSuccess('Uloženo')
   }
-
-  // function getTags (value) {
-  //   return value.map(tag => workTags.find(t => t.value === tag).label).join(', ')
-  // }
 </script>
 
 <main>
@@ -64,12 +60,14 @@
   <div class='headline'>
     <h1>{data.name}</h1>
     {#if user.id}
-      {#key bookmarkId}
-        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
-      {/key}
-      {#if isOwner}
-        <button onclick={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
-      {/if}
+      <div class='buttons'>
+        {#key bookmarkId}
+          <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+        {/key}
+        {#if isOwner}
+          <button onclick={showSettings} class='material settings square' title='Nastavení díla' use:tooltip>settings</button>
+        {/if}
+      </div>
     {/if}
   </div>
 
@@ -149,4 +147,17 @@
     }
   }
 
+  @media (max-width: 500px) {
+    .buttons {
+      display: flex;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
+  }
 </style>

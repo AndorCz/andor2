@@ -463,7 +463,7 @@
     height: 100%;
     opacity: 0;
     visibility: hidden;
-    background-color: #0005;
+    background-color: #000B;
     transition: opacity 0.4s ease-in-out;
   }
 
@@ -471,22 +471,22 @@
   #toggleWrapper {
     display: block;
     position: sticky;
-    top: calc(100svh - 10px);
-    right: 20px;
+    top: calc(100svh - 90px);
+    right: 10px;
     width: 0px;
     height: 0px;
     z-index: 9999;
   }
     #sidebarToggle {
       position: absolute;
-      right: 0px;
+      right: -20px;
       bottom: 0px;
       display: block;
       padding: 20px;
       width: 66px;
       height: 66px;
       border-radius: 100%;
-      box-shadow: 2px 2px 5px #0005;
+      box-shadow: 4px 4px 5px #0006;
     }
       #sidebarToggle:hover {
         background-color: var(--buttonBgHover);
@@ -498,6 +498,7 @@
     right: 0px;
     width: 0px;
     height: 0px;
+    z-index: 99999;
   }
     aside.conversation {
       width: 0px;

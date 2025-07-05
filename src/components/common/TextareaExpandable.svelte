@@ -235,6 +235,9 @@
       padding-top: 0px;
       padding-bottom: 50px;
     }
+    .singleLine .buttons {
+      padding-bottom: 0px;
+    }
   }
   @media (max-width: 500px) {
     button {

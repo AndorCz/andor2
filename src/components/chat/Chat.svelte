@@ -256,6 +256,15 @@
           <center>Žádné příspěvky</center>
         {/if}
       </div>
+        <!-- names of present people -->
+        <div class='people'>
+          {#if Object.keys(people).length > 0}
+            Právě přítomní:
+            {#each Object.values(people) as person (person[0].user)}
+              <span class='person user'>{person[0].user}</span>
+            {/each}
+          {/if}
+        </div>
       <div id='textareaWrapper'>
         <!-- names of present people -->
         {#if Object.keys(typing).length > 0}
@@ -269,15 +278,7 @@
       {console.error(error)}
       <span class='error'>Konverzaci se nepodařilo načíst</span>
     {/await}
-    <!-- names of present people -->
-    <div class='people'>
-      {#if Object.keys(people).length > 0}
-        Právě přítomní:
-        {#each Object.values(people) as person (person[0].user)}
-          <span class='person user'>{person[0].user}</span>
-        {/each}
-      {/if}
-    </div>
+
   </div>
   <div id='replyPreview' bind:this={replyPostEl}>
     {#if replyPostData}
@@ -308,11 +309,11 @@
       flex: 1;
       overflow-y: scroll;
       padding: 5px;
-      margin-bottom: 20px;
     }
 
     #textareaWrapper {
       position: relative;
+      margin-bottom: 20px;
     }
       .typing {
         position: absolute;
@@ -324,8 +325,8 @@
       }
     .people {
       overflow: auto;
-      padding-top: 20px;
-      min-height: 80px;
+      padding-top: 10px;
+      padding-bottom: 10px;
     }
       .person {
         display: inline-block;
