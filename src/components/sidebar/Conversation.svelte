@@ -1,32 +1,36 @@
 <script>
+  import { writable } from 'svelte/store'
   import { waitForMediaLoad } from '@lib/utils'
-  import { onMount, onDestroy } from 'svelte'
   import { activeConversation, lightboxImage } from '@lib/stores'
+  import { onMount, tick, onDestroy, afterUpdate } from 'svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import ConversationPost from '@components/sidebar/ConversationPost.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  const { user, clearUnread } = $props()
+  export let user
+  export let clearUnread
 
   let channel
-  let inputEl = $state(null)
-  let messagesEl = $state(null)
-  let textareaValue = $state('')
+  let inputEl
+  let messagesEl
+  let textareaValue = ''
   let previousMessagesLength = 0
+  let scrollHandlerAttached = false
 
   // Pagination variables
-  const pageSize = 20
-  let isLoading = $state(false)
-  let hasMoreMessages = $state(true)
+  const PAGE_SIZE = 20
+  let isLoading = false
+  let messageOffset = 0
+  let hasMoreMessages = true
   let userHasScrolledUp = false
   let distanceFromBottom = 0
-  let messageOffset = 0
 
-  let messages = $state([])
+  const messages = writable([])
   const them = $activeConversation.them
   const us = $activeConversation.type === 'character' ? $activeConversation.us : user
   const senderColumn = $activeConversation.type === 'character' ? 'sender_character' : 'sender_user'
   const recipientColumn = $activeConversation.type === 'character' ? 'recipient_character' : 'recipient_user'
+
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
   function handleScroll () {
@@ -39,15 +43,23 @@
     }
   }
 
-  onMount(async () => {
-    await loadMessages() // Initial load of messages
+  // Ensure the scroll handler is attached after the component is mounted and updated
+  afterUpdate(() => {
+    if (messagesEl && !scrollHandlerAttached) {
+      messagesEl.addEventListener('scroll', handleScroll)
+      scrollHandlerAttached = true
+    }
+  })
+
+  onMount(() => {
     // init conversation, listen for new messages in the conversation. we can listen to only 'us' in the recipient column
     const filter = `${recipientColumn}=eq.${us.id}` // not possible to filter for two columns at the moment, so we have to filter the sender on the client-side
     channel = supabase
       .channel(`private-chat-${sortedIds[0]}-${sortedIds[1]}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter }, (payload) => {
         if (payload.new[senderColumn] === them.id) { // only if the message is from the other participant
-          messages.push(payload.new)
+          $messages.push(payload.new)
+          $messages = $messages // update store
           handleClearUnread() // Mark conversation as read when a new message arrives
         }
       })
@@ -56,14 +68,18 @@
 
   onDestroy(() => {
     if (channel) { supabase.removeChannel(channel) }
+    if (messagesEl && scrollHandlerAttached) {
+      messagesEl.removeEventListener('scroll', handleScroll)
+      scrollHandlerAttached = false
+    }
   })
 
   async function waitForAnimation () {
     return new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  let conversationReadAt = $state(null) // Stores the ISO string timestamp of when 'us' last read this conversation
-  let initialReadAtFetched = $state(false) // Flag to ensure fetchInitialReadAt runs only once per component lifecycle initially
+  let conversationReadAt = null // Stores the ISO string timestamp of when 'us' last read this conversation
+  let initialReadAtFetched = false // Flag to ensure fetchInitialReadAt runs only once per component lifecycle initially
 
   async function fetchInitialReadAt () {
     if (!us || !us.id || !them || !them.id) return
@@ -92,7 +108,7 @@
       if (initialLoad) {
         messageOffset = 0
         hasMoreMessages = true
-        messages = []
+        $messages = []
         editingMessage = null // Reset editing state on full reload
       }
 
@@ -103,33 +119,34 @@
           .is('sender_character', null)
           .or(`and(${recipientColumn}.eq.${them.id},${senderColumn}.eq.${us.id}),and(${recipientColumn}.eq.${us.id},${senderColumn}.eq.${them.id})`)
           .order('created_at', { ascending: false }) // Descending to get most recent first
-          .range(messageOffset, messageOffset + pageSize - 1) // Get specific range
+          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
       } else { // game messages - filter out those sent by different user
         query = supabase.from('messages').select('*')
           .or(`and(recipient_character.eq.${us.id},recipient_user.eq.${user.id},sender_character.eq.${them.id}),and(sender_character.eq.${us.id},sender_user.eq.${user.id},recipient_character.eq.${them.id})`)
           .order('created_at', { ascending: false }) // Descending to get most recent first
-          .range(messageOffset, messageOffset + pageSize - 1) // Get specific range
+          .range(messageOffset, messageOffset + PAGE_SIZE - 1) // Get specific range
       }
 
       const { data, error } = await query
       if (error) { return handleError(error) }
 
-      hasMoreMessages = data && data.length >= pageSize // Check if we have more messages to load
+      hasMoreMessages = data && data.length >= PAGE_SIZE // Check if we have more messages to load
       messageOffset += data?.length || 0 // Update offset for next page load
 
       // Add messages to the store (newest messages are loaded first, so we need to prepend them)
       if (initialLoad) {
         // Reverse to get chronological order (oldest first)
-        messages = data ? data.reverse() : []
+        $messages = data ? data.reverse() : []
       } else if (data && data.length > 0) {
         // When loading more (older) messages, add them to the beginning
         const scrollHeight = messagesEl.scrollHeight
         const scrollPosition = messagesEl.scrollTop
 
         // Prepend older messages to the beginning
-        messages = [...data.reverse(), ...messages]
+        $messages = [...data.reverse(), ...$messages]
 
         // After the DOM updates, restore the scroll position
+        await tick() // ensure DOM is updated
         const newScrollHeight = messagesEl.scrollHeight
         messagesEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
       }
@@ -160,7 +177,7 @@
     if (success) { conversationReadAt = now }
   }
 
-  let editingMessage = $state(null)
+  let editingMessage = null
 
   async function sendMessage () {
     if (textareaValue.trim() === '') return
@@ -169,9 +186,10 @@
       const { error } = await supabase.from('messages').update({ content: textareaValue }).eq('id', editingMessage.id)
       if (error) { return handleError(error) }
       // Update message in local store
-      const index = messages.findIndex(m => m.id === editingMessage.id)
+      const index = $messages.findIndex(m => m.id === editingMessage.id)
       if (index !== -1) {
-        messages[index].content = textareaValue
+        $messages[index].content = textareaValue
+        $messages = $messages
       }
       textareaValue = ''
       editingMessage = null
@@ -186,7 +204,7 @@
       const { data: newMessagesData, error } = await supabase.from('messages').insert(messageData).select()
       if (error) { return handleError(error) }
       textareaValue = ''
-      messages = [...messages, ...newMessagesData]
+      $messages = [...$messages, ...newMessagesData]
     }
   }
 
@@ -198,11 +216,11 @@
   async function onDelete (messageId) {
     const { error } = await supabase.from('messages').delete().eq('id', messageId)
     if (error) { return handleError(error) }
-    messages = messages.filter(m => m.id !== messageId)
-    await waitForMediaLoad(messagesEl) // Wait for all images and videos to load
-    if (messagesEl) {
+    $messages = $messages.filter(m => m.id !== messageId)
+    tick().then(async () => { // Ensure DOM is updated
+      await waitForMediaLoad(messagesEl) // Wait for all images and videos to load
       messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' })
-    }
+    })
   }
 
   function onImageClickInPost (event) {
@@ -214,10 +232,10 @@
   }
 
   // Reactive statement for scrolling
-  $effect(() => {
-    if (messagesEl && messages.length) {
+  $: {
+    if (messagesEl && $messages.length) {
       if (!userHasScrolledUp) { // Scroll to bottom for new messages from the other user, or on initial load if not scrolled up
-        if (previousMessagesLength === 0 && messages.length > 0) { // Initial load
+        if (previousMessagesLength === 0 && $messages.length > 0) { // Initial load
           messagesEl.scrollTop = messagesEl.scrollHeight
         } else { // New message
           waitForMediaLoad(messagesEl).then(() => {
@@ -227,20 +245,20 @@
           })
         }
       }
-      previousMessagesLength = messages.length
+      previousMessagesLength = $messages.length
     } else {
       previousMessagesLength = 0
     }
-  })
+  }
 </script>
 
 {#await waitForAnimation() then}
   <div id='conversation'>
-    <button onclick={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
+    <button on:click={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
     {#if us.id && them.id}
-      {#if isLoading}
+      {#await loadMessages()}
         <span class='loading'>Načítám konverzaci...</span>
-      {:else}
+      {:then}
         <h2>
           {#if them.portrait}
             <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
@@ -255,20 +273,20 @@
           </div>
         </h2>
 
-        <div class='messages' bind:this={messagesEl} onscroll={handleScroll}>
-          {#if isLoading && !messages.length}
-            <div class='loadingIndicator'>Načítám zprávy...</div>
+        <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
+          {#if isLoading && !$messages.length}
+            <div class="loading-indicator">Načítám zprávy...</div>
           {:else if hasMoreMessages}
-            <div class='loadingMore'>
+            <div class="loading-more">
               {#if isLoading}
-                <div class='loadingIndicator'>Načítám starší zprávy...</div>
+                <div class="loading-indicator">Načítám starší zprávy...</div>
               {:else}
-                <div class='loadHint'>Scrollujte nahoru pro načtení starších zpráv</div>
+                <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
               {/if}
             </div>
           {/if}
-          {#if messages.length > 0}
-            {#each messages as message (message.id)}
+          {#if $messages.length > 0}
+            {#each $messages as message (message.id)}
               <ConversationPost {message} {us} {senderColumn} {onEdit} {onDelete} {isMessageUnread} onImageClickInPost={onImageClickInPost} />
             {/each}
           {:else}
@@ -276,7 +294,9 @@
           {/if}
         </div>
         <TextareaExpandable forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editingMessage ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
-      {/if}
+      {:catch error}
+        <span class='error'>Konverzaci se nepodařilo načíst</span>
+      {/await}
     {:else}
       <span class='error'>Konverzace nenalezena</span>
     {/if}
@@ -341,12 +361,12 @@
     flex-direction: column;
     border-top: 1px var(--block) solid;
   }
-  .loadingIndicator, .loadHint {
+  .loading-indicator, .load-more-hint {
     text-align: center;
     padding: 10px;
     color: var(--text-muted);
   }
-  .loadingMore {
+  .loading-more {
     min-height: 40px;
   }
   .error {
