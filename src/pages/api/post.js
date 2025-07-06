@@ -75,13 +75,8 @@ export const PATCH = async ({ url, request, locals }) => {
 // delete post
 export const DELETE = async ({ url, request, locals }) => {
   const id = url.searchParams.get('id')
-  const thread = url.searchParams.get('thread') // open ai thread
   if (!id) { return new Response(JSON.stringify({ error: 'Chybí id příspěvku' }), { status: 500 }) }
   const { data, error } = await locals.supabase.from('posts').delete().eq('id', id).select().single()
-  if (data.openai_post && thread) { // delete from open ai thread as well
-    // 2DO: STUCK - API doesn't allow to edit content of posts
-    // editPost(openai, thread, data.openai_post, 'deleted')
-  }
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
   return new Response('{}')
 }

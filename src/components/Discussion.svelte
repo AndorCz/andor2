@@ -114,7 +114,7 @@
 
   async function deletePost (post) {
     if (window.confirm('Opravdu smazat příspěvek?')) {
-      const res = await fetch(`/api/post?id=${post.id}&thread=${data.openai_thread}`, { method: 'DELETE' })
+      const res = await fetch(`/api/post?id=${post.id}`, { method: 'DELETE' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
       showSuccess('Příspěvek smazán')

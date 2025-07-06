@@ -7,6 +7,7 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { waitForMediaLoad } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
+  import { showSuccess, showError } from '@lib/toasts'
 
   const { user = {}, game = {}, character = {}, storyteller = {}, concept = {}, readonly } = $props()
 
@@ -54,9 +55,14 @@
     allPosts.push(newPostData)
     displayedPosts.push(newPostData)
 
-    // Generate AI response via backend
+    await generateResponse()
+  }
+
+  // Generate AI response via backend
+  async function generateResponse () {
+    if (isGenerating) return // Prevent multiple generations
     isGenerating = true
-    const tempAiPost = { id: `ai-${Date.now()}`, owner: storyteller.id, owner_type: 'npc', owner_name: storyteller.name, owner_portrait: storyteller.portrait, content: '', created_at: new Date().toISOString() }
+    const tempAiPost = { id: `temp-${Date.now()}`, owner: storyteller.id, owner_type: 'npc', owner_name: storyteller.name, owner_portrait: storyteller.portrait, content: '', created_at: new Date().toISOString() }
     allPosts.push(tempAiPost)
     displayedPosts.push(tempAiPost)
     const reactiveAiPost = displayedPosts.at(-1)
@@ -65,7 +71,7 @@
       const res = await fetch('/api/solo/generatePost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soloId: game.id, message: newPostData.content })
+        body: JSON.stringify({ soloId: game.id })
       })
       if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
       const reader = res.body.getReader()
@@ -82,6 +88,13 @@
           }
         })
       }
+      // Post complete, look up it's ID and update the post
+      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, owner: storyteller.id, owner_type: 'npc', content: reactiveAiPost.content }).single()
+      if (error) { return handleError(error) }
+      console.log('real post', realPost)
+      reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+      // const index = allPosts.findIndex(post => post.id === tempAiPost.id)
+      // if (index !== -1) { allPosts[index].id = realPost.id }
     } catch (err) {
       handleError(err)
     } finally {
@@ -133,15 +146,14 @@
   }
 
   // Reactive statement for scrolling
-  $effect(() => {
+  $effect(async () => {
     if (postsEl && displayedPosts.length > 1) { // Skip for first post
       if (!userHasScrolledUp) { // Scroll to bottom for new posts from the other user, or on initial load if not scrolled up
+        await waitForMediaLoad(postsEl)
         if (previousPostsLength === 0 && displayedPosts.length > 1) { // Initial load
           postsEl.scrollTop = postsEl.scrollHeight
         } else { // New message
-          waitForMediaLoad(postsEl).then(() => {
-            if (postsEl) { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }
-          })
+          if (postsEl) { postsEl.scrollTo({ top: postsEl.scrollHeight, behavior: 'smooth' }) }
         }
       }
       previousPostsLength = displayedPosts.length
@@ -149,12 +161,23 @@
       previousPostsLength = 0
     }
   })
+
+  async function onDelete (post) {
+    if (window.confirm('Opravdu smazat příspěvek?')) {
+      const res = await fetch(`/api/post?id=${post.id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (res.error || json.error) { return showError(res.error || json.error) }
+      showSuccess('Příspěvek smazán')
+      await loadPosts()
+    }
+  }
 </script>
 
 <main>
   <div class='headline'>
     <h1>{game.name}</h1>
     <div class='buttons'>
+      <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>5</div>
       <button onclick={showConcept} class='material square back' title='Koncept hry' use:tooltip>info</button>
       {#if user.id}
         <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
@@ -168,8 +191,12 @@
       {:else}
         {#if displayedPosts.length > 0}
           {#each displayedPosts as post, index (post.id)}
-            <Post {post} {user} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} />
+            <Post {post} {user} canDeleteAll={typeof post.id !== 'string' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
           {/each}
+          <!-- last post is by the user -->
+          {#if displayedPosts[displayedPosts.length - 1].owner_type === 'character' && !isGenerating}
+            <center><button onclick={generateResponse}>Pokračovat</button></center>
+          {/if}
         {:else}
           <center class='info empty'>Žádné příspěvky</center>
         {/if}
@@ -206,6 +233,11 @@
           margin: 0px;
           flex: 1;
         }
+        .buttons {
+          display: flex;
+          flex: 0.1;
+          gap: 10px;
+        }
       .posts {
         flex: 1;
         overflow-y: auto;
@@ -228,6 +260,21 @@
         }
   .input {
     padding: 0px 5px;
+  }
+  .limit {
+    display: inline-block;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+    background-color: var(--background);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px;
+    font-weight: bold;
+    font-size: 25px;
   }
 
   @media (max-width: 1200px) {
@@ -256,7 +303,7 @@
       flex: 0.1;
       gap: 5px;
     }
-      .buttons button {
+      .buttons button, .buttons .limit {
         width: 35px;
         height: 35px;
         font-size: 20px;

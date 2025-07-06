@@ -4,7 +4,7 @@ import { ai, storytellerInstructions, storytellerParams, getContext } from '@lib
 
 export const POST = async ({ request, locals }) => {
   try {
-    const { soloId, message } = await request.json()
+    const { soloId } = await request.json()
     if (!locals.user?.id) { return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) }
 
     const { data: soloGame, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
@@ -19,15 +19,15 @@ export const POST = async ({ request, locals }) => {
 
     const { data: posts, error: postsError } = await locals.supabase.from('posts').select('*').match({ thread: soloGame.thread }).order('created_at', { ascending: true })
     if (postsError) { return new Response(JSON.stringify({ error: postsError.message }), { status: 500 }) }
+    const lastPost = posts[posts.length - 1]
+    posts.pop()
 
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-    history.push({ role: 'user', parts: [{ text: message }] })
-
     const context = getContext(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
     const config = { ...storytellerParams.config, systemInstruction: storytellerInstructions + '\n\n' + context }
 
     const chat = ai.chats.create({ model: 'gemini-2.5-pro', history, config })
-    const response = await chat.sendMessageStream({ message, config })
+    const response = await chat.sendMessageStream({ message: lastPost.content, config })
 
     let finalText = ''
     let streamController
@@ -50,16 +50,17 @@ export const POST = async ({ request, locals }) => {
 
           // Check for function calls in the response
           if (response.functionCalls && response.functionCalls.length > 0) {
+            console.log('MODEL CALLED FUNCTIONS', response.functionCalls)
             const functionCall = response.functionCalls[0]
             const { type, prompt } = functionCall.args
-
+            
             // Add image
             if (functionCall.name === 'AddImage' && type && prompt) {
               const getImageParams = (type) => {
                 switch (type) {
                   case 'scene': return { width: 1408, height: 768, bucket: 'scenes' }
-                  case 'npc': return { width: 140, height: 352, bucket: 'npcs' }
                   case 'item': return { width: 140, height: 352, bucket: 'items' }
+                  case 'npc': return { width: 140, height: 352, bucket: 'npcs' }
                   default: throw new Error('Neznámý typ obrázku')
                 }
               }
@@ -72,6 +73,8 @@ export const POST = async ({ request, locals }) => {
 
               finalText += `<p><img src='${getImageUrl(uploadData.path)}' alt='${type} illustration' /></p>`
             }
+
+            // TODO: "Add NPC" function
           }
 
           // Save the final post

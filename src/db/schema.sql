@@ -62,6 +62,7 @@ create table profiles (
   last_activity timestamp with time zone,
   old_id int4,
   theme text default 'obsidian',
+  solo_limit int4 default 5,
   autorefresh boolean default false,
   -- editor_bubble boolean default false,
   colors text[] default '{}',

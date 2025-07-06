@@ -22,6 +22,20 @@ export const prompts = {
 }
 export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Protagonista', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy' }
 
+// MODEL CALLED FUNCTION DEFINITION
+export const addImageFunctionDeclaration = {
+  name: 'AddImage',
+  description: 'Přidá obrázek do hry. Použij tuto funkci když protagonista vstoupí do nové lokace (typ "scene"), potká novou cizí postavu či nepřítele (typ "npc"), nebo interaguje s významným objektem - například získá nový předmět (typ "item"). Obrázek bude vygenerován AI na základě poskytnutého promptu. Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      type: { type: Type.STRING, description: 'Druh obrázku který se má ilustrovat herní příspěvek. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.', enum: ['scene', 'npc', 'item'] },
+      prompt: { type: Type.STRING, description: 'Prompt pro generování obrázku. Měl by být v angličtině a detailně popisovat obrázek, vhodný pro AI generátor obrázků.' }
+    },
+    required: ['type', 'prompt']
+  }
+}
+
 export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
 export const assistantInstructions = 'Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce. Tvá úloha je napsat textové podklady pro hru. Důležité: Výstupem každé zprávy musí být samotný text podkladů. Nesmí obsahovat absolutně žádný jiný text ani formátování okolo. Pokud použiješ přímou řeč k hráči, buď neformální a tykej. Pokud je zadání "Napiš HTML", odpověz POUZE a VÝHRADNĚ čistým HTML kódem. Tvá odpověď nesmí obsahovat markdown bloky. Pokud je zadání "Napiš plaintext", odpověz POUZE a VÝHRADNĚ čistým textem, bez HTML kódu. '
 export const assistantParams = {
@@ -37,10 +51,12 @@ export const assistantParams = {
 
 export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-master) online TTRPG hry.
   Herní styl: Hra je pro jednoho hráče, v češtině. Hraje se bez pravidlového systému, čistý roleplaying, tedy vypravěč (ty) vše rozhodne způsobem který je realistický a vede buď k zajímavému pokračování příběhu, nebo konci hry.
-  Výstup: Piš vždy v HTML formátu, ale používej jen základní tagy, jako odkazy a tučný text pro přímou řeč. Žádné nadpisy, ikony, seznamy apod.
-  Literární styl: Text vždy rozděluj do krátkých odstavců, po dvou až třech větách. Herní příspěvek by nikdy neměl být delší než dva odstavce. Jakmile napíšeš významnou novou informaci, ukonči příspěvek, aby měl hráči možnost brzy zareagovat svou akcí.
+  Výstup: Piš vždy v HTML formátu, ale používej jen základní tagy, jako kurzíva pro myšlenky a tučný text pro přímou řeč. Žádné nadpisy, odkazy, ikony, seznamy apod.
+  Literární styl: Text vždy rozděluj do krátkých odstavců, po dvou až třech větách. Herní příspěvek by měl mít takovou délku, aby odpovídal příběhovým potřebám. Pokud je třeba děj posunout, aby měl hráč s čím pracovat, napiš až pět odstavců. Pokud je hráč v interakci s NPC, stačí dva odstavce, aby mohl hráč rychle reagovat. Nikdy nepiš explicitně možnosti co může hráč udělat.
   Zákaz: Nikdy nepiš přímo seznam možností co může udělat. Nikdy předem neprozrazuj plán příběhu, pokud příspěvek nezačíná slovem "debug".
-  Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další části plánu hry. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.`
+  Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další části plánu hry. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.
+  Funkce (tools): Vždy když příběh mění scénu, začíná nová příběhová kapitola, potká významnou novou postavu, nebo získá důležitý předmět, použij funkci "AddImage" k přidání ilustračního obrázku dané věci do hry. Do funkce stačí napsat prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci, postavu nebo předmět. Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
+`
 
 export const storytellerParams = {
   model: 'gemini-2.5-flash',
@@ -93,26 +109,6 @@ export function getContext (conceptData, exclude) {
   if (exclude) { delete context[exclude] }
   // return Object.values(context)
   return Object.values(context).map(item => item.text).join('\n\n')
-}
-
-// MODEL CALLED FUNCTION DEFINITION
-export const addImageFunctionDeclaration = {
-  name: 'AddImage',
-  description: 'Adds an image to the game. Use this function when the protagonist enters new location (type "scene"), meets someone new (type "npc") or interacts with a significant object - gains a new item for example (type "item"). The image will be generated by AI based on the provided prompt. You can add only one image per message, so if you need to show more subjects, combine them into one image prompt of type "scene".',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      type: {
-        type: Type.STRING,
-        description: 'One of the following image types: "scene", "npc", "item"'
-      },
-      prompt: {
-        type: Type.STRING,
-        description: 'Prompt to generate the image. It should be in English and describe the image in detail, suitable for an AI image generator.'
-      }
-    },
-    required: ['type', 'prompt']
-  }
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
