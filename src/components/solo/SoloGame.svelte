@@ -1,13 +1,14 @@
 <script>
-  import Post from '@components/common/Post.svelte'
   import { tick } from 'svelte'
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { waitForMediaLoad } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
+  import Post from '@components/common/Post.svelte'
+  import ImagePost from '@components/common/ImagePost.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   const { user = {}, game = {}, character = {}, concept = {}, readonly } = $props()
 
@@ -42,7 +43,7 @@
     isLoading = false
   }
 
-  async function addPost () {
+  async function onSave () {
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
@@ -58,19 +59,22 @@
     await generateResponse()
   }
 
+  async function showPost (post) {
+    allPosts.push(post)
+    displayedPosts.push(post)
+  }
+
   // Generate AI response via backend
   async function generateResponse () {
     if (isGenerating) return // Prevent multiple generations
     isGenerating = true
 
-    let npc
     let reactiveAiPost
     let postAdded = false
 
-    const addAIPost = (npc) => {
+    const showAIPost = (npc) => {
       const tempAiPost = { id: `temp-${Date.now()}`, owner: npc.id, owner_type: 'npc', owner_name: npc.name, owner_portrait: npc.portrait, content: '', created_at: new Date().toISOString() }
-      allPosts.push(tempAiPost)
-      displayedPosts.push(tempAiPost)
+      showPost(tempAiPost)
       reactiveAiPost = displayedPosts.at(-1)
     }
 
@@ -96,10 +100,11 @@
 
             // First chunk contains the NPC data
             if (chunk.character && !postAdded) {
-              npc = chunk.character
-              addAIPost(npc)
+              showAIPost(chunk.character)
               postAdded = true
-            } else {
+            } else if (chunk.image) {
+              showPost(chunk.image)
+            } else if (chunk.post) {
               reactiveAiPost.content += chunk.post
             }
             postsEl.scrollTop = postsEl.scrollHeight
@@ -206,7 +211,11 @@
       {:else}
         {#if displayedPosts.length > 0}
           {#each displayedPosts as post, index (post.id)}
-            <Post {post} {user} canDeleteAll={typeof post.id !== 'string' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
+            {#if post.owner_type && post.owner}
+              <Post {post} {user} canDeleteAll={typeof post.id !== 'string' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
+            {:else}
+              <ImagePost {post} canDelete={typeof post.id !== 'string' && index === displayedPosts.length - 1} {onDelete} />
+            {/if}
           {/each}
           <!-- last post is by the user -->
           {#if displayedPosts[displayedPosts.length - 1].owner_type === 'character' && !isGenerating}
@@ -219,7 +228,7 @@
     </div>
     {#if !readonly}
       <div class='input'>
-        <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} onSave={addPost} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+        <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
       </div>
     {/if}
   </div>

@@ -454,6 +454,7 @@ create or replace view news_reactions as
   left join profiles p
   on n.owner = p.id;
 
+
 create or replace view discussion_posts_owner as
   select
     p.*,
@@ -928,7 +929,7 @@ begin
   select to_jsonb(ch) into solo_character from characters ch where ch.solo_game = (solo_game_var->>'id')::uuid and ch.player = (solo_game_var->>'player')::uuid;
   if not found then return json_build_object('error', 'Solo character not found'); end if;
 
-  return json_build_object( 'game', solo_game_var, 'concept', solo_concept_var, 'character', solo_character, 'storyteller', solo_storyteller );
+  return json_build_object( 'game', solo_game_var, 'concept', solo_concept_var, 'character', solo_character );
 end;
 $$ language plpgsql;
 

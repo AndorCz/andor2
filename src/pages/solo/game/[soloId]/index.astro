@@ -12,7 +12,7 @@
   if (!soloId) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí id hry')}`) }
 
   const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
-  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.error)}`) }
+  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
   const { game, concept, character } = soloData
 ---
 
