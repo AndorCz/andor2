@@ -13,7 +13,7 @@
 
   const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
   if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.error)}`) }
-  const { game, concept, character, storyteller } = soloData
+  const { game, concept, character } = soloData
 ---
 
 <LayoutSolo title={concept?.name} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
@@ -21,7 +21,7 @@
     showSettings ? (
       <SoloGameSettings {game} {user} client:only='svelte' />
     ) : (
-      <SoloGame {game} {character} {storyteller} {concept} {user} readonly={game.player !== user.id} client:only='svelte' />
+      <SoloGame {game} {character} {concept} {user} readonly={game.player !== user.id} client:only='svelte' />
     )
   ) : (
     <p>Hra nenalezena</p>

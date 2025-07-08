@@ -3,7 +3,8 @@ import { GoogleGenAI, Type } from '@google/genai'
 import { generateImage } from '@lib/solo/server-aiml'
 // import { cropImageBackEnd } from '@lib/solo/server-utils'
 
-const imageSafetyAffix = 'Ensure prompt avoids self-harm, explicit gore and sexually explicit content.'
+const imageSafetyAffix = 'Prompt nesmí obsahovat sebepoškozování a explicitně násilný či sexuální obsah.'
+const imageStyleAffix = `Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.`
 export const prompts = {
   prompt_world: 'Napiš HTML: 1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh. \n',
   prompt_factions: 'Napiš HTML: 2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
@@ -12,31 +13,15 @@ export const prompts = {
   prompt_protagonist: 'Napiš HTML: 5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jeden odstavec popisu vzhledu, seznam vybavení (jasný a definitivní, žádné "nebo"), seznam dovedností a nakonec krátký odstavec o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   prompt_plan: 'Napiš HTML: 6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
 
-  prompt_header_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv, který dobře popisuje téma hry, popiš vizuální styl, který vystihuje její atmosféru a estetiku. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. ${imageSafetyAffix} \n`,
+  prompt_header_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv, který dobře popisuje téma hry, popiš vizuální styl, který vystihuje její atmosféru a estetiku. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${imageStyleAffix} ${imageSafetyAffix} \n`,
   prompt_storyteller_image: `Napiš plaintext: AI prompt k vygenerování portrétu pro NPC vypravěče této TTRPG hry. Obrázek by měl být ve stejném stylu jako hlavní obrázek hry a měl by být portrétem tajemné siluety, někoho, kdo by mohl být skrytou božskou bytostí v tomto světě. Duch, prázdný plášť, létající světlo, mrak, digitální bytost jako z Matrixu atd. Cokoliv, co se hodí k tématu hry. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. ${imageSafetyAffix}\n`,
 
   protagonist_names: 'Napiš plaintext: 10 různorodých jmen pro postavu, kterou bude hráč hrát. Čtyři jména jasně mužská, čtyři jasně ženská, dvě neutrální. Jména by měla by ladit s atmosférou světa. Použij buď jazyky daného světa, nebo stylová jména česká. Jména by měla být většinou včetně příjmení, s přezdívkou, výjimečně jen jedno jméno samotné.\n',
   annotation: 'Napiš plaintext: Jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plain-text, bez HTML.\n',
-  first_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. ${imageSafetyAffix}\n`,
-  protagonist_image: `Napiš plaintext: AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. Styl by měl být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her. ${imageSafetyAffix}\n`
+  first_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${imageStyleAffix} ${imageSafetyAffix}\n`,
+  protagonist_image: `Napiš plaintext: AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${imageStyleAffix} ${imageSafetyAffix}\n`
 }
 export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Protagonista', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy' }
-
-// MODEL CALLED FUNCTION DEFINITION
-/*
-export const addImageFunctionDeclaration = {
-  name: 'AddImage',
-  description: 'Přidá obrázek do hry. Použij tuto funkci když protagonista vstoupí do nové lokace (typ "scene"), potká novou cizí postavu či nepřítele (typ "npc"), nebo interaguje s významným objektem - například získá nový předmět (typ "item"). Obrázek bude vygenerován AI na základě poskytnutého promptu. Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      type: { type: Type.STRING, description: 'Druh obrázku který se má ilustrovat herní příspěvek. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.', enum: ['scene', 'npc', 'item'] },
-      prompt: { type: Type.STRING, description: 'Prompt pro generování obrázku. Měl by být v angličtině a detailně popisovat obrázek, vhodný pro AI generátor obrázků.' }
-    },
-    required: ['type', 'prompt']
-  }
-}
-*/
 
 export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
 export const assistantInstructions = 'Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce. Tvá úloha je napsat textové podklady pro hru. Důležité: Výstupem každé zprávy musí být samotný text podkladů. Nesmí obsahovat absolutně žádný jiný text ani formátování okolo. Pokud použiješ přímou řeč k hráči, buď neformální a tykej. Pokud je zadání "Napiš HTML", odpověz POUZE a VÝHRADNĚ čistým HTML kódem. Tvá odpověď nesmí obsahovat markdown bloky. Pokud je zadání "Napiš plaintext", odpověz POUZE a VÝHRADNĚ čistým textem, bez HTML kódu. '
@@ -57,47 +42,43 @@ export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-ma
   Literární styl: Text vždy rozděluj do krátkých odstavců, po dvou až třech větách. Herní příspěvek by měl mít takovou délku, aby odpovídal příběhovým potřebám. Pokud je třeba děj posunout, aby měl hráč s čím pracovat, napiš až pět odstavců. Pokud je hráč v interakci s NPC, stačí dva odstavce, aby mohl hráč rychle reagovat. Nikdy nepiš explicitně možnosti co může hráč udělat.
   Zákaz: Nikdy nepiš přímo seznam možností co může udělat. Nikdy předem neprozrazuj plán příběhu, pokud příspěvek nezačíná slovem "debug". Nikdy nepiš příspěvek delší než pět odstavců.
   Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další scéně. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.
-  Scény: Příběh se dělí na scény, které jsou zpravidla krátké, mají jasný cíl a vážou se na určitou lokaci. Jakmile postava opouští lokaci, nebo se jinak mění scéna, ukončit jí tímto tagem: "<span hidden>SCENE_END</span>". V dalším příspěvku pak začni "<span hidden>SCENE_START</span>". Pokud se jedná o konec hry, přidej "<span hidden>GAME_END</span>".
+  Obrázky: Vždy když příběh mění scénu, začíná nová příběhová kapitola, dej do výstupu objekt "image", pro přidání ilustračního obrázku dané věci do hry. Do pole "prompt" pak napiš profesionální prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci (type: "scene"), postavu (type: "npc") nebo předmět (type: "item"). Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
 `
-// Funkce (tools): Vždy když příběh mění scénu, začíná nová příběhová kapitola, potká významnou novou postavu, nebo získá důležitý předmět, použij funkci "AddImage" k přidání ilustračního obrázku dané věci do hry. Do funkce stačí napsat prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci, postavu nebo předmět. Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
+// Scény: Příběh se dělí na scény, které jsou zpravidla krátké, mají jasný cíl a vážou se na určitou lokaci.
 
 export const storytellerParams = {
-  model: 'gemini-2.5-flash',
+  model: 'gemini-2.5-pro',
   config: {
     safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }],
     thinkingConfig: { thinkingBudget: 200 },
     candidateCount: 1,
+    responseMimeType: 'application/json',
+    responseSchema: {
+      type: Type.OBJECT,
+      properties: {
+        character: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING, description: 'Jméno postavy, z jejíž perspektivy je psán příspěvek. Pokud je postava vypravěč, použij "Vypravěč". Pokud je to jiná postava, použij její jméno.' },
+            slug: { type: Type.STRING, enum: ['vypravec'], description: 'Slug je vždy jméno postavy malými písmeny, bez mezer a diakritiky. Můžeš použít slug která není v seznamu a nová postava bude vytvořena.' }
+          },
+          required: ['name', 'slug']
+        },
+        post: { type: Type.STRING, description: 'Příběhový příspěvek pro hráče, v HTML formátu' },
+        scene: { type: Type.STRING, description: 'Vlastní název příběhové scény. Pojmenuj libovolně, ale poté drž stejný název dokud se scéna nezmění.' },
+        image: {
+          type: Type.OBJECT,
+          properties: {
+            prompt: { type: Type.STRING, description: `Pokud je vhodné vygenerovat obrázek, napiš prompt pro AI generátor obrázků. Měl by být v angličtině a . Pokud není potřeba žádný obrázek, ponech prázdné. ${imageStyleAffix} ${imageSafetyAffix}` },
+            type: { type: Type.STRING, enum: ['scene', 'npc', 'item'], description: 'Typ obrázku, který se má vygenerovat. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.' }
+          }
+        }
+      },
+      required: ['post', 'character', 'scene']
+    },
     systemInstruction: storytellerInstructions
-    // tools: [{ functionDeclarations: [addImageFunctionDeclaration] }]
   }
 }
-
-/* Not using, for some reason doesn't allow to generate images of children in EU
-export async function generateImage (prompt, aspectRatio, cropWidth, cropHeight) {
-  if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
-  try {
-    const imageResponse = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-002', prompt, config: { personGeneration: 'allow_all', safetySetting: 'BLOCK_ONLY_HIGH', numberOfImages: 1, aspectRatio, includeRaiReason: true }
-    })
-    const headerImageBase64 = imageResponse?.generatedImages?.[0]?.image?.imageBytes
-    if (!headerImageBase64) {
-      const safetyReason = imageResponse.generatedImages?.[0]?.raiFilteredReason
-      if (safetyReason) {
-        throw new Error('Generovaný obrázek byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání. Důvod: ' + safetyReason)
-      } else {
-        throw new Error('Nevygenerován žádný obrázek, ale bez bezpečnostního důvodu')
-      }
-    }
-    if (!headerImageBase64) { throw new Error('No image generated') }
-    const bufferImage = Buffer.from(headerImageBase64, 'base64')
-    const { data, error } = await cropImageBackEnd(bufferImage, cropWidth, cropHeight)
-    return { data, error }
-  } catch (error) {
-    console.error('Error generating image:', error)
-    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
-  }
-}
-*/
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
 export function getContext (conceptData, exclude) {
@@ -175,7 +156,8 @@ export async function generateSoloConcept (supabase, conceptData) {
     conceptData.generating.splice(conceptData.generating.indexOf('generated_storyteller_image'), 1) // Done
 
     // Add storyteller npc
-    const npc = { name: 'Vypravěč', solo_concept: conceptData.id, storyteller: true, created_at: new Date(), portrait: getHash() }
+    const gameSlug = conceptData.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s/g, '')
+    const npc = { name: 'Vypravěč', slug: `vypravec-${gameSlug}`, solo_concept: conceptData.id, storyteller: true, created_at: new Date(), portrait: getHash() }
     const { data: npcData, error: npcError } = await supabase.from('npcs').insert(npc).select().single()
     if (npcError) { throw new Error(npcError.message) }
 

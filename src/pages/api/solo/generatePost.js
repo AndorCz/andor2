@@ -13,9 +13,13 @@ export const POST = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Access denied' }), { status: 403 })
     }
 
-    // TODO: Save original concept data in the game instance, to prevent changes from affecting ongoing games
     const { data: soloConcept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', soloGame.concept_id).single()
     if (conceptError) { return new Response(JSON.stringify({ error: conceptError.message }), { status: 500 }) }
+
+    // load npcs
+    const { data: npcs, error: npcsError } = await locals.supabase.from('npcs').select('*').or(`solo_game.eq.${soloGame.id},solo_concept.eq.${soloGame.concept_id}`)
+    if (npcsError) { return new Response(JSON.stringify({ error: npcsError.message }), { status: 500 }) }
+    storytellerParams.config.responseSchema.properties.character.properties.slug.enum = npcs.map(npc => npc.slug) // Update the enum with available NPC slugs
 
     const { data: posts, error: postsError } = await locals.supabase.from('posts').select('*').match({ thread: soloGame.thread }).order('created_at', { ascending: true })
     if (postsError) { return new Response(JSON.stringify({ error: postsError.message }), { status: 500 }) }
@@ -24,67 +28,134 @@ export const POST = async ({ request, locals }) => {
 
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
     const context = getContext(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
-    const config = { ...storytellerParams.config, systemInstruction: storytellerInstructions + '\n\n' + context }
+    const chat = ai.chats.create({ ...storytellerParams, systemInstruction: storytellerInstructions + '\n\n' + context, history })
+    const response = await chat.sendMessageStream({ message: lastPost.content })
 
-    const chat = ai.chats.create({ model: 'gemini-2.5-pro', history, config })
-    const response = await chat.sendMessageStream({ message: lastPost.content, config })
-
-    let finalText = ''
     let streamController
     let isClosed = false
     const vendorStream = new ReadableStream({
       async start (controller) {
         streamController = controller
         const enc = new TextEncoder()
-        let finishReason = null
-        try {
-          // Process the response stream
-          for await (const chunk of response) {
-            const text = chunk.text
-            if (text) {
-              finalText += text
-              controller.enqueue(enc.encode(`data: ${text.replace(/\n/g, '[line-break]')}\n\n`))
+
+        let serverSideData = {}
+        let characterSent = false
+        let accumulatedText = ''
+        let lastSentPostLength = 0
+
+        const sendCharacterData = (slug) => {
+          if (!characterSent) {
+            const npc = npcs.find(npc => npc.slug === slug)
+            const characterData = npc || { name: 'Vypravěč', slug: 'vypravec' }
+            const chunk = { character: characterData }
+            controller.enqueue(enc.encode(`data: ${JSON.stringify(chunk)}\n\n`))
+            characterSent = true
+          }
+        }
+
+        const extractAndStreamContent = () => {
+          // Extract character slug first
+          if (!characterSent) {
+            const charMatch = accumulatedText.match(/"character"\s*:\s*\{[^}]*"slug"\s*:\s*"([^"]*)"/)
+            if (charMatch) {
+              console.log('Character found:', charMatch[1])
+              sendCharacterData(charMatch[1])
             }
-            if (chunk.candidates && chunk.candidates[0].finishReason) { finishReason = chunk.candidates[0].finishReason }
           }
 
-          // Check for function calls in the response
-          if (response.functionCalls && response.functionCalls.length > 0) {
-            console.log('MODEL CALLED FUNCTIONS', response.functionCalls)
-            const functionCall = response.functionCalls[0]
-            const { type, prompt } = functionCall.args
-            
-            // Add image
-            if (functionCall.name === 'AddImage' && type && prompt) {
-              const getImageParams = (type) => {
-                switch (type) {
-                  case 'scene': return { width: 1408, height: 768, bucket: 'scenes' }
-                  case 'item': return { width: 140, height: 352, bucket: 'items' }
-                  case 'npc': return { width: 140, height: 352, bucket: 'npcs' }
-                  default: throw new Error('Neznámý typ obrázku')
+          // Extract and stream post content
+          if (characterSent) {
+            // Look for the post content - more flexible regex
+            const postMatch = accumulatedText.match(/"post"\s*:\s*"([^"]*(?:\\.[^"]*)*)"?/)
+            if (postMatch) {
+              let postContent = postMatch[1]
+              console.log('Post content found, length:', postContent.length, 'last sent:', lastSentPostLength)
+              
+              // Only send new content since last time
+              if (postContent.length > lastSentPostLength) {
+                const newContent = postContent.slice(lastSentPostLength)
+                if (newContent.length > 0) {
+                  console.log('Sending new content:', newContent.substring(0, 50) + '...')
+                  // Clean up escaped characters for display
+                  const cleanContent = newContent
+                    .replace(/\\"/g, '"')
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\t/g, '\t')
+                    .replace(/\\\\/g, '\\')
+                  
+                  const chunk = { post: cleanContent }
+                  controller.enqueue(enc.encode(`data: ${JSON.stringify(chunk)}\n\n`))
+                  lastSentPostLength = postContent.length
                 }
               }
-              const params = getImageParams(type)
-              const { data: image, error: imageError } = await generateImage(prompt, params.width, params.height)
-              if (imageError) { throw new Error('Chyba při generování obrázku: ' + imageError.message) }
-
-              const { data: uploadData, error: uploadError } = await locals.supabase.storage.from(params.bucket).upload(`${soloGame.id}/${new Date().getTime()}.jpg`, image, { contentType: 'image/jpg' })
-              if (uploadError) { throw new Error('Chyba při ukládání obrázku: ' + uploadError.message) }
-
-              finalText += `<p><img src='${getImageUrl(uploadData.path)}' alt='${type} illustration' /></p>`
+            } else {
+              // Debug: check what we have so far
+              if (accumulatedText.includes('"post"')) {
+                console.log('Post key found but content not matched. Accumulated text:', accumulatedText.substring(0, 200) + '...')
+              }
             }
+          }
+        }
 
-            // TODO: "Add NPC" function
+        try {
+          // Process the response stream from Gemini
+          for await (const chunk of response) {
+            const text = chunk.text
+            if (text) { 
+              console.log('Received chunk:', text.substring(0, 50) + '...')
+              accumulatedText += text
+              console.log('Accumulated text length:', accumulatedText.length)
+              extractAndStreamContent()
+            }
           }
 
-          // Save the final post
-          const { error: postError } = await locals.supabase.from('posts').insert({ thread: soloGame.thread, owner: soloConcept.storyteller, owner_type: 'npc', content: finalText, note: finishReason })
-          if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
+          console.log('Stream finished. Final accumulated text:', accumulatedText)
+
+          // Try to parse the complete JSON at the end
+          try {
+            const finalData = JSON.parse(accumulatedText)
+            serverSideData = finalData
+            
+            // Make sure character was sent
+            if (!characterSent && finalData.character?.slug) {
+              sendCharacterData(finalData.character.slug)
+            }
+
+            console.log('Full response received:', serverSideData)
+
+            // Save the complete post to the database
+            const ownerNpc = npcs.find(npc => npc.slug === serverSideData.character?.slug)
+            const ownerId = ownerNpc ? ownerNpc.id : soloConcept.storyteller
+            
+            const { error: postError } = await locals.supabase.from('posts').insert({
+              thread: soloGame.thread,
+              owner: ownerId,
+              owner_type: 'npc',
+              content: serverSideData.post,
+              note: serverSideData.scene
+            })
+            if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
+
+            // Generate an image if the prompt exists
+            if (serverSideData.image && serverSideData.image.prompt) {
+              console.log('GENERATE IMAGE: \n', serverSideData.image.prompt)
+              // generateImage(serverSideData.image.prompt, 768, 768, soloGame.thread, serverSideData.image.type)
+              //   .catch(err => console.error('Failed to generate image in background:', err))
+            }
+
+          } catch (error) {
+            console.error('Error parsing final JSON:', error)
+            console.log('Accumulated text:', accumulatedText)
+          }
+
           isClosed = true
           controller.close()
         } catch (error) {
           isClosed = true
-          if (error.name !== 'AbortError') { throw error }
+          if (error.name !== 'AbortError') {
+            console.error('Error in Gemini stream:', error)
+          }
+          controller.close()
         }
       },
       cancel () {
@@ -99,32 +170,15 @@ export const POST = async ({ request, locals }) => {
       }
     })
 
-    const outStream = new ReadableStream({
-      async start(outController) {
-        const reader = vendorStream.getReader()
-        try {
-          while (true) {
-            const { value, done } = await reader.read()
-            if (done) break
-            outController.enqueue(value)
-          }
-        } catch (error) {
-          console.error('Stream reading error:', error)
-        } finally {
-          outController.close()
-        }
-      }
-    })
-
     const headers = {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Transfer-Encoding': 'chunked'
+      Connection: 'keep-alive'
     }
-    return new Response(outStream, { headers })
+    return new Response(vendorStream, { headers })
   } catch (error) {
     console.error('Error generating solo post:', error)
     return new Response(JSON.stringify({ error: error.message }), { status: 500 })
   }
 }
+

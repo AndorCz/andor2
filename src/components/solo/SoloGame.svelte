@@ -9,7 +9,7 @@
   import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
 
-  const { user = {}, game = {}, character = {}, storyteller = {}, concept = {}, readonly } = $props()
+  const { user = {}, game = {}, character = {}, concept = {}, readonly } = $props()
 
   let inputEl = $state(null)
   let postsEl = $state(null)
@@ -46,8 +46,8 @@
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
-    newPostData.owner_name = character.name
     newPostData.owner_portrait = character.portrait
+    newPostData.owner_name = character.name
     if (error) { return handleError(error) }
     inputValue = ''
 
@@ -62,10 +62,17 @@
   async function generateResponse () {
     if (isGenerating) return // Prevent multiple generations
     isGenerating = true
-    const tempAiPost = { id: `temp-${Date.now()}`, owner: storyteller.id, owner_type: 'npc', owner_name: storyteller.name, owner_portrait: storyteller.portrait, content: '', created_at: new Date().toISOString() }
-    allPosts.push(tempAiPost)
-    displayedPosts.push(tempAiPost)
-    const reactiveAiPost = displayedPosts.at(-1)
+
+    let npc
+    let reactiveAiPost
+    let postAdded = false
+
+    const addAIPost = (npc) => {
+      const tempAiPost = { id: `temp-${Date.now()}`, owner: npc.id, owner_type: 'npc', owner_name: npc.name, owner_portrait: npc.portrait, content: '', created_at: new Date().toISOString() }
+      allPosts.push(tempAiPost)
+      displayedPosts.push(tempAiPost)
+      reactiveAiPost = displayedPosts.at(-1)
+    }
 
     try {
       const res = await fetch('/api/solo/generatePost', {
@@ -81,20 +88,29 @@
         if (done) break
         const text = decoder.decode(value)
         text.split('\n\n').forEach(line => {
-          const match = line.match(/^data: (.*)$/)
-          if (match) {
-            reactiveAiPost.content += match[1].replace(/\[line-break\]/g, '\n')
+          if (!line.startsWith('data:')) return
+
+          const jsonString = line.substring(5)
+          if (jsonString) {
+            const chunk = JSON.parse(jsonString)
+            console.log('Received chunk:', chunk)
+
+            // First chunk contains the NPC data
+            if (chunk.character && !postAdded) {
+              npc = chunk.character
+              addAIPost(npc)
+              postAdded = true
+            } else {
+              reactiveAiPost.content += chunk.post
+            }
             postsEl.scrollTop = postsEl.scrollHeight
           }
         })
       }
       // Post complete, look up it's ID and update the post
-      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, owner: storyteller.id, owner_type: 'npc', content: reactiveAiPost.content }).single()
-      if (error) { return handleError(error) }
-      console.log('real post', realPost)
-      reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
-      // const index = allPosts.findIndex(post => post.id === tempAiPost.id)
-      // if (index !== -1) { allPosts[index].id = realPost.id }
+      // const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, owner: storyteller.id, owner_type: 'npc', content: reactiveAiPost.content }).single()
+      // if (error) { return handleError(error) }
+      // reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
     } catch (err) {
       handleError(err)
     } finally {
