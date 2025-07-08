@@ -87,21 +87,11 @@
     .imagePost {
       gap: 0px;
     }
-    .toolbar {
-      gap: 5px;
-    }
     .header {
       display: block;
       padding: 10px 10px 5px 10px;
       padding-left: 15px;
     }
-      .toolbar {
-        width: 100%;
-        display: flex;
-      }
-        .toolbar .time {
-          flex: 1;
-        }
     .content {
       padding: 15px;
     }
