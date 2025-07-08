@@ -134,6 +134,7 @@ create table solo_concepts (
   generated_plan text,
   generated_header_image text,
   generated_storyteller_image text,
+  inventory text[] not null default '{}'::text[],
   tags public.game_tag[] default '{}'::public.game_tag[],
   game_count int4 default 0,
   upvotes int4 default 0,

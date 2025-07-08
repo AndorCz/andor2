@@ -77,6 +77,23 @@
     savingValues.protagonist_names = false
   }
 
+  async function regenerateItems () {
+    savingValues.inventory = true
+    const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, field: 'inventory' }), headers: { 'Content-Type': 'application/json' } })
+    if (!response.ok) {
+      const { error } = await response.json()
+      savingValues.inventory = false
+      return handleError(new Error(`API error: ${error.message || 'Chyba generování vybavení'}`))
+    }
+    const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+    if (error) {
+      savingValues.inventory = false
+      return handleError(error)
+    }
+    concept.inventory = data.inventory
+    savingValues.inventory = false
+  }
+
   async function saveTags () {
     savingValues.tags = true
     const { error } = await supabase.from('solo_concepts').update({ tags }).eq('id', concept.id)
@@ -157,6 +174,27 @@
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_plan} loading={concept.generating.includes('prompt_plan')} placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' maxlength={1000} />
       <button onclick={() => onSave('prompt_plan', true)} disabled={concept.generating.includes('prompt_plan') || savingValues.prompt_plan || originalValues.prompt_plan === concept.prompt_plan} class='material save square' title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Inventář</h2>
+    <div>
+      <div class='columns'>
+        {#if Array.isArray(concept.inventory)}
+          {#each concept.inventory as item, index (index)}
+            <div class='name row'>
+              <input type='text' bind:value={concept.inventory[index]} placeholder='Předmět' />
+              {#if concept.inventory.length > 1}<button onclick={() => { concept.inventory.splice(index, 1) }} class='material delete square' title='Smazat předmět' use:tooltip>delete</button>{/if}
+            </div>
+          {/each}
+        {:else}
+          <center class='info'>Předměty se právě generují...</center>
+        {/if}
+      </div>
+      <center>
+        <button onclick={() => { concept.inventory.push('') }} class='add'>Přidat předmět</button>
+        <button onclick={regenerateItems} class='add'>Přegenerovat</button>
+        <button onclick={() => onSave('inventory')} disabled={concept.generating.includes('inventory') || savingValues.inventory || originalValues.inventory.join(',') === concept.inventory.join(',')} class='save'>Uložit položky</button>
+      </center>
     </div>
 
     <h2>Nabídka jmen pro hlavní postavu</h2>
