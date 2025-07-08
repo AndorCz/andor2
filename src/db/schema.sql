@@ -918,7 +918,6 @@ declare
   solo_game_var json;
   solo_concept_var json;
   solo_character json;
-  -- solo_storyteller json;
 begin
   select to_jsonb(g) into solo_game_var from solo_games g where g.id = solo_id;
   if not found then return json_build_object('error', 'Solo game not found'); end if;
@@ -928,9 +927,6 @@ begin
 
   select to_jsonb(ch) into solo_character from characters ch where ch.solo_game = (solo_game_var->>'id')::uuid and ch.player = (solo_game_var->>'player')::uuid;
   if not found then return json_build_object('error', 'Solo character not found'); end if;
-
-  -- select to_jsonb(s) into solo_storyteller from npcs s where s.id = (solo_concept_var->>'storyteller')::uuid;
-  -- if not found then return json_build_object('error', 'Solo storyteller not found'); end if;
 
   return json_build_object( 'game', solo_game_var, 'concept', solo_concept_var, 'character', solo_character, 'storyteller', solo_storyteller );
 end;

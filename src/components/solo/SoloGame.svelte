@@ -93,7 +93,6 @@
           const jsonString = line.substring(5)
           if (jsonString) {
             const chunk = JSON.parse(jsonString)
-            console.log('Received chunk:', chunk)
 
             // First chunk contains the NPC data
             if (chunk.character && !postAdded) {
@@ -108,9 +107,9 @@
         })
       }
       // Post complete, look up it's ID and update the post
-      // const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, owner: storyteller.id, owner_type: 'npc', content: reactiveAiPost.content }).single()
-      // if (error) { return handleError(error) }
-      // reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, content: reactiveAiPost.content }).single()
+      if (error) { return handleError(error) }
+      reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
     } catch (err) {
       handleError(err)
     } finally {

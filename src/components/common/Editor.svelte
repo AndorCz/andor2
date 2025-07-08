@@ -32,6 +32,8 @@
 
   let menuEl = $state()
   let editor = $state()
+  let canUndo = $state(false)
+  let canRedo = $state(false)
   let editorEl = $state()
   let isBubble = $state(true)
   let isFocused = $state(false)
@@ -187,6 +189,8 @@
         if (onChange) {
           setValue() // update content after a delay
           onChange()
+          canUndo = editor.can().undo()
+          canRedo = editor.can().redo()
         }
         // value = editor.state.doc.textContent
         // debug = JSON.stringify(editor.getJSON(), null, '\t')
@@ -293,8 +297,8 @@
         <label class='button text' for='addImageStored'>Nahrát z počítače</label>
         <button type='button' onclick={addImageUrl} class='text'>Cesta z internetu</button>
       </DropdownSlot>
-      <button type='button' onclick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
-      <button type='button' onclick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
+      <button type='button' onclick={() => editor.chain().focus().undo().run()} disabled={!canUndo} class='material' title='Zpět'>undo</button>
+      <button type='button' onclick={() => editor.chain().focus().redo().run()} disabled={!canRedo} class='material' title='Znovu'>redo</button>
     </div>
   {/if}
 </div>
