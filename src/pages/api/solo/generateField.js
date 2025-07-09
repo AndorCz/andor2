@@ -12,7 +12,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Save updated field data, mark concept as generating and load current concept data
     const updatedConcept = { generating: [field] }
-    if (typeof value === 'string' && field !== 'protagonist_names') { updatedConcept[field] = value } // If value is provided, update the field with it
+    if (typeof value === 'string' && field !== 'protagonist_names' && field !== 'inventory') { updatedConcept[field] = value } // If value is provided, update the field with it
     const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update(updatedConcept).eq('id', conceptId).select().single()
     if (markingError) { throw new Error(markingError.message) }
 
@@ -20,14 +20,14 @@ export const POST = async ({ request, locals, redirect }) => {
     const generationParams = clone(assistantParams)
 
     // Set common parameters for generation
-    if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
+    if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'inventory', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
       generationParams.config.systemInstruction += getContext(conceptData, field)
       generationParams.contents = [{ text: prompts[field], role: 'user' }]
       if (value) { generationParams.contents[0].text += `\nVypravěč uvedl toto zadání: "${value}"` }
     }
 
     // Structured output for names
-    if (field === 'protagonist_names') {
+    if (field === 'protagonist_names' || field === 'inventory') {
       generationParams.config.responseSchema = { type: Type.ARRAY, items: { type: Type.STRING } }
       generationParams.config.responseMimeType = 'application/json'
     }
@@ -39,7 +39,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     const newData = { generating: [] }
     const target = field.replace('prompt_', 'generated_')
-    newData[target] = field === 'protagonist_names' ? JSON.parse(modelResponse.text) : modelResponse.text
+    newData[target] = field === 'protagonist_names' || field === 'inventory' ? JSON.parse(modelResponse.text) : modelResponse.text
 
     // Update game plan if needed
     if (['prompt_world', 'prompt_factions', 'prompt_locations', 'prompt_characters', 'prompt_protagonist', 'prompt_plan'].includes(field)) {

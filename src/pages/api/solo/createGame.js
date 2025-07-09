@@ -22,7 +22,7 @@ export const GET = async ({ request, locals, redirect }) => {
     if (incrementError) { throw new Error('Chyba při aktualizaci počtu her: ' + incrementError.message) }
 
     // Create a new game
-    const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').insert({ concept_id: concept.id, name: concept.name, player: locals.user.id }).select().single()
+    const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').insert({ concept_id: concept.id, name: concept.name, player: locals.user.id, inventory: concept.inventory }).select().single()
     if (gameError) { throw new Error('Chyba při vytváření nové hry: ' + gameError.message) }
     game = gameData
 

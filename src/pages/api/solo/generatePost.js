@@ -12,7 +12,6 @@ export const POST = async ({ request, locals }) => {
   }
 
   async function addImage (prompt, type, gameId, threadId) {
-    console.log('GENERATE IMAGE')
     const getImageParams = (type) => {
       switch (type) {
         case 'scene': return { width: 1408, height: 768, bucket: 'scenes' }
@@ -99,6 +98,11 @@ export const POST = async ({ request, locals }) => {
         if (finalData.image && finalData.image.prompt) {
           const imagePost = await addImage(finalData.image.prompt, finalData.image.type, soloGame.id, soloGame.thread)
           yield { image: imagePost }
+        }
+
+        if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
+          await locals.supabase.from('solo_game').update({ inventory: finalData.inventory.items }).eq('id', soloGame.id)
+          yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
         }
 
       } catch (error) {

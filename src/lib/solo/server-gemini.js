@@ -44,6 +44,7 @@ export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-ma
   Zákaz: Nezačínej příspěvek opakováním toho co napsal hráč, není to užitečné. Na konec nikdy nepiš seznam možností co může udělat, hráč má svojí fantazii. Hlavně nikdy předem neprozrazuj plán příběhu, jedině pokud příspěvek začíná slovem "debug". Nikdy nepiš příspěvek delší než pět odstavců.
   Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další scéně. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.
   Obrázky: Vždy když příběh mění scénu, začíná nová příběhová kapitola, dej do výstupu objekt "image", pro přidání ilustračního obrázku dané věci do hry. Do pole "prompt" pak napiš profesionální prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci (type: "scene"), postavu (type: "npc") nebo předmět (type: "item"). Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
+  Inventář: V kontextu hry budeš mít k dispozici inventář postavy. Pokud postava nějaký předmět ztratí, získá nebo se změní, aktualizuj pole "inventory.items" v odpovědi a změnu popiš v "inventory.change". Pokud postava nic nemá, pole je prázdné.
 `
 // Scény: Příběh se dělí na scény, které jsou zpravidla krátké, mají jasný cíl a vážou se na určitou lokaci.
 
@@ -73,6 +74,13 @@ export const storytellerParams = {
             prompt: { type: Type.STRING, description: `Pokud je vhodné vygenerovat obrázek, napiš prompt pro AI generátor obrázků. Měl by být v angličtině a . Pokud není potřeba žádný obrázek, ponech prázdné. ${imageStyleAffix} ${imageSafetyAffix}` },
             type: { type: Type.STRING, enum: ['scene', 'npc', 'item'], description: 'Typ obrázku, který se má vygenerovat. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.' }
           }
+        },
+        inventory: {
+          type: Type.OBJECT,
+          properties: {
+            items: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Aktualizovaný seznam předmětů, které má postava v inventáři.' },
+            change: { type: Type.STRING, description: 'Popis změny v inventáři, např. "Získal jsi meč", "Ztratil jsi klíč", "Našel jsi mapu". Pokud se nic nezměnilo, ponech prázdné.' }
+          }
         }
       },
       required: ['post', 'character', 'scene']
@@ -89,15 +97,16 @@ export function getContext (conceptData, exclude) {
     prompt_factions: { text: conceptData.generated_factions },
     prompt_locations: { text: conceptData.generated_locations },
     prompt_characters: { text: conceptData.generated_characters },
-    prompt_protagonist: { text: conceptData.generated_protagonist }
+    prompt_protagonist: { text: conceptData.generated_protagonist },
+    inventory: { text: 'Inventář postavy: ' + conceptData.inventory.join(', ') }
   }
   if (exclude) { delete context[exclude] }
-  // return Object.values(context)
   return Object.values(context).map(item => item.text).join('\n\n')
 }
 
 export async function generateSoloConcept (supabase, conceptData) {
   try {
+    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
@@ -181,12 +190,18 @@ export async function generateSoloConcept (supabase, conceptData) {
     conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1) // Done
 
     // Protagonist names
-    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const protagonistContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.protagonist_names }]
     const protagonistNamesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: protagonistContents })
     const { error: updateErrorProtagonistNames } = await supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
     if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
     conceptData.generating.splice(conceptData.generating.indexOf('protagonist_names'), 1) // Done
+
+    // Inventory
+    const inventoryContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${conceptData.name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.inventory }]
+    const inventoryResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: inventoryContents })
+    const { error: updateErrorInventory } = await supabase.from('solo_concepts').update({ inventory: JSON.parse(inventoryResponse.text), generating: conceptData.generating }).eq('id', conceptData.id)
+    if (updateErrorInventory) { throw new Error(updateErrorInventory.message) }
+    conceptData.generating.splice(conceptData.generating.indexOf('inventory'), 1) // Done
 
     // Plan
     const planConfig = { config: { ...assistantParams.config, thinkingConfig: { thinkingBudget: 1000 } } }
