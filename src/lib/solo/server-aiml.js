@@ -6,8 +6,8 @@ export async function generateImage (prompt, cropWidth, cropHeight) {
   const height = Math.ceil(cropHeight / 32) * 32
   try {
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 20000) // 20 second timeout
-    
+    const timeoutId = setTimeout(() => abortController.abort(), 120000) // 120 second timeout
+
     console.log('Generating image with prompt:', prompt, 'Size:', width, 'x', height)
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',
@@ -26,6 +26,8 @@ export async function generateImage (prompt, cropWidth, cropHeight) {
     const generation = await response.json()
     // download resulting image
     const url = generation.images[0].url
+    console.log('Image URL:', url)
+
     const imageResponse = await fetch(url)
     if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
     const imageBlob = await imageResponse.blob()

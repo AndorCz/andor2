@@ -112,6 +112,12 @@
         <summary>Postava</summary>
         <div class='inner'>
           <p>{@html concept.generated_protagonist}</p>
+          <h3>Inventář</h3>
+          <ul class='inventory grid'>
+            {#each concept.inventory as item, i (i)}
+              <li>{item}</li>
+            {/each}
+          </ul>
         </div>
       </details>
       {#if openGames.length > 0}
@@ -181,11 +187,11 @@
     flex-direction: row;
     gap: 40px;
   }
-    ul {
+    .generating ul, aside ul {
       list-style: none;
       padding: 0px;
     }
-      li {
+      .generating li, aside li {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -227,7 +233,7 @@
         height: 30px;
         margin-bottom: 10px;
       }
-        li .label {
+        aside li .label {
           color: var(--dim);
           min-width: 90px;
         }
@@ -288,13 +294,12 @@
       }
       .names .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
       }
-    .games h2 {
-      margin-bottom: 0px;
-    }
     .games ul {
+      list-style: none;
+      padding: 0px;
       margin-top: 10px;
     }
       .games li a {
@@ -304,7 +309,14 @@
         border-radius: 10px;
         margin-top: 10px;
         box-shadow: var(--shadow);
-        padding: 10px;
+        padding: 15px;
+      }
+    .inventory {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+      .inventory li {
+        margin-bottom: 10px;
       }
 
   @media (max-width: 500px) {

@@ -49,22 +49,26 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate first post
     const response = await ai.models.generateContent({ ...storytellerParams, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
-    let firstPost = response.text
+    let firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
-    const firstImagePrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost}` }
-    const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, firstImagePrompt] })
-    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePromptResponse.text, 1408, 768)
+    let firstImagePrompt = firstPost.image.prompt
+    if (!firstImagePrompt) {
+      metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost.post}` }
+      const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
+      firstImagePrompt = firstImagePromptResponse.text
+    }
+    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePrompt, 1408, 768)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
       const imageUrl = getImageUrl(locals.supabase, uploadData.path, 'scenes')
-      firstPost = `<p><img src='${imageUrl}' alt='Scene illustration' /></p>` + firstPost
+      firstPost.post = `<p><img src='${imageUrl}' alt='Scene illustration' /></p>` + firstPost.post
     }
 
     // Save the first post with the image
-    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost, owner_type: 'npc', owner: concept.storyteller })
+    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost.post, owner_type: 'npc', owner: concept.storyteller })
     if (addPostError) { throw new Error(addPostError.message) }
 
     // Return success object

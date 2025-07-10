@@ -193,7 +193,7 @@
       <center>
         <button onclick={() => { concept.inventory.push('') }} class='add'>Přidat předmět</button>
         <button onclick={regenerateItems} class='add'>Přegenerovat</button>
-        <button onclick={() => onSave('inventory')} disabled={concept.generating.includes('inventory') || savingValues.inventory || originalValues.inventory.join(',') === concept.inventory.join(',')} class='save'>Uložit položky</button>
+        <button onclick={() => onSave('inventory')} disabled={concept.generating.includes('inventory') || savingValues.inventory || JSON.stringify(originalValues.inventory) === JSON.stringify(concept.inventory)} class='save'>Uložit předměty</button>
       </center>
     </div>
 
@@ -214,7 +214,7 @@
       <center>
         <button onclick={() => { concept.protagonist_names.push('') }} class='add'>Přidat jméno</button>
         <button onclick={regenerateNames} class='add'>Přegenerovat</button>
-        <button onclick={() => onSave('protagonist_names')} disabled={concept.generating.includes('protagonist_names') || savingValues.protagonist_names || originalValues.protagonist_names.join(',') === concept.protagonist_names.join(',')} class='save'>Uložit jména</button>
+        <button onclick={() => onSave('protagonist_names')} disabled={concept.generating.includes('protagonist_names') || savingValues.protagonist_names || JSON.stringify(originalValues.protagonist_names) === JSON.stringify(concept.protagonist_names)} class='save'>Uložit jména</button>
       </center>
     </div>
 
