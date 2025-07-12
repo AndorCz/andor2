@@ -121,6 +121,9 @@
       {/if}
     </div>
   </div>
+  {#if post.illustration}
+    <img src={post.illustration} alt='Illustration' class='aside' />
+  {/if}
 </div>
 
 <style>

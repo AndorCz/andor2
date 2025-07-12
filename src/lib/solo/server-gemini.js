@@ -5,7 +5,7 @@ import { generateImage } from '@lib/solo/server-aiml'
 
 const imageSafetyAffix = 'Prompt nesmí obsahovat sebepoškozování a explicitně násilný či sexuální obsah.'
 const artStyleAffix = `Styl by měla být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.`
-const illustrationStyleAffix = `Styl by měla být profesionální černobílá ilustrace, tuš (ink) na starém papíru.`
+const illustrationStyleAffix = `Přidej tento popis stylu: "A detailed black and white ink illustration in the style of 1980s fantasy RPG manuals. Rendered with fine linework, hatching, and cross-hatching, on aged parchment. No color, no anime, no manga - only realistic style."`
 export const prompts = {
   prompt_world: 'Napiš HTML: 1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh. \n',
   prompt_factions: 'Napiš HTML: 2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
@@ -44,7 +44,7 @@ export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-ma
   Literární styl: Text vždy rozděluj do krátkých odstavců, po dvou až třech větách. Herní příspěvek by měl mít takovou délku, aby odpovídal příběhovým potřebám. Pokud je třeba děj posunout, aby měl hráč s čím pracovat, napiš až pět odstavců. Pokud je hráč v interakci s NPC, stačí dva odstavce, aby mohl hráč rychle reagovat. Nikdy nepiš explicitně možnosti co může hráč udělat.
   Zákaz: Nezačínej příspěvek opakováním toho co napsal hráč, není to užitečné. Na konec nikdy nepiš seznam možností co může udělat, hráč má svojí fantazii. Hlavně nikdy předem neprozrazuj plán příběhu, jedině pokud příspěvek začíná slovem "debug". Nikdy nepiš příspěvek delší než pět odstavců.
   Plán hry: Tvým cílem je vést hru podle připraveného plánu, který dostaneš v kontextu hry, sekci "Plán hry". Při přípravě každé odpovědi se zamysli nad tím, jak postavu co nejlépe nasměrovat k další scéně. Neboj se improvizovat, pokud hráč udělá něco nečekaného, ale vždy se snaž držet plánu hry a přitom udržet hru zábavnou a napínavou. Také se neboj postavu nechat zemřít, pokud udělá něco hloupého nebo nevyjde něco riskantního, případně pokud hráč vystupuje z role postavy.
-  Obrázky: Vždy když příběh mění scénu, začíná nová příběhová kapitola, dej do výstupu objekt "image", pro přidání ilustračního obrázku dané věci do hry. Do pole "prompt" pak napiš profesionální prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci (type: "scene"), postavu (type: "npc") nebo předmět (type: "item"). Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
+  Obrázky: Přidej obrázek za těchto okolností: příběh mění scénu, začíná nová příběhová kapitola, hráč potkává novou postavu, nebo získává významný předmět. Pro přidání ilustračního obrázku dej do výstupu objekt "image". Do pole "prompt" napiš profesionální prompt s popisem obrázku, bude vygenerován od obrázkového AI modelu. Ilustrace by měla ideálně vystihnout to co právě protagonista vidí: novou lokaci (type: "scene"), postavu (type: "npc") nebo předmět (type: "item"). Můžeš přidat pouze jeden obrázek na zprávu, takže pokud potřebuješ ukázat více subjektů, zkombinuj je do jednoho promptu obrázku typu "scene".
   Inventář: V kontextu hry budeš mít k dispozici inventář postavy. Pokud postava nějaký předmět ztratí, získá nebo se změní, aktualizuj pole "inventory.items" v odpovědi a změnu popiš v "inventory.change". Pokud postava nic nemá, pole je prázdné.
 `
 // Scény: Příběh se dělí na scény, které jsou zpravidla krátké, mají jasný cíl a vážou se na určitou lokaci.
@@ -71,15 +71,15 @@ export const storytellerParams = {
         scene: { type: Type.STRING, description: 'Vlastní název příběhové scény. Pojmenuj libovolně, ale poté drž stejný název dokud se scéna nezmění.' },
         image: {
           type: Type.OBJECT,
-          description: 'Zahrň pouze pokud je vhodné vygenerovat obrázek pro novou scénu, postavu nebo předmět. Pokud není potřeba žádný obrázek, vynechej celý objekt.',
+          description: 'Pokud se má vygenerovat obrázek pro novou scénu, postavu nebo předmět, přidej tento objekt. Pokud není potřeba žádný obrázek, vynechej celý objekt.',
           properties: {
-            prompt: { type: Type.STRING, description: `Pokud je vhodné vygenerovat obrázek, napiš prompt pro AI generátor obrázků. Měl by být v angličtině a vystihnout vizuálně novou scénu, předmět či postavu. ${illustrationStyleAffix} ${imageSafetyAffix}` },
+            prompt: { type: Type.STRING, description: `Pokud hráč potkal novou postavu, získal významný předmět nebo se ocitl v nové scéně, napiš prompt pro AI generátor obrázků. Měl by být v angličtině a vystihnout vizuálně novou scénu, předmět či postavu. ${illustrationStyleAffix} ${imageSafetyAffix}` },
             type: { type: Type.STRING, enum: ['scene', 'npc', 'item'], description: 'Typ obrázku, který se má vygenerovat. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.' }
           }
         },
         inventory: {
           type: Type.OBJECT,
-          description: 'Zahrň pouze pokud se inventář postavy změnil. Pokud se nic nezměnilo, vynechej celý objekt.',
+          description: 'Pokud se má změnit inventář postavy, přidej tento objekt. Pokud se nic nezměnilo, vynechej celý objekt.',
           properties: {
             items: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Aktualizovaný seznam předmětů, které má postava v inventáři.' },
             change: { type: Type.STRING, description: 'Popis změny v inventáři, např. "Získal jsi meč", "Ztratil jsi klíč", "Našel jsi mapu". Pokud se nic nezměnilo, ponech prázdné.' }

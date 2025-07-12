@@ -6,8 +6,8 @@ import { ai, storytellerInstructions, storytellerParams, getContext } from '@lib
 
 export const POST = async ({ request, locals }) => {
 
-  async function addPost (thread, ownerType, ownerId, content) {
-    const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content })
+  async function addPost (thread, ownerType, ownerId, content, postHash) {
+    const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content, note: postHash })
     if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
   }
 
@@ -26,15 +26,19 @@ export const POST = async ({ request, locals }) => {
     // Save image to storage
     const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams.bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })
     if (imageError) { console.error('Error saving image:', imageError) }
-    // Add post
-    const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.bucket)
-    const { data: postData, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='${type} illustration' />`, owner_type: 'npc' }).select().single()
-    if (postError) { console.error('Error saving image post:', postError) }
-    return postData
+    // For scene add as standalone post
+    let postData = null
+    if (type === 'scene') {
+      const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.bucket)
+      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='${type} illustration' />`, owner_type: 'npc' }).select().single()
+      if (postError) { console.error('Error saving image post:', postError) }
+      postData = postDataSaved
+    }
+    return { postData, imageData }
   }
 
   try {
-    const { soloId } = await request.json()
+    const { soloId, postHash } = await request.json()
     if (!locals.user?.id) { return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) }
 
     const { data: soloGame, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
@@ -88,16 +92,17 @@ export const POST = async ({ request, locals }) => {
         finalData = parser.finalize()
         console.log('Final data received:', finalData)
 
-        // Save the complete post to the database
-        const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
-        const ownerId = ownerNpc ? ownerNpc.id : soloConcept.storyteller
-
-        await addPost(soloGame.thread, 'npc', ownerId, finalData.post)
-        
         // Generate image if needed
+        console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
-          const imagePost = await addImage(finalData.image.prompt, finalData.image.type, soloGame.id, soloGame.thread)
-          yield { image: imagePost }
+          const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, soloGame.id, soloGame.thread)
+          if (finalData.image.type === 'scene') {
+            yield { image: postData }
+          } else {
+            const bucket = finalData.image.type + 's'
+            const imageUrl = getImageUrl(locals.supabase, imageData.path, bucket)
+            yield { illustration: `<img src='${imageUrl}' alt='${finalData.image.type} illustration' class='aside' />` }
+          }
         }
 
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
@@ -105,6 +110,11 @@ export const POST = async ({ request, locals }) => {
           yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
         }
 
+        // Save the complete post to the database
+        const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
+        const ownerId = ownerNpc ? ownerNpc.id : soloConcept.storyteller
+
+        await addPost(soloGame.thread, 'npc', ownerId, finalData.post, postHash)
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Error in Gemini stream:', error)

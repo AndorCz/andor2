@@ -1,6 +1,7 @@
 <script>
   import { tick } from 'svelte'
   import { onMount } from 'svelte'
+  import { getHash } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { waitForMediaLoad } from '@lib/utils'
@@ -75,9 +76,10 @@
 
     let reactiveAiPost
     let postAdded = false
+    const postHash = getHash()
 
     const showAIPost = (npc) => {
-      const tempAiPost = { id: `temp-${Date.now()}`, owner: npc.id, owner_type: 'npc', owner_name: npc.name, owner_portrait: npc.portrait, content: '', created_at: new Date().toISOString() }
+      const tempAiPost = { id: `temp-${Date.now()}`, owner: npc.id, owner_type: 'npc', owner_name: npc.name, owner_portrait: npc.portrait, content: '', created_at: new Date().toISOString(), identifier: postHash }
       showPost(tempAiPost)
       reactiveAiPost = displayedPosts.at(-1)
     }
@@ -86,7 +88,7 @@
       const res = await fetch('/api/solo/generatePost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soloId: game.id })
+        body: JSON.stringify({ soloId: game.id, postHash })
       })
       if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
       const reader = res.body.getReader()
@@ -109,6 +111,7 @@
             }
             if (chunk.image) { showPost(chunk.image) }
             if (chunk.post) { reactiveAiPost.content += chunk.post }
+            if (chunk.illustration) { reactiveAiPost.illustration += chunk.illustration }
             if (chunk.inventory) {
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
@@ -118,7 +121,7 @@
         })
       }
       // Post complete, look up it's ID and update the post
-      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, content: reactiveAiPost.content }).single()
+      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).single()
       if (error) { return handleError(error) }
       reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
     } catch (err) {

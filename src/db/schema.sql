@@ -293,6 +293,8 @@ create table posts (
   important boolean default false,
   audience uuid[],
   note text,
+  identifier text,
+  illustration text,
   moderated boolean default false,
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
