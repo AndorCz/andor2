@@ -1,10 +1,10 @@
 <script>
-  import { supabase, handleError } from '@lib/database-browser'
-  import { cropPortrait, resizePortrait, getImage, redirectWithToast } from '@lib/utils'
+  import { showError } from '@lib/toasts'
   import PortraitInput from '@components/common/PortraitInput.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { showError } from '@lib/toasts'
+  import { supabase, handleError } from '@lib/database-browser'
+  import { cropPortrait, resizePortrait, getImage, redirectWithToast } from '@lib/utils'
 
   let { isStoryteller, isGameOwner, user, character = $bindable() } = $props()
 

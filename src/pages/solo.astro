@@ -15,6 +15,7 @@
     case 'new': query.order('created_at', { ascending: false }); break
     case 'games': query.order('game_count', { ascending: false }); break
     case 'author': query.order('author'); break
+    default: query.order('game_count', { ascending: false }); break
   }
 
   query.match({published: true })

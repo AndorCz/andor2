@@ -6,6 +6,7 @@
   import { clone, getHash } from '@lib/utils'
   import { onMount, onDestroy } from 'svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
+  import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
 
@@ -192,8 +193,8 @@
       </div>
       <center>
         <button onclick={() => { concept.inventory.push('') }} class='add'>Přidat předmět</button>
-        <button onclick={regenerateItems} class='add'>Přegenerovat</button>
-        <button onclick={() => onSave('inventory')} disabled={concept.generating.includes('inventory') || savingValues.inventory || JSON.stringify(originalValues.inventory) === JSON.stringify(concept.inventory)} class='save'>Uložit předměty</button>
+        <ButtonLoading label='Přegenerovat' handleClick={regenerateItems} loading={savingValues.inventory} class='add' />
+        <button onclick={() => onSave('inventory')} disabled={savingValues.inventory || JSON.stringify(originalValues.inventory) === JSON.stringify(concept.inventory)} class='save'>Uložit předměty</button>
       </center>
     </div>
 
@@ -213,8 +214,8 @@
       </div>
       <center>
         <button onclick={() => { concept.protagonist_names.push('') }} class='add'>Přidat jméno</button>
-        <button onclick={regenerateNames} class='add'>Přegenerovat</button>
-        <button onclick={() => onSave('protagonist_names')} disabled={concept.generating.includes('protagonist_names') || savingValues.protagonist_names || JSON.stringify(originalValues.protagonist_names) === JSON.stringify(concept.protagonist_names)} class='save'>Uložit jména</button>
+        <ButtonLoading label='Přegenerovat' handleClick={regenerateNames} loading={savingValues.protagonist_names} class='add' />
+        <button onclick={() => onSave('protagonist_names')} disabled={savingValues.protagonist_names || JSON.stringify(originalValues.protagonist_names) === JSON.stringify(concept.protagonist_names)} class='save'>Uložit jména</button>
       </center>
     </div>
 
