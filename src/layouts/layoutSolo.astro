@@ -12,7 +12,7 @@ import { ViewTransitions } from 'astro:transitions'
 const { version } = pkg
 const { pathname } = new URL(Astro.url, Astro.site)
 const { user, supabase } = Astro.locals
-const { title, headerStatic, headerStorage } = Astro.props
+const { title, headerStatic, headerStorage, settings } = Astro.props
 
 let chatUnread = false
 if (user.id) {
@@ -26,7 +26,7 @@ if (user.id) {
 }
 ---
 
-<html lang='cs'>
+<html lang='cs' class={settings ? 'no-scroll-snap' : ''}>
 	<head>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width' />
@@ -65,6 +65,17 @@ if (user.id) {
         <div class='content'>
           <slot />
         </div>
+        {(settings) ? (
+          <footer>
+            <div>{version}</div>
+            <div class='links'>
+              <a href='https://github.com/EskelCz/andor2' target='_blank'>Kód</a>
+              <a href='https://andor.canny.io/navrhy' target='_blank'>Návrhy</a>
+              <a href='/privacy'>Soukromí</a>
+              <a href='https://drive.google.com/drive/folders/1XacbPzl9qlcOk0WS6i9ej_hO-gdT2eaz?usp=sharing'>Kroniky</a>
+            </div>
+          </footer>
+        ) : null}
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
@@ -88,6 +99,9 @@ if (user.id) {
     scroll-behavior: smooth;
     margin-top: 0px;
     overflow-y: auto;
+  }
+  html.no-scroll-snap {
+    scroll-snap-type: none;
   }
   body {
     margin: 0px;
@@ -119,6 +133,22 @@ if (user.id) {
         max-width: 100vw;
         height: 100svh;
       }
+      html.no-scroll-snap .content {
+        scroll-snap-align: none;
+        height: auto;
+      }
+
+  footer {
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+    .links {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
 
   @media (max-width: 1200px) {
     .content {

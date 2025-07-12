@@ -109,8 +109,10 @@
             }
             if (chunk.image) { showPost(chunk.image) }
             if (chunk.post) { reactiveAiPost.content += chunk.post }
-            if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
-            if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
+            if (chunk.inventory) {
+              if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
+              if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
+            }
             postsEl.scrollTop = postsEl.scrollHeight
           }
         })

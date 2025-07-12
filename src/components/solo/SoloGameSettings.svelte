@@ -1,13 +1,16 @@
 <script>
   import { onMount } from 'svelte'
+  import { getHash } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, handleError, deleteStorageFolder } from '@lib/database-browser'
+  import ButtonLoading from '@components/common/ButtonLoading.svelte'
+  import { supabase, handleError, getPortraitUrl, deleteStorageFolder } from '@lib/database-browser'
 
-  let { game = $bindable() } = $props()
+  let { game = $bindable(), character } = $props()
 
   let headlineEl = $state()
   let originalValues = $state({})
+  let generatingPortrait = $state(false)
   const savingValues = $state({})
 
   onMount(() => {
@@ -24,6 +27,14 @@
       showSuccess('Změna byla uložena')
     }
     savingValues[field] = false
+  }
+
+  async function regeneratePortrait () {
+    generatingPortrait = true
+    const response = await fetch('/api/solo/generatePortrait', { method: 'POST', body: JSON.stringify({ gameId: game.id }), headers: { 'Content-Type': 'application/json' } })
+    if (!response.ok) { throw new Error(`API error: ${(await response.json()).error.message || 'Chyba generování pole'}`) }
+    character.portrait = getHash()
+    generatingPortrait = false
   }
 
   function showGame () {
@@ -54,6 +65,16 @@
   <div class='row'>
     <input type='text' bind:value={game.name} maxlength='80' />
     <button onclick={onSave('name', game.name)} disabled={savingValues.name || (originalValues.name === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+  </div>
+
+  <h2>Ikonka postavy</h2>
+  <div>
+    <p>
+      {#key character.portrait}
+        <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt='avatar vypravěče' />
+      {/key}
+    </p>
+    <ButtonLoading loading={generatingPortrait} handleClick={regeneratePortrait} label='Přegenerovat' />
   </div>
 
   <h2>Smazání hry</h2>

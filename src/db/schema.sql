@@ -233,6 +233,7 @@ create table characters (
   bio text,
   appearance text,
   color text,
+  portrait_prompt text,
   storyteller_notes text,
   storyteller boolean not null default false,
   open boolean not null default false,

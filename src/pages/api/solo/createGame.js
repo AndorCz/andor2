@@ -26,8 +26,13 @@ export const GET = async ({ request, locals, redirect }) => {
     if (gameError) { throw new Error('Chyba při vytváření nové hry: ' + gameError.message) }
     game = gameData
 
+    // Generate player character portrait prompt
+    const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
+    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [{ text: context }, characterImagePromptMessage] })
+    const portraitPrompt = characterImagePromptResponse.text
+
     // Create a new player character
-    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getHash() }).select().single()
+    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getHash(), portrait_prompt: portraitPrompt }).select().single()
     if (characterError) { throw new Error('Chyba při vytváření postavy: ' + characterError.message) }
 
     // Add game to bookmarks
@@ -36,10 +41,8 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Context generation
     const context = getContext(concept)
-
-    // Generate player character portrait
-    const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
-    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [{ text: context }, characterImagePromptMessage] })
+    
+    // Generate character portrait image
     const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, 140, 352)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
