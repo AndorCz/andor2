@@ -1,8 +1,8 @@
 import { Type } from '@google/genai'
-import { getHash, clone } from '@lib/utils'
 import { GoogleGenAI } from '@google/genai'
 import { generateImage } from '@lib/solo/server-aiml'
-import { assistantParams, prompts, fieldNames, getContext } from '@lib/solo/server-gemini'
+import { getHash, clone } from '@lib/utils'
+import { assistantParams, prompts, fieldNames, getContext, imageParams } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
@@ -60,7 +60,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update header image if requested
     if (field === 'prompt_header_image') {
-      const { data: headerImage, error: imageError } = await generateImage(newData.generated_header_image, 1100, 226)
+      const { data: headerImage, error: imageError } = await generateImage(newData.generated_header_image, imageParams.header)
       if (imageError) { throw new Error(imageError.message) }
       if (headerImage) {
         const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
@@ -71,7 +71,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update storyteller image if requested
     if (field === 'prompt_storyteller_image') {
-      const { data: storytellerImage, error: imageError } = await generateImage(newData.generated_storyteller_image, 140, 352)
+      const { data: storytellerImage, error: imageError } = await generateImage(newData.generated_storyteller_image, imageParams.npc)
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
         const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })

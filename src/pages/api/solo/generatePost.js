@@ -2,7 +2,7 @@ import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { ai, storytellerInstructions, storytellerParams, getContext } from '@lib/solo/server-gemini'
+import { ai, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
 
@@ -12,19 +12,10 @@ export const POST = async ({ request, locals }) => {
   }
 
   async function addImage (prompt, type, gameId, threadId) {
-    const getImageParams = (type) => {
-      switch (type) {
-        case 'scene': return { width: 1408, height: 768, bucket: 'scenes' }
-        case 'item': return { width: 140, height: 352, bucket: 'items' }
-        case 'npc': return { width: 140, height: 352, bucket: 'npcs' }
-        default: throw new Error('Neznámý typ obrázku')
-      }
-    }
-    const imageParams = getImageParams(type)
-    const { data, error } = await generateImage(prompt, imageParams.width, imageParams.height)
+    const { data, error } = await generateImage(prompt, imageParams[type])
     if (error) { console.error('Error generating image:', error) }
     // Save image to storage
-    const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams.bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })
+    const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams[type].bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })
     if (imageError) { console.error('Error saving image:', imageError) }
     // For scene add as standalone post
     let postData = null

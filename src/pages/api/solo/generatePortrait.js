@@ -1,4 +1,5 @@
 import { getHash } from '@lib/utils'
+import { imageParams } from '@lib/solo/server-gemini'
 import { generateImage } from '@lib/solo/server-aiml'
 
 // Generate content of a single field of a solo game concept
@@ -10,7 +11,7 @@ export const POST = async ({ request, locals, redirect }) => {
     const { data: characterData, error: characterError } = await locals.supabase.from('characters').select().eq('solo_game', gameId).select().single()
     if (characterError) { throw new Error(characterError.message) }
 
-    const { data: portraitImage, error: portraitError } = await generateImage(characterData.portrait_prompt, 140, 352)
+    const { data: portraitImage, error: portraitError } = await generateImage(characterData.portrait_prompt, imageParams.npc)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
       const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg', upsert: true })

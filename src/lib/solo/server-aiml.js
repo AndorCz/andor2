@@ -1,21 +1,19 @@
 import { cropImageBackEnd } from '@lib/solo/server-utils.js'
 
-export async function generateImage (prompt, cropWidth, cropHeight) {
+export async function generateImage (prompt, imageParams) {
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
-  const width = Math.ceil(cropWidth / 32) * 32
-  const height = Math.ceil(cropHeight / 32) * 32
   try {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 120000) // 120 second timeout
 
-    console.log('Generating image with prompt:', prompt, 'Size:', width, 'x', height)
+    console.log('Generating image with prompt:', prompt)
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + import.meta.env.AIML_API_KEY, 'Content-Type': 'application/json', },
       body: JSON.stringify({
         prompt: prompt,
         model: 'flux/dev', // 'flux/schnell'
-        image_size: { width, height } // max 1536x1536, multiples of 32
+        image_size: { width: imageParams.generation.width, height: imageParams.generation.height }
       }),
       signal: abortController.signal
     })
@@ -33,12 +31,12 @@ export async function generateImage (prompt, cropWidth, cropHeight) {
     const imageBlob = await imageResponse.blob()
     const bufferImage = Buffer.from(await imageBlob.arrayBuffer())
     // crop to exact size
-    const { data, error } = await cropImageBackEnd(bufferImage, cropWidth, cropHeight)
+    const { data, error } = await cropImageBackEnd(bufferImage, imageParams.crop.width, imageParams.crop.height)
     return { data, error }
   } catch (error) {
     if (error.name === 'AbortError') {
       console.error('Image generation timed out')
-      return { error: { message: 'Generování obrázku vypršel čas (20s)' } }
+      return { error: { message: 'Generování obrázku vypršel čas (120s)' } }
     }
     console.error('Error generating image:', error)
     return { error: { message: 'Chyba při generování obrázku: ' + error.message } }

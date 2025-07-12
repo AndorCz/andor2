@@ -5,7 +5,7 @@ import { generateImage } from '@lib/solo/server-aiml'
 
 const imageSafetyAffix = 'Prompt nesmí obsahovat sebepoškozování a explicitně násilný či sexuální obsah.'
 const artStyleAffix = `Styl by měla být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.`
-const illustrationStyleAffix = `Přidej tento popis stylu: "Masterful ink illustration. Art rendered with fine linework, hatching, and cross-hatching, on aged parchment. No anime, no manga."`
+const illustrationStyleAffix = `Přidej tento popis stylu: "Masterful black and white ink illustration. Artwork rendered with fine linework, hatching, and cross-hatching, on aged parchment. No coloring, no anime, no manga."`
 export const prompts = {
   prompt_world: 'Napiš HTML: 1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh. \n',
   prompt_factions: 'Napiš HTML: 2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
@@ -47,6 +47,13 @@ export const storytellerInstructions = `Jsi vypravěč (storyteller nebo game-ma
   Inventář: V kontextu hry budeš mít k dispozici inventář postavy. Pokud postava nějaký předmět ztratí, získá nebo se změní, aktualizuj pole "inventory.items" v odpovědi a změnu popiš v "inventory.change". Pokud postava nic nemá, pole je prázdné. Nepřidávej znovu předměty které už má.
 `
 // Scény: Příběh se dělí na scény, které jsou zpravidla krátké, mají jasný cíl a vážou se na určitou lokaci.
+
+export const imageParams = {
+  header: { generation: { width: 1536, height: 512 }, crop: { width: 1100, height: 226 }, bucket: 'headers' },
+  scene: { generation: { width: 1408, height: 768 }, bucket: 'scenes' },
+  item: { generation: { width: 512, height: 1024 }, crop: { width: 200, height: 400 }, bucket: 'items' },
+  npc: { generation: { width: 512, height: 1024 }, crop: { width: 200, height: 400 }, bucket: 'npcs' }
+}
 
 export const storytellerParams = {
   model: 'gemini-2.5-pro',
@@ -180,7 +187,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     if (npcError) { throw new Error(npcError.message) }
 
     // Header image
-    const { data: headerImage, error: headerImageError } = await generateImage(responseHeaderImagePrompt.text, 1100, 226)
+    const { data: headerImage, error: headerImageError } = await generateImage(responseHeaderImagePrompt.text, imageParams.header)
     if (headerImageError) { throw new Error(headerImageError.message) }
     if (headerImage) {
       const { error: headerUploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
@@ -189,7 +196,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1) // Done
 
     // Storyteller image
-    const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, 140, 352) // generated size is 768x1408
+    const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, imageParams.npc)
     if (storytellerImageError) { throw new Error(storytellerImageError.message) }
     if (storytellerImage) {
       const { error: storytellerUploadError } = await supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })

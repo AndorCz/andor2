@@ -1,7 +1,7 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, getImageUrl } from '@lib/utils'
-import { ai, prompts, assistantParams, storytellerParams, getContext } from '@lib/solo/server-gemini'
+import { ai, prompts, assistantParams, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
@@ -43,7 +43,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const context = getContext(concept)
     
     // Generate character portrait image
-    const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, 140, 352)
+    const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, imageParams.npc)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
       const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg' })
@@ -61,7 +61,7 @@ export const GET = async ({ request, locals, redirect }) => {
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }
-    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePrompt, 1408, 768)
+    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePrompt, imageParams.scene)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
