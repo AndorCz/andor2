@@ -51,7 +51,7 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const response = await ai.models.generateContent({ ...storytellerParams, contents: [...context, { text: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu.' }] })
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [...context, { text: prompts.firstPost }] })
     let firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post

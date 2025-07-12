@@ -6,8 +6,8 @@ import { ai, storytellerInstructions, storytellerParams, getContext } from '@lib
 
 export const POST = async ({ request, locals }) => {
 
-  async function addPost (thread, ownerType, ownerId, content, postHash) {
-    const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content, note: postHash })
+  async function addPost (thread, ownerType, ownerId, postData, postHash) {
+    const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })
     if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
   }
 
@@ -41,27 +41,33 @@ export const POST = async ({ request, locals }) => {
     const { soloId, postHash } = await request.json()
     if (!locals.user?.id) { return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) }
 
-    const { data: soloGame, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
+    const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
     if (gameError) { return new Response(JSON.stringify({ error: gameError.message }), { status: 500 }) }
-    if (!soloGame || soloGame.player !== locals.user.id) {
+    if (!gameData || gameData.player !== locals.user.id) {
       return new Response(JSON.stringify({ error: 'Access denied' }), { status: 403 })
     }
 
-    const { data: soloConcept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', soloGame.concept_id).single()
+    const { data: conceptData, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', gameData.concept_id).single()
     if (conceptError) { return new Response(JSON.stringify({ error: conceptError.message }), { status: 500 }) }
 
-    const { data: npcs, error: npcsError } = await locals.supabase.from('npcs').select('*').or(`solo_game.eq.${soloGame.id},solo_concept.eq.${soloGame.concept_id}`)
+    const { data: npcs, error: npcsError } = await locals.supabase.from('npcs').select('*').or(`solo_game.eq.${gameData.id},solo_concept.eq.${gameData.concept_id}`)
     if (npcsError) { return new Response(JSON.stringify({ error: npcsError.message }), { status: 500 }) }
     storytellerParams.config.responseSchema.properties.character.properties.slug.enum = npcs.map(npc => npc.slug) // Update the enum with available NPC slugs
 
-    const { data: posts, error: postsError } = await locals.supabase.from('posts').select('*').match({ thread: soloGame.thread }).order('created_at', { ascending: true })
+    const { data: posts, error: postsError } = await locals.supabase.from('posts').select('*').match({ thread: gameData.thread }).order('created_at', { ascending: true })
     if (postsError) { return new Response(JSON.stringify({ error: postsError.message }), { status: 500 }) }
     const lastPost = posts[posts.length - 1]
     posts.pop()
 
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-    const context = getContext(soloConcept) + '\n\n<h2>Plán hry</h2>' + soloConcept.generated_plan
-    const chat = ai.chats.create({ ...storytellerParams, systemInstruction: storytellerInstructions + '\n\n' + context, history })
+    const systemInstruction = `${storytellerInstructions}
+      ${getContext(conceptData)}
+      <h2>Plán hry:</h2>
+      ${conceptData.generated_plan}
+      <h2>Aktuální inventář postavy:</h2>
+      ${gameData.inventory.join(', ')}
+    `
+    const chat = ai.chats.create({ ...storytellerParams, systemInstruction, history })
     const response = await chat.sendMessageStream({ message: lastPost.content })
 
     // Create async generator for streaming
@@ -79,7 +85,7 @@ export const POST = async ({ request, locals }) => {
               if (event.character) {
                 // Enhance character data with full NPC info
                 const npc = npcs.find(npc => npc.slug === event.character.slug)
-                const characterData = npc || { name: 'Vypravěč', slug: 'vypravec', id: soloConcept.storyteller }
+                const characterData = npc || { name: 'Vypravěč', slug: 'vypravec', id: conceptData.storyteller }
                 yield { character: characterData }
               } else if (event.post) {
                 yield { post: event.post }
@@ -95,26 +101,27 @@ export const POST = async ({ request, locals }) => {
         // Generate image if needed
         console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
-          const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, soloGame.id, soloGame.thread)
+          const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, gameData.id, gameData.thread)
           if (finalData.image.type === 'scene') {
             yield { image: postData }
           } else {
             const bucket = finalData.image.type + 's'
-            const imageUrl = getImageUrl(locals.supabase, imageData.path, bucket)
-            yield { illustration: `<img src='${imageUrl}' alt='${finalData.image.type} illustration' class='aside' />` }
+            finalData.illustration = getImageUrl(locals.supabase, imageData.path, bucket)
+            yield { illustration: finalData.illustration }
           }
         }
 
+        console.log('Inventory data:', finalData.inventory)
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
-          await locals.supabase.from('solo_game').update({ inventory: finalData.inventory.items }).eq('id', soloGame.id)
+          await locals.supabase.from('solo_game').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
           yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
         }
 
         // Save the complete post to the database
         const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
-        const ownerId = ownerNpc ? ownerNpc.id : soloConcept.storyteller
+        const ownerId = ownerNpc ? ownerNpc.id : conceptData.storyteller
 
-        await addPost(soloGame.thread, 'npc', ownerId, finalData.post, postHash)
+        await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Error in Gemini stream:', error)

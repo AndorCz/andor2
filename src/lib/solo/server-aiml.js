@@ -14,7 +14,7 @@ export async function generateImage (prompt, cropWidth, cropHeight) {
       headers: { 'Authorization': 'Bearer ' + import.meta.env.AIML_API_KEY, 'Content-Type': 'application/json', },
       body: JSON.stringify({
         prompt: prompt,
-        model: 'flux/schnell',
+        model: 'flux/dev', // 'flux/schnell'
         image_size: { width, height } // max 1536x1536, multiples of 32
       }),
       signal: abortController.signal
