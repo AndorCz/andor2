@@ -97,6 +97,7 @@ export const storytellerParams = {
 }
 
 export function getAI (env) {
+  console.log('Initializing AI with API key:', env.PRIVATE_GEMINI)
   return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
   // try {
   // } catch (error) {
