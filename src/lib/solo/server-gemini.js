@@ -97,11 +97,11 @@ export const storytellerParams = {
 }
 
 export function getAI (env) {
-  try {
-    return { ai: new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI }) }
-  } catch (error) {
-    return { error: `Chyba při inicializaci AI: ${error.message}` }
-  }
+  return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
+  // try {
+  // } catch (error) {
+  //   return { error: `Chyba při inicializaci AI: ${error.message}` }
+  // }
 }
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
@@ -122,8 +122,7 @@ export async function generateSoloConcept (env, supabase, conceptData) {
   try {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    const { ai, error } = getAI(env)
-    if (error) { throw new Error(error) }
+    const ai = getAI(env)
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
     // World
@@ -195,19 +194,19 @@ export async function generateSoloConcept (env, supabase, conceptData) {
     if (npcError) { throw new Error(npcError.message) }
 
     // Header image
-    const { data: headerImage, error: headerImageError } = await generateImage(responseHeaderImagePrompt.text, imageParams.header)
+    const { data: headerImage, error: headerImageError } = await generateImage(env, responseHeaderImagePrompt.text, imageParams.header)
     if (headerImageError) { throw new Error(headerImageError.message) }
     if (headerImage) {
-      const { error: headerUploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg' })
+      const { error: headerUploadError } = await supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
       if (headerUploadError) { throw new Error(headerUploadError.message) }
     }
     conceptData.generating.splice(conceptData.generating.indexOf('header_image'), 1) // Done
 
     // Storyteller image
-    const { data: storytellerImage, error: storytellerImageError } = await generateImage(responseStorytellerImagePrompt.text, imageParams.npc)
+    const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, imageParams.npc)
     if (storytellerImageError) { throw new Error(storytellerImageError.message) }
     if (storytellerImage) {
-      const { error: storytellerUploadError } = await supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg' })
+      const { error: storytellerUploadError } = await supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
       if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
     }
     conceptData.generating.splice(conceptData.generating.indexOf('storyteller_image'), 1) // Done

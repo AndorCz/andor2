@@ -23,8 +23,7 @@
       conceptData = createdConcept
 
       // Start generation process
-      const env = runtime ? runtime.env : import.meta.env
-      const { error: generationError } = generateSoloConcept(env, supabase, conceptData) // fire and forget
+      const { error: generationError } = generateSoloConcept(runtime.env, supabase, conceptData) // fire and forget
       if (generationError) { throw new Error('Error during concept generation: ' + generationError.message) }
 
       // Redirect user to the new concept page immediately

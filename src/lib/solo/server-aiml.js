@@ -1,6 +1,6 @@
 import { cropImageBackEnd } from '@lib/solo/server-utils.js'
 
-export async function generateImage (prompt, imageParams) {
+export async function generateImage (env, prompt, imageParams) {
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const abortController = new AbortController()
@@ -9,7 +9,7 @@ export async function generateImage (prompt, imageParams) {
     console.log('Generating image with prompt:', prompt)
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + import.meta.env.AIML_API_KEY, 'Content-Type': 'application/json', },
+      headers: { 'Authorization': 'Bearer ' + env.AIML_API_KEY, 'Content-Type': 'application/json', },
       body: JSON.stringify({
         prompt: prompt,
         model: 'flux/dev', // 'flux/schnell'

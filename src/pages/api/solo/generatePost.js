@@ -5,8 +5,7 @@ import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
 import { getAI, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
-  const { ai, error } = getAI(locals.runtime.env)
-  if (error) { throw new Error(error) }
+  const ai = getAI(locals.runtime.env)
 
   async function addPost (thread, ownerType, ownerId, postData, postHash) {
     const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })
@@ -14,7 +13,7 @@ export const POST = async ({ request, locals }) => {
   }
 
   async function addImage (prompt, type, gameId, threadId) {
-    const { data, error } = await generateImage(prompt, imageParams[type])
+    const { data, error } = await generateImage(locals.runtime.env, prompt, imageParams[type])
     if (error) { console.error('Error generating image:', error) }
     // Save image to storage
     const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams[type].bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })

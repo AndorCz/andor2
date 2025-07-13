@@ -6,8 +6,7 @@ import { getAI, prompts, assistantParams, storytellerParams, getContext, imagePa
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
   try {
-    const { ai, error } = getAI(locals.runtime.env)
-    if (error) { throw new Error(error) }
+    const ai = getAI(locals.runtime.env)
     const { searchParams } = new URL(request.url)
     const conceptId = searchParams.get('conceptId')
     const characterName = searchParams.get('characterName')
@@ -45,7 +44,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const context = getContext(concept)
     
     // Generate character portrait image
-    const { data: portraitImage, error: portraitError } = await generateImage(characterImagePromptResponse.text, imageParams.npc)
+    const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, characterImagePromptResponse.text, imageParams.npc)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
       const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg' })
@@ -63,7 +62,7 @@ export const GET = async ({ request, locals, redirect }) => {
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }
-    const { data: sceneImage, error: sceneImageError } = await generateImage(firstImagePrompt, imageParams.scene)
+    const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, imageParams.scene)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })

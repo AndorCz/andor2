@@ -9,7 +9,7 @@ export const POST = async ({ request, locals }) => {
 
     // Reset the concept to generating state and clear any partial data
     const columns = ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
-    const { data: conceptData, error: resetError } = await locals.supabase.from('solo_concepts').update({ generating: columns }).eq('id', conceptId).select().single()
+    const { data: conceptData, error: resetError } = await locals.supabase.from('solo_concepts').update({ generating: columns, generation_error: '' }).eq('id', conceptId).select().single()
     if (resetError) { return new Response(JSON.stringify({ error: { message: 'Chyba při resetování konceptu: ' + resetError.message } }), { status: 500, headers: { 'Content-Type': 'application/json' } }) }
 
     // Start generation process (fire and forget)

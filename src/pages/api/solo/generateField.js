@@ -9,8 +9,7 @@ export const POST = async ({ request, locals, redirect }) => {
   try {
     const { conceptId, field, value } = await request.json()
     if (!locals.user.id || !conceptId || !field) { return redirect(request.headers.get('referer') + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
-    const { ai, error } = getAI(locals.runtime.env)
-    if (error) { throw new Error(error) }
+    const ai = getAI(locals.runtime.env)
 
     // Save updated field data, mark concept as generating and load current concept data
     const updatedConcept = { generating: [field] }
@@ -61,7 +60,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update header image if requested
     if (field === 'prompt_header_image') {
-      const { data: headerImage, error: imageError } = await generateImage(newData.generated_header_image, imageParams.header)
+      const { data: headerImage, error: imageError } = await generateImage(locals.runtime.env, newData.generated_header_image, imageParams.header)
       if (imageError) { throw new Error(imageError.message) }
       if (headerImage) {
         const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${conceptData.id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
@@ -72,7 +71,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update storyteller image if requested
     if (field === 'prompt_storyteller_image') {
-      const { data: storytellerImage, error: imageError } = await generateImage(newData.generated_storyteller_image, imageParams.npc)
+      const { data: storytellerImage, error: imageError } = await generateImage(locals.runtime.env, newData.generated_storyteller_image, imageParams.npc)
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
         const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
