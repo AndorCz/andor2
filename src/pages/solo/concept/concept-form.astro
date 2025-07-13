@@ -3,7 +3,7 @@
   import ConceptForm from '@components/solo/ConceptForm.svelte'
   import { generateSoloConcept } from '@lib/solo/server-gemini'
 
-  const { supabase, user } = Astro.locals
+  const { supabase, user, runtime } = Astro.locals
 
   if (Astro.request.method === 'POST') {
     let conceptData
@@ -23,7 +23,7 @@
       conceptData = createdConcept
 
       // Start generation process
-      const { error: generationError } = generateSoloConcept(locals.runtime.env, supabase, conceptData) // fire and forget
+      const { error: generationError } = generateSoloConcept(runtime.env, supabase, conceptData) // fire and forget
       if (generationError) { throw new Error('Error during concept generation: ' + generationError.message) }
 
       // Redirect user to the new concept page immediately
