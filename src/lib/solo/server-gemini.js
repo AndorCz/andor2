@@ -240,6 +240,8 @@ export async function generateSoloConcept (env, supabase, conceptData) {
     return { data: { success: true } }
   } catch (error) {
     console.error('Error generating solo concept:', error)
+    // Save error state to database
+    await supabase.from('solo_concepts').update({ generating: [], generation_error: error.message }).eq('id', conceptData.id)
     return { error: { message: 'Chyba při generování konceptu: ' + error.message } }
   }
 }

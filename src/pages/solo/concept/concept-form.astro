@@ -30,7 +30,9 @@
       return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
     } catch (error) {
       console.error('Error in concept creation:', error)
-      if (conceptData) { await supabase.from('solo_concepts').update({ generating: false }).eq('id', conceptData.id) }
+      if (conceptData) { 
+        await supabase.from('solo_concepts').update({ generating: [], generation_error: error.message }).eq('id', conceptData.id) 
+      }
       return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba při vytváření konceptu: ' + error.message)}`)
     }
   }

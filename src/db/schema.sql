@@ -140,6 +140,7 @@ create table solo_concepts (
   game_count int4 default 0,
   upvotes int4 default 0,
   generating text[] not null default '{}',
+  generation_error text,
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,

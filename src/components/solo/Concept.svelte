@@ -14,6 +14,7 @@
   let checkLoop = null
   let openGames = $state([])
   let creatingGame = $state(false)
+  let retryingGeneration = $state(false)
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
 
   onMount(async () => {
@@ -24,11 +25,16 @@
         const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()
         if (error) { handleError(error) }
         if (data) { concept = data }
-        if (data && data.generating.length === 0) {
+        if (data && data.generating.length === 0 && !data.generation_error) {
           selectedName = isFilledArray(data.protagonist_names) ? data.protagonist_names[0] : ''
           clearInterval(checkLoop)
           checkLoop = null
           window.location.reload()
+        }
+        // If there's an error, stop checking but don't reload
+        if (data && data.generation_error) {
+          clearInterval(checkLoop)
+          checkLoop = null
         }
       }, 5000)
     } else {
@@ -65,30 +71,62 @@
       creatingGame = false
     }
   }
+
+  async function retryGeneration () {
+    retryingGeneration = true
+    try {
+      const response = await fetch('/api/solo/retryGeneration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id }) })
+      const data = await response.json()
+      if (!response.ok || data.error) { throw new Error(data.error.message) }
+      if (data.success) {
+        showSuccess('Generování bylo znovu spuštěno')
+        // Reload the page to show the generating state
+        window.location.reload()
+      }
+    } catch (error) {
+      handleError(error)
+    } finally {
+      retryingGeneration = false
+    }
+  }
 </script>
 
-{#if concept.generating.length > 0}
+{#if concept.generating.length > 0 || concept.generation_error}
   <h1>{concept.name}</h1>
   <div class='generating row'>
-    <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
-    <div class='info'>
-      <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
-      <ul>
-        <li><span class='material'>{concept.generating.includes('generated_world') ? 'hourglass_top' : 'check'}</span><span class='wide'>Svět</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_factions') ? 'hourglass_top' : 'check'}</span><span class='wide'>Frakce</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_locations') ? 'hourglass_top' : 'check'}</span><span class='wide'>Místa</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
-        <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
-        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
-        <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
-        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
-        <li><span class='material'>{concept.generating.includes('inventory') ? 'hourglass_top' : 'check'}</span><span class='wide'>Inventář</span></li>
-        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
-      </ul>
-    </div>
+    {#if concept.generation_error}
+      <h2>Při generování došlo k chybě</h2>
+      <div class='error'>
+        <p><strong>Při generování došlo k chybě:</strong>{concept.generation_error}</p>
+        <div class='retry'>
+          {#if retryingGeneration}
+            <Loading />
+          {:else}
+            <button onclick={retryGeneration}>Zkusit znovu</button>
+          {/if}
+        </div>
+      </div>
+    {:else}
+      <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
+      <div class='info'>
+        <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
+        <ul>
+          <li><span class='material'>{concept.generating.includes('generated_world') ? 'hourglass_top' : 'check'}</span><span class='wide'>Svět</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_factions') ? 'hourglass_top' : 'check'}</span><span class='wide'>Frakce</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_locations') ? 'hourglass_top' : 'check'}</span><span class='wide'>Místa</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
+          <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
+          <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
+          <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
+          <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
+          <li><span class='material'>{concept.generating.includes('inventory') ? 'hourglass_top' : 'check'}</span><span class='wide'>Inventář</span></li>
+          <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
+        </ul>
+      </div>
+    {/if}
   </div>
 {:else}
   <div class='headline'>
@@ -222,6 +260,44 @@
       flex: 1;
       text-align: left;
     }
+      .error-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: var(--error-bg, #fee);
+        border: 1px solid var(--error-border, #fcc);
+        border-radius: 10px;
+      }
+        .error-message {
+          display: flex;
+          align-items: flex-start;
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+          .error-icon {
+            color: var(--error-color, #c33);
+            font-size: 24px;
+            flex-shrink: 0;
+          }
+          .error-message p {
+            margin: 5px 0 0 0;
+            color: var(--error-text, #666);
+          }
+        .retry-section {
+          display: flex;
+          justify-content: center;
+        }
+          .retry-btn {
+            background: var(--primary, #007acc);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+          }
+            .retry-btn:hover {
+              background: var(--primary-hover, #005999);
+            }
     /* promo */
     p {
       line-height: 1.5;
