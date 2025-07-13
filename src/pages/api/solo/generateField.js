@@ -2,13 +2,14 @@ import { Type } from '@google/genai'
 import { GoogleGenAI } from '@google/genai'
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, clone } from '@lib/utils'
-import { assistantParams, prompts, fieldNames, getContext, imageParams } from '@lib/solo/server-gemini'
+import { getAI, assistantParams, prompts, fieldNames, getContext, imageParams } from '@lib/solo/server-gemini'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
   try {
     const { conceptId, field, value } = await request.json()
     if (!locals.user.id || !conceptId || !field) { return redirect(request.headers.get('referer') + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
+    const ai = getAI()
 
     // Save updated field data, mark concept as generating and load current concept data
     const updatedConcept = { generating: [field] }
@@ -16,7 +17,6 @@ export const POST = async ({ request, locals, redirect }) => {
     const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update(updatedConcept).eq('id', conceptId).select().single()
     if (markingError) { throw new Error(markingError.message) }
 
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
     const generationParams = clone(assistantParams)
 
     // Set common parameters for generation

@@ -1,6 +1,6 @@
 import { getHash } from '@lib/utils'
-import { GoogleGenAI, Type } from '@google/genai'
 import { generateImage } from '@lib/solo/server-aiml'
+import { GoogleGenAI, Type } from '@google/genai'
 // import { cropImageBackEnd } from '@lib/solo/server-utils'
 
 const imageSafetyAffix = 'Prompt nesmí obsahovat sebepoškozování a explicitně násilný či sexuální obsah.'
@@ -23,8 +23,6 @@ export const prompts = {
   firstPost: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu. Pokud bude postava venku, nezapomeň zmínit roční období nebo aktuální počasí. Určitě přidej úvodní obrázek scény.'
 }
 export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Protagonista', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy' }
-
-export const ai = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
 export const assistantInstructions = 'Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce. Tvá úloha je napsat textové podklady pro hru. Důležité: Výstupem každé zprávy musí být samotný text podkladů. Nesmí obsahovat absolutně žádný jiný text ani formátování okolo. Pokud použiješ přímou řeč k hráči, buď neformální a tykej. Pokud je zadání "Napiš HTML", odpověz POUZE a VÝHRADNĚ blokem HTML kódu, žádné CSS ani markdown obalení. Ne celou stránku včetně hlavičky, jen obsah který bude vložen do existující stránky. Tvá odpověď nesmí obsahovat ŽÁDNÝ markdown. Pokud je zadání "Napiš plaintext", odpověz POUZE a VÝHRADNĚ čistým textem, bez HTML kódu. '
 export const assistantParams = {
   model: 'gemini-2.5-flash-lite-preview-06-17',
@@ -98,6 +96,10 @@ export const storytellerParams = {
   }
 }
 
+export function getAI () {
+  return new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+}
+
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
 export function getContext (conceptData, exclude) {
   const context = {
@@ -116,6 +118,7 @@ export async function generateSoloConcept (supabase, conceptData) {
   try {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
+    const ai = getAI()
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
     // World
@@ -223,7 +226,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const promptPlan = { text: prompts.prompt_plan }
     if (conceptData.prompt_plan) { promptPlan.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
     const planContents = [basePrompt, { text: responseWorld.text }, { text: responseFactions.text }, { text: responseLocations.text }, { text: responseCharacters.text }, { text: responseProtagonist.text }, promptPlan]
-    const ai2 = new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI }) // workaround for getting previous parts again
+    const ai2 = getAI()
     const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents: planContents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)

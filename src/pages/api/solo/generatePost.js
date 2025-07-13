@@ -2,9 +2,10 @@ import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { ai, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
+import { getAI, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
+  const ai = getAI()
 
   async function addPost (thread, ownerType, ownerId, postData, postHash) {
     const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })

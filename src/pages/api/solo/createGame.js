@@ -1,11 +1,12 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, getImageUrl } from '@lib/utils'
-import { ai, prompts, assistantParams, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
+import { getAI, prompts, assistantParams, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
   try {
+    const ai = getAI()
     const { searchParams } = new URL(request.url)
     const conceptId = searchParams.get('conceptId')
     const characterName = searchParams.get('characterName')
