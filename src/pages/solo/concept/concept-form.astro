@@ -23,7 +23,7 @@
       conceptData = createdConcept
 
       // Start generation process
-      const { error: generationError } = generateSoloConcept(supabase, conceptData) // fire and forget
+      const { error: generationError } = generateSoloConcept(locals.runtime.env, supabase, conceptData) // fire and forget
       if (generationError) { throw new Error('Error during concept generation: ' + generationError.message) }
 
       // Redirect user to the new concept page immediately

@@ -6,7 +6,7 @@ import { getAI, prompts, assistantParams, storytellerParams, getContext, imagePa
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
   try {
-    const ai = getAI()
+    const ai = getAI(locals.runtime.env)
     const { searchParams } = new URL(request.url)
     const conceptId = searchParams.get('conceptId')
     const characterName = searchParams.get('characterName')

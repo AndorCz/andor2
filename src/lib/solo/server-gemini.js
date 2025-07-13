@@ -96,8 +96,8 @@ export const storytellerParams = {
   }
 }
 
-export function getAI () {
-  return new GoogleGenAI({ apiKey: import.meta.env.PRIVATE_GEMINI })
+export function getAI (env) {
+  return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
 }
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
@@ -114,11 +114,11 @@ export function getContext (conceptData, exclude) {
   return Object.values(context).map(item => item.text).join('\n\n')
 }
 
-export async function generateSoloConcept (supabase, conceptData) {
+export async function generateSoloConcept (env, supabase, conceptData) {
   try {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    const ai = getAI()
+    const ai = getAI(env)
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
     // World
@@ -226,7 +226,7 @@ export async function generateSoloConcept (supabase, conceptData) {
     const promptPlan = { text: prompts.prompt_plan }
     if (conceptData.prompt_plan) { promptPlan.text += `Vypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
     const planContents = [basePrompt, { text: responseWorld.text }, { text: responseFactions.text }, { text: responseLocations.text }, { text: responseCharacters.text }, { text: responseProtagonist.text }, promptPlan]
-    const ai2 = getAI()
+    const ai2 = getAI(env)
     const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents: planContents, model: 'gemini-2.5-pro' })
     const generatedPlan = { text: planResponse.text }
     const { error: updateErrorPlan } = await supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: conceptData.generating }).eq('id', conceptData.id)
