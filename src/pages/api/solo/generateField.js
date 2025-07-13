@@ -9,7 +9,8 @@ export const POST = async ({ request, locals, redirect }) => {
   try {
     const { conceptId, field, value } = await request.json()
     if (!locals.user.id || !conceptId || !field) { return redirect(request.headers.get('referer') + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení a/nebo data o konceptu')) }
-    const ai = getAI(locals.runtime.env)
+    const { ai, error } = getAI(locals.runtime.env)
+    if (error) { throw new Error(error) }
 
     // Save updated field data, mark concept as generating and load current concept data
     const updatedConcept = { generating: [field] }

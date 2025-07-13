@@ -5,7 +5,8 @@ import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
 import { getAI, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
-  const ai = getAI(locals.runtime.env)
+  const { ai, error } = getAI(locals.runtime.env)
+  if (error) { throw new Error(error) }
 
   async function addPost (thread, ownerType, ownerId, postData, postHash) {
     const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })

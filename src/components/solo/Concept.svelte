@@ -93,20 +93,20 @@
 
 {#if concept.generating.length > 0 || concept.generation_error}
   <h1>{concept.name}</h1>
-  <div class='generating row'>
-    {#if concept.generation_error}
-      <h2>Při generování došlo k chybě</h2>
-      <div class='error'>
-        <p><strong>Při generování došlo k chybě:</strong>{concept.generation_error}</p>
-        <div class='retry'>
-          {#if retryingGeneration}
-            <Loading />
-          {:else}
-            <button onclick={retryGeneration}>Zkusit znovu</button>
-          {/if}
-        </div>
+  {#if concept.generation_error}
+    <h2>Při generování došlo k chybě</h2>
+    <div class='error'>
+      <p>{concept.generation_error}</p>
+      <div class='retry'>
+        {#if retryingGeneration}
+          <Loading />
+        {:else}
+          <button onclick={retryGeneration}>Zkusit znovu</button>
+        {/if}
       </div>
-    {:else}
+    </div>
+  {:else}
+    <div class='generating row'>
       <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
       <div class='info'>
         <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
@@ -126,8 +126,8 @@
           <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
         </ul>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 {:else}
   <div class='headline'>
     <h1>{concept.name}</h1>
@@ -260,44 +260,6 @@
       flex: 1;
       text-align: left;
     }
-      .error-section {
-        margin-top: 30px;
-        padding: 20px;
-        background: var(--error-bg, #fee);
-        border: 1px solid var(--error-border, #fcc);
-        border-radius: 10px;
-      }
-        .error-message {
-          display: flex;
-          align-items: flex-start;
-          gap: 15px;
-          margin-bottom: 15px;
-        }
-          .error-icon {
-            color: var(--error-color, #c33);
-            font-size: 24px;
-            flex-shrink: 0;
-          }
-          .error-message p {
-            margin: 5px 0 0 0;
-            color: var(--error-text, #666);
-          }
-        .retry-section {
-          display: flex;
-          justify-content: center;
-        }
-          .retry-btn {
-            background: var(--primary, #007acc);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-          }
-            .retry-btn:hover {
-              background: var(--primary-hover, #005999);
-            }
     /* promo */
     p {
       line-height: 1.5;

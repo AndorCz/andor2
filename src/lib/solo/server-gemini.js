@@ -97,7 +97,11 @@ export const storytellerParams = {
 }
 
 export function getAI (env) {
-  return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
+  try {
+    return { ai: new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI }) }
+  } catch (error) {
+    return { error: `Chyba při inicializaci AI: ${error.message}` }
+  }
 }
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
@@ -118,7 +122,8 @@ export async function generateSoloConcept (env, supabase, conceptData) {
   try {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(conceptData.name)}"` }
-    const ai = getAI(env)
+    const { ai, error } = getAI(env)
+    if (error) { throw new Error(error) }
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
 
     // World
