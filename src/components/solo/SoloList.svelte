@@ -46,8 +46,8 @@
         <option value='author'>Dle autora</option>
       </select>
       {#if user.id}
-        <a href='./solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
-        <a href='./solo/concept/concept-form' class='button mobile material'>add</a>
+        <a href='/solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
+        <a href='/solo/concept/concept-form' class='button mobile material'>add</a>
       {/if}
     </div>
 </div>
