@@ -139,6 +139,10 @@ async function generateConcept (locals, params) {
   if (updateError) { throw new Error(updateError.message) }
 }
 
+export const GET = async ({ locals }) => {
+  return new Response('OK:' + locals.runtime.env.PRIVATE_GEMINI, { status: 200 })
+}
+
 export const POST = async ({ request, locals }) => {
   console.log('Generating solo concept...')
   const data = await request.json()
