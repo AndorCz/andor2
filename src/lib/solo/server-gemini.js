@@ -95,6 +95,10 @@ export const storytellerParams = {
 
 export function getAI (env) {
   console.log('Initializing AI with API key:', env.PRIVATE_GEMINI)
+  if (!env.PRIVATE_GEMINI) {
+    console.error('API key for Gemini is not set in environment variables')
+    return null
+  }
   return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
   // try {
   // } catch (error) {
