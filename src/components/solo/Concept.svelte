@@ -75,7 +75,8 @@
   async function retryGeneration () {
     retryingGeneration = true
     try {
-      const response = await fetch('/api/solo/retryGeneration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptId: concept.id }) })
+      const body = { id: concept.id, author: user.id, name: concept.name, world: concept.prompt_world, plan: concept.prompt_plan, protagonist: concept.prompt_protagonist, locations: concept.prompt_locations, factions: concept.prompt_factions, characters: concept.prompt_characters, header_image: concept.prompt_header_image, storyteller_image: concept.prompt_storyteller_image, tags: concept.tags }
+      const response = await fetch('/api/solo/generateConcept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       const data = await response.json()
       if (!response.ok || data.error) { throw new Error(data.error.message) }
       if (data.success) {
