@@ -20,8 +20,7 @@
       }).select().single()
 
       if (error) { throw new Error('Error creating concept: ' + error.message) }
-      // Can't await for the response here, it would take too long
-      const response = fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
+      const response = await fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
