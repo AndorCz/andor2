@@ -5,6 +5,8 @@
 
   const { supabase, user, runtime } = Astro.locals
 
+  const path = `${Astro.url.origin}/api/solo/generateConcept`
+  console.log('path', path)
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
@@ -20,7 +22,7 @@
       }).select().single()
 
       if (error) { throw new Error('Error creating concept: ' + error.message) }
-      const response = await fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
+      const response = await fetch(path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
@@ -34,6 +36,7 @@
 ---
 
 <Layout title='Vytvořit herní koncept'>
+  ___{path}___
   <a href='javascript:history.back()'>zpět</a>
   <h1>Vytvořit herní koncept</h1>
   <ConceptForm {user} client:only='svelte' />
