@@ -63,7 +63,7 @@ export const POST = async ({ request, locals }) => {
     const response = await chat.sendMessageStream({ message: lastPost.content })
 
     // Create async generator for streaming
-    async function* generateStreamData() {
+    async function * generateStreamData () {
       let finalData = null
       const parser = new StreamingJSONParser()
 
@@ -72,7 +72,7 @@ export const POST = async ({ request, locals }) => {
         for await (const chunk of response) {
           if (chunk.text) {
             const events = parser.processChunk(chunk.text)
-            
+
             for (const event of events) {
               if (event.character) {
                 // Enhance character data with full NPC info

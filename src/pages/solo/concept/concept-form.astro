@@ -6,34 +6,32 @@
   const { supabase, user, runtime } = Astro.locals
 
   if (Astro.request.method === 'POST') {
-    let conceptData
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
-    const fields = ['conceptName', 'promptWorld', 'promptStory', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage']
-    const [name, world, story, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage] = fields.map(field => formData.get(field))
+    const fields = ['conceptName', 'promptWorld', 'promptPlan', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage']
+    const [name, world, plan, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage] = fields.map(field => formData.get(field))
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
     try {
       // Create the concept record
-      const { data: createdConcept, error } = await supabase.from('solo_concepts').insert({
-        author: user.id, name, prompt_world: world, prompt_plan: story, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags,
+      const { data: conceptData, error } = await supabase.from('solo_concepts').insert({
+        author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags,
         generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
       }).select().single()
+
       if (error) { throw new Error('Error creating concept: ' + error.message) }
-      conceptData = createdConcept
-
-      // Start generation process
-      const { error: generationError } = generateSoloConcept(runtime.env, supabase, conceptData) // fire and forget
-      if (generationError) { throw new Error('Error during concept generation: ' + generationError.message) }
-
-      // Redirect user to the new concept page immediately
+      // Can't await for the response here, it would take too long
+      const response = fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
+      })
+      .catch(err => { throw new Error('Error sending concept generation request: ' + err) })
+      if (!response.ok) { throw new Error('Chyba při vytváření konceptu') }
+      // Redirect user to the new concept page that shows loading state
       return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
     } catch (error) {
-      console.error('Error in concept creation:', error)
-      if (conceptData) { 
-        await supabase.from('solo_concepts').update({ generating: [], generation_error: error.message }).eq('id', conceptData.id) 
-      }
-      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba při vytváření konceptu: ' + error.message)}`)
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent(error.message)}`)
     }
   }
 ---

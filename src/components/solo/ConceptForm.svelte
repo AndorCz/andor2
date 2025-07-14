@@ -40,8 +40,8 @@
     </div>
 
     <div class='row'>
-      <div class='labels'><label for='promptStory'>Příběh</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' {user} id='promptStory' name='promptStory' minHeight={75} maxlength={1000} /></div>
+      <div class='labels'><label for='promptPlan'>Příběh</label></div>
+      <div class='inputs'><TextareaExpandable placeholder='O čem hra bude? Stačí hlavní zápletka nebo motiv.' {user} id='promptPlan' name='promptPlan' minHeight={75} maxlength={1000} /></div>
     </div>
 
     <div class='row'>

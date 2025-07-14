@@ -16,7 +16,6 @@ export const POST = async ({ request, locals }) => {
     generateSoloConcept(locals.runtime.env, locals.supabase, conceptData)
 
     return new Response(JSON.stringify({ success: true, message: 'Generování bylo znovu spuštěno' }), { status: 200, headers: { 'Content-Type': 'application/json' } })
-
   } catch (error) {
     console.error('Error in retry generation:', error)
     return new Response(JSON.stringify({ error: { message: 'Chyba při opakování generování: ' + error.message } }), { status: 500, headers: { 'Content-Type': 'application/json' } })

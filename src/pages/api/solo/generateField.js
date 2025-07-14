@@ -1,5 +1,4 @@
 import { Type } from '@google/genai'
-import { GoogleGenAI } from '@google/genai'
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, clone } from '@lib/utils'
 import { getAI, assistantParams, prompts, fieldNames, getContext, imageParams } from '@lib/solo/server-gemini'

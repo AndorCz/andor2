@@ -14,9 +14,9 @@ export async function cropImageBackEnd (buffer, w, h) {
 /**
  * Creates a Server-Sent Events stream from an async generator or stream
  */
-export function createSSEStream(streamGenerator) {
+export function createSSEStream (streamGenerator) {
   return new ReadableStream({
-    async start(controller) {
+    async start (controller) {
       const encoder = new TextEncoder()
       try {
         for await (const data of streamGenerator) {
@@ -35,10 +35,10 @@ export function createSSEStream(streamGenerator) {
 /**
  * Helper to create SSE response headers
  */
-export function getSSEHeaders() {
+export function getSSEHeaders () {
   return {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive'
   }
 }
