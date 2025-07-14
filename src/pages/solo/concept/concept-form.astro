@@ -2,7 +2,6 @@
   import Layout from '@layouts/layout.astro'
   import ConceptForm from '@components/solo/ConceptForm.svelte'
   import { generateSoloConcept } from '@lib/solo/server-gemini'
-  import { POST } from '@pages/api/solo/generateConcept'
 
   const { supabase, user, runtime } = Astro.locals
 
@@ -21,18 +20,12 @@
       }).select().single()
 
       if (error) { throw new Error('Error creating concept: ' + error.message) }
-      
-      // Call endpoint directly
-      const response = await POST(Astro, {
-        body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags }),
-        headers: { 'Content-Type': 'application/json' }
+      const response = await fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
       }).catch(err => { throw new Error('Error sending concept generation request: ' + err) })
 
-      // const response = await fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
-      // })
       // Redirect user to the new concept page that shows loading state
       return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
     } catch (error) {
