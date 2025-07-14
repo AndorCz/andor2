@@ -150,7 +150,7 @@ export const GET = async ({ locals }) => {
   return new Response('OK:' + locals.runtime.env.PRIVATE_GEMINI, { status: 200 })
 }
 
-export const POST = async ({ request, locals }) => {
+export const POST = async ({ request, locals, context }) => {
   console.log('Generating solo concept...')
   const data = await request.json()
   const { id, author, name } = data
@@ -167,9 +167,11 @@ export const POST = async ({ request, locals }) => {
     })
 
     // Use waitUntil to ensure the background task completes
-    if (locals.runtime?.cf?.waitUntil) {
-      locals.runtime.cf.waitUntil(generationPromise)
+    if (context.waitUntil) {
+      console.log('Using context.waitUntil for background generation')
+      context.waitUntil(generationPromise)
     } else { // fallback for non-Cloudflare environments
+      console.log('Using background generation without context.waitUntil')
       generationPromise.catch(err => console.error('Background generation failed:', err))
     }
 
