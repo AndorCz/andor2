@@ -5,7 +5,7 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
     if (url.pathname !== '/outage') {
       locals.user = {} // default empty user object
 
-      const env = import.meta.env || locals.runtime.env
+      const env = locals.runtime?.env || import.meta.env
       if (!env.PUBLIC_SUPABASE_URL || !env.PRIVATE_GEMINI) throw new Error('Missing environment variables')
       locals.runtime = { env }
 
