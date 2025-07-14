@@ -5,14 +5,18 @@ import { generateImage } from '@lib/solo/server-aiml'
 import { getAI, assistantParams, assistantInstructions, prompts, imageParams } from '@lib/solo/server-gemini'
 
 export const POST = async ({ request, locals }) => {
+  console.log('Generating solo concept...')
   const env = locals.runtime.env
+  console.log('env.PRIVATE_GEMINI:', env.PRIVATE_GEMINI)
   const { id, author, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan } = await request.json()
+  console.log('Received data:', { id, author, name })
   if (!id || !author || !name) {
     console.error('Missing required fields for solo concept generation:', { id, author, name })
     return new Response(JSON.stringify({ error: { message: 'Některé povinné údaje chybí' } }), { status: 400 })
   }
   try {
-    const ai = getAI(locals.runtime.env)
+    console.log('Generating with parameters:', { world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan })
+    const ai = getAI(env)
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
@@ -21,10 +25,13 @@ export const POST = async ({ request, locals }) => {
     // World
     const promptWorld = { text: prompts.prompt_world }
     if (world) { promptWorld.text += `Vypravěč uvedl toto zadání: "${world}"` }
+    console.log('Sending message for world generation:', promptWorld)
     const responseWorld = await chat.sendMessage({ message: promptWorld })
+    console.log('Received response for world generation:', responseWorld.text)
     generating.splice(generating.indexOf('generated_world'), 1)
     const { error: updateErrorWorld } = await locals.supabase.from('solo_concepts').update({ generated_world: responseWorld.text, generating }).eq('id', id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
+    console.log('World generation completed successfully')
 
     // Factions
     const promptFactions = { text: prompts.prompt_factions }

@@ -110,7 +110,7 @@
     <div class='generating row'>
       <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
       <div class='info'>
-        <h2>Prosím o strpení,<br>připravuji detaily konceptu...</h2>
+        <h2>Prosím o strpení, připravuji<br>detaily konceptu...</h2>
         <ul>
           <li><span class='material'>{concept.generating.includes('generated_world') ? 'hourglass_top' : 'check'}</span><span class='wide'>Svět</span></li>
           <li><span class='material'>{concept.generating.includes('generated_factions') ? 'hourglass_top' : 'check'}</span><span class='wide'>Frakce</span></li>
