@@ -6,7 +6,7 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
       locals.user = {} // default empty user object
 
       const env = import.meta.env || locals.runtime.env
-      if (!env.PUBLIC_SUPABASE_URL) throw new Error('Missing environment variables')
+      if (!env.PUBLIC_SUPABASE_URL || !env.PRIVATE_GEMINI) throw new Error('Missing environment variables')
       locals.runtime = { env }
 
       const supabase = createServerClient(
