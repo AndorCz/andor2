@@ -75,6 +75,7 @@
     main {
       flex: 1;
       line-height: 150%;
+      overflow: auto;
     }
       .content {
         background-color: var(--block);
