@@ -16,7 +16,7 @@ export const POST = async ({ request, locals }) => {
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
-    const generating = ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'annotation', 'header_image', 'storyteller_image', 'protagonist_names', 'inventory', 'generated_plan']
+    const generating = ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'annotation', 'generated_header_image', 'generated_storyteller_image', 'header_image', 'storyteller_image', 'protagonist_names', 'inventory', 'generated_plan']
 
     // World
     const promptWorld = { text: prompts.prompt_world }

@@ -25,9 +25,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
-      })
-      .catch(err => { throw new Error('Error sending concept generation request: ' + err) })
-      if (!response.ok) { throw new Error('Chyba při vytváření konceptu') }
+      }).catch(err => { throw new Error('Error sending concept generation request: ' + err) })
       // Redirect user to the new concept page that shows loading state
       return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
     } catch (error) {
