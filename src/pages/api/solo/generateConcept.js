@@ -167,8 +167,9 @@ export const POST = async ({ request, locals }) => {
     })
 
     // Try different possible locations
-    const waitUntil = locals.runtime?.waitUntil || locals.waitUntil
+    const waitUntil = locals.runtime?.ctx?.waitUntil || locals.waitUntil
     console.log('waitUntil available:', !!waitUntil)
+    console.log('locals.runtime.ctx:', locals.runtime?.ctx)
 
     // Use waitUntil to ensure the background task completes
     if (waitUntil) {
@@ -178,6 +179,10 @@ export const POST = async ({ request, locals }) => {
       console.log('Using background generation without context.waitUntil')
       generationPromise.catch(err => console.error('Background generation failed:', err))
     }
+
+    console.log('locals.runtime keys:', Object.keys(locals.runtime || {}))
+    console.log('locals.runtime.ctx keys:', Object.keys(locals.runtime?.ctx || {}))
+    console.log('locals.runtime.ctx.waitUntil type:', typeof locals.runtime?.ctx?.waitUntil)
 
     return new Response(JSON.stringify({ success: true }), { status: 200 })
   } catch (error) {
