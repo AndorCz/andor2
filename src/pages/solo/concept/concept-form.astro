@@ -5,6 +5,12 @@
 
   const { supabase, user, runtime } = Astro.locals
 
+  // Try to use waitUntil if available
+  const waitUntil = runtime?.ctx?.waitUntil || runtime?.waitUntil
+  console.log('waitUntil available in frontmatter:', !!waitUntil)
+  console.log('runtime keys:', Object.keys(runtime || {}))
+  console.log('runtime.ctx keys:', Object.keys(runtime?.ctx || {}))
+
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
