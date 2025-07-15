@@ -7,9 +7,7 @@ import { getAI, assistantParams, assistantInstructions, prompts, imageParams } f
 async function generateConcept (locals, params) {
   const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan } = params
   try {
-    console.log('Generating with parameters:', { world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan })
     const env = locals.runtime.env
-    console.log('env.PRIVATE_GEMINI:', env.PRIVATE_GEMINI)
     const ai = getAI(env)
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
@@ -19,13 +17,10 @@ async function generateConcept (locals, params) {
     // World
     const promptWorld = { text: prompts.prompt_world }
     if (world) { promptWorld.text += `Vypravěč uvedl toto zadání: "${world}"` }
-    console.log('Sending message for world generation:', promptWorld)
     const responseWorld = await chat.sendMessage({ message: promptWorld })
-    console.log('Received response for world generation:', responseWorld.text)
     generating.splice(generating.indexOf('generated_world'), 1)
     const { error: updateErrorWorld } = await locals.supabase.from('solo_concepts').update({ generated_world: responseWorld.text, generating }).eq('id', id)
     if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
-    console.log('World generation completed successfully')
 
     // Factions
     const promptFactions = { text: prompts.prompt_factions }
@@ -88,8 +83,13 @@ async function generateConcept (locals, params) {
     if (npcError) { throw new Error(npcError.message) }
 
     // Header image
+    console.log('Starting header image generation...')
     const { data: headerImage, error: headerImageError } = await generateImage(env, responseHeaderImagePrompt.text, imageParams.header)
-    if (headerImageError) { throw new Error(headerImageError.message) }
+    if (headerImageError) {
+      console.error('Header image generation failed:', headerImageError)
+      throw new Error(headerImageError.message)
+    }
+    console.log('Header image generated successfully, uploading...')
     if (headerImage) {
       const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
       if (headerUploadError) { throw new Error(headerUploadError.message) }
@@ -166,23 +166,14 @@ export const POST = async ({ request, locals }) => {
       return locals.supabase.from('solo_concepts').update({ generating: [], generation_error: error.message }).eq('id', id)
     })
 
-    // Try different possible locations
-    const waitUntil = locals.runtime?.ctx?.waitUntil || locals.waitUntil
-    console.log('waitUntil available:', !!waitUntil)
-    console.log('locals.runtime.ctx:', locals.runtime?.ctx)
-
     // Use waitUntil to ensure the background task completes
-    if (waitUntil) {
+    if (locals.runtime?.ctx?.waitUntil) {
       console.log('Using waitUntil for background generation')
-      waitUntil(generationPromise)
+      locals.runtime.ctx.waitUntil(generationPromise)
     } else { // fallback for non-Cloudflare environments
       console.log('Using background generation without context.waitUntil')
       generationPromise.catch(err => console.error('Background generation failed:', err))
     }
-
-    console.log('locals.runtime keys:', Object.keys(locals.runtime || {}))
-    console.log('locals.runtime.ctx keys:', Object.keys(locals.runtime?.ctx || {}))
-    console.log('locals.runtime.ctx.waitUntil type:', typeof locals.runtime?.ctx?.waitUntil)
 
     return new Response(JSON.stringify({ success: true }), { status: 200 })
   } catch (error) {

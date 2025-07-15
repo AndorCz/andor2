@@ -21,14 +21,25 @@ export async function generateImage (env, prompt, imageParams) {
     console.log('Image generation response:', response.status, response.statusText)
 
     clearTimeout(timeoutId)
-    if (!response.ok) { throw new Error(`Nevygenerován žádný obrázek, status: ${response.status}`) }
+    if (!response.ok) {
+      clearTimeout(timeoutId)
+      const generationErrorText = await response.text()
+      console.error('Image generation failed:', response.status, response.statusText, generationErrorText)
+      throw new Error(`Nevygenerován žádný obrázek, status: ${response.status}, text: ${generationErrorText}`)
+    }
     const generation = await response.json()
+
     // download resulting image
     const url = generation.images[0].url
     console.log('Image URL:', url)
 
     const imageResponse = await fetch(url)
-    if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
+    if (!imageResponse.ok) {
+      clearTimeout(timeoutId)
+      const downloadErrorText = await imageResponse.text()
+      console.error('Image download failed:', imageResponse.status, imageResponse.statusText, downloadErrorText)
+      throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}, text: ${downloadErrorText}`)
+    }
     const imageBlob = await imageResponse.blob()
     const bufferImage = Buffer.from(await imageBlob.arrayBuffer())
     // crop to exact size
