@@ -94,6 +94,29 @@
 
 {#if concept.generating.length > 0 || concept.generation_error}
   <h1>{concept.name}</h1>
+  <div class='generating row'>
+    {#if !concept.generation_error}
+      <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
+    {/if}
+    <div class='info'>
+      <h2>Prosím o strpení, připravuji<br>detaily konceptu...</h2>
+      <ul>
+        <li><span class='material'>{concept.generating.includes('generated_world') ? 'hourglass_top' : 'check'}</span><span class='wide'>Svět</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_factions') ? 'hourglass_top' : 'check'}</span><span class='wide'>Frakce</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_locations') ? 'hourglass_top' : 'check'}</span><span class='wide'>Místa</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
+        <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
+        <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
+        <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
+        <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
+        <li><span class='material'>{concept.generating.includes('inventory') ? 'hourglass_top' : 'check'}</span><span class='wide'>Inventář</span></li>
+        <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
+      </ul>
+    </div>
+  </div>
   {#if concept.generation_error}
     <h2>Při generování došlo k chybě</h2>
     <div class='error'>
@@ -104,28 +127,6 @@
         {:else}
           <button onclick={retryGeneration}>Zkusit znovu</button>
         {/if}
-      </div>
-    </div>
-  {:else}
-    <div class='generating row'>
-      <video src='/video/working.mp4' class='generating' autoplay loop muted playsinline alt='Generuji koncept'></video>
-      <div class='info'>
-        <h2>Prosím o strpení, připravuji<br>detaily konceptu...</h2>
-        <ul>
-          <li><span class='material'>{concept.generating.includes('generated_world') ? 'hourglass_top' : 'check'}</span><span class='wide'>Svět</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_factions') ? 'hourglass_top' : 'check'}</span><span class='wide'>Frakce</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_locations') ? 'hourglass_top' : 'check'}</span><span class='wide'>Místa</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_characters') ? 'hourglass_top' : 'check'}</span><span class='wide'>Postavy</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_protagonist') ? 'hourglass_top' : 'check'}</span><span class='wide'>Protagonista</span></li>
-          <li><span class='material'>{concept.generating.includes('annotation') ? 'hourglass_top' : 'check'}</span><span class='wide'>Anotace</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku hlavičky</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Popis obrázku vypravěče</span></li>
-          <li><span class='material'>{concept.generating.includes('header_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek hlavičky</span></li>
-          <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
-          <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
-          <li><span class='material'>{concept.generating.includes('inventory') ? 'hourglass_top' : 'check'}</span><span class='wide'>Inventář</span></li>
-          <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
-        </ul>
       </div>
     </div>
   {/if}

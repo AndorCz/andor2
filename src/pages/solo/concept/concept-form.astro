@@ -23,7 +23,7 @@
       const response = await fetch(`${Astro.url.origin}/api/solo/generateConcept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags })
+        body: JSON.stringify({ id: conceptData.id, author: user.id, name, world, plan, protagonist, locations, factions, characters, promptHeaderImage, promptStorytellerImage, tags, generating: conceptData.generating })
       }).catch(err => { throw new Error('Error sending concept generation request: ' + err) })
 
       // Redirect user to the new concept page that shows loading state

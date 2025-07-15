@@ -7,7 +7,6 @@ export async function generateImage (env, prompt, imageParams) {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 120000) // 120 second timeout
 
-    console.log('Generating image with prompt:', prompt)
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + env.AIML_API_KEY, 'Content-Type': 'application/json' },
@@ -18,28 +17,14 @@ export async function generateImage (env, prompt, imageParams) {
       }),
       signal: abortController.signal
     })
-    console.log('Image generation response:', response.status, response.statusText)
 
     clearTimeout(timeoutId)
-    if (!response.ok) {
-      clearTimeout(timeoutId)
-      const generationErrorText = await response.text()
-      console.error('Image generation failed:', response.status, response.statusText, generationErrorText)
-      throw new Error(`Nevygenerován žádný obrázek, status: ${response.status}, text: ${generationErrorText}`)
-    }
+    if (!response.ok) { throw new Error(`Nevygenerován žádný obrázek, status: ${response.status}`) }
     const generation = await response.json()
-
     // download resulting image
     const url = generation.images[0].url
-    console.log('Image URL:', url)
-
     const imageResponse = await fetch(url)
-    if (!imageResponse.ok) {
-      clearTimeout(timeoutId)
-      const downloadErrorText = await imageResponse.text()
-      console.error('Image download failed:', imageResponse.status, imageResponse.statusText, downloadErrorText)
-      throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}, text: ${downloadErrorText}`)
-    }
+    if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
     const imageBlob = await imageResponse.blob()
     const bufferImage = Buffer.from(await imageBlob.arrayBuffer())
     // crop to exact size

@@ -5,14 +5,13 @@ import { generateImage } from '@lib/solo/server-aiml'
 import { getAI, assistantParams, assistantInstructions, prompts, imageParams } from '@lib/solo/server-gemini'
 
 async function generateConcept (locals, params) {
-  const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan } = params
+  const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan, generating } = params
   try {
     const env = locals.runtime.env
     const ai = getAI(env)
     const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
     const chat = ai.chats.create({ ...assistantParams, history: [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }] })
-    const generating = ['generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'annotation', 'generated_header_image', 'generated_storyteller_image', 'header_image', 'storyteller_image', 'protagonist_names', 'inventory', 'generated_plan']
 
     // World
     const promptWorld = { text: prompts.prompt_world }
@@ -83,13 +82,8 @@ async function generateConcept (locals, params) {
     if (npcError) { throw new Error(npcError.message) }
 
     // Header image
-    console.log('Starting header image generation...')
     const { data: headerImage, error: headerImageError } = await generateImage(env, responseHeaderImagePrompt.text, imageParams.header)
-    if (headerImageError) {
-      console.error('Header image generation failed:', headerImageError)
-      throw new Error(headerImageError.message)
-    }
-    console.log('Header image generated successfully, uploading...')
+    if (headerImageError) { throw new Error(headerImageError.message) }
     if (headerImage) {
       const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
       if (headerUploadError) { throw new Error(headerUploadError.message) }
