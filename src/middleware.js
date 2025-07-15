@@ -7,7 +7,7 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
 
       const env = locals.runtime?.env || import.meta.env
       if (!env.PUBLIC_SUPABASE_URL || !env.PRIVATE_GEMINI) throw new Error('Missing environment variables')
-      locals.runtime.env = env
+      if (locals.runtime) { locals.runtime.env = env }
 
       const supabase = createServerClient(
         env.PUBLIC_SUPABASE_URL,
