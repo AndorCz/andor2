@@ -26,10 +26,14 @@ export async function generateImage (env, prompt, imageParams) {
     const imageResponse = await fetch(url)
     if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
     const imageBlob = await imageResponse.blob()
-    const bufferImage = Buffer.from(await imageBlob.arrayBuffer())
+    const imageBuffer = Buffer.from(await imageBlob.arrayBuffer())
     // crop to exact size
-    const { data, error } = await cropImageBackEnd(bufferImage, imageParams.crop.width, imageParams.crop.height)
-    return { data, error }
+    if (imageParams.crop) {
+      const { data, error } = await cropImageBackEnd(imageBuffer, imageParams.crop.width, imageParams.crop.height)
+      return { data, error }
+    } else {
+      return { data: imageBuffer }
+    }
   } catch (error) {
     if (error.name === 'AbortError') {
       console.error('Image generation timed out')
