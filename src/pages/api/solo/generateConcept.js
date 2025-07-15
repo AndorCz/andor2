@@ -174,7 +174,7 @@ async function generateConcept (locals, params, sendEvent) {
       const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, imageParams.npc)
       if (storytellerImageError) { throw new Error(storytellerImageError.message) }
       if (storytellerImage) {
-        const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${npcData.portrait}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
+        const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
         if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
       }
       currentGenerating.splice(currentGenerating.indexOf('storyteller_image'), 1)
