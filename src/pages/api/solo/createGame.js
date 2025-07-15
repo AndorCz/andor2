@@ -17,6 +17,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: concept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', conceptId).single()
     if (conceptError) { throw new Error('Chyba při načítání konceptu: ' + conceptError.message) }
     if (!concept) { throw new Error('Koncept nebyl nalezen') }
+    const context = getContext(concept)
 
     // Increment the concept's play count
     const { error: incrementError } = await locals.supabase.from('solo_concepts').update({ game_count: (concept.game_count || 0) + 1 }).eq('id', concept.id)
@@ -40,9 +41,6 @@ export const GET = async ({ request, locals, redirect }) => {
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, solo_id: gameData.id }, { onConflict: 'user_id, solo_id', ignoreDuplicates: true })
     if (bookmarkError) { throw new Error('Chyba při přidávání záložky: ' + bookmarkError.message) }
 
-    // Context generation
-    const context = getContext(concept)
-    
     // Generate character portrait image
     const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, characterImagePromptResponse.text, imageParams.npc)
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
@@ -52,13 +50,13 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const response = await ai.models.generateContent({ ...storytellerParams, contents: [...context, { text: prompts.firstPost }] })
-    let firstPost = JSON.parse(response.text)
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: context }, { text: prompts.firstPost }] })
+    const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
     let firstImagePrompt = firstPost.image.prompt
     if (!firstImagePrompt) {
-      metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost.post}` }
+      const metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost.post}` }
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }
