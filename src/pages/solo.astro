@@ -23,7 +23,6 @@
   const { data: concepts, count, error } = await query
   const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
-  const env = runtime.env
 ---
 <Layout title='Solo'>
   <SoloList {user} {concepts} {page} {maxPage} client:only='svelte' />

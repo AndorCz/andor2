@@ -5,7 +5,7 @@ export async function generateImage (env, prompt, imageParams) {
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 120000) // 120 second timeout
+    const timeoutId = setTimeout(() => abortController.abort(), 50000) // 50 second timeout
 
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',

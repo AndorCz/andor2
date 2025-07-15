@@ -5,9 +5,10 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
     if (url.pathname !== '/outage') {
       locals.user = {} // default empty user object
 
-      const env = locals.runtime?.env || import.meta.env
+      locals.runtime = locals.runtime || {}
+      const env = locals.runtime.env || import.meta.env
+      locals.runtime.env = env
       if (!env.PUBLIC_SUPABASE_URL || !env.PRIVATE_GEMINI) throw new Error('Missing environment variables')
-      if (locals.runtime) { locals.runtime.env = env }
 
       const supabase = createServerClient(
         env.PUBLIC_SUPABASE_URL,
