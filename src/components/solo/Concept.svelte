@@ -5,38 +5,21 @@
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import Loading from '@components/common/Loading.svelte'
 
   let { concept = $bindable(), user } = $props()
 
-  let checkLoop = null
   let openGames = $state([])
   let creatingGame = $state(false)
   let retryingGeneration = $state(false)
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
 
   onMount(async () => {
-    // Call generation API and periodically check if the concept is done generating
+    // Start SSE generation if concept needs generating
     if (concept.generating.length > 0) {
-      checkLoop = setInterval(async () => { // check status every 5 seconds
-        console.log('checking concept generation status...')
-        const { data, error } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('id', concept.id).single()
-        if (error) { handleError(error) }
-        if (data) { concept = data }
-        if (data && data.generating.length === 0 && !data.generation_error) {
-          selectedName = isFilledArray(data.protagonist_names) ? data.protagonist_names[0] : ''
-          clearInterval(checkLoop)
-          checkLoop = null
-          window.location.reload()
-        }
-        // If there's an error, stop checking but don't reload
-        if (data && data.generation_error) {
-          clearInterval(checkLoop)
-          checkLoop = null
-        }
-      }, 5000)
+      startGeneration()
     } else {
       // Load open games for this concept
       const { data, error } = await supabase.from('solo_games').select().match({ concept_id: concept.id, player: user.id }).order('created_at', { ascending: false })
@@ -45,7 +28,80 @@
     }
   })
 
-  onDestroy(() => { if (checkLoop) { clearInterval(checkLoop) } })
+  async function startGeneration () {
+    try {
+      const body = {
+        id: concept.id,
+        author: user.id,
+        name: concept.name,
+        world: concept.prompt_world,
+        plan: concept.prompt_plan,
+        protagonist: concept.prompt_protagonist,
+        locations: concept.prompt_locations,
+        factions: concept.prompt_factions,
+        characters: concept.prompt_characters,
+        promptHeaderImage: concept.prompt_header_image,
+        promptStorytellerImage: concept.prompt_storyteller_image,
+        tags: concept.tags,
+        generating: concept.generating
+      }
+
+      const response = await fetch('/api/solo/generateConcept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+
+      if (!response.ok) {
+        throw new Error('Generation request failed')
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          // if (line.startsWith('event:')) {
+          //   const eventType = line.substring(6).trim()
+          //   continue
+          // }
+          if (line.startsWith('data:')) {
+            const data = JSON.parse(line.substring(5).trim())
+            handleSSEEvent(data)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('SSE Generation failed:', error)
+      handleError(error)
+    }
+  }
+
+  function handleSSEEvent (data) {
+    if (data.step && data.generating) {
+      // Update the generating array based on server response
+      concept.generating = data.generating
+      concept = { ...concept } // Trigger reactivity
+    }
+
+    if (data.status === 'Generation completed') {
+      // Generation is complete, reload the page to show final result
+      window.location.reload()
+    }
+
+    if (data.message && data.message.includes('Error')) {
+      // Handle error
+      concept.generation_error = data.message
+      concept.generating = []
+      concept = { ...concept } // Trigger reactivity
+    }
+  }
 
   function getTagNames (tags) {
     return tags.map(tag => { return gameTags.find(t => t.value === tag).label }).join(', ')
@@ -75,15 +131,23 @@
   async function retryGeneration () {
     retryingGeneration = true
     try {
-      const body = { id: concept.id, author: user.id, name: concept.name, world: concept.prompt_world, plan: concept.prompt_plan, protagonist: concept.prompt_protagonist, locations: concept.prompt_locations, factions: concept.prompt_factions, characters: concept.prompt_characters, header_image: concept.prompt_header_image, storyteller_image: concept.prompt_storyteller_image, tags: concept.tags }
-      const response = await fetch('/api/solo/generateConcept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      const data = await response.json()
-      if (!response.ok || data.error) { throw new Error(data.error.message) }
-      if (data.success) {
-        showSuccess('Generování bylo znovu spuštěno')
-        // Reload the page to show the generating state
-        window.location.reload()
-      }
+      // Reset the generating array in the database
+      const { error: resetError } = await supabase.from('solo_concepts').update({
+        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image'],
+        generation_error: ''
+      }).eq('id', concept.id)
+
+      if (resetError) { throw new Error(resetError.message) }
+
+      // Update local state
+      concept.generating = ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
+      concept.generation_error = ''
+      concept = { ...concept } // Trigger reactivity
+
+      // Start SSE generation
+      startGeneration()
+
+      showSuccess('Generování bylo znovu spuštěno')
     } catch (error) {
       handleError(error)
     } finally {
