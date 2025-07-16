@@ -88,10 +88,10 @@ export const POST = async ({ request, locals }) => {
 
         // Finalize parsing
         finalData = parser.finalize()
-        console.log('Final data received:', finalData)
+        // console.log('Final data received:', finalData)
 
         // Generate image if needed
-        console.log('Image data:', finalData.image)
+        // console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
           const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, gameData.id, gameData.thread)
           if (finalData.image.type === 'scene') {
@@ -103,7 +103,7 @@ export const POST = async ({ request, locals }) => {
           }
         }
 
-        console.log('Inventory data:', finalData.inventory)
+        // console.log('Inventory data:', finalData.inventory)
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
           await locals.supabase.from('solo_game').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
           yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }

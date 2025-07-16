@@ -2,12 +2,12 @@ import { GoogleGenAI, Type } from '@google/genai'
 
 const imageSafetyAffix = 'Prompt nesmí obsahovat sebepoškozování a explicitně násilný či sexuální obsah.'
 const artStyleAffix = 'Styl by měla být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.'
-const illustrationStyleAffix = 'Přidej tento popis stylu: "Masterful black and white ink illustration. Artwork rendered with fine linework, hatching, and cross-hatching, on aged parchment. No coloring, no anime, no manga."'
+const illustrationStyleAffix = 'Přidej tento popis stylu: "Detailed black ink RPG book illustration on texture of aged parchment. Artwork rendered with fine linework, hatching, and cross-hatching. No coloring, no anime, no manga."'
 export const prompts = {
   prompt_world: 'Napiš HTML: 1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh. \n',
   prompt_factions: 'Napiš HTML: 2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',
   prompt_locations: 'Napiš HTML: 3. Lokace: Navrhni zajímavá místa kde by se mohl příběh odehrávat.\n',
-  prompt_characters: 'Napiš HTML: 4. Postavy: Popiš konkrétně několik zajímavých postav které budou v příběhu vystupovat.\n',
+  prompt_characters: 'Napiš HTML: 4. Postavy: Popiš konkrétně několik zajímavých NPC postav které mohou v příběhu vystupovat.\n',
   prompt_protagonist: 'Napiš HTML: 5. Protagonista: Napiš stručný text pro jednoho hráče (1on1 hra), který mu v jednom odstavci vysvětlí jakou postavu bude hrát. Jeden odstavec popisu vzhledu, seznam dovedností a nakonec krátký odstavec o nedávné minulosti. Osobnost a pohlaví bude na hráči samotném.\n',
   prompt_plan: 'Napiš HTML: 6. Plán hry: Připrav schematickou osnovu příběhu. Popiš plán tak, aby měla každá situace několik jasných východisek, které vždy posunou příběh do další scény. Příběh může i předčasně skončit smrtí postavy. Hra by měla být relativně krátká (jedno sezení, 3-5 scén) a mít jasně daný konec.\n',
   prompt_header_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro tuto hru. Vymysli zajímavý motiv, který dobře popisuje téma hry, popiš vizuální styl, který vystihuje její atmosféru a estetiku. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${artStyleAffix} ${imageSafetyAffix} \n`,
@@ -17,9 +17,8 @@ export const prompts = {
   annotation: 'Napiš plaintext: Jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plaintext, bez HTML a CSS stylů.\n',
   first_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${illustrationStyleAffix} ${imageSafetyAffix}\n`,
   protagonist_image: `Napiš plaintext: AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${artStyleAffix} ${imageSafetyAffix}\n`,
-  firstPost: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu. Pokud bude postava venku, nezapomeň zmínit roční období nebo aktuální počasí. Určitě přidej úvodní obrázek scény.'
+  firstPost: 'Napiš stručný a poutavý první příspěvek hry, který hráče uvede do příběhu. Vycházej z poskytnutého plánu hry. Pokud bude postava venku, nezapomeň zmínit roční období nebo aktuální počasí. Určitě přidej úvodní obrázek scény.'
 }
-export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Protagonista', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy' }
 export const assistantInstructions = 'Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce. Tvá úloha je napsat textové podklady pro hru. Důležité: Výstupem každé zprávy musí být samotný text podkladů. Nesmí obsahovat absolutně žádný jiný text ani formátování okolo. Pokud použiješ přímou řeč k hráči, buď neformální a tykej. Pokud je zadání "Napiš HTML", odpověz POUZE a VÝHRADNĚ blokem HTML kódu, žádné CSS ani markdown obalení. Ne celou stránku včetně hlavičky, jen obsah který bude vložen do existující stránky. Tvá odpověď nesmí obsahovat ŽÁDNÝ markdown. Pokud je zadání "Napiš plaintext", odpověz POUZE a VÝHRADNĚ čistým textem, bez HTML kódu. '
 export const assistantParams = {
   model: 'gemini-2.5-flash-lite-preview-06-17',
@@ -102,15 +101,17 @@ export function getAI (env) {
   // }
 }
 
+export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy' }
+
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
 export function getContext (conceptData, exclude) {
   const context = {
     basePrompt: { text: `Hra se bude jmenovat "${decodeURIComponent(conceptData.name)}". Budou následovat podklady (setting) pro tuto hru.` },
-    prompt_world: { text: conceptData.generated_world },
-    prompt_factions: { text: conceptData.generated_factions },
-    prompt_locations: { text: conceptData.generated_locations },
-    prompt_characters: { text: conceptData.generated_characters },
-    prompt_protagonist: { text: conceptData.generated_protagonist }
+    prompt_world: { text: `<h2>${fieldNames.prompt_world}</h2>\n${conceptData.generated_world}` },
+    prompt_factions: { text: `<h2>${fieldNames.prompt_factions}</h2>\n${conceptData.generated_factions}` },
+    prompt_locations: { text: `<h2>${fieldNames.prompt_locations}</h2>\n${conceptData.generated_locations}` },
+    prompt_characters: { text: `<h2>${fieldNames.prompt_characters}</h2>\n${conceptData.generated_characters}` },
+    prompt_protagonist: { text: `<h2>${fieldNames.prompt_protagonist}</h2>\n${conceptData.generated_protagonist}` }
   }
   if (exclude) { delete context[exclude] }
   return Object.values(context).map(item => item.text).join('\n\n')

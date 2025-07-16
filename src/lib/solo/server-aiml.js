@@ -12,7 +12,7 @@ export async function generateImage (env, prompt, imageParams) {
       headers: { Authorization: 'Bearer ' + env.AIML_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
-        model: 'flux/dev', // 'flux/schnell'
+        model: 'flux/schnell', // 'flux/dev'
         image_size: { width: imageParams.generation.width, height: imageParams.generation.height }
       }),
       signal: abortController.signal

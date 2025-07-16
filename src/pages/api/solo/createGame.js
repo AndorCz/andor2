@@ -50,7 +50,18 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: context }, { text: prompts.firstPost }] })
+    const firstPostPrompt = {
+      text: `
+        <h2>Postava hráče</h2>
+        Jméno postavy: ${characterName}
+        Inventář: ${game.inventory.join(', ')}
+        <h2>Plán hry</h2>
+        ${concept.generated_plan}
+        <h2>Instrukce</h2>
+        ${prompts.firstPost}
+      `
+    }
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: context }, { text: firstPostPrompt }] })
     const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
