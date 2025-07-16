@@ -76,7 +76,8 @@ export const storytellerParams = {
           properties: {
             prompt: { type: Type.STRING, description: `Pokud hráč potkal novou postavu, získal významný předmět nebo se ocitl v nové scéně, napiš prompt pro AI generátor obrázků. Měl by být v angličtině a vystihnout vizuálně novou scénu, předmět či postavu. ${illustrationStyleAffix} ${imageSafetyAffix}` },
             type: { type: Type.STRING, enum: ['scene', 'npc', 'item'], description: 'Typ obrázku, který se má vygenerovat. Použij "scene" pro ilustraci scény, "npc" pro portrét NPC postavy, nebo "item" pro ilustraci významného předmětu.' }
-          }
+          },
+          required: ['prompt', 'type']
         },
         inventory: {
           type: Type.OBJECT,

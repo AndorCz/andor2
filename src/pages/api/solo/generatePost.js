@@ -21,7 +21,7 @@ export const POST = async ({ request, locals }) => {
     // For scene add as standalone post
     let postData = null
     if (type === 'scene') {
-      const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.bucket)
+      const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.scene.bucket)
       const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='${type} illustration' />`, owner_type: 'npc' }).select().single()
       if (postError) { console.error('Error saving image post:', postError) }
       postData = postDataSaved
@@ -89,7 +89,7 @@ export const POST = async ({ request, locals }) => {
         // console.log('Final data received:', finalData)
 
         // Generate image if needed
-        // console.log('Image data:', finalData.image)
+        console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
           const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, gameData.id, gameData.thread)
           if (finalData.image.type === 'scene') {
