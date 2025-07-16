@@ -8,8 +8,7 @@
   import HeaderInput from '@components/common/HeaderInput.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let data = {}
-  export let user = {}
+  let { data = $bindable({}), user = {} } = $props()
 
   function normalizeTags () {
     if (Array.isArray(data.tags) && typeof data.tags[0] === 'string') {
@@ -18,15 +17,15 @@
     }
   }
 
-  let saving = false
-  let originalName
-  let originalAnnotation
-  let originalCategory
-  let originalTagsString
-  let selectedTagsString
-  let headlineEl
-  let tagItems = []
-  let categoryItems = []
+  let saving = $state(false)
+  let originalName = $state()
+  let originalAnnotation = $state()
+  let originalCategory = $state()
+  let originalTagsString = $state()
+  let headlineEl = $state()
+  let tagItems = $state([])
+  let categoryItems = $state([])
+  const selectedTagsString = $derived(data.tags?.map(t => t.value).join(','))
 
   onMount(() => {
     if (data.type === 'text') {
@@ -74,15 +73,14 @@
     window.location.href = `/work/${data.id}`
   }
 
-  $: maxTags = data.tags?.length === 3
-  $: selectedTagsString = data.tags?.map(t => t.value).join(',')
+  const maxTags = $derived(data.tags?.length === 3)
 </script>
 
 <div class='headline' bind:this={headlineEl}>
   <div class='wrapper'>
     <a href='/work/{data.id}' class='backlink'>{data.name}</a>
     <h1>Nastavení</h1>
-    <button on:click={showWork} class='material square back' title='Zpět do díla' use:tooltip>check</button>
+    <button onclick={showWork} class='material square back' title='Zpět do díla' use:tooltip>arrow_back</button>
   </div>
 </div>
 <main>
@@ -97,13 +95,13 @@
     <h2>Název</h2>
     <div class='row'>
       <input type='text' id='workName' name='workName' bind:value={data.name} maxlength='80' />
-      <button on:click={updateWork} disabled={saving || originalName === data.name} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={updateWork} disabled={saving || originalName === data.name} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Anotace</h2>
     <div class='row'>
       <TextareaExpandable {user} id='workAnnotation' name='workAnnotation' bind:value={data.annotation} maxlength={150} />
-      <button on:click={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
+      <button onclick={updateWork} disabled={saving || originalAnnotation === data.annotation} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     {#if categoryItems.length}
@@ -114,7 +112,7 @@
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
-        <button on:click={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateWork} disabled={saving || originalCategory === data.category} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
     {/if}
 
@@ -122,15 +120,17 @@
       <h2>Tagy</h2>
       <div class='row'>
         <Select items={maxTags ? [] : tagItems} multiple bind:value={data.tags} placeholder=''>
-          <div slot='empty'>Více tagů nelze přidat</div>
+          {#snippet empty()}
+                    <div >Více tagů nelze přidat</div>
+                  {/snippet}
         </Select>
-        <button on:click={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
+        <button onclick={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
     {/if}
 
     <h2>Smazání díla</h2>
     Pozor, toto je nevratná akce.<br><br>
-    <button class='delete' on:click={() => { if (confirm('Opravdu chcete smazat toto dílo?')) { deleteWork() } }}>
+    <button class='delete' onclick={() => { if (confirm('Opravdu chcete smazat toto dílo?')) { deleteWork() } }}>
       <span class='material'>warning</span><span>Smazat dílo</span>
     </button>
   {:else}

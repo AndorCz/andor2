@@ -15,7 +15,7 @@ export const initToasts = () => {
   window.showSuccess = (text, duration = 3000) => {
     window.notyf.success({ message: text, duration })
   }
-  window.showError = (text, duration = 10000) => {
+  window.showError = (text, duration = 20000) => {
     console.error(text)
     window.notyf.error({ message: text, duration })
   }

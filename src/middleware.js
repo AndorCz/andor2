@@ -1,12 +1,14 @@
 import { createServerClient, parseCookieHeader } from '@supabase/ssr'
 
-export async function onRequest ({ request, cookies, locals, redirect, url, context }, next) {
+export async function onRequest ({ request, cookies, locals, redirect, url }, next) {
   try {
     if (url.pathname !== '/outage') {
       locals.user = {} // default empty user object
 
-      const env = import.meta.env || context.locals.runtime.env
-      if (!env.PUBLIC_SUPABASE_URL) throw new Error('Missing environment variables')
+      locals.runtime = locals.runtime || {}
+      const env = locals.runtime.env || import.meta.env
+      locals.runtime.env = env
+      if (!env.PUBLIC_SUPABASE_URL || !env.PRIVATE_GEMINI) throw new Error('Missing environment variables')
 
       const supabase = createServerClient(
         env.PUBLIC_SUPABASE_URL,

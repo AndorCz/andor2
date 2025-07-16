@@ -1,12 +1,10 @@
 <script>
   import { supabase, handleError } from '@lib/database-browser'
 
-  export let user
-  export let itemStore
-  export let type = 'post'
+  const { user = {}, post = {}, type = 'post' } = $props()
 
   function getMyReaction (reaction) {
-    return $itemStore[reaction]?.findIndex((id) => { return id === user.id })
+    return post[reaction]?.findIndex((id) => { return id === user.id })
   }
 
   function hasReacted (reaction) {
@@ -15,24 +13,24 @@
 
   async function toggleReaction (reaction) {
     // update database
-    const { data, error } = await supabase.rpc('update_reaction', { i_id: $itemStore.id, i_type: type, reaction_type: reaction, action: hasReacted(reaction) ? 'remove' : 'add' }).single()
+    const { data, error } = await supabase.rpc('update_reaction', { i_id: post.id, i_type: type, reaction_type: reaction, action: hasReacted(reaction) ? 'remove' : 'add' }).single()
     if (error) { return handleError(error) }
-    $itemStore.frowns = data.frowns
-    $itemStore.thumbs = data.thumbs
-    $itemStore.shocks = data.shocks
-    $itemStore.hearts = data.hearts
-    $itemStore.laughs = data.laughs
+    post.frowns = data.frowns
+    post.thumbs = data.thumbs
+    post.shocks = data.shocks
+    post.hearts = data.hearts
+    post.laughs = data.laughs
   }
 </script>
 
-{#if user.id && $itemStore.owner !== user.id}
-  {#key $itemStore}
+{#if user.id && post.owner !== user.id}
+  {#key post}
     <span class='reactions'>
-      <button on:click={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if $itemStore.frowns?.length}<span class='count'>{$itemStore.frowns.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if $itemStore.laughs?.length}<span class='count'>{$itemStore.laughs.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'>{#if $itemStore.shocks?.length}<span class='count'>{$itemStore.shocks.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if $itemStore.hearts?.length}<span class='count'>{$itemStore.hearts.length}</span>{/if}</button>
-      <button on:click={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if $itemStore.thumbs?.length}<span class='count'>{$itemStore.thumbs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns?.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs?.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'>{#if post.shocks?.length}<span class='count'>{post.shocks.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts?.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.thumbs?.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
     </span>
   {/key}
 {/if}
@@ -46,6 +44,7 @@
       opacity: 0.7;
       display: flex;
       height: 40px;
+      min-width: 40px;
       padding: 0px 7px;
       justify-content: center;
       align-items: center;

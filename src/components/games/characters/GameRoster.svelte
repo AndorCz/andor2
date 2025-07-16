@@ -3,10 +3,7 @@
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
 
-  export let game = {}
-  export let user = {}
-  export let isStoryteller
-  export let isPlayer
+  const { game = {}, user = {}, isStoryteller, isPlayer } = $props()
 
   const characters = { playing: [], storytellers: [] }
 
@@ -33,7 +30,7 @@
         <Character {user} {character} {isStoryteller} {game} />
       {/each}
     {:else}
-      <td class='none'>Žádní vypravěči</td>
+      <tbody><tr><td class='none'>Žádní vypravěči</td></tr></tbody>
     {/if}
   </table>
 
@@ -45,7 +42,7 @@
         <Character {user} {character} {isStoryteller} {game} />
       {/each}
     {:else}
-      <tr><td class='none'>Žádné postavy</td></tr>
+      <tbody><tr><td class='none'>Žádné postavy</td></tr></tbody>
     {/if}
   </table>
 {:else}

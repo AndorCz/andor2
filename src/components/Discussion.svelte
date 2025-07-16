@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { getSavedStore } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
@@ -9,30 +8,22 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
-  export let user = {}
-  export let data = {}
-  export let canModerate = false
-  export let slug
-  export let contentSection
-  export let isPermitted = true
-  export let thread
-  export let unread = 0
-  export let useIdentities = false
+  let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false } = $props()
 
-  const posts = writable([])
-  const mentionList = writable([])
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
-  let textareaRef
-  let textareaValue = $discussionStore.unsent || '' // load unsent post
-  let identitySelect
-  let saving = false
-  let editing = false
-  let page = 0
-  let pages
-  let loading = true
+  let mentionList = $state([])
+  let posts = $state([])
+  let textareaRef = $state()
+  let textareaValue = $state($discussionStore.unsent || '') // load unsent post
+  let identitySelect = $state()
+  let saving = $state(false)
+  let editing = $state(false)
+  let page = $state(0)
+  let pages = $state()
+  let loading = $state(true)
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -55,8 +46,8 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    $mentionList = await loadAllPosters()
-    if (isFilledArray($mentionList) && isFilledArray(data.characters)) {
+    mentionList = await loadAllPosters()
+    if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
       addCharacterNameStyles(data.characters)
     }
   })
@@ -73,11 +64,11 @@
     const { data: rpcData, error } = await query
     if (error) { return handleError(error) }
     const { postdata, count } = rpcData
+    loading = false
     if (postdata) {
-      $posts = postdata
+      posts = postdata
     }
     pages = Math.ceil(count / limit)
-    loading = false
   }
 
   function getIdentity () {
@@ -123,7 +114,7 @@
 
   async function deletePost (post) {
     if (window.confirm('Opravdu smazat příspěvek?')) {
-      const res = await fetch(`/api/post?id=${post.id}&thread=${data.openai_thread}`, { method: 'DELETE' })
+      const res = await fetch(`/api/post?id=${post.id}`, { method: 'DELETE' })
       const json = await res.json()
       if (res.error || json.error) { return showError(res.error || json.error) }
       showSuccess('Příspěvek smazán')
@@ -179,7 +170,7 @@
           {#if useIdentities}
             <div class='senderWrapper'>
               <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
-                {#each identities as identity}
+                {#each identities as identity (identity.id)}
                   <option value={identity.id} class={identity.type}>{identity.name}</option>
                 {/each}
               </select>
@@ -192,7 +183,7 @@
         {#if useIdentities}
           <h3 class='sender'>Identita</h3>
           <select size='4' bind:this={identitySelect} bind:value={$discussionStore.activeIdentity}>
-            {#each identities as identity}
+            {#each identities as identity (identity.id)}
               <option value={identity.id}>{identity.name}</option>
             {/each}
           </select>

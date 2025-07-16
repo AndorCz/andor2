@@ -1,37 +1,32 @@
 <script>
   import { tooltip } from '@lib/tooltip'
+  import { platform } from '@components/common/MediaQuery.svelte'
+  import { showError } from '@lib/toasts'
   import { clickOutside } from '@lib/clickOutside'
   import { redirectWithToast } from '@lib/utils'
-  import { platform } from '@components/common/MediaQuery.svelte'
   import { supabase, handleError, getPortraitUrl, userAutocomplete } from '@lib/database-browser'
-  import { showError } from '@lib/toasts'
   import Select from 'svelte-select'
 
-  export let user
-  export let game
-  export let character
-  export let isStoryteller
-  export let actionsVisible = false
+  let { user, game, character, isStoryteller, actionsVisible = $bindable(false) } = $props()
 
-  let actionsAvailable = false
-  let newOwner
-  let showTransfer = false
+  let newOwner = $state()
+  let showTransfer = $state(false)
 
   // buttons
-  let showLeaveButton = false
-  let showClaimButton = false
-  let showRejectButton = false
-  let showFreeButton = false
-  let showTakeOverButton = false
-  let showTransferButton = false
-  let showCancelTransferButton = false
-  let showKillButton = false
-  let showAcceptButton = false
-  let showRejectStorytellerButton = false
-  let showReviveButton = false
-  let showDeleteButton = false
-
   const isPlayer = character.player.id === user.id
+  const showLeaveButton = $derived(character.state === 'alive' && isPlayer && character.accepted && !isStoryteller)
+  const showClaimButton = $derived(character.state === 'alive' && user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.open && character.player.id !== user.id && !character.transfer_to)
+  const showRejectButton = $derived(character.state === 'alive' && isPlayer && !character.accepted && !isStoryteller)
+  const showFreeButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id === user.id)
+  const showTakeOverButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id !== user.id)
+  const showTransferButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && character.player.id === user.id && !character.transfer_to)
+  const showCancelTransferButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && character.transfer_to)
+  const showKillButton = $derived(character.state === 'alive' && isStoryteller && character.accepted && !character.transfer_to)
+  const showAcceptButton = $derived(character.state === 'alive' && isStoryteller && !character.accepted)
+  const showRejectStorytellerButton = $derived(character.state === 'alive' && isStoryteller && !character.accepted)
+  const showReviveButton = $derived(character.state === 'dead' && isStoryteller)
+  const showDeleteButton = $derived(character.state === 'dead' && isStoryteller)
+  const actionsAvailable = $derived(showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton)
 
   async function charactersChanged (event) {
     const { error: timestampError } = await supabase.from('games').update({ characters_changed_at: new Date() }).eq('id', game.id)
@@ -43,7 +38,7 @@
     if (error) { return handleError(error) }
 
     // add bookmark to the new player
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
 
     // send welcome message to the new player
@@ -159,7 +154,7 @@
       const { error } = await supabase.rpc('claim_character', { character_id: character.id })
       if (error) { return handleError(error) }
 
-      const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+      const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
       if (upsertError) { return handleError(upsertError) }
 
       if (user.id !== game.owner.id) {
@@ -221,21 +216,6 @@
     if (name.length < 3) { return [] }
     return await userAutocomplete(name)
   }
-
-  $: showLeaveButton = character.state === 'alive' && isPlayer && character.accepted && !isStoryteller
-  $: showClaimButton = character.state === 'alive' && user.id && (isStoryteller || !character.accepted || character.open) && !game.archived && character.open && character.player.id !== user.id && !character.transfer_to
-  $: showRejectButton = character.state === 'alive' && isPlayer && !character.accepted && !isStoryteller
-  $: showFreeButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id === user.id
-  $: showTakeOverButton = character.state === 'alive' && isStoryteller && character.accepted && !character.open && character.player.id !== user.id
-  $: showTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.player.id === user.id && !character.transfer_to
-  $: showCancelTransferButton = character.state === 'alive' && isStoryteller && character.accepted && character.transfer_to
-  $: showKillButton = character.state === 'alive' && isStoryteller && character.accepted && !character.transfer_to
-  $: showAcceptButton = character.state === 'alive' && isStoryteller && !character.accepted
-  $: showRejectStorytellerButton = character.state === 'alive' && isStoryteller && !character.accepted
-  $: showReviveButton = character.state === 'dead' && isStoryteller
-  $: showDeleteButton = character.state === 'dead' && isStoryteller
-
-  $: actionsAvailable = showLeaveButton || showClaimButton || showRejectButton || showFreeButton || showTakeOverButton || showTransferButton || showCancelTransferButton || showKillButton || showAcceptButton || showRejectStorytellerButton || showReviveButton || showDeleteButton
 </script>
 
 <tr class='char'>
@@ -255,58 +235,60 @@
   {#if isStoryteller}
     <td class='player'><a href={'/user?id=' + character.player.id} class='user'>{character.player.name}</a></td>
   {/if}
-  <td class='options' use:clickOutside on:click_outside={handleClickOutside}>
+  <td class='options' use:clickOutside onclick_outside={handleClickOutside}>
     {#if actionsAvailable}
       <div class='actions' class:visible={actionsVisible}>
         <!-- active player options -->
         {#if showLeaveButton}
-          <button on:click={leaveGame}>odejít</button>
+          <button onclick={leaveGame}>odejít</button>
         {/if}
         {#if showClaimButton}
-          <button on:click={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
+          <button onclick={claimCharacter} title='Tuto postavu si můžete volně vzít' use:tooltip>vzít</button>
         {/if}
         {#if showRejectButton}
-          <button on:click={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
+          <button onclick={() => rejectCharacter(true)} title='Zrušit svou přihlášku' use:tooltip>zrušit</button>
         {/if}
         {#if showFreeButton}
-          <button on:click={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
+          <button onclick={freeCharacter} title='Dát postavu na seznam k volnému převzetí' use:tooltip>nabídnout</button>
         {/if}
         {#if showTakeOverButton}
-          <button on:click={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
+          <button onclick={takeOverCharacter} title='Vzít postavu hráči, nechá mu kopii' use:tooltip>převzít</button>
         {/if}
         {#if showTransferButton}
-          <button on:click={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
+          <button onclick={() => { showTransfer = !showTransfer }} class:active={showTransfer} class='material square' title='Převést postavu na konkrétního hráče' use:tooltip>transfer_within_a_station</button>
         {/if}
         {#if showCancelTransferButton}
-          <button on:click={cancelTransfer}>zrušit převod</button>
+          <button onclick={cancelTransfer}>zrušit převod</button>
         {/if}
         {#if showKillButton}
-          <button on:click={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
+          <button onclick={killCharacter} class='material square' title='Zabít postavu' use:tooltip>skull</button>
         {/if}
         {#if showAcceptButton}
-          <button on:click={acceptCharacter}>přijmout</button>
+          <button onclick={acceptCharacter}>přijmout</button>
         {/if}
         {#if showRejectStorytellerButton}
-          <button on:click={rejectCharacter}>odmítnout</button>
+          <button onclick={rejectCharacter}>odmítnout</button>
         {/if}
         {#if showReviveButton}
-          <button on:click={reviveCharacter}>oživit</button>
+          <button onclick={reviveCharacter}>oživit</button>
         {/if}
         {#if showDeleteButton}
-          <button on:click={deleteCharacter}>smazat</button>
+          <button onclick={deleteCharacter}>smazat</button>
         {/if}
       </div>
       {#if $platform === 'mobile'}
-        <button on:click={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
+        <button onclick={() => { actionsVisible = !actionsVisible }} class='material square' class:active={actionsVisible} title='Možnosti' use:tooltip>settings</button>
       {/if}
     {/if}
     <div class='transferModal' class:visible={showTransfer}>
       <div class='transferText'>Vyber hráče, na kterého chceš postavu převést:</div>
       <div class='row'>
         <Select bind:value={newOwner} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-          <div slot='empty'>Uživatel nenalezen</div>
+          {#snippet empty()}
+                    <div >Uživatel nenalezen</div>
+                  {/snippet}
         </Select>
-        <button on:click={transferCharacter} class='material square'>check</button>
+        <button onclick={transferCharacter} class='material square'>check</button>
       </div>
     </div>
   </td>

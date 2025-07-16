@@ -1,0 +1,45 @@
+import { Buffer } from 'node:buffer'
+import { cropImageBackEnd } from '@lib/solo/server-utils'
+
+export async function generateImage (env, prompt, imageParams) {
+  if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
+  try {
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 50000) // 50 second timeout
+
+    const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + env.AIML_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        model: 'flux/schnell', // 'flux/dev'
+        image_size: { width: imageParams.generation.width, height: imageParams.generation.height }
+      }),
+      signal: abortController.signal
+    })
+
+    clearTimeout(timeoutId)
+    if (!response.ok) { throw new Error(`Nevygenerován žádný obrázek, status: ${response.status}`) }
+    const generation = await response.json()
+    // download resulting image
+    const url = generation.images[0].url
+    const imageResponse = await fetch(url)
+    if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
+    const imageBlob = await imageResponse.blob()
+    const imageBuffer = Buffer.from(await imageBlob.arrayBuffer())
+    // crop to exact size
+    if (imageParams.crop) {
+      const { data, error } = await cropImageBackEnd(imageBuffer, imageParams.crop.width, imageParams.crop.height)
+      return { data, error }
+    } else {
+      return { data: imageBuffer }
+    }
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('Image generation timed out')
+      return { error: { message: 'Generování obrázku vypršel čas (120s)' } }
+    }
+    console.error('Error generating image:', error)
+    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
+  }
+}

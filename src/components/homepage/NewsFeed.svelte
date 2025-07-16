@@ -2,10 +2,7 @@
   import { tooltip } from '@lib/tooltip'
   import NewsItem from '@components/homepage/NewsItem.svelte'
 
-  export let news = []
-  export let user = {}
-  export let page = 0
-  export let maxPage = 2
+  const { news = [], user = {}, page = 0, maxPage = 2 } = $props()
 
   function triggerPaging (newPage) {
     window.location = `/?page=${newPage}`
@@ -19,10 +16,10 @@
   {/each}
   <div class='pagination'>
     {#if page > 0}
-      <button on:click={() => { triggerPaging(page - 1) } }>Novější</button>
+      <button onclick={() => { triggerPaging(page - 1) }}>Novější</button>
     {/if}
     {#if page < maxPage}
-      <button on:click={() => { triggerPaging(page + 1) } }>Starší</button>
+      <button onclick={() => { triggerPaging(page + 1) }}>Starší</button>
     {/if}
   </div>
 </div>

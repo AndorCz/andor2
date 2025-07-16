@@ -1,19 +1,19 @@
 <script>
-  import { showSuccess, showError } from '@lib/toasts'
-  import { activeConversation } from '@lib/stores'
-  import { supabase } from '@lib/database-browser'
-  import { tooltip } from '@lib/tooltip'
   import { getHex } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
+  import { supabase } from '@lib/database-browser'
+  import { activeConversation } from '@lib/stores'
+  import { showSuccess, showError } from '@lib/toasts'
 
-  export let user
+  let { user = $bindable() } = $props()
 
-  let password = ''
-  let password2 = ''
-  let newEmail = user.email
-  let originalAutorefresh = user.autorefresh
+  let password = $state('')
+  let password2 = $state('')
+  let newEmail = $state(user.email)
+  let originalAutorefresh = $state(user.autorefresh)
   // let originalEditorBubble = user.editor_bubble
-  let originalTheme = user.theme
-  let newColor = ''
+  let originalTheme = $state(user.theme)
+  let newColor = $state('')
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -91,7 +91,7 @@
       <div class='value'>
         <div class='rowInner'>
           <input type='password' id='password2' size='30' bind:value={password2} />
-          <button on:click={setPassword} class='material' disabled={password === '' || password2 === '' || password !== password2}>check</button>
+          <button onclick={setPassword} class='material' disabled={password === '' || password2 === '' || password !== password2}>check</button>
         </div>
       </div>
     </div>
@@ -102,7 +102,7 @@
       <div class='value'>
         <div class='rowInner'>
           <input type='email' id='email' size='30' bind:value={newEmail} />
-          <button on:click={setEmail} class='material' disabled={user.email === newEmail}>check</button>
+          <button onclick={setEmail} class='material' disabled={user.email === newEmail}>check</button>
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@
         <option value='obsidian'>Obsidián (výchozí)</option>
         <option value='onyx'>Onyx (A1)</option>
       </select>
-      <button on:click={updateUser} class='material' disabled={originalTheme === user.theme} title='Uložit' use:tooltip>check</button>
+      <button onclick={updateUser} class='material' disabled={originalTheme === user.theme} title='Uložit' use:tooltip>check</button>
     </div>
     <!--
     <h2>Paleta nástrojů editoru</h2>
@@ -128,13 +128,13 @@
 
     <h2>Vlastní barvy</h2>
     <ul>
-      {#each user.colors as color}
+      {#each user.colors as color, index (index)}
         <li>
           <div class='rowInner'>
-            <input type='color' id='color' name='color' value={getHex(color)} on:input={(e) => { color = getHex(e.target.value) }} />
-            <input type='text' bind:value={color}>
-            <button on:click={updateUser} class='material square' title='Uložit' use:tooltip>check</button>
-            <button on:click={() => { removeColor(color) }} class='material square' title='Smazat' use:tooltip>delete</button>
+            <input type='color' id='color' name='color' value={getHex(color)} oninput={(e) => { user.colors[index] = getHex(e.target.value) }} />
+            <input type='text' bind:value={user.colors[index]}>
+            <button onclick={updateUser} class='material square' title='Uložit' use:tooltip>check</button>
+            <button onclick={() => { removeColor(color) }} class='material square' title='Smazat' use:tooltip>delete</button>
           </div>
         </li>
       {/each}
@@ -143,7 +143,7 @@
     <div class='row'>
       <input type='color' id='nameColor' name='nameColor' bind:value={newColor} />
       <input type='text' bind:value={newColor}>
-      <button on:click={addColor} class='material square' title='Uložit' use:tooltip>check</button>
+      <button onclick={addColor} class='material square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Auto-refresh herních příspěvků</h2>
@@ -152,12 +152,12 @@
         <option value={true}>Zapnuto</option>
         <option value={false}>Vypnuto</option>
       </select>
-      <button on:click={updateUser} class='material' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
+      <button onclick={updateUser} class='material' disabled={originalAutorefresh === user.autorefresh} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Smazat účet</h2>
     <p>Smazáním účtu se odstraní veškerá data spojená s tímto účtem. Tato akce je nevratná.</p>
-    <button on:click={deleteUser}>Smazat účet</button>
+    <button onclick={deleteUser}>Smazat účet</button>
   {:else}
     <h1>Uživatel nenalezen</h1>
   {/if}

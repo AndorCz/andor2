@@ -4,13 +4,10 @@
   import GameGraveyard from '@components/games/characters/GameGraveyard.svelte'
   import GameRecruitment from '@components/games/characters/GameRecruitment.svelte'
 
-  export let user = {}
-  export let game = {}
-  export let isStoryteller
-  export let isPlayer
+  const { user = {}, game = {}, isStoryteller, isPlayer } = $props()
 
   // sort character categories
-  let activeSection = new URLSearchParams(window.location.search).get('section') || 'active'
+  let activeSection = $state(new URLSearchParams(window.location.search).get('section') || 'active')
 
   function changeSection (section) {
     activeSection = section
@@ -20,10 +17,10 @@
 
 <main>
   <div class='tabs tertiary'>
-    <button on:click={() => { changeSection('active') }} class='tab' class:active={activeSection === 'active'}><span class='material'>groups</span>Aktivní</button>
-    <button on:click={() => { changeSection('recruit') }} class='tab' class:active={activeSection === 'recruit'}><span class='material'>person_add</span>Nábor</button>
-    {#if isStoryteller }
-      <button on:click={() => { changeSection('grave') }} class='tab' class:active={activeSection === 'grave'}><span class='material'>skull</span>Hřbitov</button>
+    <button onclick={() => { changeSection('active') }} class='tab' class:active={activeSection === 'active'}><span class='material'>groups</span>Aktivní</button>
+    <button onclick={() => { changeSection('recruit') }} class='tab' class:active={activeSection === 'recruit'}><span class='material'>person_add</span>Nábor</button>
+    {#if isStoryteller}
+      <button onclick={() => { changeSection('grave') }} class='tab' class:active={activeSection === 'grave'}><span class='material'>skull</span>Hřbitov</button>
     {/if}
   </div>
 

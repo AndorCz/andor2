@@ -1,18 +1,16 @@
 <script>
   import { onMount } from 'svelte'
-  import { supabase, handleError } from '@lib/database-browser'
+  import { tooltip } from '@lib/tooltip'
   import { getImage, getHash } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database-browser'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview, headerCrop } from '@lib/stores'
-  import { tooltip } from '@lib/tooltip'
 
-  export let data = {}
-  export let section
-  export let unit
+  let { data = $bindable({}), section, unit } = $props()
 
-  let uploading = false
-  let files
-  let headerInputEl
+  let uploading = $state(false)
+  let files = $state()
+  let headerInputEl = $state()
 
   onMount(() => {
     window.addEventListener('headerCropped', (e) => uploadHeader(e.detail))
@@ -63,8 +61,8 @@
   }
 </script>
 
-<input id='headerImage' type='file' accept='image' bind:this={headerInputEl} bind:files on:change={processImage} disabled={uploading} />
-<button class='material clear square' disabled={!data.custom_header} on:click={clearHeader} title='Odstranit vlastní hlavičku' use:tooltip>close</button>
+<input id='headerImage' type='file' accept='image' bind:this={headerInputEl} bind:files onchange={processImage} disabled={uploading} />
+<button class='material clear square' disabled={!data.custom_header} onclick={clearHeader} title='Odstranit vlastní hlavičku' use:tooltip>close</button>
 
 <style>
   input[type=file] {

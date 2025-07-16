@@ -1,9 +1,7 @@
 <script>
   import { supabase, getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
 
-  export let headline = 'Nové hry'
-  export let slug = 'game'
-  export let table = 'game_list'
+  const { headline = 'Nové hry', slug = 'game', table = 'game_list' } = $props()
 
   async function loadData () {
     const query = supabase.from(table).select('*').eq('published', true)
@@ -33,7 +31,7 @@
 {:then items}
   <div id='news'>
     <h3>{headline}</h3>
-    {#each items as item}
+    {#each items as item (item.id)}
       <div class='item'>
         {#if item.custom_header}
           <img src={getHeaderUrl(slug, item.id, item.custom_header)} alt={item.name} class='image' />
@@ -57,6 +55,7 @@
     {/each}
   </div>
 {:catch error}
+  {console.error(error)}
   <p>{error.message}</p>
 {/await}
 

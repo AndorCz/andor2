@@ -1,17 +1,19 @@
 <script>
+  import { preventDefault } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { redirectWithToast } from '@lib/utils'
   import { showError } from '@lib/toasts'
   import md5 from 'crypto-js/md5'
 
-  let email = ''
-  let oldLogin = ''
-  let newLogin = ''
-  let oldPassword = ''
-  let password = ''
-  let password2 = ''
-  let isConfirming = false
+  let email = $state('')
+  let oldLogin = $state('')
+  let newLogin = $state('')
+  let oldPassword = $state('')
+  let password = $state('')
+  let password2 = $state('')
+  let isConfirming = $state(false)
   // let captchaToken = ''
 
   onMount(() => {
@@ -101,7 +103,7 @@
   {#if !isConfirming}
     <div class='newUser'>
       <h1>Nová registrace</h1>
-      <form on:submit|preventDefault={signUpNewUser}>
+      <form onsubmit={preventDefault(signUpNewUser)}>
         <div class='row'>
           <label for='email'>E-mail</label>
           <input type='email' id='email' bind:value={email} />
@@ -124,7 +126,7 @@
 
     <div class='oldUser'>
       <h1>Uživatel Andor.cz</h1>
-      <form on:submit|preventDefault={validateUser}>
+      <form onsubmit={preventDefault(validateUser)}>
         <div class='row'>
           <label for='login'>Login</label>
           <input type='text' id='oldLogin' bind:value={oldLogin} />
@@ -141,7 +143,7 @@
   {:else}
     <div class='center'>
       <h1>Potvrzení importu</h1>
-      <form on:submit|preventDefault={signUpMigrate}>
+      <form onsubmit={preventDefault(signUpMigrate)}>
         <input type='hidden' id='oldLogin' value={oldLogin} />
         <div class='row'>
           <label for='email'>Login</label>

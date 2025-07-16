@@ -4,8 +4,8 @@ export function getHash () {
   return Math.random().toString(36).slice(-5)
 }
 
-export function getImageUrl (supabase, path, storage) {
-  const { data, error } = supabase.storage.from(storage).getPublicUrl(path)
+export function getImageUrl (supabase, path, bucket) {
+  const { data, error } = supabase.storage.from(bucket).getPublicUrl(path)
   if (error) { throw error }
   return data.publicUrl
 }

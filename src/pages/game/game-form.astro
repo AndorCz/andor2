@@ -21,7 +21,7 @@
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
 
     return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)

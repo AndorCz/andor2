@@ -1,22 +1,13 @@
 <script>
   // Shows a long text that can be edited in place
-  import { tooltip } from '@lib/tooltip'
-  import { Render } from '@jill64/svelte-sanitize'
   import Loading from '@components/common/Loading.svelte'
+  import DOMPurify from 'dompurify'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import { tooltip } from '@lib/tooltip'
 
-  export let user
-  export let onSave
-  export let value = ''
-  export let placeholder = ''
-  export let loading = false
-  export let canEdit = false
-  export let allowHtml = false
-  export let enterSend = false
-  export let mentionList = null
-  export let fonts = null
+  let { user, onSave, value = $bindable(''), placeholder = '', loading = false, canEdit = false, allowHtml = false, enterSend = false, mentionList = null, fonts = null } = $props()
 
-  let isEditing = false
+  let isEditing = $state(false)
 
   function onSaveWrapper () {
     isEditing = false
@@ -26,17 +17,17 @@
 
 <div class='wrapper'>
   {#if isEditing}
-    <TextareaExpandable preserveValue {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} buttonIcon='done' showButton />
+    <TextareaExpandable {fonts} {placeholder} {loading} {user} bind:value={value} bind:editing={isEditing} onSave={onSaveWrapper} {allowHtml} {enterSend} {mentionList} disableEmpty={false} cancelClearsValue={false} buttonIcon='done' showButton />
   {:else}
     {#if loading}
       <Loading />
     {/if}
     <main class='editableLong'>
-      <Render html={value || placeholder} />
+      {@html DOMPurify.sanitize(value || placeholder)}
       <div class='clear'></div>
     </main>
     {#if canEdit && !loading}
-      <button on:click={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
+      <button onclick={() => { isEditing = true }} title='Upravit' use:tooltip><span class='material'>edit</span></button>
     {/if}
   {/if}
 </div>

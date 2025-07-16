@@ -1,28 +1,21 @@
 <script>
   import { onMount } from 'svelte'
-  import {
-    workTagsText,
-    workTagsImage,
-    workTagsMusic,
-    workCategoriesText,
-    workCategoriesImage,
-    workCategoriesMusic
-  } from '@lib/constants'
+  import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  export let user = {}
-  export let type = 'text'
-  let editorRef
-  let selectedTags
-  let maxTags
-  let contentInputRef
-  let tagsInputRef
-  let fileInputRef
-  let files
-  let previewUrl
-  let tagItems = []
-  let categoryItems = []
+  const { user = {}, type = 'text' } = $props()
+
+  let files = $state()
+  let tagItems = $state([])
+  let editorRef = $state()
+  let previewUrl = $state()
+  let selectedTags = $state()
+  let tagsInputRef = $state()
+  let fileInputRef = $state()
+  let categoryItems = $state([])
+  let contentInputRef = $state()
+  const maxTags = $derived(selectedTags?.length === 3)
 
   onMount(() => {
     if (type === 'text') {
@@ -46,8 +39,6 @@
     event.target.submit()
   }
 
-  $: maxTags = selectedTags?.length === 3
-
   function showPreview () {
     if (files && files[0]) {
       previewUrl = URL.createObjectURL(files[0])
@@ -56,7 +47,7 @@
 </script>
 
 {#if user.id}
-  <form method='POST' autocomplete='off' enctype='multipart/form-data' on:submit={prepareData}>
+  <form method='POST' autocomplete='off' enctype='multipart/form-data' onsubmit={prepareData}>
     <div class='row'>
       <div class='labels'>
         <label for='workName'>Název</label>
@@ -83,7 +74,7 @@
       <div class='row'>
         <div class='labels'><label for='workFile'>Soubor</label></div>
         <div class='inputs'>
-          <input type='file' bind:this={fileInputRef} bind:files on:change={showPreview} id='workFile' name='workFile' accept={type === 'image' ? 'image/*' : 'audio/*'} />
+          <input type='file' bind:this={fileInputRef} bind:files onchange={showPreview} id='workFile' name='workFile' accept={type === 'image' ? 'image/*' : 'audio/*'} />
         </div>
       </div>
       {#if previewUrl && type === 'image'}
@@ -111,7 +102,9 @@
         <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
         <div class='inputs'>
           <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
-            <div slot='empty'>Více tagů nelze přidat</div>
+            {#snippet empty()}
+                        <div >Více tagů nelze přidat</div>
+                      {/snippet}
           </Select>
           <input type='hidden' name='workTags' bind:this={tagsInputRef} />
         </div>

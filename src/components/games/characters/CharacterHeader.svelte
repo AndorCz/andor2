@@ -1,14 +1,16 @@
 <script>
-  export let isStoryteller = false
+  const { isStoryteller = false } = $props()
 </script>
 
 {#if isStoryteller}
-  <tr>
-    <th class='portrait'></th>
-    <th class='name'>Jméno</th>
-    <th class='player'>Hráč</th>
-    <th class='tools'></th>
-  </tr>
+  <thead>
+    <tr>
+      <th class='portrait'></th>
+      <th class='name'>Jméno</th>
+      <th class='player'>Hráč</th>
+      <th class='tools'></th>
+    </tr>
+  </thead>
 {/if}
 
 <style>

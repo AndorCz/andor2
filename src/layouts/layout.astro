@@ -16,7 +16,6 @@ const { title, headerStatic, headerStorage } = Astro.props
 
 let chatUnread = false
 if (user.id) {
-  const env = import.meta.env ? import.meta.env : context.locals.runtime.env
   const { data, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).maybeSingle()
   if (error) {
     console.error('loading unread for chat failed', error)
@@ -40,6 +39,7 @@ if (user.id) {
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:wght,FILL@100..700,1&icon_names=add,archive,arrow_back,arrow_back_ios,arrow_drop_down,arrow_drop_up,arrow_selector_tool,assignment,backpack,bookmark,bookmark_remove,brand_family,casino,chat,check,chevron_left,chevron_right,circle,close,code,content_copy,content_paste,delete,domino_mask,done,download,edit,explore,favorite,fiber_manual_record,filter_alt,format_align_center,format_align_justify,format_align_left,format_align_right,format_bold,format_clear,format_color_reset,format_h1,format_h2,format_h3,format_h4,format_image_left,format_image_right,format_ink_highlighter,format_italic,format_paragraph,format_quote,format_size,format_strikethrough,format_underlined,forum,globe,group,groups,hourglass_top,image,info,keep,keep_off,label_important,light_mode,link,link_off,login,logout,mail,mail_off,menu,minimize,mode_night,more_vert,notifications,notifications_off,person,person_add,photo_size_select_large,photo_size_select_small,picture_in_picture_center,preview,redo,remove,reply,schedule,search,send,settings,share,shield,side_navigation,skull,sort,star,table_rows,table_rows_narrow,text_decrease,text_increase,transfer_within_a_station,unarchive,undo,unfold_more,unsubscribe,upload,verified,visibility,visibility_off,warning&display=block' />
 
     <!-- temporary, for news post -->
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Parisienne&amp;display=swap'>

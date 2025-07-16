@@ -5,8 +5,7 @@
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
 
-  export let user = {}
-  export let data = {}
+  const { user = {}, data = {} } = $props()
 
   function openConversation () {
     $activeConversation = { us: user, them: data, type: 'user' }
@@ -25,7 +24,7 @@
       <li>Naposledy online: <span class='date'>{new Date(data.last_activity).toLocaleString('cs')}</span></li>
       <li>Datum registrace: <span class='date'>{new Date(data.created_at).toLocaleDateString('cs')}</span></li>
     </ul>
-    <button on:click={openConversation}>Napsat zprávu</button>
+    <button onclick={openConversation}>Napsat zprávu</button>
   </div>
 </main>
 

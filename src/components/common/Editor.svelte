@@ -1,51 +1,44 @@
 <script>
+  import { Reply } from '@lib/editor/reply'
+  import { Mention } from '@lib/editor/mention'
+  import { FontSize } from '@lib/editor/size'
+  import { platform } from '@components/common/MediaQuery.svelte'
+  import { CustomImage } from '@lib/editor/image'
+  import { showSuccess } from '@lib/toasts'
+  import { CustomColor } from '@lib/editor/color'
+  import { CustomHeading } from '@lib/editor/heading'
+  import { MentionRender } from '@lib/editor/mentionRender'
+  import { CustomTextAlign } from '@lib/editor/alignment'
+  import { EnterKeyHandler } from '@lib/editor/enter'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
-  import { showSuccess } from '@lib/toasts'
-  import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
-  import { resizeImage, getImageUrl } from '@lib/utils'
-  import { EnterKeyHandler } from '@lib/editor/enter'
-  import { MentionRender } from '@lib/editor/mentionRender'
-  import { Mention } from '@lib/editor/mention'
-  import { CustomImage } from '@lib/editor/image'
-  import { CustomColor } from '@lib/editor/color'
-  import { Reply } from '@lib/editor/reply'
-  import { FontSize } from '@lib/editor/size'
-  import { CustomHeading } from '@lib/editor/heading'
-  import { CustomTextAlign } from '@lib/editor/alignment'
   import { Editor, mergeAttributes } from '@tiptap/core'
-  import { platform } from '@components/common/MediaQuery.svelte'
+  import { resizeImage, getImageUrl } from '@lib/utils'
+  import { Details, DetailsSummary, DetailsContent } from '@lib/editor/details'
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
+  import Colors from '@components/common/Colors.svelte'
+  import Youtube from '@tiptap/extension-youtube'
+  import Underline from '@tiptap/extension-underline'
   import TextStyle from '@tiptap/extension-text-style'
   import FontFamily from '@tiptap/extension-font-family'
   import BubbleMenu from '@tiptap/extension-bubble-menu'
   import StarterKit from '@tiptap/starter-kit'
-  import Underline from '@tiptap/extension-underline'
-  import Youtube from '@tiptap/extension-youtube'
-  import Colors from '@components/common/Colors.svelte'
-  import DropdownSlot from '@components/common/DropdownSlot.svelte'
   import EditorMenu from '@components/common/EditorMenu.svelte'
+  import DropdownSlot from '@components/common/DropdownSlot.svelte'
+  import HorizontalRule from '@tiptap/extension-horizontal-rule'
 
-  export let user
-  export let triggerSave
-  export let value = ''
-  export let onKeyUp = null
-  export let onChange = null
-  export let minHeight = 140
-  export let enterSend = false
-  export let fonts = null
-  export let mentionList = null
-  export let forceBubble = false
-  export let singleLine = false
+  let { user, triggerSave, value = $bindable(''), onKeyUp = null, onChange = null, minHeight = 140, enterSend = false, fonts = null, mentionList = null, forceBubble = false, singleLine = false } = $props()
 
-  let editor
-  let editorEl
-  let menuEl
-  let isBubble = true
-  let bubbleElImage
-  let isFocused = false
-  let wasFocused = false
+  let menuEl = $state()
+  let editor = $state()
+  let canUndo = $state(false)
+  let canRedo = $state(false)
+  let editorEl = $state()
+  let isBubble = $state(true)
+  let isFocused = $state(false)
+  let wasFocused = $state(false)
+  let bubbleElImage = $state()
   let timeout
   // let debug = ''
 
@@ -55,6 +48,7 @@
       TextStyle,
       StarterKit,
       Underline,
+      HorizontalRule,
       FontSize,
       Reply,
       Youtube,
@@ -109,12 +103,12 @@
       isBubble = false
     }
 
-    if ($mentionList) {
+    if (mentionList) {
       extensions.push(
         Mention.configure({
           HTMLAttributes: { class: 'mention' },
           suggestion: {
-            items: ({ query }) => { return $mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
+            items: ({ query }) => { return mentionList.filter(item => item.name.toLowerCase().startsWith(query.toLowerCase())) },
             render: MentionRender
           },
           renderHTML ({ options, node, HTMLAttributes }) {
@@ -195,6 +189,8 @@
         if (onChange) {
           setValue() // update content after a delay
           onChange()
+          canUndo = editor.can().undo()
+          canRedo = editor.can().redo()
         }
         // value = editor.state.doc.textContent
         // debug = JSON.stringify(editor.getJSON(), null, '\t')
@@ -282,27 +278,27 @@
   <!-- Image bubble menu -->
   <div class='bubble' bind:this={bubbleElImage}>
     {#if editor}
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('image', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('center').run()} class:active={editor.isActive('image', { alignment: 'center' })} title='Vycentrovat' class='material'>picture_in_picture_center</button>
-      <button type='button' on:click={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('image', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
+      <button type='button' onclick={() => editor.chain().focus().setImageAlignment('left').run()} class:active={editor.isActive('image', { alignment: 'left' })} title='Obtékat zprava' class='material'>format_image_left</button>
+      <button type='button' onclick={() => editor.chain().focus().setImageAlignment('center').run()} class:active={editor.isActive('image', { alignment: 'center' })} title='Vycentrovat' class='material'>picture_in_picture_center</button>
+      <button type='button' onclick={() => editor.chain().focus().setImageAlignment('right').run()} class:active={editor.isActive('image', { alignment: 'right' })} title='Obtékat zleva' class='material'>format_image_right</button>
       <span class='sep'></span>
-      <button type='button' on:click={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('image').size <= 10} title='Zmenšit' class='material'>photo_size_select_small</button>
-      <button type='button' on:click={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('image').size >= 100} title='Zvětšit' class='material'>photo_size_select_large</button>
+      <button type='button' onclick={() => editor.chain().focus().decreaseImageSize().run()} disabled={editor.getAttributes('image').size <= 10} title='Zmenšit' class='material'>photo_size_select_small</button>
+      <button type='button' onclick={() => editor.chain().focus().increaseImageSize().run()} disabled={editor.getAttributes('image').size >= 100} title='Zvětšit' class='material'>photo_size_select_large</button>
       <span class='sep'></span>
-      <button type='button' on:click={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
+      <button type='button' onclick={() => editor.chain().focus().resetStyle().run()} title='Zrušit obtékání' class='material'>format_clear</button>
     {/if}
   </div>
   <div class='editor' bind:this={editorEl} class:singleLine></div>
   <div class='clear'></div>
   {#if wasFocused && !singleLine}
     <div class='toolbelt'>
-      <input on:change={addImageStored} accept='image/*' type='file' id='addImageStored'>
+      <input onchange={addImageStored} accept='image/*' type='file' id='addImageStored'>
       <DropdownSlot title='Obrázek' defaultLabel='image' openUp>
         <label class='button text' for='addImageStored'>Nahrát z počítače</label>
-        <button type='button' on:click={addImageUrl} class='text'>Cesta z internetu</button>
+        <button type='button' onclick={addImageUrl} class='text'>Cesta z internetu</button>
       </DropdownSlot>
-      <button type='button' on:click={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} class='material' title='Zpět'>undo</button>
-      <button type='button' on:click={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} class='material' title='Znovu'>redo</button>
+      <button type='button' onclick={() => editor.chain().focus().undo().run()} disabled={!canUndo} class='material' title='Zpět'>undo</button>
+      <button type='button' onclick={() => editor.chain().focus().redo().run()} disabled={!canRedo} class='material' title='Znovu'>redo</button>
     </div>
   {/if}
 </div>

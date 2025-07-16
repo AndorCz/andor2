@@ -1,19 +1,16 @@
 <script>
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
-  import { getPortraitUrl } from '@lib/database-browser'
   import { platform } from '@components/common/MediaQuery.svelte'
-  import { Render } from '@jill64/svelte-sanitize'
   import { formatDate } from '@lib/utils'
+  import { getPortraitUrl } from '@lib/database-browser'
+  import DOMPurify from 'dompurify'
   import Reactions from '@components/common/Reactions.svelte'
 
-  export let item = {}
-  export let user = {}
+  const { item = {}, user = {} } = $props()
 
-  let trimmed = true
-  let textEl
+  let textEl = $state()
+  let trimmed = $state(true)
 
-  const newStore = writable(item)
   const iconSize = 70
   const textMaxHeight = 200
 
@@ -71,11 +68,11 @@
               <img src={getPortraitUrl(item.character, 'fixed_hash')} class='portrait' alt='Portrét postavy' />
             </div>
           {/if}
-          <Render html={item.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+          {@html DOMPurify.sanitize(item.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
           <div class='clear'></div>
           {#if trimmed}
             <div class='expand'>
-              <button on:click={() => { trimmed = false }} class='material'>unfold_more</button>
+              <button onclick={() => { trimmed = false }} class='material'>unfold_more</button>
             </div>
           {/if}
         </div>
@@ -86,7 +83,7 @@
             <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {/if}
           {#if item.owner_id !== user.id}
-            <Reactions {user} itemStore={newStore} type='news' />
+            <Reactions {user} post={item} type='news' />
           {/if}
           {#if item.owner}
             <a href='./user?id={item.owner_id}' class='owner user' title='autor'>
@@ -114,10 +111,10 @@
       <h2 class='headline'>{item.title}</h2>
     {/if}
     <div class='content' class:trimmed bind:this={textEl}>
-      <Render html={item.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
+      {@html DOMPurify.sanitize(item.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
       {#if trimmed}
         <div class='expand'>
-          <button on:click={() => { trimmed = false }} class='material'>unfold_more</button>
+          <button onclick={() => { trimmed = false }} class='material'>unfold_more</button>
         </div>
       {/if}
     </div>
@@ -128,7 +125,7 @@
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
       {#if item.owner_id !== user.id}
-        <Reactions {user} itemStore={newStore} type='news' />
+        <Reactions {user} post={item} type='news' />
       {/if}
       {#if item.owner_id}
         <a href='./user?id={item.owner_id}' class='owner user' title='autor'>

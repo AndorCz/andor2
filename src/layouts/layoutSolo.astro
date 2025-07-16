@@ -1,0 +1,182 @@
+---
+import 'tippy.js/dist/tippy.css'
+import pkg from '../../package.json' assert { type: 'json' }
+import Header from '@components/Header.svelte'
+import Sidebar from '@components/sidebar/Sidebar.svelte'
+import Store from '@components/common/Store.svelte'
+import Arrows from '@components/common/Arrows.svelte'
+import Lightbox from '@components/common/Lightbox.svelte'
+import HeaderCrop from '@components/common/HeaderCrop.svelte'
+import { ViewTransitions } from 'astro:transitions'
+
+const { version } = pkg
+const { pathname } = new URL(Astro.url, Astro.site)
+const { user, supabase } = Astro.locals
+const { title, headerStatic, headerStorage, settings } = Astro.props
+
+let chatUnread = false
+if (user.id) {
+  const { data, error } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: 1 }).maybeSingle()
+  if (error) {
+    console.error('loading unread for chat failed', error)
+  } else {
+    chatUnread = data?.unread_count > 0
+  }
+}
+---
+
+<html lang='cs' class={settings ? 'no-scroll-snap' : ''}>
+	<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name='description' content='Andor2.cz ― Dračí Doupě online, TTRPG, VTT, RPG hry online, Dungeons & Dragons, D&D, DnD, Vampire, Call of Cthulhu, Pathfinder, Shadowrun, One Ring, Cyberpunk, Fate, Star Wars, Warhammer, Pán Prstenů' />
+    <link rel='manifest' href='/manifest.json'>
+
+    <link rel='icon' href='/favicon.png' type='image/png' />
+
+    <!-- fonts -->
+    <link rel='preconnect' href='https://fonts.googleapis.com'>
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:wght,FILL@100..700,1&icon_names=add,archive,arrow_back,arrow_back_ios,arrow_drop_down,arrow_drop_up,arrow_selector_tool,assignment,backpack,bookmark,bookmark_remove,brand_family,casino,chat,check,chevron_left,chevron_right,circle,close,code,content_copy,content_paste,delete,domino_mask,done,download,edit,explore,favorite,fiber_manual_record,filter_alt,format_align_center,format_align_justify,format_align_left,format_align_right,format_bold,format_clear,format_color_reset,format_h1,format_h2,format_h3,format_h4,format_image_left,format_image_right,format_ink_highlighter,format_italic,format_paragraph,format_quote,format_size,format_strikethrough,format_underlined,forum,globe,group,groups,hourglass_top,image,info,keep,keep_off,label_important,light_mode,link,link_off,login,logout,mail,mail_off,menu,minimize,mode_night,more_vert,notifications,notifications_off,person,person_add,photo_size_select_large,photo_size_select_small,picture_in_picture_center,preview,redo,remove,reply,schedule,search,send,settings,share,shield,side_navigation,skull,sort,star,table_rows,table_rows_narrow,text_decrease,text_increase,transfer_within_a_station,unarchive,undo,unfold_more,unsubscribe,upload,verified,visibility,visibility_off,warning&display=block' />
+
+    <!-- temporary, for news post -->
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Parisienne&amp;display=swap'>
+
+    <!-- styles -->
+    <link rel='stylesheet' href={`/css/common/base.css?v=${version}`}>
+    <link rel='stylesheet' href={`/css/${user.theme || 'obsidian'}.css?v=${version}`}>
+
+    <!-- services -->
+    <!--<script src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' async defer></script>-->
+    <!--<script src='https://www.google.com/recaptcha/api.js?render=6LeGwKwpAAAAAPUzv6wpjauCabPEZp4YX8lfCivG' defer></script>-->
+
+    <ViewTransitions />
+    <title>Andor2.cz{title ? ` ― ${title}` : ''}</title>
+  </head>
+	<body>
+    <Lightbox client:only='svelte' />
+    <HeaderCrop client:only='svelte' />
+    <div id='wrapper'>
+      <main>
+        <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:only='svelte' />
+        <div class='content'>
+          <slot />
+        </div>
+        {(settings) ? (
+          <footer>
+            <div>{version}</div>
+            <div class='links'>
+              <a href='https://github.com/EskelCz/andor2' target='_blank'>Kód</a>
+              <a href='https://andor.canny.io/navrhy' target='_blank'>Návrhy</a>
+              <a href='/privacy'>Soukromí</a>
+              <a href='https://drive.google.com/drive/folders/1XacbPzl9qlcOk0WS6i9ej_hO-gdT2eaz?usp=sharing'>Kroniky</a>
+            </div>
+          </footer>
+        ) : null}
+      </main>
+      <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
+      {(user.name || (!user.name && !user.email)) ? (
+        <Sidebar {pathname} {user} client:only='svelte' />
+      ) : null}
+    </div>
+    <!-- analytics -->
+    <script async src='https://www.googletagmanager.com/gtag/js?id=G-W0K9N4XNHJ'></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() { dataLayer.push(arguments) }
+      gtag('js', new Date())
+      gtag('config', 'G-W0K9N4XNHJ')
+    </script>
+  </body>
+</html>
+
+<style>
+  html {
+    scroll-snap-type: y proximity;
+    scroll-behavior: smooth;
+    margin-top: 0px;
+    overflow-y: auto;
+  }
+  html.no-scroll-snap {
+    scroll-snap-type: none;
+  }
+  body {
+    margin: 0px;
+    min-height: 100%;
+  }
+  /* invisible snap point for header */
+  :global(header::after) {
+    content: '';
+    display: block;
+    height: 1px;
+    scroll-snap-align: start;
+    visibility: hidden;
+  }
+  #wrapper {
+    max-width: 1400px;
+    min-height: 800px;
+    margin: auto;
+    display: flex;
+  }
+    main {
+      flex: 1;
+      min-width: 0;
+    }
+      .content {
+        scroll-snap-align: start;
+        padding: 30px;
+        background-color: var(--panel);
+        border-radius: 0px 0px 10px 10px;
+        max-width: 100vw;
+        height: 100svh;
+      }
+      html.no-scroll-snap .content {
+        scroll-snap-align: none;
+        height: auto;
+      }
+
+  footer {
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+    .links {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+  @media (max-width: 1200px) {
+    .content {
+      padding: 20px 30px 30px 30px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    #wrapper {
+      contain: content;
+    }
+  }
+
+  @media (max-width: 860px) {
+    body {
+      margin: 0px;
+    }
+    main {
+      border-radius: 0px;
+    }
+      .content {
+        padding: 15px;
+        min-height: calc(100svh - 150px);
+      }
+  }
+
+  @media (max-width: 500px) {
+    .content {
+      padding: 10px;
+    }
+  }
+</style>

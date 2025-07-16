@@ -1,47 +1,28 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
-  import { setRead, getReply } from '@lib/database-browser'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
+  import { setRead, getReply } from '@lib/database-browser'
+  import { onMount, onDestroy, mount } from 'svelte'
   import Post from '@components/common/Post.svelte'
 
-  export let id
-  export let type
-  export let user
-  export let posts
-  export let loading
-  export let contentId
-  export let contentSection
-  export let unread = 0
-  export let canDeleteAll = false
-  export let canModerate = false
-  export let myIdentities = []
-  export let allowReactions = false
-  export let onDelete = null
-  export let onEdit = null
-  export let onModerate = null
-  export let onReply = null
-  export let onPaging = null
-  export let page = 0
-  export let pages = null
-  export let iconSize = 70
-  export let diceMode = 'none' // 'post', 'icon', 'none'
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
-  let lastPostId
-  let threadEl
-  let replyPostEl
-  let replyPostData
+  let postCount = $state(0)
+  let lastPostId = $state()
+  let threadEl = $state()
+  let replyPostEl = $state()
+  let replyPostData = $state()
   let lastRefresh = Date.now()
   let autorefreshRunning = false
   let frameId
-  let postCount = 0
 
   const replies = {}
 
   onMount(async () => {
     if (user.autorefresh) { refresh() }
     setRead(user.id, id)
+    if (isFilledArray(posts)) { postCount = posts.length }
   })
 
   onDestroy(() => {
@@ -50,7 +31,7 @@
 
   // update listeners for replies, even for new posts
   function postsUpdate () {
-    if ($posts.length !== 0) {
+    if (posts.length !== 0) {
       removeListeners()
       setupReplyListeners()
     }
@@ -73,7 +54,7 @@
       for (const citeEl of cites) {
         const id = parseInt(citeEl.getAttribute('data-id'))
         // for each cite, load the post from supabase and save it's data
-        replies[id] = await getReply($posts, id)
+        replies[id] = await getReply(posts, id)
         citeEl.addEventListener('pointerdown', addReply)
         citeEl.addEventListener('mouseenter', showReply)
         citeEl.addEventListener('mouseleave', hideReply)
@@ -97,7 +78,7 @@
       const container = document.createElement('div')
       container.classList.add('nestedReply')
       event.target.parentNode.insertBefore(container, event.target.nextSibling)
-      new Post({ target: container, props: { post: replyData, user, iconSize: 0 } })
+      mount(Post, { target: container, props: { post: replyData, user, iconSize: 0 } })
       setupReplyListeners()
     }
   }
@@ -133,7 +114,7 @@
 
   function seen () {
     setRead(user.id, id)
-    if (isFilledArray($posts)) { lastPostId = $posts[0].id }
+    if (isFilledArray(posts)) { lastPostId = posts[0].id }
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
       if (bookmark) {
@@ -157,36 +138,32 @@
     frameId = requestAnimationFrame(refresh)
   }
 
-  let unreadFound = false
-  let firstReadFound = false
-  function shouldDisplayUnreadLine (index) {
-    if (index < unread) {
-      unreadFound = true
-      return false
+  $effect(() => {
+    if (isFilledArray(posts)) {
+      if (loading === false && postCount !== posts.length) {
+        postsUpdate()
+        if (posts[0].id !== lastPostId) {
+          // If this is autorefresh and we have new posts, increment unread
+          if (user.autorefresh && postCount > 0 && posts.length > postCount) {
+            const newPostsCount = posts.length - postCount
+            unread += newPostsCount
+          }
+          seen() // set read for new posts, even for autorefresh
+        } else if (contentSection === 'boards' && contentId === 3) {
+          seen() // custom version for 'nahlášení obsahu'
+        }
+      }
+      postCount = posts.length
     }
-    if (unreadFound && !firstReadFound) {
-      firstReadFound = true
-      return true
-    }
-    return false
-  }
-
-  $: {
-    if ($posts) {
-      if (!loading && postCount !== $posts.length) { postsUpdate() }
-      postCount = $posts.length
-    }
-  }
-  $: if (isFilledArray($posts) && $posts[0].id !== lastPostId) { seen() } // set read for new posts, even for autorefresh
-  $: if (contentSection === 'boards' && contentId === 3) { seen() } // custom version for 'nahlášení obsahu'
+  })
 </script>
 
 <main bind:this={threadEl}>
   {#if loading && !user.autorefresh}
     <p class='info'>Načítám příspěvky...</p>
-  {:else if isFilledArray($posts)}
-    {#each $posts as post, index (`${post.id}-${post.updated_at}`)}
-      {#if shouldDisplayUnreadLine(index)}
+  {:else if isFilledArray(posts)}
+    {#each posts as post, index (`${post.id}-${post.updated_at}`)}
+      {#if index === unread && unread > 0}
         <hr class='unreadLine' />
       {/if}
       {#if post.dice}
@@ -203,8 +180,8 @@
     {/each}
     {#if pages}
       <div class='pagination'>
-        {#each { length: pages } as _, i}
-          <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+        {#each { length: pages } as _, i (i)}
+          <button onclick={() => { triggerPaging(i) }} disabled={i === page}>{i + 1}</button>
         {/each}
       </div>
     {/if}

@@ -1,19 +1,12 @@
 <script>
-  import { Render } from '@jill64/svelte-sanitize'
+  import DOMPurify from 'dompurify'
   import { formatDate } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
 
-  export let us
-  export let message
-  export let onEdit
-  export let onDelete
-  export let senderColumn
-  export let isMessageUnread
-  export let onImageClickInPost
+  const { us, message, onEdit, onDelete, senderColumn, isMessageUnread, onImageClickInPost } = $props()
 
-  let toolbarEl
-
-  $: isMine = message[senderColumn] === us.id
+  let toolbarEl = $state()
+  const isMine = $derived(message[senderColumn] === us.id)
 </script>
 
 <div class={`${isMine ? 'mine' : 'theirs'} postRow`}>
@@ -22,18 +15,13 @@
       <span class='time'>{formatDate(message.created_at)}</span>
       {#if isMine}
         <div class='buttons'>
-          <button class='square material edit' on:click={() => onEdit(message)} title='Upravit'>edit</button>
-          <button class='square material delete' on:click={() => onDelete(message.id)} title='Smazat'>delete</button>
+          <button class='square material edit' onclick={() => onEdit(message)} title='Upravit'>edit</button>
+          <button class='square material delete' onclick={() => onDelete(message.id)} title='Smazat'>delete</button>
         </div>
       {/if}
     </div>
-
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class='bubble' on:click={onImageClickInPost} use:tooltipContent={{ content: toolbarEl, trigger: 'click', placement: isMine ? 'left' : 'right', interactive: true, arrow: true }} >
-      <div class='content'>
-        <Render html={message.content} options={{ dompurify: { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] } }} />
-      </div>
+    <div class='bubble' onclick={onImageClickInPost} use:tooltipContent={{ content: toolbarEl, trigger: 'click', placement: 'top', interactive: true, arrow: true }} >
+      <div class='content'>{@html DOMPurify.sanitize(message.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}</div>
       {#if isMessageUnread(message) && !isMine}
         <span class='badge'></span>
       {/if}
@@ -93,7 +81,7 @@
   }
   .content {
     font-size: 0.95em;
-    line-height: 1.4;
+    line-height: 1.2;
   }
   .content :global(img) {
     max-width: 100%;

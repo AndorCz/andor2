@@ -7,13 +7,10 @@
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  export let user = {}
-  export let data = {}
-  export let isMod = false
+  let { user = {}, data = $bindable({}), isMod = false } = $props()
 
   const boardStore = getSavedStore('board-' + data.id)
-
-  let bookmarkId
+  const bookmarkId = $derived($bookmarks.boards.find(b => b.id === data.id)?.bookmark_id)
 
   onMount(() => {
     data.header = data.header || 'Užitečné odkazy, pravidla apod.'
@@ -48,23 +45,23 @@
     $bookmarks.boards = $bookmarks.boards.filter(b => b.id !== data.id)
     showSuccess('Záložka odebrána')
   }
-
-  $: bookmarkId = $bookmarks.boards.find(b => b.id === data.id)?.bookmark_id
 </script>
 
 <div class='headline'>
   <h1>{data.name}</h1>
-  {#key $boardStore.hideHeader}
-    <button on:click={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
-  {/key}
-  {#if user.id}
-    {#key bookmarkId}
-      <button on:click={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+  <div class='buttons'>
+    {#key $boardStore.hideHeader}
+      <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
     {/key}
-    {#if isMod}
-      <button on:click={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
+    {#if user.id}
+      {#key bookmarkId}
+        <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
+      {/key}
+      {#if isMod}
+        <button onclick={showSettings} class='material settings square' title='Nastavení diskuze' use:tooltip>settings</button>
+      {/if}
     {/if}
-  {/if}
+  </div>
 </div>
 
 {#if !$boardStore.hideHeader}
@@ -74,7 +71,7 @@
     <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
     {#if data.mods.length}
       {#await supabase.rpc('get_user_names', { ids: data.mods }).single() then mods}
-        {#each mods.data as mod}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
+        {#each mods.data as mod (mod.id)}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
       {/await}
     {/if}
   </p>
@@ -107,5 +104,21 @@
     .headline {
       margin-top: 20px;
     }
+  }
+  @media (max-width: 500px) {
+    .headline {
+      padding-bottom: 0px;
+    }
+    .buttons {
+      display: flex;
+      flex: 0.1;
+      gap: 5px;
+    }
+      .buttons button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        padding: 0px;
+      }
   }
 </style>

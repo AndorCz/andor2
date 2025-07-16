@@ -3,9 +3,7 @@
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
 
-  export let user = {}
-  export let game = {}
-  export let isStoryteller
+  const { user = {}, game = {}, isStoryteller } = $props()
 
   const characters = { dead: [] }
 
@@ -18,15 +16,15 @@
 </script>
 
 <main>
-  {#if isStoryteller }
+  {#if isStoryteller}
     <table class='characters'>
-      {#if isFilledArray(characters.dead)}
-        <CharacterHeader {isStoryteller} />
-        {#each characters.dead as character}
-          <Character {user} {character} {isStoryteller} {game} />
-        {/each}
-      {:else}
-        <tr><td class='none'>Žádné mrtvé postavy</td></tr>
+        {#if isFilledArray(characters.dead)}
+          <CharacterHeader {isStoryteller} />
+          {#each characters.dead as character}
+            <Character {user} {character} {isStoryteller} {game} />
+          {/each}
+        {:else}
+        <tbody><tr><td class='none'>Žádné mrtvé postavy</td></tr></tbody>
       {/if}
     </table>
   {:else}

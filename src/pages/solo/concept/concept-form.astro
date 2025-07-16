@@ -1,0 +1,36 @@
+---
+  import Layout from '@layouts/layout.astro'
+  import ConceptForm from '@components/solo/ConceptForm.svelte'
+  import { generateSoloConcept } from '@lib/solo/server-gemini'
+
+  const { supabase, user, runtime } = Astro.locals
+
+  if (Astro.request.method === 'POST') {
+    const formData = await Astro.request.formData()
+    const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
+    const fields = ['conceptName', 'promptWorld', 'promptPlan', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage']
+    const [name, world, plan, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage] = fields.map(field => formData.get(field))
+
+    if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
+    try {
+      // Create the concept record
+      const { data: conceptData, error } = await supabase.from('solo_concepts').insert({
+        author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags,
+        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
+      }).select().single()
+
+      if (error) { throw new Error('Error creating concept: ' + error.message) }
+
+      // Redirect user to the new concept page that shows loading state
+      return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
+    } catch (error) {
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent(error.message)}`)
+    }
+  }
+---
+
+<Layout title='Vytvořit herní koncept'>
+  <a href='javascript:history.back()'>zpět</a>
+  <h1>Vytvořit herní koncept</h1>
+  <ConceptForm {user} client:only='svelte' />
+</Layout>

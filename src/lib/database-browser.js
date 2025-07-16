@@ -24,8 +24,7 @@ export function getHeaderUrl (type, id, hash) {
 }
 
 export function getPortraitUrl (identityId, hash) {
-  const path = `${identityId}.jpg${hash ? '?hash=' + hash : ''}`
-  return getImageUrl(supabase, path, 'portraits')
+  return getImageUrl(supabase, `${identityId}.jpg${hash ? '?hash=' + hash : ''}`, 'portraits')
 }
 
 export function getWorkFileUrl (path) {
@@ -61,4 +60,13 @@ export async function userAutocomplete (name) {
   const { data, error } = await supabase.from('profiles').select('id, name').ilike('name', '%' + name + '%').limit(5)
   if (error) { return handleError(error) }
   return data
+}
+
+export async function deleteStorageFolder (bucket, folder) {
+  const { data: listData, error: listError } = await supabase.storage.from(bucket).list(folder)
+  if (listError) { return listError }
+  const filesToRemove = listData.map((file) => `${folder}/${file.name}`)
+  const { error: removeError } = await supabase.storage.from(bucket).remove(filesToRemove)
+  if (removeError) { return { error: removeError } }
+  return { data: { success: true } }
 }

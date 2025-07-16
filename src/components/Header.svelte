@@ -4,15 +4,11 @@
   import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
 
-  export let pathname
-  export let headerStatic
-  export let headerStorage
-  export let showMenu = true
-  export let chatUnread = false
+  const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
 
-  let headerUrl = headerStatic
-  let errorFetchingHeader = false
-  let chatPeople = 0
+  let headerUrl = $state(headerStatic)
+  let chatPeople = $state(0)
+  let errorFetchingHeader = $state(false)
 
   async function getHeaderUrl () {
     try {
@@ -36,24 +32,23 @@
       chatPeople = Object.keys(newState).length
     })
     chatChannel.subscribe()
+    if (headerStorage) { getHeaderUrl() }
   })
-
-  $: if (headerStorage) { getHeaderUrl() }
 </script>
 
 {#if errorFetchingHeader}
   <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
 {:else if pathname !== '/chat'}
   <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
-    <!-- svelte-ignore a11y-missing-content -->
     <a href='/' id='logo'></a>
     {#if showMenu}
       <nav class='tabs'>
         <a href='/' class={pathname === '/' ? 'active' : ''}>Novinky</a>
-        <a href='/games' class={pathname.includes('/game') ? 'active' : ''}>Hry</a>
-        <a href='/works' class={pathname.includes('/work') ? 'active' : ''}>Tvorba</a>
-        <a href='/boards' class={pathname.includes('/board') ? 'active' : ''}>Diskuze</a>
-        <a href='/chat' class={pathname.includes('/chat') ? 'active' : ''}>
+        <a href='/games' class={pathname.startsWith('/game') ? 'active' : ''}>Hry</a>
+        <a href='/works' class={pathname.startsWith('/work') ? 'active' : ''}>Tvorba</a>
+        <a href='/boards' class={pathname.startsWith('/board') ? 'active' : ''}>Diskuze</a>
+        <a href='/solo' class={pathname.startsWith('/solo') ? 'active' : ''}>Sólo</a>
+        <a href='/chat' class={pathname.startsWith('/chat') ? 'active' : ''}>
           <span>Chat</span>
           {#if chatPeople}({chatPeople}){/if}
           {#if chatUnread}<span class='unread badge'></span>{/if}

@@ -1,4 +1,6 @@
 <script>
+  import { preventDefault } from 'svelte/legacy'
+
   import { supabase } from '@lib/database-browser'
   import { getOldUserId } from '@mig/migrate'
   import { showSuccess, showError } from '@lib/toasts'
@@ -6,12 +8,11 @@
   import MigrateWorks from '@components/user/MigrateWorks.svelte'
   import MigrateCharacters from '@components/user/MigrateCharacters.svelte'
 
-  export let user
-  export let oldUserData
+  const { user, oldUserData } = $props()
 
-  let oldLogin = ''
   let oldId = ''
-  let oldPassword = ''
+  let oldLogin = $state('')
+  let oldPassword = $state('')
   let oldCreatedAt = ''
 
   if (oldUserData) {
@@ -80,7 +81,7 @@
         Tato stránka slouží k migraci dat ze starého Andoru. Pokud tvůj starý login nesouhlasí, kontaktuj prosím vývojáře.
         Kontakty najdeš v hlavičce diskuze <a href='/board/2' target='_blank'>Správa Andoru</a>.
       </p>
-      <p><button on:click={() => handlePortrait(user.old_id)}>Importovat ikonku</button></p>
+      <p><button onclick={() => handlePortrait(user.old_id)}>Importovat ikonku</button></p>
       <p>Přihlašovací heslo si musíš znovu nastavit a nově se jako přihlašovací jméno používá e-mail.</p>
       <MigrateGames {user} {oldUserData} />
       <br>
@@ -91,7 +92,7 @@
       <h1>Propojení účtu</h1>
       <p>Tato stránka slouží na propojení účtů. Pokud zadáš login a heslo ze starého Andoru, budeme moci tvé účty propojit.</p>
 
-      <form on:submit|preventDefault={linkUserToOldAccount} autocomplete='off'>
+      <form onsubmit={preventDefault(linkUserToOldAccount)} autocomplete='off'>
         <div class='row'>
           <label for='login_link'>Login</label>
           <input type='text' id='oldLoginLink' bind:value={oldLogin} size='32' />

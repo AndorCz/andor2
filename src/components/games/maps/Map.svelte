@@ -1,28 +1,26 @@
 <script>
-  import { clearCharacter, saveTransfrom } from '@lib/map/db'
-  import { supabase, handleError } from '@lib/database-browser'
-  import { stringToColor, getHash } from '@lib/utils'
-  import { onMount, onDestroy } from 'svelte'
-  import { showSuccess } from '@lib/toasts'
-  import { Character } from '@lib/map/character'
-  import { tooltip } from '@lib/tooltip'
   import { Vtt } from '@lib/map/vtt'
+  import { tooltip } from '@lib/tooltip'
+  import { Character } from '@lib/map/character'
+  import { showSuccess } from '@lib/toasts'
+  import { onMount, onDestroy } from 'svelte'
   import { getCanvasCoordinates } from '@lib/map/utils'
+  import { stringToColor, getHash } from '@lib/utils'
+  import { supabase, handleError } from '@lib/database-browser'
+  import { clearCharacter, saveTransfrom } from '@lib/map/db'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  export let user
-  export let map
-  export let game
-  export let onDeleteMap
-  export let isStoryteller = false
+  let { user, map = $bindable(), game, onDeleteMap, isStoryteller = false } = $props()
 
-  let mapEl, mapWrapperEl, vtt
-  let availableCharacters = []
-  let fowEnabled = map.fow
-  let fowChanged = false
-  let tool = 'select'
-  let npcTokenName = ''
-  let isPinned = map.isActive
+  let vtt = $state()
+  let mapEl = $state()
+  let mapWrapperEl = $state()
+  let availableCharacters = $state([])
+  let fowEnabled = $state(map.fow)
+  let fowChanged = $state(false)
+  let tool = $state('select')
+  let npcTokenName = $state('')
+  let isPinned = $state(map.isActive)
 
   const tokenDiameter = 50
 
@@ -134,27 +132,27 @@
       <div class='fow'>
         {#if fowEnabled}
           <span>
-            <button type='button' on:click={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
-            <button type='button' on:click={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
-            <button type='button' on:click={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
+            <button type='button' onclick={() => { changeTool('select') }} class:active={tool === 'select'} class='material round' title='Výběr a pohyb' use:tooltip>arrow_selector_tool</button>
+            <button type='button' onclick={() => { changeTool('light') }} class:active={tool === 'light'} class='material round' title='Kreslit světlo' use:tooltip>light_mode</button>
+            <button type='button' onclick={() => { changeTool('dark') }} class:active={tool === 'dark'} class='material round' title='Kreslit tmu' use:tooltip>mode_night</button>
           </span>
-          <button type='button' on:click={disableFow} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
+          <button type='button' onclick={disableFow} class='material square' title='Vypnout mlhu viditelnosti' use:tooltip>visibility_off</button>
           {#if fowChanged}
-            <button type='button' on:click={() => { saveFog() }} class='material square save' title='Uložit viditelnost' use:tooltip>check</button>
+            <button type='button' onclick={() => { saveFog() }} class='material square save' title='Uložit viditelnost' use:tooltip>check</button>
           {/if}
           {#if tool === 'light' || tool === 'dark'}
             <div class='brush'>
-              <button type='button' on:click={() => { vtt.fow.changeBrushSize(0.5) }} class='material round' title='Zmenšit okruh' use:tooltip>fiber_manual_record</button>
-              <button type='button' on:click={() => { vtt.fow.changeBrushSize(2) }} class='material round' title='Zvětšit okruh' use:tooltip>circle</button>
+              <button type='button' onclick={() => { vtt.fow.changeBrushSize(0.5) }} class='material round' title='Zmenšit okruh' use:tooltip>fiber_manual_record</button>
+              <button type='button' onclick={() => { vtt.fow.changeBrushSize(2) }} class='material round' title='Zvětšit okruh' use:tooltip>circle</button>
             </div>
           {/if}
         {:else}
-          <button type='button' on:click={enableFow} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
+          <button type='button' onclick={enableFow} class='material square' title='Nakreslit mlhu viditelnosti' use:tooltip>visibility</button>
         {/if}
       </div>
       <div class='scale'>
-        <button type='button' on:click={() => { vtt.changeAllTokenScale(-0.2) }} class='material round' title='Zmenšit všechny postavy' use:tooltip>remove</button>
-        <button type='button' on:click={() => { vtt.changeAllTokenScale(0.2) }} class='material round' title='Zvětšit všechny postavy' use:tooltip>add</button>
+        <button type='button' onclick={() => { vtt.changeAllTokenScale(-0.2) }} class='material round' title='Zmenšit všechny postavy' use:tooltip>remove</button>
+        <button type='button' onclick={() => { vtt.changeAllTokenScale(0.2) }} class='material round' title='Zvětšit všechny postavy' use:tooltip>add</button>
       </div>
     </div>
   {/if}
@@ -168,7 +166,7 @@
         <h3>Přidat postavu</h3>
         <div class='characterList'>
           {#each availableCharacters as character}
-            <button draggable='true' on:dragstart={(event) => handleDragStart(event, character)} class='plain character'>
+            <button draggable='true' ondragstart={(event) => handleDragStart(event, character)} class='plain character'>
               {#if character.portraitUrl}
                 <img class='portrait' src={character.portraitUrl} alt={character.name} />
               {:else}
@@ -182,8 +180,8 @@
       <div class='npcs'>
         <h3>Přidat žeton</h3>
         <div class='row'>
-          <input type='text' placeholder='Název' bind:value={npcTokenName} on:keydown={(e) => { if (e.key === 'Enter') { addNpc() } }}>
-          <button type='button' on:click={addNpc} class='material square'>add</button>
+          <input type='text' placeholder='Název' bind:value={npcTokenName} onkeydown={(e) => { if (e.key === 'Enter') { addNpc() } }}>
+          <button type='button' onclick={addNpc} class='material square'>add</button>
         </div>
       </div>
     {/if}
@@ -196,12 +194,12 @@
 {#if isStoryteller}
   <td class='options row'>
     {#if isPinned}
-      <button type='button' class='material square active' on:click={() => { toggleActive(map, game) }} title='Zrušit připnutí' use:tooltip>keep_off</button>
+      <button type='button' class='material square active' onclick={() => { toggleActive(map, game) }} title='Zrušit připnutí' use:tooltip>keep_off</button>
     {:else}
-      <button type='button' class='material square' on:click={() => { toggleActive(map, game) }} title='Připnout mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>keep</button>
+      <button type='button' class='material square' onclick={() => { toggleActive(map, game) }} title='Připnout mapu jako aktuální prostředí pro všechny postavy. Otevře se hráčům sama.' use:tooltip>keep</button>
     {/if}
     <a href={`/game/map-form?gameId=${game.id}&mapId=${map.id}`} class='material square button' title='Upravit' use:tooltip>edit</a>
-    <button type='button' on:click={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
+    <button type='button' onclick={() => { onDeleteMap(map.id) }} class='material square' title='Smazat' use:tooltip>delete</button>
   </td>
 {/if}
 

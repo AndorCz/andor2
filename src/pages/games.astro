@@ -3,7 +3,7 @@
   import GameList from '@components/games/GameList.svelte'
 
   const { supabase, user } = Astro.locals
-  
+
   const tab = Astro.url.searchParams.get('tab') || 'open'
   const sort = Astro.url.searchParams.get('sort') || 'new'
 

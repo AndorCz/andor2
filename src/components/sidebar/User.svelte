@@ -1,11 +1,11 @@
 <script>
-  import PortraitInput from '@components/common/PortraitInput.svelte'
-  import { activeConversation } from '@lib/stores'
-  import { uploadPortrait } from '@lib/utils'
-  import { supabase } from '@lib/database-browser'
   import { tooltip } from '@lib/tooltip'
+  import { supabase } from '@lib/database-browser'
+  import { uploadPortrait } from '@lib/utils'
+  import { activeConversation } from '@lib/stores'
+  import PortraitInput from '@components/common/PortraitInput.svelte'
 
-  export let user = {}
+  const { user = {} } = $props()
 
   async function onPortraitChange (file) {
     await uploadPortrait(supabase, user.id, 'profiles', file)
@@ -28,7 +28,7 @@
     </div>
     <div id='buttons'>
       <a href='/settings' id='settings' class='button material' title='Nastavení' use:tooltip>settings</a>
-      <button on:click={logout} id='logout' class='material' title='Odhlásit' use:tooltip>logout</button>
+      <button onclick={logout} id='logout' class='material' title='Odhlásit' use:tooltip>logout</button>
     </div>
   </div>
 </div>

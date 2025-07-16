@@ -1,4 +1,5 @@
 import tippy from 'tippy.js'
+import { mount } from 'svelte'
 import MentionList from '@components/common/MentionList.svelte'
 
 export const MentionRender = (props) => {
@@ -8,7 +9,7 @@ export const MentionRender = (props) => {
     onStart: props => {
       container = document.createElement('div') // container for the Svelte component
       container.tabIndex = -1
-      component = new MentionList({
+      component = mount(MentionList, {
         target: container,
         props: { ...props, onClose: () => { popup[0].hide() } }
       })
@@ -36,7 +37,6 @@ export const MentionRender = (props) => {
 
     onExit: () => { // cleanup
       if (popup) { popup[0].destroy() }
-      if (component) { component.$destroy() }
       if (container) { container.remove() }
     }
   }

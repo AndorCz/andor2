@@ -1,0 +1,29 @@
+---
+  import Concept from '@components/solo/Concept.svelte'
+  import SoloGame from '@components/solo/SoloGame.svelte'
+	import LayoutSolo from '@layouts/layoutSolo.astro'
+  import ConceptSettings from '@components/solo/ConceptSettings.svelte'
+  import SoloGameSettings from '@components/solo/SoloGameSettings.svelte'
+
+  const { soloId } = Astro.params
+  const { supabase, user } = Astro.locals
+  const showSettings = Astro.url.searchParams.get('settings')
+
+  if (!soloId) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Chybí id hry')}`) }
+
+  const { data: soloData, error: soloError } = await supabase.rpc('get_solo_game', { solo_id: soloId }).single()
+  if (soloError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + soloError.message)}`) }
+  const { game, concept, character } = soloData
+---
+
+<LayoutSolo title={concept?.name} settings={showSettings} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
+  {(game && concept ? (
+    showSettings ? (
+      <SoloGameSettings {game} {user} {character} client:only='svelte' />
+    ) : (
+      <SoloGame {game} {character} {concept} {user} readonly={game.player !== user.id} client:only='svelte' />
+    )
+  ) : (
+    <p>Hra nenalezena</p>
+  ))}
+</LayoutSolo>

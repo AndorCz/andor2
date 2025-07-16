@@ -1,29 +1,26 @@
 <script>
+  import { get } from 'svelte/store'
   import { onMount } from 'svelte'
-  import { isFilledArray, addURLParam } from '@lib/utils'
-  import { getSavedStore } from '@lib/stores'
-  import { gameCategories, gameSystems } from '@lib/constants'
-  import { platform } from '@components/common/MediaQuery.svelte'
   import { tooltip } from '@lib/tooltip'
+  import { getSavedStore } from '@lib/stores'
+  import { isFilledArray, addURLParam } from '@lib/utils'
+  import { gameCategories, gameSystems } from '@lib/constants'
+  import { platform as platformStore } from '@components/common/MediaQuery.svelte'
 
-  export let user = {}
-  export let games = []
-  export let showHeadline = false
-  export let showTabs = true
-  export let page = 0
-  export let maxPage = 0
+  const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0 } = $props()
 
-  let listView = false
+  let listView = $state(false)
   let gameListStore
-  let activeTab = 'open'
-  let sort = 'new'
+  let sort = $state('new')
+  let activeTab = $state('open')
+  const platform = $derived($platformStore)
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
 
   // functions to run only in the browser
-  let getHeaderUrl = () => {}
-  let getPortraitUrl = () => {}
+  let getHeaderUrl = $state(() => {})
+  let getPortraitUrl = $state(() => {})
 
   onMount(async () => { // get sort parameter from url
     const databaseBrowser = await import('@lib/database-browser')
@@ -37,7 +34,7 @@
     if (sortParam) { sort = sortParam }
 
     gameListStore = getSavedStore('boards', { listView: false })
-    listView = $gameListStore.listView
+    listView = get(gameListStore).listView
   })
 
   function activateTab (tab) {
@@ -47,7 +44,11 @@
   }
 
   function setListView (val) {
-    listView = $gameListStore.listView = val
+    listView = val
+    gameListStore.update(store => {
+      store.listView = val
+      return store
+    })
   }
 
   function setSort (e) {
@@ -65,7 +66,7 @@
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
-      <select bind:value={sort} on:change={setSort}>
+      <select bind:value={sort} onchange={setSort}>
         <option value='new'>Dle data</option>
         <option value='active'>Dle aktivity</option>
         <option value='name'>Dle názvu</option>
@@ -74,10 +75,10 @@
         <option value='count'>Dle příspěvků</option>
         <option value='owner'>Dle vlastníka</option>
       </select>
-      {#if $platform === 'desktop'}
+      {#if platform === 'desktop'}
         <div class='toggle mode'>
-          <button on:click={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
-          <button on:click={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
+          <button onclick={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
+          <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
         </div>
       {/if}
       {#if user.id}
@@ -90,35 +91,37 @@
 
 {#if showTabs}
   <nav class='tabs secondary'>
-    <button on:click={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nábor</button>
-    <button on:click={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
-    <button on:click={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
-    <button on:click={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
-    <button on:click={() => { activateTab('all') }} class:active={activeTab === 'all'}>Vše</button>
+    <button onclick={() => { activateTab('open') }} class:active={activeTab === 'open'}>Nábor</button>
+    <button onclick={() => { activateTab('public') }} class:active={activeTab === 'public'}>Veřejné</button>
+    <button onclick={() => { activateTab('private') }} class:active={activeTab === 'private'}>Soukromé</button>
+    <button onclick={() => { activateTab('archive') }} class:active={activeTab === 'archive'}>Archiv</button>
+    <button onclick={() => { activateTab('all') }} class:active={activeTab === 'all'}>Vše</button>
   </nav>
 {/if}
 
 {#if isFilledArray(games)}
-  {#if listView && $platform === 'desktop'}
+  {#if listView && platform === 'desktop'}
     <table class='list'>
-      <tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr>
-      {#each games as game}
-        <tr class='gameLine'>
-          <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
-          <td><div class='category'>{getCategory(game.category)}</div></td>
-          <td><div class='system'>{getSystem(game.system)}</div></td>
-          <td><div class='count'>{game.post_count}</div></td>
-          <td>
-            <a href='./user?id={game.owner_id}' class='user owner'>
-              <span>{game.owner_name}</span>
-              {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
-            </a>
-          </td>
-        </tr>
-      {/each}
+      <thead><tr><th>název</th><th>kategorie</th><th>systém</th><th>příspěvků</th><th>vlastník</th></tr></thead>
+      <tbody>
+        {#each games as game (game.id)}
+          <tr class='gameLine'>
+            <td><div class='name'><a href='./game/{game.id}'>{game.name}</a></div></td>
+            <td><div class='category'>{getCategory(game.category)}</div></td>
+            <td><div class='system'>{getSystem(game.system)}</div></td>
+            <td><div class='count'>{game.post_count}</div></td>
+            <td>
+              <a href='./user?id={game.owner_id}' class='user owner'>
+                <span>{game.owner_name}</span>
+                {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
+              </a>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
     </table>
   {:else}
-    {#each games as game}
+    {#each games as game (game.id)}
       <div class='block'>
         {#if game.custom_header}
           <div class='col image'>
@@ -129,10 +132,10 @@
           <div class='name'><a href='./game/{game.id}'>{game.name}</a></div>
           <div class='annotation' title={game.annotation} use:tooltip>{game.annotation || ''}</div>
           <div class='meta'>
-            <div class='category' title='kategorie'>{getCategory(game.category)}</div>
-            {#if game.system !== 'base'}<div class='system' title='systém'>{getSystem(game.system)}</div>{/if}
-            <div class='count' title='příspěvků'>{game.post_count}<span class='material ico'>chat</span></div>
-            <a href='./user?id={game.owner_id}' class='user owner' title='vlastník'>
+            <div class='category' title='kategorie' use:tooltip>{getCategory(game.category)}</div>
+            {#if game.system !== 'base'}<div class='system' title='systém' use:tooltip>{getSystem(game.system)}</div>{/if}
+            <div class='count' title='příspěvků' use:tooltip>{game.post_count}<span class='material ico'>chat</span></div>
+            <a href='./user?id={game.owner_id}' class='user owner' title='vlastník' use:tooltip>
               {game.owner_name}
               {#if game.owner_portrait}<img src={getPortraitUrl(game.owner_id, game.owner_portrait)} class='icon' alt={game.owner_name} />{/if}
             </a>
@@ -147,8 +150,8 @@
 
 {#if maxPage > 0}
   <div class='pagination'>
-    {#each { length: maxPage + 1 } as _, i}
-      <button on:click={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
+    {#each { length: maxPage + 1 } as _, i (i)}
+      <button onclick={() => { triggerPaging(i) } } disabled={i === page}>{i + 1}</button>
     {/each}
   </div>
 {/if}

@@ -1,37 +1,42 @@
 <script>
+  import { handlers } from 'svelte/legacy'
+
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import Editor from '@components/common/Editor.svelte'
   import Loading from '@components/common/Loading.svelte'
 
-  export let user
-  export let id = null
-  export let value = ''
-  export let onSave = null
-  export let onTyping = null
-  export let allowHtml = false
-  export let name = 'textarea'
-  export let disabled = false
-  export let showButton = false
-  export let buttonIcon = 'send'
-  export let buttonTitle = 'Odeslat'
-  export let editing = false
-  export let minHeight = 140
-  export let enterSend = false
-  export let disableEmpty = true
-  export let maxlength = null
-  export let loading = false
-  export let singleLine = false
-  export let placeholder = ''
-  export let fonts = null
-  export let mentionList = null
-  export let forceBubble = false
-  export let autoFocus = false
+  let {
+    user,
+    id = null,
+    value = $bindable(''),
+    onSave = null,
+    onTyping = null,
+    allowHtml = false,
+    name = 'textarea',
+    disabled = false,
+    showButton = false,
+    buttonIcon = 'send',
+    buttonTitle = 'Odeslat',
+    editing = $bindable(false),
+    minHeight = 140,
+    enterSend = false,
+    disableEmpty = true,
+    maxlength = null,
+    loading = false,
+    singleLine = false,
+    placeholder = '',
+    fonts = null,
+    mentionList = null,
+    forceBubble = false,
+    autoFocus = false,
+    cancelClearsValue = true
+  } = $props()
 
   let tiptap
-  let isEmpty = true
-  let editorRef
-  let textareaRef
+  let isEmpty = $state(true)
+  let editorRef = $state()
+  let textareaRef = $state()
   let originalValue = value
   let height = '60px'
 
@@ -43,6 +48,7 @@
     } else {
       isEmpty = value ? value.length === 0 : true
     }
+    setHeight()
   })
 
   function setHeight (node) { // textarea only
@@ -76,8 +82,10 @@
     const val = allowHtml ? tiptap.getHTML() : editorRef.value
     const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
     if (shouldCancel) {
-      value = ''
-      if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      if (cancelClearsValue) {
+        value = ''
+        if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+      }
       editing = false
     }
   }
@@ -115,26 +123,31 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} />
 
-<div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble}>
+<div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble} style='--menuOffset:{allowHtml ? 50 : 0}px'>
   {#if allowHtml}
     <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - (value ? value.length : 0)}</span>
     {/if}
-    <!-- svelte-ignore a11y-autofocus -->
-    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight on:input={setHeight} on:keyup={onKeyUp} on:input={onChange} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
+    <textarea bind:this={textareaRef} autofocus={autoFocus} bind:value={value} {placeholder} {name} {id} use:setHeight oninput={handlers(setHeight, onChange)} onkeyup={onKeyUp} class:withButton={showButton} {maxlength} style='--minHeight:{minHeight}px'></textarea>
   {/if}
-  <div class='buttons' class:hidden={!showButton} >
-    <button type='button' on:click={cancelEdit} class='cancel' class:hidden={!editing} title='Zrušit'>
-      <span class='material'>close</span>
-    </button>
-    <button type='button' on:click={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
-      <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
-    </button>
-  </div>
+  {#if showButton}
+    <div class='buttons'>
+      {#if editing}
+        <button type='button' onclick={cancelEdit} class='cancel' title='Zrušit'>
+          <span class='material'>close</span>
+        </button>
+      {:else}
+        <span class='placeholder'></span>
+      {/if}
+      <button type='button' onclick={triggerSave} class='save' title={editing ? 'Uložit' : buttonTitle} disabled={disabled || (disableEmpty && isEmpty)} use:tooltip>
+        <span class='material'>{#if editing}check{:else}{buttonIcon}{/if}</span>
+      </button>
+    </div>
+  {/if}
   {#if loading}
     <Loading />
   {/if}
@@ -158,6 +171,7 @@
         padding: 0px;
         padding-left: 15px;
         padding-top: 15px;
+        padding-right: 30px;
       }
     .withButton {
       padding-right: 80px;
@@ -167,7 +181,7 @@
       position: absolute;
       top: 0px;
       right: 0px;
-      padding-top: 50px; /* to account for wysiwyg menu */
+      padding-top: var(--menuOffset); /* to account for wysiwyg menu */
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -186,6 +200,11 @@
       button {
         padding: 10px 15px;
       }
+      .placeholder {
+        width: 1px;
+        height: 1px;
+        visibility: hidden;
+      }
       .save {
         border-radius: 10px 0px 10px 0px;
         border-bottom: 3px var(--buttonBg) solid;
@@ -193,9 +212,6 @@
       .cancel {
         visibility: visible;
         border-radius: 0px 10px 0px 10px;
-      }
-      .hidden {
-        visibility: hidden;
       }
       .singleLine button {
         background: none;
@@ -218,6 +234,9 @@
     .buttons {
       padding-top: 0px;
       padding-bottom: 50px;
+    }
+    .singleLine .buttons {
+      padding-bottom: 0px;
     }
   }
   @media (max-width: 500px) {

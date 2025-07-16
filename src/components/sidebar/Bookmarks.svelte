@@ -4,19 +4,24 @@
   import { supabase, handleError } from '@lib/database-browser'
   import Sortable from 'sortablejs'
 
-  let bookmarkNumber
-  let gamesEl
-  let boardsEl
-  let worksEl
-  let sorting = false
-  let saving = false
-  let showHandles = false
+  let soloEl = $state()
+  let gamesEl = $state()
+  let boardsEl = $state()
+  let worksEl = $state()
+  let sorting = $state(false)
+  let saving = $state(false)
+  let showHandles = $state(false)
+  const bookmarkNumber = $derived($bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length)
 
+  $bookmarks.solo.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
 
   onMount(() => {
+    if ($bookmarks.games.length) {
+      new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
+    }
     if ($bookmarks.games.length) {
       new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
@@ -45,8 +50,6 @@
     const { error } = await supabase.from('bookmarks').update({ index: newIndex }).eq('id', bookmarkId)
     if (error) { handleError(error) }
   }
-
-  $: bookmarkNumber = $bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length
 </script>
 
 {#if $bookmarks.games.length > 0}
@@ -60,6 +63,21 @@
             <span class='unread'>{bookmark.unread_game} | {bookmark.unread_discussion}</span>
           {/if}
         </a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
+
+{#if $bookmarks.solo.length > 0}
+  <hr>
+  <a href='/solo'><h4>Sólo</h4></a>
+  <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
+    {#each $bookmarks.solo as bookmark}
+      <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
         <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
           <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
         </svg>
@@ -111,7 +129,7 @@
 {#if bookmarkNumber === 0}
   <div class='empty'>Žádné záložky</div>
 {:else}
-  <button class='reorder' on:click={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
+  <button class='reorder' onclick={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
 {/if}
 
 <style>

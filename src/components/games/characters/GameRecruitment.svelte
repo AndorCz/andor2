@@ -7,13 +7,11 @@
   import Character from '@components/games/characters/Character.svelte'
   import CharacterHeader from '@components/games/characters/CharacterHeader.svelte'
 
-  export let game = {}
-  export let user = {}
-  export let isStoryteller
+  let { game = $bindable({}), user = {}, isStoryteller } = $props()
 
-  const characters = { waiting: [], open: [], myOpen: [] }
+  const characters = $state({ waiting: [], open: [], myOpen: [] })
   const isCharPlayer = (char) => { return char.player?.id === user.id }
-  let myOpenSelected = ''
+  let myOpenSelected = $state('')
 
   game.characters.forEach((char) => {
     if (char.state === 'alive') {
@@ -84,7 +82,7 @@
           <Character {user} {character} {isStoryteller} {game} />
         {/each}
       {:else}
-        <tr><td class='none'>Žádné postavy</td></tr>
+        <tbody><tr><td class='none'>Žádné postavy</td></tr></tbody>
       {/if}
     </table>
   {/if}
@@ -98,7 +96,7 @@
           <Character {user} {character} {isStoryteller} {game} />
         {/each}
       {:else}
-        <tr><td class='none'>Žádné postavy</td></tr>
+        <tbody><tr><td class='none'>Žádné postavy</td></tr></tbody>
       {/if}
     </table>
 
@@ -112,7 +110,7 @@
               <option value={character.id}>{character.name}</option>
             {/each}
           </select>
-          <button on:click={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
+          <button onclick={signExisting} class='large' disabled={myOpenSelected === ''}>Přihlásit existující postavu</button>
         </div>
         <a href={window.location.origin + '/game/character-form?game=' + game.id} class='button large'>Vytvořit novou postavu</a>
       </div>

@@ -1,34 +1,28 @@
 <script>
-  import { beforeUpdate, afterUpdate } from 'svelte'
-  import { supabase, handleError } from '@lib/database-browser'
-  import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
-  import { tooltip } from '@lib/tooltip'
-  import { showError, showSuccess } from '@lib/toasts'
   import Sortable from 'sortablejs'
+  import { tooltip } from '@lib/tooltip'
+  import { supabase, handleError } from '@lib/database-browser'
+  import { showError, showSuccess } from '@lib/toasts'
+  import { createSlug, updateURLParam, removeURLParam } from '@lib/utils'
 
-  export let game
-  export let pages
-  export let activeSection
-  export let activePage
-  export let isStoryteller
-  export let visiblePageCount = 0
+  let { pages, game, activeSection, isStoryteller, visiblePageCount = $bindable(), activePage = $bindable() } = $props()
 
-  let pageListEl
-  let isSortable = false
-  let sorting = false
-  let saving = false
-  let showHandles = false
+  let initialized = $state(false)
+  let saving = $state(false)
+  let sorting = $state(false)
+  let isSortable = $state(false)
+  let pageListEl = $state(null)
+  let showHandles = $state(false)
 
-  beforeUpdate(() => {
-    if (pages.length) {
-      pages.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
-    }
-  })
+  const sortedPages = $derived(
+    pages?.length ? pages.toSorted((a, b) => a.index - b.index || a.name.localeCompare(b.name)) : []
+  )
 
-  afterUpdate(() => {
-    if (pages.length && isSortable === false) {
+  $effect(() => {
+    if (!initialized && pageListEl && sortedPages.length && !isSortable) {
       new Sortable(pageListEl, { animation: 150, handle: '.handle', onStart, onEnd })
       isSortable = true
+      initialized = true
     }
   })
 
@@ -69,23 +63,25 @@
     page ? updateURLParam('codex_page', page.slug) : removeURLParam('codex_page')
   }
 
-  $: if (Array.isArray(pages)) {
-    visiblePageCount = isStoryteller ? pages.length : pages.filter((p) => { return !p.hidden }).length
-  }
+  $effect(() => {
+    if (Array.isArray(pages)) {
+      visiblePageCount = isStoryteller ? pages.length : pages.filter((p) => { return !p.hidden }).length
+    }
+  })
 </script>
 
 <div class='menu' class:empty={visiblePageCount === 0}>
   {#if visiblePageCount > 0}
     <ul id='pageGeneral'>
       <li class:active={!activePage}>
-        <button on:click={() => { activatePage(null) }} class='name plain'>Obecné</button>
+        <button onclick={() => { activatePage(null) }} class='name plain'>Obecné</button>
       </li>
     </ul>
     <ul id='pageList' bind:this={pageListEl} class:showHandles class:saving>
-      {#each pages as item}
+      {#each sortedPages as item (item.id)}
         {#if !item.hidden || isStoryteller}
           <li class:active={item.id === activePage?.id} data-id={item.id}>
-            <button on:click={() => { activatePage(item) }} class='name plain' class:hidden={item.hidden}>
+            <button onclick={() => { activatePage(item) }} class='name plain' class:hidden={item.hidden}>
               {#if item.hidden}<span class='material square' title='Hráčům skryté' use:tooltip>visibility_off</span>{/if}
               <span>{item.name}</span>
             </button>
@@ -99,8 +95,8 @@
   {/if}
   {#if isStoryteller}
     <div class='operations'>
-      <button class='reorder' on:click={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
-      <button on:click={addPage}>Přidat</button>
+      <button class='reorder' onclick={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit'}</button>
+      <button onclick={addPage}>Přidat</button>
     </div>
   {/if}
 </div>

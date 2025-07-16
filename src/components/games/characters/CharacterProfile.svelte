@@ -1,21 +1,18 @@
 <script>
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
-  import { showSuccess } from '@lib/toasts'
-  import { getHex } from '@lib/utils'
-  import { Render } from '@jill64/svelte-sanitize'
-  import { tooltip } from '@lib/tooltip'
+  import DOMPurify from 'dompurify'
   import EditableLong from '@components/common/EditableLong.svelte'
+  import { getHex } from '@lib/utils'
+  import { tooltip } from '@lib/tooltip'
+  import { showSuccess } from '@lib/toasts'
+  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
 
-  export let isStoryteller
-  export let character = {}
-  export let user = {}
+  let { isStoryteller, character = $bindable({}), user = {} } = $props()
 
   const isPlayer = user.id === character.player
-  let originalStoryteller = character.storyteller
-  let originalColor = character.color
+  let originalStoryteller = $state(character.storyteller)
+  let originalColor = $state(character.color)
 
-  let hexColor = getHex(character.color) // Initialize hexColor with the current color
-  $: hexColor = getHex(character.color) // Update hexColor whenever character.color changes
+  const hexColor = $derived(getHex(character.color))
 
   async function updateStorytellerNotes (notes) {
     const { error } = await supabase.from('characters').update({ storyteller_notes: notes }).eq('id', character.id)
@@ -44,15 +41,15 @@
 
     <h2>Veřejný vzhled</h2>
     <p class='content appearance'>
-      <Render html={character.appearance || ''} />
+      {@html DOMPurify.sanitize(character.appearance || '')}
     </p>
 
     <h2>Životopis</h2>
     <p class='content bio'>
       {#if isPlayer || isStoryteller || character.open}
-        <Render html={character.bio || ''} />
+        {@html DOMPurify.sanitize(character.bio || '')}
       {:else}
-        <p>Jen vlastník postavy a vypravěč může číst životopis</p>
+        Jen vlastník postavy a vypravěč může číst životopis
       {/if}
     </p>
 
@@ -64,7 +61,7 @@
 
     {#if isPlayer || isStoryteller}
       {#if character.storyteller_notes || isStoryteller}
-        <h2>Poznámky vypravěče <span class='material' title={'Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.'} use:tooltip>info</span></h2>
+        <h2>Poznámky vypravěče <span class='material' title='Tyto poznámky vidí vypravěči i hráč, ale jen vypravěč je může upravit.' use:tooltip>info</span></h2>
         <EditableLong onSave={updateStorytellerNotes} canEdit={isStoryteller} {user} value={character.storyteller_notes} allowHtml />
       {/if}
     {/if}
@@ -75,15 +72,15 @@
           <h2>Status vypravěče</h2>
           <div class='rowCenter'>
             <div class='inputs'><input type='checkbox' id='storyteller' name='storyteller' bind:checked={character.storyteller} /></div>
-            <button on:click={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller} title='Uložit' use:tooltip>check</button>
+            <button onclick={updateCharacter} class='material square' disabled={originalStoryteller === character.storyteller} title='Uložit' use:tooltip>check</button>
           </div>
         </div>
         <div class='col'>
           <h2>Barva jména</h2>
           <div class='rowCenter'>
-            <input type='color' id='nameColor' name='nameColor' value={hexColor} on:input={(e) => { character.color = getHex(e.target.value) }} />
+            <input type='color' id='nameColor' name='nameColor' value={hexColor} oninput={(e) => { character.color = getHex(e.target.value) }} />
             <input type='text' bind:value={character.color}>
-            <button on:click={updateCharacter} class='material square' disabled={originalColor === character.color} title='Uložit' use:tooltip>check</button>
+            <button onclick={updateCharacter} class='material square' disabled={originalColor === character.color} title='Uložit' use:tooltip>check</button>
           </div>
         </div>
       </div>
