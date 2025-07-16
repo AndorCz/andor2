@@ -30,7 +30,7 @@ export const POST = async ({ request, locals }) => {
   }
 
   try {
-    const { soloId, postHash } = await request.json()
+    const { soloId, postHash, characterName } = await request.json()
     if (!locals.user?.id) { return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) }
 
     const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
@@ -53,11 +53,9 @@ export const POST = async ({ request, locals }) => {
 
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
     const systemInstruction = `${storytellerInstructions}
-      ${getContext(conceptData)}
+      ${getContext(conceptData, null, characterName, gameData.inventory)}
       <h2>Plán hry:</h2>
       ${conceptData.generated_plan}
-      <h2>Aktuální inventář postavy:</h2>
-      ${gameData.inventory.join(', ')}
     `
     const chat = ai.chats.create({ ...storytellerParams, systemInstruction, history })
     const response = await chat.sendMessageStream({ message: lastPost.content })

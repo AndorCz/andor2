@@ -17,7 +17,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: concept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', conceptId).single()
     if (conceptError) { throw new Error('Chyba při načítání konceptu: ' + conceptError.message) }
     if (!concept) { throw new Error('Koncept nebyl nalezen') }
-    const context = getContext(concept)
+    const context = getContext(concept, null, characterName, concept.inventory)
 
     // Increment the concept's play count
     const { error: incrementError } = await locals.supabase.from('solo_concepts').update({ game_count: (concept.game_count || 0) + 1 }).eq('id', concept.id)
@@ -52,22 +52,20 @@ export const GET = async ({ request, locals, redirect }) => {
     // Generate first post
     const firstPostPrompt = {
       text: `
-        <h2>Postava hráče</h2>
-        Jméno postavy: ${characterName}
-        Inventář: ${game.inventory.join(', ')}
+        ${context}
         <h2>Plán hry</h2>
         ${concept.generated_plan}
         <h2>Instrukce</h2>
         ${prompts.firstPost}
       `
     }
-    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: context }, { text: firstPostPrompt }] })
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: firstPostPrompt }] })
     const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
     let firstImagePrompt = firstPost.image.prompt
     if (!firstImagePrompt) {
-      const metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu zachytit vizuálně a popiš jako plaintext prompt pro vygenerování obrázku:\n${firstPost.post}` }
+      const metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu nejlépe vystihnout vizuálně a popiš jako plaintext prompt pro vygenerování ilustračního obrázku:\n${firstPost.post}` }
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }

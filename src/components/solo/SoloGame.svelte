@@ -88,7 +88,7 @@
       const res = await fetch('/api/solo/generatePost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soloId: game.id, postHash })
+        body: JSON.stringify({ soloId: game.id, postHash, characterName: character.name })
       })
       if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
       const reader = res.body.getReader()
