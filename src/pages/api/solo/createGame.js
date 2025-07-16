@@ -59,7 +59,7 @@ export const GET = async ({ request, locals, redirect }) => {
         ${prompts.firstPost}
       `
     }
-    const response = await ai.models.generateContent({ ...storytellerParams, contents: [{ text: firstPostPrompt }] })
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [firstPostPrompt] })
     const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
