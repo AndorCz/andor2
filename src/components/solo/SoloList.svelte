@@ -61,7 +61,7 @@
         </div>
       {/if}
       <div class='col left'>
-        <div class='name'><a href='./solo/concept/{concept.id}'>{concept.name}</a></div>
+        <div class='name'><a href='/solo/concept/{concept.id}'>{concept.name}</a></div>
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
           <div class='games' title='počet her' use:tooltip>{concept.game_count}</div>
