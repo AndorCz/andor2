@@ -117,7 +117,9 @@
         <p class='info'>Žádné výsledky</p>
       {/if}
     {:else}
-      <CodexSection {user} {game} {activeSection} {isStoryteller} />
+      {#key activeSection.slug}
+        <CodexSection {user} {game} {activeSection} {isStoryteller} />
+      {/key}
     {/if}
   {:else}
     <div class='info'><span class='material'>info</span>Kodex této hry není veřejný</div>      <br><br>

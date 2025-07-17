@@ -30,7 +30,7 @@
   let mentionList = $state([])
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
-  const myCharacters = game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' })
+  const myCharacters = $derived(game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' }))
 
   onMount(() => {
     if (user.id) { delete game.unread.gameThread }
