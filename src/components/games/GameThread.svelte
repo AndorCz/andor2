@@ -34,12 +34,12 @@
 
   onMount(() => {
     if (user.id) { delete game.unread.gameThread }
-    diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
     activeAudienceIds = getActiveAudience() // set audience from localStorage or default
     game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
     mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
     $gameStore.activeCharacterId = getActiveCharacterId() // set default value
     activeTool = new URLSearchParams(window.location.search).get('tool') || 'post'
+    diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
     otherCharacters = [
       { id: '*', name: 'Všem' },
       ...game.characters.filter((char) => char.accepted && char.state === 'alive')
@@ -49,6 +49,7 @@
 
   function changeTool (tool) {
     activeTool = tool
+    diceMode = activeTool === 'dice' ? 'post' : (game.context_dice ? 'icon' : 'none')
     addURLParam('tool', tool)
   }
 
