@@ -41,6 +41,21 @@
   font-display: block;
   src: url(https://fonts.gstatic.com/icon/font?kit=gNMyW2J8Roq16WD5tFNRaeLQk6-SHQ_R00k4c2_whPnoY9ruReYU3rHmz74m0ZkGH-VBYe1x0TV6x4yFH8F-H5Od1kzVR4x9r8__USB3vnHsbjGWnTaNm-bZyUCWfPO-o9fx6SvviKLKxY1NAegCEGzRYS8kYqkhwBXrIiteuIrI4awktE5RuS3C4OOs3aKMaDMPtx8vopsd6zMMrp90i0R3daZdsWTTW45dXMi1xWwtqs8bk7lJgW0m1O5kQMz4rfc9sV8nkNGqiG8ssgDqOkbZNFfnqw&skey=b2b11cf3b396438f&v=v263) format('woff2');
 }
+.material-symbols-sharp {
+  font-family: 'Material Symbols Sharp';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
 /* #endregion */
 
 /* #region BASICS */
