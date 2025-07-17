@@ -14,16 +14,16 @@ export const POST = async ({ request, locals }) => {
 
   async function addImage (prompt, type, gameId, threadId) {
     const { data, error } = await generateImage(locals.runtime.env, prompt, imageParams[type])
-    if (error) { console.error('Error generating image:', error) }
+    if (error) { throw new Error('Image generation failed: ' + error.message) }
     // Save image to storage
     const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams[type].bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })
-    if (imageError) { console.error('Error saving image:', imageError) }
+    if (imageError) { throw new Error('Image upload failed: ' + imageError.message) }
     // For scene add as standalone post
     let postData = null
     if (type === 'scene') {
       const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.scene.bucket)
       const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='${type} illustration' />`, owner_type: 'npc' }).select().single()
-      if (postError) { console.error('Error saving image post:', postError) }
+      if (postError) { throw new Error('Error saving image post: ' + postError.message) }
       postData = postDataSaved
     }
     return { postData, imageData }
@@ -103,7 +103,7 @@ export const POST = async ({ request, locals }) => {
 
         // console.log('Inventory data:', finalData.inventory)
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
-          await locals.supabase.from('solo_game').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
+          await locals.supabase.from('solo_games').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
           yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
         }
 

@@ -78,7 +78,7 @@
     <table class='characters'>
       {#if isFilledArray(characters.waiting)}
         <CharacterHeader {isStoryteller} />
-        {#each characters.waiting as character}
+        {#each characters.waiting as character (character.id)}
           <Character {user} {character} {isStoryteller} {game} />
         {/each}
       {:else}
@@ -92,7 +92,7 @@
     <table class='characters'>
       {#if isFilledArray(characters.open)}
         <CharacterHeader {isStoryteller} />
-        {#each characters.open as character}
+        {#each characters.open as character (character.id)}
           <Character {user} {character} {isStoryteller} {game} />
         {/each}
       {:else}
@@ -106,7 +106,7 @@
         <div class='existing' class:empty={characters.myOpen.length === 0}>
           <select bind:value={myOpenSelected}>
             <option value=''>Vyberte postavu bez hry</option>
-            {#each characters.myOpen as character}
+            {#each characters.myOpen as character (character.id)}
               <option value={character.id}>{character.name}</option>
             {/each}
           </select>

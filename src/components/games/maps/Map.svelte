@@ -165,7 +165,7 @@
       <div class='characters'>
         <h3>Přidat postavu</h3>
         <div class='characterList'>
-          {#each availableCharacters as character}
+          {#each availableCharacters as character (character.id)}
             <button draggable='true' ondragstart={(event) => handleDragStart(event, character)} class='plain character'>
               {#if character.portraitUrl}
                 <img class='portrait' src={character.portraitUrl} alt={character.name} />

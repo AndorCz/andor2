@@ -34,6 +34,7 @@
   } = $props()
 
   let tiptap
+  let saving = $state(false)
   let isEmpty = $state(true)
   let editorRef = $state()
   let textareaRef = $state()
@@ -91,13 +92,16 @@
   }
 
   async function triggerSave (html) {
+    if (saving || disabled) { return } // prevent double save
+    saving = true
     if (allowHtml) {
       value = await tiptap.getHTML() // get latest html from editor
       await onSave()
       tiptap.commands.clearContent(true)
     } else {
-      onSave() // otherwise the binded textarea value is used
+      await onSave() // otherwise the binded textarea value is used
     }
+    saving = false
   }
 
   // handle editor typing

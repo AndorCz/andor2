@@ -75,6 +75,7 @@
     isGenerating = true
 
     let reactiveAiPost
+    let hasError = false
     let postAdded = false
     const postHash = getHash()
 
@@ -93,6 +94,13 @@
       if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
+
+      // Set a timeout for the generation process
+      const timeout = setTimeout(() => {
+        reader.cancel()
+        throw new Error('AI generation timed out. Please refresh the page and try again.')
+      }, 60000) // 60 second timeout
+
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
@@ -116,14 +124,23 @@
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
             }
+            if (chunk.error) {
+              hasError = true
+              showError(chunk.error)
+            }
             postsEl.scrollTop = postsEl.scrollHeight
           }
         })
       }
-      // Post complete, look up it's ID and update the post
-      const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).single()
-      if (error) { return handleError(error) }
-      reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+
+      clearTimeout(timeout)
+
+      if (!hasError) {
+        // Post complete, look up it's ID and update the post
+        const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).single()
+        if (error) { return handleError(error) }
+        reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+      }
     } catch (err) {
       handleError(err)
     } finally {
@@ -204,7 +221,7 @@
   <div class='headline'>
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
-      <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>5</div>
+      <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>10</div>
       <button onclick={() => { isInventoryOpen = true }} class='material square' title='Inventář' use:tooltip>backpack</button>
       <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
       {#if user.id}
@@ -220,9 +237,9 @@
         {#if displayedPosts.length > 0}
           {#each displayedPosts as post, index (post.id)}
             {#if post.owner_type && post.owner}
-              <Post {post} {user} canDeleteAll={typeof post.id !== 'string' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
+              <Post {post} {user} canDeleteAll={typeof post.id === 'number' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
             {:else}
-              <ImagePost {post} canDelete={typeof post.id !== 'string' && index === displayedPosts.length - 1} {onDelete} />
+              <ImagePost {post} canDelete={typeof post.id === 'number' && index === displayedPosts.length - 1} {onDelete} />
             {/if}
           {/each}
           <!-- last post is by the user -->

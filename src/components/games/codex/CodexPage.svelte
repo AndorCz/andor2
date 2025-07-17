@@ -63,12 +63,12 @@
       </tbody>
     </table>
   </div>
-  <div class='url'>{#key page.slug}{window.location}{/key}<button on:click={copyUrl} class='material square copy' title='Zkopírovat cestu' use:tooltip>content_copy</button></div>
+  <div class='url'>{#key page.slug}{window.location}{/key}<button onclick={copyUrl} class='material square copy' title='Zkopírovat cestu' use:tooltip>content_copy</button></div>
   {#if isStoryteller}
     <div class='options'>
-      <button on:click={renamePage} class='rename'><span class='material'>edit</span>Přejmenovat</button>
-      <button on:click={togglePage} class='toggle'><span class='material'>{page.hidden ? 'visibility' : ' visibility_off'}</span>{page.hidden ? 'Zobrazit' : ' Skrýt'}</button>
-      <button on:click={deletePage} class='delete'><span class='material'>delete</span>Smazat</button>
+      <button onclick={renamePage} class='rename'><span class='material'>edit</span>Přejmenovat</button>
+      <button onclick={togglePage} class='toggle'><span class='material'>{page.hidden ? 'visibility' : ' visibility_off'}</span>{page.hidden ? 'Zobrazit' : ' Skrýt'}</button>
+      <button onclick={deletePage} class='delete'><span class='material'>delete</span>Smazat</button>
     </div>
   {/if}
 </footer>
