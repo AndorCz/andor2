@@ -124,6 +124,7 @@
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
             }
+            if (chunk.end) { game.ended = true }
             if (chunk.error) {
               hasError = true
               showError(chunk.error)
@@ -251,7 +252,7 @@
         {/if}
       {/if}
     </div>
-    {#if !readonly}
+    {#if !readonly && !game.ended}
       <div class='input'>
         <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
       </div>

@@ -22,7 +22,7 @@ export const POST = async ({ request, locals }) => {
     let postData = null
     if (type === 'scene') {
       const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.scene.bucket)
-      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='${type} illustration' />`, owner_type: 'npc' }).select().single()
+      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' />`, owner_type: 'npc' }).select().single()
       if (postError) { throw new Error('Error saving image post: ' + postError.message) }
       postData = postDataSaved
     }
@@ -105,6 +105,12 @@ export const POST = async ({ request, locals }) => {
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
           await locals.supabase.from('solo_games').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
           yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
+        }
+
+        // Check if the game ended
+        if (finalData.end) {
+          await locals.supabase.from('solo_games').update({ ended: true }).eq('id', gameData.id)
+          yield { end: true }
         }
 
         // Save the complete post to the database

@@ -154,6 +154,7 @@ create table solo_games (
   name text not null,
   player uuid not null,
   thread int4,
+  ended boolean default false,
   inventory text[] not null default '{}'::text[],
   created_at timestamp with time zone default current_timestamp,
   constraint solo_games_concept_fkey foreign key (concept_id) references solo_concepts(id) on delete cascade,

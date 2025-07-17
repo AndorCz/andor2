@@ -75,10 +75,12 @@ export const GET = async ({ request, locals, redirect }) => {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
       if (uploadError) { throw new Error(uploadError.message) }
       const imageUrl = getImageUrl(locals.supabase, uploadData.path, 'scenes')
-      firstPost.post = `<p><img src='${imageUrl}' alt='Scene illustration' /></p>` + firstPost.post
+      // Save first post illustration
+      const { error: introError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: `<img src='${imageUrl}' alt='intro illustration' />`, owner_type: 'npc' })
+      if (introError) { throw new Error(introError.message) }
     }
 
-    // Save the first post with the image
+    // Save the first post
     const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost.post, owner_type: 'npc', owner: concept.storyteller })
     if (addPostError) { throw new Error(addPostError.message) }
 
