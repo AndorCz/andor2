@@ -12,19 +12,19 @@
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
   let hasAccess = boardData.open
-  let isMod = boardData.owner.id === user.id || boardData.mods.includes(user.id)
-
+  let isMod = false
+  
   if (user.id) {
+    isMod = boardData.owner.id === user.id || boardData.mods.includes(user.id)
     if (boardData.open) { // open board, allow everyone except banned users
       hasAccess = !boardData.bans.includes(user.id)
     } else { // private board, allow owner, mods and members
       hasAccess = isMod || boardData.members.includes(user.id)
     }
+    const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: boardData.thread }).maybeSingle()
+    if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
+    if (unreadData) { boardData.unread = unreadData?.unread_count || 0 }
   }
-
-  const { data: unreadData, error: error2 } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: boardData.thread }).maybeSingle()
-  if (error2) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error2.message)}`) }
-  if (unreadData) { boardData.unread = unreadData?.unread_count || 0 }
 ---
 
 <Layout title={boardData?.name} headerStorage={boardData?.custom_header ? `board-${boardData.id}.jpg?hash=${boardData.custom_header}` : null}>
