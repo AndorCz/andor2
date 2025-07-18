@@ -6,6 +6,13 @@
   let selectedIndex = $state(0)
   let listElement = $state()
 
+  // Reset selectedIndex when items change
+  $effect(() => {
+    if (items) {
+      selectedIndex = 0
+    }
+  })
+
   const selectItem = (index) => {
     const item = items[index]
     if (item) { command({ label: item.name, id: item.id, type: item.type }) }

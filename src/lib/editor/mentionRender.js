@@ -1,5 +1,5 @@
 import tippy from 'tippy.js'
-import { mount } from 'svelte'
+import { mount, unmount } from 'svelte'
 import MentionList from '@components/common/MentionList.svelte'
 
 export const MentionRender = (props) => {
@@ -29,7 +29,14 @@ export const MentionRender = (props) => {
     },
 
     onUpdate: (props) => { // update props
-      component.$set({ items: props.items, command: props.command })
+      if (component) {
+        // Recreate the component with new props to ensure reactivity
+        unmount(component)
+        component = mount(MentionList, {
+          target: container,
+          props: { ...props, onClose: () => { popup[0].hide() } }
+        })
+      }
       if (props.clientRect && popup) { // update tippy
         popup[0].setProps({ getReferenceClientRect: props.clientRect })
       }
@@ -37,6 +44,7 @@ export const MentionRender = (props) => {
 
     onExit: () => { // cleanup
       if (popup) { popup[0].destroy() }
+      if (component) { unmount(component) }
       if (container) { container.remove() }
     }
   }
