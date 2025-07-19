@@ -2,9 +2,9 @@
   import Select from 'svelte-select'
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
+  import { onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { clone, getHash } from '@lib/utils'
-  import { onMount, onDestroy } from 'svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -15,17 +15,15 @@
   let checkLoop
   let tab = $state('prompts')
   let headlineEl = $state()
-  let selectedTags = $state()
-  const savingValues = $state({})
-  const originalValues = $state(clone(concept))
-  const tagItems = [...gameTags]
-
-  onMount(() => {
-    selectedTags = concept.tags?.map(tag => {
+  let selectedTags = $derived.by(() => {
+    return concept.tags?.map(tag => {
       const found = gameTags.find(t => t.value === tag)
       return found ? { value: found.value, label: found.label } : { value: tag, label: tag }
     }) || []
   })
+  const savingValues = $state({})
+  const originalValues = $state(clone(concept))
+  const tagItems = [...gameTags]
 
   async function onSave (field, generated = false) {
     const value = concept[field]
@@ -254,8 +252,8 @@
 
     <h2>Tagy</h2>
     <div class='row'>
-      <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
-        {#snippet empty()}<div >Více tagů nelze přidat</div>{/snippet}
+      <Select items={maxTags ? [] : tagItems} bind:value={selectedTags} multiple placeholder=''>
+        {#snippet empty()}<div>Více tagů nelze přidat</div>{/snippet}
       </Select>
       <button onclick={saveTags} disabled={ savingValues.tags || originalValues.tags.join(',') === tags.join(',')} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>

@@ -129,9 +129,7 @@
     <h3><label for='boardAddBan'>Zakázat přístup</label></h3>
     <div class='row select'>
       <Select bind:value={newBan} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        {#snippet empty()}
-                <div >Uživatel nenalezen</div>
-              {/snippet}
+        {#snippet empty()}<div>Uživatel nenalezen</div>{/snippet}
       </Select>
       <button class='material square' onclick={() => { addPerson('bans', newBan) }} disabled={saving || !newBan?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
@@ -156,9 +154,7 @@
     <h3><label for='boardAddMember'>Přidat člena</label></h3>
     <div class='row select'>
       <Select bind:value={newMember} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        {#snippet empty()}
-                <div >Uživatel nenalezen</div>
-              {/snippet}
+        {#snippet empty()}<div>Uživatel nenalezen</div>{/snippet}
       </Select>
       <button class='material square' onclick={() => { addPerson('members', newMember) }} disabled={saving || !newMember?.id} title='Přidat uživatele' use:tooltip>add</button>
     </div>
@@ -187,9 +183,7 @@
     <h3><label for='boardAddMod'>Přidat správce</label></h3>
     <div class='row select'>
       <Select bind:value={newMod} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-        {#snippet empty()}
-          <div >Uživatel nenalezen</div>
-        {/snippet}
+        {#snippet empty()}<div>Uživatel nenalezen</div>{/snippet}
       </Select>
       <button class='material square' onclick={() => { addPerson('mods', newMod) }} disabled={saving || !newMod?.id}>add</button>
     </div>

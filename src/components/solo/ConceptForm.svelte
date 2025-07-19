@@ -84,7 +84,7 @@
       <div class='labels'><label for='soloTags'>Tagy<span class='info'>(max 3)</span></label></div>
       <div class='inputs'>
         <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
-          <div slot='empty'>Více tagů nelze přidat</div>
+          {#snippet empty()}<div >Více tagů nelze přidat</div>{/snippet}
         </Select>
         <input type='hidden' name='soloTags' bind:this={tagsInputRef} />
       </div>

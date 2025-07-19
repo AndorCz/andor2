@@ -89,7 +89,7 @@
         </div>
         <div class='inputs'>
           <select id='workCategory' name='workCategory'>
-            {#each categoryItems as category}
+            {#each categoryItems as category (category.value)}
               <option value={category.value}>{category.label}</option>
             {/each}
           </select>
@@ -102,9 +102,7 @@
         <div class='labels'><label for='workTags'>Tagy<span class='info'>(max 3)</span></label></div>
         <div class='inputs'>
           <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
-            {#snippet empty()}
-                        <div >Více tagů nelze přidat</div>
-                      {/snippet}
+            {#snippet empty()}<div >Více tagů nelze přidat</div>{/snippet}
           </Select>
           <input type='hidden' name='workTags' bind:this={tagsInputRef} />
         </div>

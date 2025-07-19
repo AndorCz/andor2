@@ -1,7 +1,7 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, getImageUrl } from '@lib/utils'
-import { getAI, prompts, assistantParams, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
+import { getAI, prompts, assistantParams, storytellerParams, getContext } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
@@ -69,7 +69,7 @@ export const GET = async ({ request, locals, redirect }) => {
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }
-    const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, imageParams.scene)
+    const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, 'scene')
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: firstImagePrompt } })

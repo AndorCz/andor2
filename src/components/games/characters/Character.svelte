@@ -284,9 +284,7 @@
       <div class='transferText'>Vyber hráče, na kterého chceš postavu převést:</div>
       <div class='row'>
         <Select bind:value={newOwner} loadOptions={loadUsers} label='name' placeholder='Jméno uživatele'>
-          {#snippet empty()}
-                    <div >Uživatel nenalezen</div>
-                  {/snippet}
+          {#snippet empty()}<div>Uživatel nenalezen</div>{/snippet}
         </Select>
         <button onclick={transferCharacter} class='material square'>check</button>
       </div>

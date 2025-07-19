@@ -108,7 +108,7 @@
       <h2>Kategorie</h2>
       <div class='row'>
         <select id='workCategory' name='workCategory' bind:value={data.category}>
-          {#each categoryItems as category}
+          {#each categoryItems as category (category.value)}
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
@@ -120,9 +120,7 @@
       <h2>Tagy</h2>
       <div class='row'>
         <Select items={maxTags ? [] : tagItems} multiple bind:value={data.tags} placeholder=''>
-          {#snippet empty()}
-                    <div >Více tagů nelze přidat</div>
-                  {/snippet}
+          {#snippet empty()}<div >Více tagů nelze přidat</div>{/snippet}
         </Select>
         <button onclick={updateWork} disabled={saving || (selectedTagsString === originalTagsString)} class='material save square' title='Uložit' use:tooltip>check</button>
       </div>
