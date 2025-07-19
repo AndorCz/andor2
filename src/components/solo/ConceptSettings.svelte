@@ -25,6 +25,12 @@
   const originalValues = $state(clone(concept))
   const tagItems = [...gameTags]
 
+  const illustrationStyles = [
+    { value: 'rpg', label: 'RPG kniha' },
+    { value: 'anime', label: 'Anime' },
+    { value: 'realistic', label: 'Realistický' }
+  ]
+
   async function onSave (field, generated = false) {
     const value = concept[field]
     try {
@@ -233,6 +239,12 @@
     <div class='row'>
       <TextareaExpandable {user} bind:value={concept.prompt_characters} loading={concept.generating.includes('prompt_characters')} placeholder='Jaké postavy jsou pro hru důležité? (nepovinné)' maxlength={1000} />
       <button onclick={() => onSave('prompt_characters', true)} disabled={concept.generating.includes('prompt_characters') || savingValues.prompt_characters || originalValues.prompt_characters === concept.prompt_characters} class='material save square' title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Styl ilustrace</h2>
+    <div class='row'>
+      <Select items={illustrationStyles} bind:value={concept.illustration_style} placeholder='Vyber styl ilustrace' />
+      <button onclick={() => onSave('illustration_style')} disabled={savingValues.illustration_style || originalValues.illustration_style === concept.illustration_style} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Obrázek do hlavičky</h2>

@@ -9,6 +9,7 @@
   let selectedTags = $state()
   let tagsInputRef = $state()
   let showAdvanced = $state(false)
+  let selectedStyle = $state('rpg')
   let submitButtonRef = $state()
 
   const tagItems = [...gameTags]
@@ -19,6 +20,12 @@
     tagsInputRef.value = tagsString
     event.target.submit()
   }
+
+  const illustrationStyles = [
+    { value: 'rpg', label: 'RPG kniha' },
+    { value: 'anime', label: 'Anime' },
+    { value: 'realistic', label: 'Realistický' }
+  ]
 
   const maxTags = $derived(selectedTags?.length === 3)
 </script>
@@ -79,6 +86,13 @@
     {:else}
       <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
     {/if}
+
+    <div class='row'>
+      <div class='labels'>Styl ilustrace</div>
+      <div class='inputs'>
+        <Select items={illustrationStyles} bind:value={selectedStyle} placeholder='Vyber styl ilustrace' />
+      </div>
+    </div>
 
     <div class='row'>
       <div class='labels'><label for='soloTags'>Tagy<span class='info'>(max 3)</span></label></div>

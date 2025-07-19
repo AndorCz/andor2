@@ -2,7 +2,7 @@ import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { getAI, storytellerInstructions, storytellerParams, getContext } from '@lib/solo/server-gemini'
+import { getAI, storytellerInstructions, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
 
 const imageBuckets = { header: 'headers', scene: 'scenes', item: 'items', npc: 'npcs' }
 
@@ -43,6 +43,7 @@ export const POST = async ({ request, locals }) => {
 
     const { data: conceptData, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', gameData.concept_id).single()
     if (conceptError) { return new Response(JSON.stringify({ error: conceptError.message }), { status: 500 }) }
+    const storytellerParams = getStorytellerParams(conceptData)
 
     const { data: npcs, error: npcsError } = await locals.supabase.from('npcs').select('*').or(`solo_game.eq.${gameData.id},solo_concept.eq.${gameData.concept_id}`)
     if (npcsError) { return new Response(JSON.stringify({ error: npcsError.message }), { status: 500 }) }
@@ -102,10 +103,10 @@ export const POST = async ({ request, locals }) => {
           }
         }
 
-        // console.log('Inventory data:', finalData.inventory)
+        console.log('Inventory data:', finalData.inventory)
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
           await locals.supabase.from('solo_games').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
-          yield { inventory: finalData.inventory.items, change: finalData.inventory.change || '' }
+          yield { inventory: finalData.inventory }
         }
 
         // Check if the game ended

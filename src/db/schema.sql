@@ -117,7 +117,7 @@ create table solo_concepts (
   annotation text,
   custom_header text,
   storyteller uuid,
-  art_style text,
+  illustration_style text default 'rpg'::text,
   protagonist_names text[],
   prompt_world text,
   prompt_protagonist text,

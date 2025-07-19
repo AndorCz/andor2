@@ -1,8 +1,7 @@
 import { Type } from '@google/genai'
 import { getHash } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
-
-import { getAI, assistantParams, assistantInstructions, prompts } from '@lib/solo/server-gemini'
+import { getAI, assistantParams, assistantInstructions, getPrompts } from '@lib/solo/server-gemini'
 
 async function generateConcept (locals, params, sendEvent) {
   const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan, generating = [] } = params
@@ -17,6 +16,7 @@ async function generateConcept (locals, params, sendEvent) {
     // Load existing data for chat history
     const { data: existingData } = await locals.supabase.from('solo_concepts').select('generated_world, generated_factions, generated_locations, generated_characters, generated_protagonist, generating').eq('id', id).single()
     const currentGenerating = [...(existingData.generating || [])]
+    const prompts = getPrompts(existingData)
 
     // Build chat history with previous responses
     const history = [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }]

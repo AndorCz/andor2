@@ -122,6 +122,7 @@
             if (chunk.illustration) { reactiveAiPost.illustration = chunk.illustration }
             if (chunk.prompt) { reactiveAiPost.prompt = chunk.prompt }
             if (chunk.inventory) {
+              console.log('Inventory update:', chunk.inventory)
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
             }
@@ -191,7 +192,7 @@
 
   // Reactive statement for scrolling
   $effect(async () => {
-    if (postsEl && displayedPosts.length > 1) { // Skip for first post
+    if (postsEl && displayedPosts.length > 2) { // Skip for first two posts (image and intro text)
       if (!userHasScrolledUp) { // Scroll to bottom for new posts from the other user, or on initial load if not scrolled up
         await waitForMediaLoad(postsEl)
         if (previousPostsLength === 0 && displayedPosts.length > 1) { // Initial load
@@ -238,10 +239,12 @@
       {:else}
         {#if displayedPosts.length > 0}
           {#each displayedPosts as post, index (post.id)}
+            {@const isLastPost = post.id === displayedPosts[displayedPosts.length - 1]?.id}
+            {@const hasPermanentId = !post.id.toString().startsWith('temp-')}
             {#if post.owner_type && post.owner}
-              <Post {post} {user} canDeleteAll={typeof post.id === 'number' && index === displayedPosts.length - 1} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
+              <Post {post} {user} canDeleteAll={hasPermanentId && isLastPost} iconSize={$platform === 'desktop' ? 70 : 40} isMyPost={post.owner === user.id} showEdited={false} {onDelete} />
             {:else}
-              <ImagePost {post} canDelete={typeof post.id === 'number' && index === displayedPosts.length - 1} {onDelete} />
+              <ImagePost {post} canDelete={hasPermanentId && isLastPost} {onDelete} />
             {/if}
           {/each}
           <!-- last post is by the user -->

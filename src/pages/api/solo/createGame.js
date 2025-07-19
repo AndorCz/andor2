@@ -1,7 +1,7 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-aiml'
 import { getHash, getImageUrl } from '@lib/utils'
-import { getAI, prompts, assistantParams, storytellerParams, getContext } from '@lib/solo/server-gemini'
+import { getAI, getPrompts, assistantParams, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
@@ -18,6 +18,7 @@ export const GET = async ({ request, locals, redirect }) => {
     if (conceptError) { throw new Error('Chyba při načítání konceptu: ' + conceptError.message) }
     if (!concept) { throw new Error('Koncept nebyl nalezen') }
     const context = getContext(concept, null, characterName, concept.inventory)
+    const prompts = getPrompts(concept)
 
     // Increment the concept's play count
     const { error: incrementError } = await locals.supabase.from('solo_concepts').update({ game_count: (concept.game_count || 0) + 1 }).eq('id', concept.id)
@@ -59,6 +60,7 @@ export const GET = async ({ request, locals, redirect }) => {
         ${prompts.firstPost}
       `
     }
+    const storytellerParams = getStorytellerParams(concept)
     const response = await ai.models.generateContent({ ...storytellerParams, contents: [firstPostPrompt] })
     const firstPost = JSON.parse(response.text)
 
