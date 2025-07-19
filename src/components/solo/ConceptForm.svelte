@@ -90,7 +90,11 @@
     <div class='row'>
       <div class='labels'>Styl ilustrace</div>
       <div class='inputs'>
-        <Select items={illustrationStyles} bind:value={selectedStyle} placeholder='Vyber styl ilustrace' />
+        <select bind:value={selectedStyle} name='illustrationStyle' class='styleSelect'>
+          {#each illustrationStyles as style (style.value)}
+            <option value={style.value}>{style.label}</option>
+          {/each}
+        </select>
       </div>
     </div>
 
@@ -133,9 +137,13 @@
         input {
           width: 100%;
         }
+  .styleSelect {
+    min-width: 200px;
+  }
   center {
     margin-top: 20px;
   }
+
   @media (max-width: 860px) {
     .row {
       display: block;

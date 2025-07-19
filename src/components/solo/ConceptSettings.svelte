@@ -243,8 +243,11 @@
 
     <h2>Styl ilustrace</h2>
     <div class='row'>
-      <Select items={illustrationStyles} bind:value={concept.illustration_style} placeholder='Vyber styl ilustrace' />
-      <button onclick={() => onSave('illustration_style')} disabled={savingValues.illustration_style || originalValues.illustration_style === concept.illustration_style} class='material save square' title='Uložit' use:tooltip>check</button>
+      <select bind:value={concept.illustration_style} onchange={() => onSave('illustration_style')} class='styleSelect'>
+        {#each illustrationStyles as style (style.value)}
+          <option value={style.value}>{style.label}</option>
+        {/each}
+      </select>
     </div>
 
     <h2>Obrázek do hlavičky</h2>
@@ -372,6 +375,10 @@
       width: 70px;
       height: fit-content;
     }
+  .styleSelect {
+    min-width: 200px;
+  }
+
   p.info {
     padding-top: 40px;
   }

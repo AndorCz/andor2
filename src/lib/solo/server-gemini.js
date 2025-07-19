@@ -10,7 +10,7 @@ export const illustrationStyleAffixes = {
 }
 
 export const getPrompts = (concept) => {
-  const illustrationStyleAffix = illustrationStyleAffixes[concept.illustration_style] || 'rpg'
+  const illustrationStyleAffix = illustrationStyleAffixes[concept.illustration_style || 'rpg']
   return {
     prompt_world: 'Napiš HTML: 1. Svět: Vytvoř prosím přehledný a inspirativní popis fiktivního světa pro hráče RPG her. Zahrň: základní koncept a atmosféru světa, společenské uspořádání a kultury, roli magie, technologií a víry, stručnou geografii, stručné dějiny a legendy. Cílem je, aby měl vypravěč rychle dobrou představu jak v takovém světě vytvořit zajímavý příběh. \n',
     prompt_factions: 'Napiš HTML: 2. Frakce: Jak je svět politicky uspořádaný? Popiš hlavní mocenské frakce tohoto světa a vztahy mezi nimi.\n',

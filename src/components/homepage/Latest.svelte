@@ -58,7 +58,7 @@
           <option value='activeGames'>Aktivní hry</option>
         </select>
       </div>
-      {#each latestData.games as game}
+      {#each latestData.games as game (game.id)}
         <div class='item'>
           <a href='./user?id={game.owner_id}' class='user owner' title={game.owner_name} use:tooltip>
             {#if game.owner_portrait}
@@ -75,7 +75,7 @@
     </div>
     <div class='group'>
       <a href='/works' class='headline'><h4>Nová tvorba</h4></a>
-      {#each latestData.works as work}
+      {#each latestData.works as work (work.id)}
         <div class='item'>
           <a href='./user?id={work.owner_id}' class='user owner' title={work.owner_name} use:tooltip>
             {#if work.owner_portrait}
@@ -92,7 +92,7 @@
     </div>
     <div class='group'>
       <a href='/boards' class='headline'><h4>Nové diskuze</h4></a>
-      {#each latestData.boards as board}
+      {#each latestData.boards as board (board.id)}
         <div class='item'>
           <a href='./user?id={board.owner_id}' class='user owner' title={board.owner_name} use:tooltip>
             {#if board.owner_portrait}
@@ -110,7 +110,7 @@
     {#if latestData.characters.length > 0}
       <div class='group'>
         <h4>Volné postavy</h4>
-        {#each latestData.characters as character}
+        {#each latestData.characters as character (character.id)}
           <a href={`/game/character?id=${character.id}`} class='item'>
             {#if character.portrait}
               <img src={getPortraitUrl(character.id, character.portrait)} class='icon' alt={character.name} />
