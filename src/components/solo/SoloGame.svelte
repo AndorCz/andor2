@@ -122,7 +122,6 @@
             if (chunk.illustration) { reactiveAiPost.illustration = chunk.illustration }
             if (chunk.prompt) { reactiveAiPost.prompt = chunk.prompt }
             if (chunk.inventory) {
-              console.log('Inventory update:', chunk.inventory)
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
             }

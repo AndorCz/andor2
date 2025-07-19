@@ -54,13 +54,18 @@ export const POST = async ({ request, locals }) => {
     const lastPost = posts[posts.length - 1]
     posts.pop()
 
+    // Prepare post history for the AI model
     const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-    const systemInstruction = `${storytellerInstructions}
+    // Add a system message to the history with current inventory for the model's context
+    if (gameData.inventory && gameData.inventory.length > 0) {
+      history.push({ role: 'model', parts: [{ text: `[System Information: The player's current inventory contains: ${gameData.inventory.join(', ')}]` }] })
+    }
+    storytellerParams.config.systemInstruction = `${storytellerInstructions}
       ${getContext(conceptData, null, characterName, gameData.inventory)}
       <h2>Plán hry:</h2>
       ${conceptData.generated_plan}
     `
-    const chat = ai.chats.create({ ...storytellerParams, systemInstruction, history })
+    const chat = ai.chats.create({ ...storytellerParams, history })
     const response = await chat.sendMessageStream({ message: lastPost.content })
 
     // Create async generator for streaming
@@ -92,7 +97,7 @@ export const POST = async ({ request, locals }) => {
         // console.log('Final data received:', finalData)
 
         // Generate image if needed
-        console.log('Image data:', finalData.image)
+        // console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
           const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, gameData.id, gameData.thread)
           if (finalData.image.type === 'scene') {
@@ -103,7 +108,7 @@ export const POST = async ({ request, locals }) => {
           }
         }
 
-        console.log('Inventory data:', finalData.inventory)
+        // console.log('Inventory data:', finalData.inventory)
         if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
           await locals.supabase.from('solo_games').update({ inventory: finalData.inventory.items }).eq('id', gameData.id)
           yield { inventory: finalData.inventory }
