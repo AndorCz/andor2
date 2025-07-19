@@ -2,7 +2,9 @@ import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { getAI, storytellerInstructions, storytellerParams, getContext, imageParams } from '@lib/solo/server-gemini'
+import { getAI, storytellerInstructions, storytellerParams, getContext } from '@lib/solo/server-gemini'
+
+const imageBuckets = { header: 'headers', scene: 'scenes', item: 'items', npc: 'npcs' }
 
 export const POST = async ({ request, locals }) => {
   const ai = getAI(locals.runtime.env)
@@ -13,16 +15,16 @@ export const POST = async ({ request, locals }) => {
   }
 
   async function addImage (prompt, type, gameId, threadId) {
-    const { data, error } = await generateImage(locals.runtime.env, prompt, imageParams[type])
+    const { data, error } = await generateImage(locals.runtime.env, prompt, type)
     if (error) { throw new Error('Image generation failed: ' + error.message) }
     // Save image to storage
-    const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageParams[type].bucket).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg' })
+    const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageBuckets[type]).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg', upsert: true, metadata: { prompt } })
     if (imageError) { throw new Error('Image upload failed: ' + imageError.message) }
     // For scene add as standalone post
     let postData = null
     if (type === 'scene') {
-      const imageUrl = getImageUrl(locals.supabase, imageData.path, imageParams.scene.bucket)
-      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' />`, owner_type: 'npc' }).select().single()
+      const imageUrl = getImageUrl(locals.supabase, imageData.path, imageBuckets.scene)
+      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' title='${imageData.prompt}' />`, owner_type: 'npc' }).select().single()
       if (postError) { throw new Error('Error saving image post: ' + postError.message) }
       postData = postDataSaved
     }
@@ -95,9 +97,8 @@ export const POST = async ({ request, locals }) => {
           if (finalData.image.type === 'scene') {
             yield { image: postData }
           } else {
-            const bucket = finalData.image.type + 's'
-            finalData.illustration = getImageUrl(locals.supabase, imageData.path, bucket)
-            yield { illustration: finalData.illustration }
+            finalData.illustration = getImageUrl(locals.supabase, imageData.path, imageBuckets[finalData.image.type])
+            yield { illustration: finalData.illustration, prompt: finalData.image.prompt }
           }
         }
 

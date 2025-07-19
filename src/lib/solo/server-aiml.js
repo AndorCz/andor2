@@ -1,19 +1,35 @@
 import { Buffer } from 'node:buffer'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 
-export async function generateImage (env, prompt, imageParams) {
+export const imageSizes = {
+  header: { width: 1100, height: 226 },
+  scene: { width: 1408, height: 768 },
+  item: { width: 200, height: 400 },
+  npc: { width: 200, height: 400 }
+}
+
+export async function generateImage (env, prompt, imageType) {
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 50000) // 50 second timeout
+
+    const sizes = imageSizes[imageType]
+    const width = sizes.width
+    const height = sizes.height
+    // flux uses 64x64 tiles
+    // width = Math.ceil(width / 64) * 64
+    // height = Math.ceil(height / 64) * 64
 
     const response = await fetch('https://api.aimlapi.com/v1/images/generations', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + env.AIML_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
-        model: 'flux/schnell', // 'flux/dev'
-        image_size: { width: imageParams.generation.width, height: imageParams.generation.height }
+        model: 'bytedance/seedream-3.0', // 'flux/schnell', 'flux/dev'
+        guidance_scale: 8, // seedream
+        size: `${width}x${height}` // seedream
+        // image_size: { width: imageSizes.generation.width, height: imageSizes.generation.height } // flux
       }),
       signal: abortController.signal
     })
@@ -28,8 +44,8 @@ export async function generateImage (env, prompt, imageParams) {
     const imageBlob = await imageResponse.blob()
     const imageBuffer = Buffer.from(await imageBlob.arrayBuffer())
     // crop to exact size
-    if (imageParams.crop) {
-      const { data, error } = await cropImageBackEnd(imageBuffer, imageParams.crop.width, imageParams.crop.height)
+    if (width !== sizes.width || height !== sizes.height) {
+      const { data, error } = await cropImageBackEnd(imageBuffer, sizes.width, sizes.height)
       return { data, error }
     } else {
       return { data: imageBuffer }

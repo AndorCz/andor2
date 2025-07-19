@@ -18,7 +18,6 @@
   import Link from '@tiptap/extension-link'
   import Image from '@tiptap/extension-image'
   import Colors from '@components/common/Colors.svelte'
-  // import Mention from '@tiptap/extension-mention'
   import Youtube from '@tiptap/extension-youtube'
   import Underline from '@tiptap/extension-underline'
   import TextStyle from '@tiptap/extension-text-style'

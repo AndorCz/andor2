@@ -2,7 +2,7 @@ import { Type } from '@google/genai'
 import { getHash } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 
-import { getAI, assistantParams, assistantInstructions, prompts, imageParams } from '@lib/solo/server-gemini'
+import { getAI, assistantParams, assistantInstructions, prompts } from '@lib/solo/server-gemini'
 
 async function generateConcept (locals, params, sendEvent) {
   const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan, generating = [] } = params
@@ -156,10 +156,10 @@ async function generateConcept (locals, params, sendEvent) {
     // Header image
     if (currentGenerating.includes('header_image')) {
       sendEvent('progress', { step: 'header_image', message: 'Generuji obrázek hlavičky...' })
-      const { data: headerImage, error: headerImageError } = await generateImage(env, responseHeaderImagePrompt.text, imageParams.header)
+      const { data: headerImage, error: headerImageError } = await generateImage(env, responseHeaderImagePrompt.text, 'header')
       if (headerImageError) { throw new Error(headerImageError.message) }
       if (headerImage) {
-        const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true })
+        const { error: headerUploadError } = await locals.supabase.storage.from('headers').upload(`solo-${id}.jpg`, headerImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: responseHeaderImagePrompt.text } })
         if (headerUploadError) { throw new Error(headerUploadError.message) }
       }
       currentGenerating.splice(currentGenerating.indexOf('header_image'), 1)
@@ -171,10 +171,10 @@ async function generateConcept (locals, params, sendEvent) {
     // Storyteller image
     if (currentGenerating.includes('storyteller_image')) {
       sendEvent('progress', { step: 'storyteller_image', message: 'Generuji obrázek vypravěče...' })
-      const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, imageParams.npc)
+      const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, 'npc')
       if (storytellerImageError) { throw new Error(storytellerImageError.message) }
       if (storytellerImage) {
-        const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true })
+        const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: responseStorytellerImagePrompt.text } })
         if (storytellerUploadError) { throw new Error(storytellerUploadError.message) }
       }
       currentGenerating.splice(currentGenerating.indexOf('storyteller_image'), 1)

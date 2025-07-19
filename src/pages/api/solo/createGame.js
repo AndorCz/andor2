@@ -42,10 +42,10 @@ export const GET = async ({ request, locals, redirect }) => {
     if (bookmarkError) { throw new Error('Chyba při přidávání záložky: ' + bookmarkError.message) }
 
     // Generate character portrait image
-    const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, characterImagePromptResponse.text, imageParams.npc)
+    const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, portraitPrompt, 'npc')
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
-      const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg' })
+      const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: portraitPrompt } })
       if (uploadError) { throw new Error('Chyba při nahrávání portrétu: ' + uploadError.message) }
     }
 
@@ -72,7 +72,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, imageParams.scene)
     if (sceneImageError) { throw new Error(sceneImageError.message) }
     if (sceneImage) {
-      const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg' })
+      const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: firstImagePrompt } })
       if (uploadError) { throw new Error(uploadError.message) }
       const imageUrl = getImageUrl(locals.supabase, uploadData.path, 'scenes')
       // Save first post illustration

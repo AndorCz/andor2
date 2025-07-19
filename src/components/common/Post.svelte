@@ -122,7 +122,7 @@
     </div>
   </div>
   {#if post.illustration}
-    <img src={post.illustration} alt='Illustration' class='aside' />
+    <img src={post.illustration} alt='Illustration' title={post.prompt || ''} class='aside' />
   {/if}
 </div>
 

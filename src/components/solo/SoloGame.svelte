@@ -117,9 +117,10 @@
               showAIPost(chunk.character)
               postAdded = true
             }
-            if (chunk.image) { showPost(chunk.image) }
+            if (chunk.image) { showPost(chunk.image, chunk.prompt) }
             if (chunk.post) { reactiveAiPost.content += chunk.post }
             if (chunk.illustration) { reactiveAiPost.illustration = chunk.illustration }
+            if (chunk.prompt) { reactiveAiPost.prompt = chunk.prompt }
             if (chunk.inventory) {
               if (Array.isArray(chunk.inventory.items)) { game.inventory = chunk.inventory.items }
               if (chunk.inventory.change) { reactiveAiPost.content += `<p class='info'>${chunk.inventory.change}</p>` }
