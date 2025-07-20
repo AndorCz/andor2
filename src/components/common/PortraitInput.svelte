@@ -1,6 +1,6 @@
 <script>
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
-  import { resizePortrait, getHash, getBase64 } from '@lib/utils'
+  import { resizePortrait, getStamp, getBase64 } from '@lib/utils'
   import { showError } from '@lib/toasts'
   import { tooltip } from '@lib/tooltip'
 
@@ -58,7 +58,7 @@
       if (onPortraitChange) { // for immediate upload
         uploading = true
         await onPortraitChange(file)
-        identity.portrait = getHash()
+        identity.portrait = getStamp()
         uploading = false
       }
 

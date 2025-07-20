@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { getImage, getHash } from '@lib/utils'
+  import { getImage, getStamp } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { showError, showSuccess } from '@lib/toasts'
   import { headerPreview, headerCrop } from '@lib/stores'
@@ -32,9 +32,9 @@
     uploading = true
     const { error: error1 } = await supabase.storage.from('headers').upload(unit + '-' + data.id + '.jpg', file, { upsert: true })
     if (error1) { return handleError(error1) }
-    const { error: error2 } = await supabase.from(section).update({ custom_header: getHash() }).eq('id', data.id)
+    const { error: error2 } = await supabase.from(section).update({ custom_header: getStamp() }).eq('id', data.id)
     if (error2) { return handleError(error2) }
-    data.custom_header = getHash()
+    data.custom_header = getStamp()
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showSuccess('Hlavička byla uložena')
     uploading = false

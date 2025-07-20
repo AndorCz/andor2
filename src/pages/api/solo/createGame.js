@@ -1,6 +1,6 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-aiml'
-import { getHash, getImageUrl } from '@lib/utils'
+import { getStamp, getImageUrl } from '@lib/utils'
 import { getAI, getPrompts, assistantParams, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
 
 export const GET = async ({ request, locals, redirect }) => {
@@ -35,7 +35,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const portraitPrompt = characterImagePromptResponse.text
 
     // Create a new player character
-    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getHash(), portrait_prompt: portraitPrompt }).select().single()
+    const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getStamp(), portrait_prompt: portraitPrompt }).select().single()
     if (characterError) { throw new Error('Chyba při vytváření postavy: ' + characterError.message) }
 
     // Add game to bookmarks

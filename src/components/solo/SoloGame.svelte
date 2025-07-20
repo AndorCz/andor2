@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte'
   import { onMount } from 'svelte'
-  import { getHash } from '@lib/utils'
+  import { getStamp } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { waitForMediaLoad } from '@lib/utils'
@@ -54,6 +54,7 @@
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
     newPostData.owner_portrait = character.portrait
     newPostData.owner_name = character.name
+    newPostData.key = getStamp()
     if (error) { return handleError(error) }
     inputValue = ''
 
@@ -77,7 +78,7 @@
     let reactiveAiPost
     let hasError = false
     let postAdded = false
-    const postHash = getHash()
+    const postHash = getStamp()
 
     const showAIPost = (npc) => {
       const tempAiPost = { id: `temp-${Date.now()}`, owner: npc.id, owner_type: 'npc', owner_name: npc.name, owner_portrait: npc.portrait, content: '', created_at: new Date().toISOString(), identifier: postHash }
@@ -178,6 +179,8 @@
 
   // Function to update which posts are displayed based on the display count
   function updateDisplayedPosts () {
+    allPosts.forEach(post => { if (!post.key) { post.key = getStamp() } })
+
     if (allPosts.length <= displayedCount) {
       // If we have fewer posts than the display count, show all
       displayedPosts = [...allPosts]
@@ -237,7 +240,7 @@
         <center class='info'>Načítání...</center>
       {:else}
         {#if displayedPosts.length > 0}
-          {#each displayedPosts as post, index (post.id)}
+          {#each displayedPosts as post, index (post.key)}
             {@const isLastPost = post.id === displayedPosts[displayedPosts.length - 1]?.id}
             {@const hasPermanentId = !post.id.toString().startsWith('temp-')}
             {#if post.owner_type && post.owner}

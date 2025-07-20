@@ -5,7 +5,7 @@
   import { showSuccess } from '@lib/toasts'
   import { onMount, onDestroy } from 'svelte'
   import { getCanvasCoordinates } from '@lib/map/utils'
-  import { stringToColor, getHash } from '@lib/utils'
+  import { stringToColor, getStamp } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { clearCharacter, saveTransfrom } from '@lib/map/db'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -121,7 +121,7 @@
 
   function saveFog () {
     vtt.fow.save()
-    map.fow_image = getHash()
+    map.fow_image = getStamp()
     fowChanged = false
   }
 </script>

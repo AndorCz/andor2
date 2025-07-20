@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { getHash } from '@lib/utils'
+  import { getStamp } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
@@ -33,7 +33,7 @@
     generatingPortrait = true
     const response = await fetch('/api/solo/generatePortrait', { method: 'POST', body: JSON.stringify({ gameId: game.id }), headers: { 'Content-Type': 'application/json' } })
     if (!response.ok) { throw new Error(`API error: ${(await response.json()).error.message || 'Chyba generování pole'}`) }
-    character.portrait = getHash()
+    character.portrait = getStamp()
     generatingPortrait = false
   }
 

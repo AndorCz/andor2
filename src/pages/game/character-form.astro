@@ -1,7 +1,7 @@
 ---
   import Layout from '@layouts/layout.astro'
   import CharacterForm from '@components/games/characters/CharacterForm.svelte'
-  import { base64ToBlob, uploadPortrait, getHash } from '@lib/utils'
+  import { base64ToBlob, uploadPortrait, getStamp } from '@lib/utils'
 
   const { supabase, user } = Astro.locals
   const id = Astro.url.searchParams.get('id') || ''

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 
-export function getHash () {
+export function getStamp () {
   return Math.random().toString(36).slice(-5)
 }
 
@@ -13,7 +13,7 @@ export function getImageUrl (supabase, path, bucket) {
 export async function uploadPortrait (supabase, identityId, table, file) {
   const { error: error1 } = await supabase.storage.from('portraits').upload(identityId + '.jpg', file, { upsert: true })
   if (error1) { return Promise.reject(error1) }
-  const { error: error2 } = await supabase.from(table).update({ portrait: getHash() }).eq('id', identityId)
+  const { error: error2 } = await supabase.from(table).update({ portrait: getStamp() }).eq('id', identityId)
   if (error2) { return Promise.reject(error2) }
 }
 

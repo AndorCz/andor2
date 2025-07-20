@@ -1,4 +1,4 @@
-import { getHash } from '@lib/utils'
+import { getStamp } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 
 // Generate content of a single field of a solo game concept
@@ -17,7 +17,7 @@ export const POST = async ({ request, locals, redirect }) => {
       if (uploadError) { throw new Error('Chyba při nahrávání portrétu: ' + uploadError.message) }
     }
 
-    const { error: characterEditError } = await locals.supabase.from('characters').update({ portrait: getHash() }).eq('solo_game', gameId)
+    const { error: characterEditError } = await locals.supabase.from('characters').update({ portrait: getStamp() }).eq('solo_game', gameId)
     if (characterEditError) { throw new Error(characterEditError.message) }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 })

@@ -1,5 +1,5 @@
 import { Type } from '@google/genai'
-import { getHash } from '@lib/utils'
+import { getStamp } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { getAI, assistantParams, assistantInstructions, getPrompts } from '@lib/solo/server-gemini'
 
@@ -144,7 +144,7 @@ async function generateConcept (locals, params, sendEvent) {
     const { data: existingNpc } = await locals.supabase.from('solo_concepts').select('storyteller').eq('id', id).single()
     if (!existingNpc.storyteller) {
       const gameSlug = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s/g, '')
-      const npc = { name: 'Vypravěč', slug: `vypravec-${gameSlug}`, solo_concept: id, storyteller: true, created_at: new Date(), portrait: getHash() }
+      const npc = { name: 'Vypravěč', slug: `vypravec-${gameSlug}`, solo_concept: id, storyteller: true, created_at: new Date(), portrait: getStamp() }
       const { data: npcDataResult, error: npcError } = await locals.supabase.from('npcs').insert(npc).select().single()
       if (npcError) { throw new Error(npcError.message) }
       npcData = npcDataResult
@@ -221,7 +221,7 @@ async function generateConcept (locals, params, sendEvent) {
     }
 
     // Release concept when generation completes
-    const { error: updateError } = await locals.supabase.from('solo_concepts').update({ published: true, generating: [], custom_header: getHash(), storyteller: npcData.id, generation_error: '' }).eq('id', id)
+    const { error: updateError } = await locals.supabase.from('solo_concepts').update({ published: true, generating: [], custom_header: getStamp(), storyteller: npcData.id, generation_error: '' }).eq('id', id)
     if (updateError) { throw new Error(updateError.message) }
     console.log('Generation completed successfully for concept:', id)
   } catch (error) {

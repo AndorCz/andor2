@@ -1,7 +1,7 @@
 import { Application, Container, Graphics, Sprite, Assets } from 'pixi.js'
 import { saveTransfrom, saveProposition, clearProposition, toggleFoW } from '@lib/map/db'
 import { supabase } from '@lib/database-browser'
-import { getImageUrl, getHash } from '@lib/utils'
+import { getImageUrl, getStamp } from '@lib/utils'
 import { showError } from '@lib/toasts'
 import { Buttons } from '@lib/map/buttons'
 import { FoW } from '@lib/map/fow'
@@ -190,7 +190,7 @@ export class Vtt {
   async disableFog () {
     this.fow.brushPreview.visible = false
     this.map.fow = true
-    this.map.fow_image = getHash()
+    this.map.fow_image = getStamp()
     this.fow.destroy()
     await toggleFoW(this.map, false)
     if (!this.app.ticker.started) { this.app.renderer.render(this.app.stage) }

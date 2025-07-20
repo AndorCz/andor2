@@ -1,5 +1,5 @@
 ---
-  import { getHash, base64ToBlob } from '@lib/utils'
+  import { getStamp, base64ToBlob } from '@lib/utils'
 	import Layout from '@layouts/layout.astro'
   import MapForm from '@components/games/maps/MapForm.svelte'
 
@@ -42,9 +42,9 @@
       if (name) {
         let res
         if (edit) {
-          res = await supabase.from('maps').update({ name, description, image: getHash(), hidden }).eq('id', mapId).select().single()
+          res = await supabase.from('maps').update({ name, description, image: getStamp(), hidden }).eq('id', mapId).select().single()
         } else {
-          res = await supabase.from('maps').insert({ game: gameId, name, description, image: getHash() }).select().single()
+          res = await supabase.from('maps').insert({ game: gameId, name, description, image: getStamp() }).select().single()
         }
         if (res.error) { return Astro.redirect(`/game/${gameId}?toastType=error&toastText=${encodeURIComponent('Chyba: ' + res.error.message)}`) }
         map = res.data

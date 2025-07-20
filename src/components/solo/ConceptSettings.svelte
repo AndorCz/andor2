@@ -4,7 +4,7 @@
   import { gameTags } from '@lib/constants'
   import { onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
-  import { clone, getHash } from '@lib/utils'
+  import { clone, getStamp } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -259,7 +259,7 @@
     <h2>Ikonka vypravěče</h2>
     <div class='row'>
       <div class='avatar'>
-        <img src={getPortraitUrl(concept.storyteller, getHash())} class='portrait' alt='avatar vypravěče' />
+        <img src={getPortraitUrl(concept.storyteller, getStamp())} class='portrait' alt='avatar vypravěče' />
         <TextareaExpandable {user} bind:value={concept.prompt_storyteller_image} loading={concept.generating.includes('prompt_storyteller_image')} placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' maxlength={1000} minHeight={180} />
       </div>
       <button onclick={() => onSave('prompt_storyteller_image', true)} disabled={concept.generating.includes('prompt_storyteller_image') || savingValues.prompt_storyteller_image || originalValues.prompt_storyteller_image === concept.prompt_storyteller_image} class='material save square' title='Uložit' use:tooltip>check</button>

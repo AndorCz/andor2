@@ -1,5 +1,5 @@
 import { supabase, handleError } from '@lib/database-browser'
-import { getHash } from '@lib/utils'
+import { getStamp } from '@lib/utils'
 
 // database operations for map
 
@@ -41,7 +41,7 @@ export async function saveFow (map, blob) {
   if (blob) {
     const { error: uploadError } = await supabase.storage.from('maps').upload(`${map.game}/${map.id}_fow`, blob, { upsert: true })
     if (uploadError) { handleError(uploadError) }
-    const { error: hashError } = await supabase.from('maps').update({ fow_image: getHash() }).eq('id', map.id)
+    const { error: hashError } = await supabase.from('maps').update({ fow_image: getStamp() }).eq('id', map.id)
     if (hashError) { handleError(hashError) }
   }
 }
