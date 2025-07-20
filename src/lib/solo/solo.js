@@ -10,10 +10,10 @@ export const illustrationStyles = [
 ]
 
 export const illustrationStyleAffixes = {
-  ink: 'Detailed black ink line art on aged parchment texture. Fine linework, hatching, cross-hatching. No coloring. Realistic faces, traditional Western pen-and-ink book illustration style.', // NOT anime, NOT manga, NOT cartoon - not working
+  ink: 'Detailed black ink line art on aged parchment texture. Fine linework, hatching, cross-hatching. Realistic facial anatomy, mature expressions, traditional Western pen-and-ink book illustration style. Serious adult style.', // NOT anime, NOT manga, NOT cartoon - not working
   anime: 'Detailed pastel colored anime styled illustration.',
-  digital: 'Detailed, colored, realistic digital art illustration, like concept art for AAA games or ArtStation.',
-  photoreal: 'Professional photography.'
+  digital: 'Detailed, colored, realistic digital art illustration, like concept art for AAA games or ArtStation. Realistic facial anatomy, mature expressions, serious adult style.',
+  photoreal: 'Professional natural photography.'
 }
 
 export const getPrompts = (concept) => {

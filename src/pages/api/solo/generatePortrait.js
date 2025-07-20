@@ -1,5 +1,5 @@
 import { getStamp } from '@lib/utils'
-import { generateImage } from '@lib/solo/server-aiml'
+import { generateImage } from '@lib/solo/server-generateImage'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {

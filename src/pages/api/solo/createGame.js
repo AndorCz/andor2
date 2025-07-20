@@ -1,5 +1,5 @@
 // Create a new game from a solo concept
-import { generateImage } from '@lib/solo/server-aiml'
+import { generateImage } from '@lib/solo/server-replicated'
 import { getStamp, getImageUrl } from '@lib/utils'
 import { getPrompts, assistantParams } from '@lib/solo/solo'
 import { getAI, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
