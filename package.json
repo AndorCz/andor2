@@ -43,6 +43,7 @@
     "openai": "5.8.2",
     "pixi-filters": "6.0.0",
     "pixi.js": "8.0.5",
+    "replicate": "^1.0.1",
     "sharp": "^0.34.2",
     "sortablejs": "1.15.2",
     "stream-chain": "^3.4.0",

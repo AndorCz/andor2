@@ -30,7 +30,8 @@
   }
 
   function onImageClick (event) {
-    if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
+    // if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
+    $lightboxImage = event.target.src
   }
 
   async function toggleImportant () {
@@ -52,7 +53,7 @@
   }
 </script>
 
-<div class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
+<div onclick={onImageClick} class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
   {#if $platform === 'desktop'}
     <div class='icon' style='--iconSize: {iconSize}px'>
       {#if post.owner_portrait}
@@ -99,7 +100,7 @@
         {/if}
       </span>
     </div>
-    <div class='content' onclick={onImageClick} bind:this={contentEl}>
+    <div class='content' bind:this={contentEl}>
       {#if $platform === 'mobile'}
         <div class='icon' style='--iconSize: {iconSize}px'>
           {#if post.owner_portrait}
@@ -152,6 +153,7 @@
     .icon {
       width: var(--iconSize);
       overflow: hidden;
+      cursor: pointer;
       position: relative;
     }
       .icon img {

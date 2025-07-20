@@ -1,18 +1,13 @@
 import { Buffer } from 'node:buffer'
+import { imageSizes } from '@lib/solo/solo'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
-
-export const imageSizes = {
-  header: { width: 1100, height: 226 },
-  scene: { width: 1408, height: 768 },
-  item: { width: 200, height: 400 },
-  npc: { width: 200, height: 400 }
-}
 
 const models = {
   'bytedance/seedream-3.0': { minWidth: 512, minHeight: 512, cellSize: 32, extras: { guidance_scale: 8 } }
 }
 
 export async function generateImage (env, prompt, imageType) {
+  console.log(`Generating '${imageType}' with prompt:`, prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
   try {
     const abortController = new AbortController()

@@ -5,6 +5,7 @@
   import { onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { clone, getStamp } from '@lib/utils'
+  import { illustrationStyles } from '@lib/solo/solo'
   import EditableLong from '@components/common/EditableLong.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -24,12 +25,6 @@
   const savingValues = $state({})
   const originalValues = $state(clone(concept))
   const tagItems = [...gameTags]
-
-  const illustrationStyles = [
-    { value: 'rpg', label: 'RPG kniha' },
-    { value: 'anime', label: 'Anime' },
-    { value: 'realistic', label: 'Realistický' }
-  ]
 
   async function onSave (field, generated = false) {
     const value = concept[field]

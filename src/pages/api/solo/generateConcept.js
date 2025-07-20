@@ -1,7 +1,8 @@
 import { Type } from '@google/genai'
+import { getAI } from '@lib/solo/server-gemini'
 import { getStamp } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
-import { getAI, assistantParams, assistantInstructions, getPrompts } from '@lib/solo/server-gemini'
+import { getPrompts, assistantParams, assistantInstructions } from '@lib/solo/solo'
 
 async function generateConcept (locals, params, sendEvent) {
   const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan, generating = [] } = params

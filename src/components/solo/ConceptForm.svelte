@@ -1,6 +1,7 @@
 <script>
   import Select from 'svelte-select'
   import { gameTags } from '@lib/constants'
+  import { illustrationStyles } from '@lib/solo/solo'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   const { user = {} } = $props()
@@ -9,7 +10,7 @@
   let selectedTags = $state()
   let tagsInputRef = $state()
   let showAdvanced = $state(false)
-  let selectedStyle = $state('rpg')
+  let selectedStyle = $state('ink')
   let submitButtonRef = $state()
 
   const tagItems = [...gameTags]
@@ -20,13 +21,6 @@
     tagsInputRef.value = tagsString
     event.target.submit()
   }
-
-  const illustrationStyles = [
-    { value: 'rpg', label: 'RPG kniha' },
-    { value: 'anime', label: 'Anime' },
-    { value: 'realistic', label: 'Realistický' }
-  ]
-
   const maxTags = $derived(selectedTags?.length === 3)
 </script>
 

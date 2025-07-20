@@ -2,7 +2,8 @@ import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-aiml'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { getAI, storytellerInstructions, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
+import { storytellerInstructions } from '@lib/solo/solo'
+import { getAI, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
 
 const imageBuckets = { header: 'headers', scene: 'scenes', item: 'items', npc: 'npcs' }
 

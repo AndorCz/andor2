@@ -1,11 +1,12 @@
 <script>
   import { once } from 'svelte/legacy'
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { gameTags } from '@lib/constants'
   import { showSuccess } from '@lib/toasts'
   import { isFilledArray } from '@lib/utils'
   import { getPortraitUrl } from '@lib/database-browser'
-  import { onMount } from 'svelte'
+  import { illustrationStyles } from '@lib/solo/solo'
   import { supabase, handleError } from '@lib/database-browser'
   import Loading from '@components/common/Loading.svelte'
 
@@ -266,6 +267,7 @@
         <li><span class='label'>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
         <li><span class='label'>Počet her:</span> {concept.game_count}</li>
         <li><span class='label'>Tagy:</span> {getTagNames(concept.tags)}</li>
+        <li><span class='label'>Styl:</span> {illustrationStyles.find(style => style.value === concept.illustration_style)?.label}</li>
       </ul>
     </aside>
   </div>
