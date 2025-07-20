@@ -1,6 +1,6 @@
 
-const imageSafetyAffix = 'Prompt nesmí obsahovat sebevražedný a explicitně sexuální obsah.'
-const artStyleAffix = 'Styl by měla být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.'
+export const imageSafetyAffix = 'Prompt nesmí obsahovat sebevražedný a explicitně sexuální obsah.'
+export const artStyleAffix = 'Styl by měla být profesionální digitální grafika, jako z ArtStation nebo koncept art AAA her.'
 
 export const illustrationStyles = [
   { value: 'ink', label: 'Perokresba' },
