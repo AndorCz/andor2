@@ -1,5 +1,5 @@
 import { getImageUrl } from '@lib/utils'
-import { generateImage } from '@lib/solo/server-generateImage'
+import { generateImage } from '@lib/solo/server-replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { storytellerInstructions } from '@lib/solo/solo'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
