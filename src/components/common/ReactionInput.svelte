@@ -26,11 +26,11 @@
 {#if user.id && post.owner !== user.id}
   {#key post}
     <span class='reactions'>
-      <button onclick={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek'>{#if post.frowns?.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
-      <button onclick={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích'>{#if post.laughs?.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
-      <button onclick={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok'>{#if post.shocks?.length}<span class='count'>{post.shocks.length}</span>{/if}</button>
-      <button onclick={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce'>{#if post.hearts?.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
-      <button onclick={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru'>{#if post.thumbs?.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('frowns') }} class:active={hasReacted('frowns')} class='reaction frowns' title='Smutek'><img src='/svg/frown.svg' alt='Smutek' class='svg'>{#if post.frowns?.length}<span class='count'>{post.frowns.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('laughs') }} class:active={hasReacted('laughs')} class='reaction laughs' title='Smích'><img src='/svg/laugh.svg' alt='Smích' class='svg'>{#if post.laughs?.length}<span class='count'>{post.laughs.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('shocks') }} class:active={hasReacted('shocks')} class='reaction shocks' title='Šok'><img src='/svg/shock.svg' alt='Šok' class='svg'>{#if post.shocks?.length}<span class='count'>{post.shocks.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('hearts') }} class:active={hasReacted('hearts')} class='reaction hearts' title='Srdce'><img src='/svg/heart.svg' alt='Srdce' class='svg'>{#if post.hearts?.length}<span class='count'>{post.hearts.length}</span>{/if}</button>
+      <button onclick={() => { toggleReaction('thumbs') }} class:active={hasReacted('thumbs')} class='reaction thumbs' title='Palec nahoru'><img src='/svg/thumb.svg' alt='Palec nahoru' class='svg'>{#if post.thumbs?.length}<span class='count'>{post.thumbs.length}</span>{/if}</button>
     </span>
   {/key}
 {/if}
