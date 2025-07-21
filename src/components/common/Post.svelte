@@ -30,8 +30,8 @@
   }
 
   function onImageClick (event) {
-    // if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
-    $lightboxImage = event.target.src
+    // exclude reaction icons
+    if (event.target.tagName === 'IMG' && !event.target.classList.contains('icon')) { $lightboxImage = event.target.src }
   }
 
   async function toggleImportant () {
@@ -102,7 +102,7 @@
     </div>
     <div class='content' bind:this={contentEl}>
       {#if $platform === 'mobile'}
-        <div class='icon' style='--iconSize: {iconSize}px'>
+        <div class='portrait' style='--iconSize: {iconSize}px'>
           {#if post.owner_portrait}
             <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
           {:else if post.owner_type === 'character'}
@@ -150,23 +150,23 @@
         background-color: transparent;
       }
 
-    .icon {
+    .portrait {
       width: var(--iconSize);
       overflow: hidden;
       cursor: pointer;
       position: relative;
     }
-      .icon img {
+      .portrait img {
         display: block;
       }
-      .desktop .icon img {
+      .desktop .portrait img {
         position: absolute;
         top: 0px;
         left: 0px;
         width: 100%;
         display: block;
       }
-      .mobile .icon {
+      .mobile .portrait {
         border: 1px solid var(--panel);
         float: left;
         /*
@@ -190,7 +190,7 @@
       overflow-wrap: anywhere;
       /* box-shadow: 2px 2px 3px #0002; */
     }
-      .hidden .content, .hidden .toolbar, .hidden .icon, .hidden .time, .hidden .reply {
+      .hidden .content, .hidden .toolbar, .hidden .portrait, .hidden .time, .hidden .reply {
         display: none;
       }
     .header {
