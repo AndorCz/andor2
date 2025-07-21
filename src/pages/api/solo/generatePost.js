@@ -1,6 +1,6 @@
-import { getImageUrl } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
+import { getImageUrl, getStamp } from '@lib/utils'
 import { storytellerInstructions } from '@lib/solo/solo'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
 import { getAI, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
@@ -11,7 +11,17 @@ export const POST = async ({ request, locals }) => {
   const ai = getAI(locals.runtime.env)
 
   async function addPost (thread, ownerType, ownerId, postData, postHash) {
-    const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })
+    if (!postData || !postData.post || !postData.post.trim()) {
+      throw new Error('Cannot save empty post content')
+    }
+    const { error: postError } = await locals.supabase.from('posts').insert({
+      thread,
+      owner: ownerId,
+      owner_type: ownerType,
+      content: postData.post,
+      identifier: postHash,
+      illustration: postData.illustration
+    })
     if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
   }
 
@@ -25,7 +35,7 @@ export const POST = async ({ request, locals }) => {
     let postData = null
     if (type === 'scene') {
       const imageUrl = getImageUrl(locals.supabase, imageData.path, imageBuckets.scene)
-      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' title='${imageData.prompt}' />`, owner_type: 'npc' }).select().single()
+      const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' title='${imageData.prompt}' />`, owner_type: 'npc', identifier: getStamp() }).select().single()
       if (postError) { throw new Error('Error saving image post: ' + postError.message) }
       postData = postDataSaved
     }
@@ -97,6 +107,12 @@ export const POST = async ({ request, locals }) => {
         finalData = parser.finalize()
         // console.log('Final data received:', finalData)
 
+        // Validate that we have the required data
+        if (!finalData || typeof finalData !== 'object') {
+          yield { error: 'Invalid response format from AI. Please try again.' }
+          return
+        }
+
         // Generate image if needed
         // console.log('Image data:', finalData.image)
         if (finalData.image && finalData.image.prompt) {
@@ -125,7 +141,13 @@ export const POST = async ({ request, locals }) => {
         const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
         const ownerId = ownerNpc ? ownerNpc.id : conceptData.storyteller
 
-        await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
+        // Only save post if we actually have content
+        if (finalData.post && finalData.post.trim()) {
+          await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
+        } else {
+          // No post content generated, send error
+          yield { error: 'No response was generated. Please try again.' }
+        }
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Error in Gemini stream:', error)

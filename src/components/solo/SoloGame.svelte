@@ -51,7 +51,7 @@
   async function onSave () {
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
-    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue }).select().single()
+    const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue, identifier: getStamp() }).select().single()
     newPostData.owner_portrait = character.portrait
     newPostData.owner_name = character.name
     if (error) { return handleError(error) }
@@ -77,6 +77,7 @@
     let reactiveAiPost
     let hasError = false
     let postAdded = false
+    let postGenerated = false
     const postHash = getStamp()
 
     const showAIPost = (npc) => {
@@ -118,7 +119,10 @@
               postAdded = true
             }
             if (chunk.image) { showPost(chunk.image, chunk.prompt) }
-            if (chunk.post) { reactiveAiPost.content += chunk.post }
+            if (chunk.post) {
+              reactiveAiPost.content += chunk.post
+              postGenerated = true // Mark that we received post content
+            }
             if (chunk.illustration) { reactiveAiPost.illustration = chunk.illustration }
             if (chunk.prompt) { reactiveAiPost.prompt = chunk.prompt }
             if (chunk.inventory) {
@@ -137,14 +141,39 @@
 
       clearTimeout(timeout)
 
-      if (!hasError) {
-        // Post complete, look up it's ID and update the post
-        const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).single()
-        if (error) { return handleError(error) }
-        reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+      // Only try to look up the post if generation was successful and we received post content
+      if (!hasError && postGenerated && reactiveAiPost) {
+        // Post complete, look up its ID and update the post
+        const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).maybeSingle()
+        if (error || !realPost) {
+          console.error('Error looking up generated post:', error)
+          showError('Nepodařilo se načíst vygenerovaný příspěvek z databáze')
+        } else {
+          reactiveAiPost.id = realPost.id // Update the temporary post with the real post ID
+        }
+      } else if (!hasError && !postGenerated) {
+        // Generation completed but no post content was received
+        showError('Odpověď nebyla vygenerována, možná příliš násilí nebo sexu. Zkus to prosím znovu.')
+        // Remove the temporary post if it was added
+        if (postAdded && reactiveAiPost) {
+          const tempIndex = displayedPosts.findIndex(p => p.identifier === postHash)
+          if (tempIndex !== -1) {
+            displayedPosts.splice(tempIndex, 1)
+            allPosts.splice(allPosts.findIndex(p => p.identifier === postHash), 1)
+          }
+        }
       }
     } catch (err) {
+      console.error('Generation error:', err)
       handleError(err)
+      // Remove the temporary post if it was added
+      if (postAdded && reactiveAiPost) {
+        const tempIndex = displayedPosts.findIndex(p => p.identifier === postHash)
+        if (tempIndex !== -1) {
+          displayedPosts.splice(tempIndex, 1)
+          allPosts.splice(allPosts.findIndex(p => p.identifier === postHash), 1)
+        }
+      }
     } finally {
       isGenerating = false
     }
