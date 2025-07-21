@@ -64,7 +64,7 @@
   <h2>Název</h2>
   <div class='row'>
     <input type='text' bind:value={game.name} maxlength='80' />
-    <button onclick={onSave('name', game.name)} disabled={savingValues.name || (originalValues.name === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
+    <button onclick={() => onSave('name', game.name)} disabled={savingValues.name || (originalValues.name === game.name)} class='material save square' title='Uložit' use:tooltip>check</button>
   </div>
 
   <h2>Ikonka postavy</h2>
