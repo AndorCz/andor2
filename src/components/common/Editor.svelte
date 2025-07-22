@@ -178,7 +178,6 @@
         }
       },
       extensions,
-      onTransaction: () => { editor = editor }, // force re-render so `editor.isActive` works as expected
       onFocus () {
         isFocused = true
         wasFocused = true

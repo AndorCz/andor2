@@ -7,8 +7,8 @@
   const defaultColor = '#c4b6ab'
 
   let menuEl = $state()
-  let isInitialized = $state(false)
   let currentStyle = $state()
+  let isInitialized = $state(false)
   let currentAlign = $state(alignments[0])
   let currentColor = $state(defaultColor)
   let currentFont = $state()
@@ -21,20 +21,8 @@
 
   $effect(() => {
     if (editor && !isInitialized) {
-      editor.on('selectionUpdate', () => {
-        // update current styles
-        const headingLevel = editor.getAttributes('heading').level
-        currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
-        currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || alignments[0]
-        currentColor = editor.getAttributes('textStyle').color || defaultColor
-        currentFont = editor.getAttributes('textStyle').fontFamily
-        isBold = editor.isActive('bold')
-        isItalic = editor.isActive('italic')
-        isUnderline = editor.isActive('underline')
-        isStrike = editor.isActive('strike')
-        isLink = editor.isActive('link')
-        selectionEmpty = editor.state.selection.empty
-      })
+      editor.on('selectionUpdate', updateStyles)
+      editor.on('update', updateStyles)
       isInitialized = true
     }
   })
@@ -42,6 +30,21 @@
   onDestroy(() => {
     if (editor) { editor.off('selectionUpdate') }
   })
+
+  function updateStyles () {
+    // update current styles
+    const headingLevel = editor.getAttributes('heading').level
+    currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
+    currentAlign = alignments.find(align => editor.isActive({ textAlign: align })) || alignments[0]
+    currentColor = editor.getAttributes('textStyle').color || defaultColor
+    currentFont = editor.getAttributes('textStyle').fontFamily
+    isBold = editor.isActive('bold')
+    isItalic = editor.isActive('italic')
+    isUnderline = editor.isActive('underline')
+    isStrike = editor.isActive('strike')
+    isLink = editor.isActive('link')
+    selectionEmpty = editor.state.selection.empty
+  }
 
   const styleOptions = [
     { value: 'paragraph', icon: 'format_paragraph' },
