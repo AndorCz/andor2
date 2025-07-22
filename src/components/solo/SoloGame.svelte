@@ -143,6 +143,8 @@
 
       // Only try to look up the post if generation was successful and we received post content
       if (!hasError && postGenerated && reactiveAiPost) {
+        user.solo_limit -= 1 // Decrease the user's solo limit
+
         // Post complete, look up its ID and update the post
         const { data: realPost, error } = await supabase.from('posts').select().match({ thread: game.thread, identifier: postHash }).maybeSingle()
         if (error || !realPost) {
@@ -252,7 +254,7 @@
   <div class='headline'>
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
-      <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>10</div>
+      <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>{user.solo_limit}</div>
       <button onclick={() => { isInventoryOpen = true }} class='material square' title='Inventář' use:tooltip>backpack</button>
       <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
       {#if user.id}
@@ -285,9 +287,13 @@
       {/if}
     </div>
     {#if !readonly && !game.ended}
-      <div class='input'>
-        <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
-      </div>
+      {#if user.solo_limit <= 0}
+        <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
+      {:else}
+        <div class='input'>
+          <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+        </div>
+      {/if}
     {/if}
   </div>
 </main>

@@ -62,7 +62,7 @@ create table profiles (
   last_activity timestamp with time zone,
   old_id int4,
   theme text default 'obsidian',
-  solo_limit int4 default 5,
+  solo_limit int4 default 10,
   autorefresh boolean default false,
   -- editor_bubble boolean default false,
   colors text[] default '{}',
@@ -1314,13 +1314,6 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function delete_old_chat_posts () returns void as $$
-begin
-  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thread = 1;
-end;
-$$ language plpgsql;
-
-
 create or replace function thread_read (p_user_id uuid, p_thread_id int4) returns void as $$
 begin
   insert into read_threads (user_id, thread_id, read_at)
@@ -1450,6 +1443,23 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
+
+-- Function run with Cron
+
+
+create or replace function delete_old_chat_posts () returns void as $$
+begin
+  delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thread = 1;
+end;
+$$ language plpgsql;
+
+
+create or replace function reset_limits () returns void as $$
+begin
+  update profiles set solo_limit = 10
+end;
+$$ language plpgsql;
 
 
 -- Functions and Triggers for Message Unread Counts
