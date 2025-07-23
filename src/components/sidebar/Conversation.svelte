@@ -253,54 +253,56 @@
 </script>
 
 {#await waitForAnimation() then}
-  <div id='conversation'>
-    <button on:click={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
-    {#if us.id && them.id}
-      {#await loadMessages()}
-        <span class='loading'>Načítám konverzaci...</span>
-      {:then}
-        <h2>
-          {#if them.portrait}
-            <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
-          {/if}
-          <div class='label'>
-            {#if $activeConversation.type === 'character'}
-              <a href='/game/character?id={them.id}' class='name character'>{them.name}</a>
-            {:else}
-              <a href='/user?id={them.id}' class='name user'>{them.name}</a>
+  {#if $activeConversation}
+    <div id='conversation'>
+      <button on:click={() => { $activeConversation = null }} id='close' title='zavřít' class='material'>close</button>
+      {#if us.id && them.id}
+        {#await loadMessages()}
+          <span class='loading'>Načítám konverzaci...</span>
+        {:then}
+          <h2>
+            {#if them.portrait}
+              <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
             {/if}
-            <div class='subtitle'>soukromá konverzace</div>
-          </div>
-        </h2>
-
-        <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
-          {#if isLoading && !$messages.length}
-            <div class="loading-indicator">Načítám zprávy...</div>
-          {:else if hasMoreMessages}
-            <div class="loading-more">
-              {#if isLoading}
-                <div class="loading-indicator">Načítám starší zprávy...</div>
+            <div class='label'>
+              {#if $activeConversation.type === 'character'}
+                <a href='/game/character?id={them.id}' class='name character'>{them.name}</a>
               {:else}
-                <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
+                <a href='/user?id={them.id}' class='name user'>{them.name}</a>
               {/if}
+              <div class='subtitle'>soukromá konverzace</div>
             </div>
-          {/if}
-          {#if $messages.length > 0}
-            {#each $messages as message (message.id)}
-              <ConversationPost {message} {us} {senderColumn} {onEdit} {onDelete} {isMessageUnread} onImageClickInPost={onImageClickInPost} />
-            {/each}
-          {:else}
-            <center>Žádné zprávy</center>
-          {/if}
-        </div>
-        <TextareaExpandable forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editingMessage ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
-      {:catch error}
-        <span class='error'>Konverzaci se nepodařilo načíst</span>
-      {/await}
-    {:else}
-      <span class='error'>Konverzace nenalezena</span>
-    {/if}
-  </div>
+          </h2>
+
+          <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
+            {#if isLoading && !$messages.length}
+              <div class="loading-indicator">Načítám zprávy...</div>
+            {:else if hasMoreMessages}
+              <div class="loading-more">
+                {#if isLoading}
+                  <div class="loading-indicator">Načítám starší zprávy...</div>
+                {:else}
+                  <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
+                {/if}
+              </div>
+            {/if}
+            {#if $messages.length > 0}
+              {#each $messages as message (message.id)}
+                <ConversationPost {message} {us} {senderColumn} {onEdit} {onDelete} {isMessageUnread} onImageClickInPost={onImageClickInPost} />
+              {/each}
+            {:else}
+              <center>Žádné zprávy</center>
+            {/if}
+          </div>
+          <TextareaExpandable forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editingMessage ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
+        {:catch error}
+          <span class='error'>Konverzaci se nepodařilo načíst</span>
+        {/await}
+      {:else}
+        <span class='error'>Konverzace nenalezena</span>
+      {/if}
+    </div>
+  {/if}
 {/await}
 
 <style>

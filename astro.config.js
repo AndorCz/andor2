@@ -1,9 +1,9 @@
 import sentry from '@sentry/astro'
 import svelte from '@astrojs/svelte'
 import cloudflare from '@astrojs/cloudflare'
+import { loadEnv } from 'vite'
 import { defineConfig } from 'astro/config'
 
-import { loadEnv } from 'vite'
 const env = loadEnv('', process.cwd(), '')
 const SENTRY_AUTH_TOKEN = env.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN
 
