@@ -34,6 +34,8 @@
     const { data: newBookmark, error } = await supabase.from('bookmarks').upsert({ user_id: user.id, board_id: data.id, board_thread: data.thread }, { onConflict: 'user_id, board_id', ignoreDuplicates: true }).select().maybeSingle()
     if (error) { return handleError(error) }
     if (newBookmark) {
+      await supabase.from('read_threads').upsert({ user_id: user.id, thread_id: data.thread }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+      await supabase.from('unread_threads').upsert({ user_id: user.id, thread_id: data.thread, unread_count: 0 }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
       $bookmarks.boards = [...$bookmarks.boards, { bookmark_id: newBookmark.id, id: data.id, name: data.name }]
       showSuccess('Záložka přidána')
     }

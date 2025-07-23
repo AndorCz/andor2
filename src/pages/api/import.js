@@ -116,12 +116,23 @@ async function createGame (locals, oldGameData) {
     // Handle bookmark insertion
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({
       user_id: locals.user.id,
-      game_id: data.id
+      game_id: data.id,
+      game_main_thread: data.game_thread,
+      game_discussion_thread: data.discussion_thread
     }, {
       onConflict: 'user_id, game_id',
       ignoreDuplicates: true
     })
     if (bookmarkError) throw new Error(`Failed to add bookmark: ${bookmarkError.message}`)
+
+    await locals.supabase.from('read_threads').upsert([
+      { user_id: locals.user.id, thread_id: data.game_thread },
+      { user_id: locals.user.id, thread_id: data.discussion_thread }
+    ], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    await locals.supabase.from('unread_threads').upsert([
+      { user_id: locals.user.id, thread_id: data.game_thread, unread_count: 0 },
+      { user_id: locals.user.id, thread_id: data.discussion_thread, unread_count: 0 }
+    ], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
 
     // Retrieve GM data
     const { data: gmData, error: gmError } = await locals.supabase

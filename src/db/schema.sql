@@ -1348,11 +1348,15 @@ $$ language plpgsql;
 create or replace function add_default_bookmarks () returns trigger as $$
 begin
   insert into bookmarks (user_id, board_id, board_thread)
-  select new.id, b.id, b.thread from boards b where b.id = 1;
-  insert into bookmarks (user_id, board_id, board_thread)
-  select new.id, b.id, b.thread from boards b where b.id = 2;
-  insert into bookmarks (user_id, board_id, board_thread)
-  select new.id, b.id, b.thread from boards b where b.id = 3;
+  select new.id, b.id, b.thread from boards b where b.id in (1, 2, 3);
+
+  insert into read_threads (user_id, thread_id)
+  select new.id, b.thread from boards b where b.id in (1, 2, 3)
+  on conflict do nothing;
+
+  insert into unread_threads (user_id, thread_id, unread_count)
+  select new.id, b.thread, 0 from boards b where b.id in (1, 2, 3)
+  on conflict do nothing;
   return new;
 end;
 $$ language plpgsql;

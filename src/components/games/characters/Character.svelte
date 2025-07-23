@@ -40,6 +40,8 @@
     // add bookmark to the new player
     const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: character.player.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return handleError(bookmarkError) }
+    await supabase.from('read_threads').upsert([{ user_id: character.player.id, thread_id: game.game_thread }, { user_id: character.player.id, thread_id: game.discussion_thread }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    await supabase.from('unread_threads').upsert([{ user_id: character.player.id, thread_id: game.game_thread, unread_count: 0 }, { user_id: character.player.id, thread_id: game.discussion_thread, unread_count: 0 }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
 
     // send welcome message to the new player
     if (user.id !== character.player.id) {
@@ -156,6 +158,8 @@
 
       const { error: upsertError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: game.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
       if (upsertError) { return handleError(upsertError) }
+      await supabase.from('read_threads').upsert([{ user_id: user.id, thread_id: game.game_thread }, { user_id: user.id, thread_id: game.discussion_thread }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+      await supabase.from('unread_threads').upsert([{ user_id: user.id, thread_id: game.game_thread, unread_count: 0 }, { user_id: user.id, thread_id: game.discussion_thread, unread_count: 0 }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
 
       if (user.id !== game.owner.id) {
         const { error: insertError } = await supabase.from('messages').insert({ content: `Převzal/a jsem postavu ${character.name} v tvojí hře ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
