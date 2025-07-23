@@ -4,6 +4,10 @@ export function getStamp () {
   return Math.random().toString(36).slice(-5)
 }
 
+export function preventSubmit (event) {
+  if (event.key === 'Enter') event.preventDefault()
+}
+
 export function getImageUrl (supabase, path, bucket) {
   const { data, error } = supabase.storage.from(bucket).getPublicUrl(path)
   if (error) { throw error }

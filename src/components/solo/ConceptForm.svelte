@@ -1,6 +1,7 @@
 <script>
   import Select from 'svelte-select'
   import { gameTags } from '@lib/constants'
+  import { preventSubmit } from '@lib/utils'
   import { illustrationStyles } from '@lib/solo/solo'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -31,7 +32,7 @@
         <label for='conceptName'>Název *</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='conceptName' name='conceptName' maxlength='80' onkeydown={(e) => { if (e.key === 'Enter') e.preventDefault() }} />
+        <input type='text' id='conceptName' name='conceptName' maxlength='80' onkeydown={preventSubmit} />
       </div>
     </div>
 

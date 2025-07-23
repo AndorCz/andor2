@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { preventSubmit } from '@lib/utils'
   import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
   import Select from 'svelte-select'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -53,7 +54,7 @@
         <label for='workName'>Název</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='workName' name='workName' maxlength='80' />
+        <input type='text' id='workName' name='workName' maxlength='80' onkeydown={preventSubmit} />
       </div>
     </div>
 

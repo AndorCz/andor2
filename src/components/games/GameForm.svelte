@@ -1,4 +1,5 @@
 <script>
+  import { preventSubmit } from '@lib/utils'
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -12,7 +13,7 @@
         <label for='gameName'>Název *</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='gameName' name='gameName' maxlength='80' />
+        <input type='text' id='gameName' name='gameName' maxlength='80' onkeydown={preventSubmit} />
       </div>
     </div>
 
@@ -22,7 +23,7 @@
       </div>
       <div class='inputs'>
         <select id='gameCategory' name='gameCategory'>
-          {#each gameCategories as category}
+          {#each gameCategories as category (category.value)}
             <option value={category.value}>{category.label}</option>
           {/each}
         </select>
@@ -35,7 +36,7 @@
       </div>
       <div class='inputs'>
         <select id='gameSystem' name='gameSystem'>
-          {#each gameSystems as system}
+          {#each gameSystems as system (system.value)}
             <option value={system.value}>{system.label}</option>
           {/each}
         </select>
@@ -48,7 +49,7 @@
     </div>
 
     <center>
-      <button type='submit' class='large' onclick={() => { this.disabled = true; this.form.submit() }}>Vytvořit</button>
+      <button type='submit' class='large'>Vytvořit</button>
     </center>
   </form>
 {:else}
