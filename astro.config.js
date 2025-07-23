@@ -1,3 +1,4 @@
+import sentry from '@sentry/astro'
 import svelte from '@astrojs/svelte'
 import cloudflare from '@astrojs/cloudflare'
 import { defineConfig } from 'astro/config'
@@ -7,7 +8,7 @@ import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [svelte()],
+  integrations: [svelte(), sentry()],
   output: 'server',
   adapter: cloudflare({
     platformProxy: {
