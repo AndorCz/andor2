@@ -215,14 +215,22 @@
   function getBookmarkUnread (bookmarks) {
     let unreadFound = false
     if (bookmarks.games) {
-      Object.keys(bookmarks.games).forEach(gameId => { unreadFound = bookmarks.games[gameId]?.unread_game > 0 })
-      Object.keys(bookmarks.games).forEach(gameId => { unreadFound = bookmarks.games[gameId]?.unread_discussion > 0 })
+      Object.keys(bookmarks.games).forEach(gameId => {
+        unreadFound ||= bookmarks.games[gameId]?.unread_game > 0
+      })
+      Object.keys(bookmarks.games).forEach(gameId => {
+        unreadFound ||= bookmarks.games[gameId]?.unread_discussion > 0
+      })
     }
     if (bookmarks.works) {
-      Object.keys(bookmarks.works).forEach(workId => { unreadFound = bookmarks.works[workId]?.unread > 0 })
+      Object.keys(bookmarks.works).forEach(workId => {
+        unreadFound ||= bookmarks.works[workId]?.unread > 0
+      })
     }
     if (bookmarks.boards) {
-      Object.keys(bookmarks.boards).forEach(boardId => { unreadFound = bookmarks.boards[boardId]?.unread > 0 })
+      Object.keys(bookmarks.boards).forEach(boardId => {
+        unreadFound ||= bookmarks.boards[boardId]?.unread > 0
+      })
     }
     return unreadFound
   }
