@@ -31,7 +31,7 @@
         <label for='conceptName'>Název *</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='conceptName' name='conceptName' maxlength='80' />
+        <input type='text' id='conceptName' name='conceptName' maxlength='80' onkeydown={(e) => { if (e.key === 'Enter') e.preventDefault() }} />
       </div>
     </div>
 
