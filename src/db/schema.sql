@@ -33,7 +33,10 @@ drop view if exists user_bookmarks;
 
 
 create extension if not exists pg_cron;
+
+-- running every day at 5:00
 select cron.schedule('trim-chat', '0 5 * * *', $$select delete_old_chat_posts()$$);
+select cron.schedule('reset-limits', '0 5 * * *', $$select reset_limits()$$);
 
 create extension if not exists citext;
 
@@ -1456,14 +1459,14 @@ create or replace function delete_old_chat_posts () returns void as $$
 begin
   delete from posts where id not in (select id from posts where thread = 1 order by created_at desc limit 100) and thread = 1;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 create or replace function reset_limits () returns void as $$
 begin
-  update profiles set solo_limit = 10
+  update profiles set solo_limit = 10;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 -- Functions and Triggers for Message Unread Counts

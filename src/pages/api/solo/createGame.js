@@ -1,8 +1,8 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-replicate'
 import { getStamp, getImageUrl } from '@lib/utils'
-import { getPrompts, assistantParams } from '@lib/solo/solo'
-import { getAI, getStorytellerParams, getContext } from '@lib/solo/server-gemini'
+import { getAI, getStorytellerParams } from '@lib/solo/server-gemini'
+import { getPrompts, assistantParams, getContext } from '@lib/solo/solo'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null

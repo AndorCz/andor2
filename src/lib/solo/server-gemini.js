@@ -1,4 +1,3 @@
-import { isFilledArray } from '@lib/utils.js'
 import { GoogleGenAI, Type } from '@google/genai'
 import { illustrationStyleAffixes, storytellerInstructions, imageSafetyAffix } from '@lib/solo/solo'
 
@@ -56,22 +55,4 @@ export const getStorytellerParams = (concept) => {
 export function getAI (env) {
   if (!env.PRIVATE_GEMINI) { console.error('API key for Gemini is not set in environment variables') }
   return new GoogleGenAI({ apiKey: env.PRIVATE_GEMINI })
-}
-
-export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy' }
-
-// Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
-export function getContext (conceptData, exclude, characterName, inventory) {
-  const context = {
-    basePrompt: { text: `Hra se bude jmenovat "${decodeURIComponent(conceptData.name)}". Budou následovat podklady (setting) pro tuto hru.` },
-    prompt_world: { text: `<h2>${fieldNames.prompt_world}</h2>\n${conceptData.generated_world}` },
-    prompt_factions: { text: `<h2>${fieldNames.prompt_factions}</h2>\n${conceptData.generated_factions}` },
-    prompt_locations: { text: `<h2>${fieldNames.prompt_locations}</h2>\n${conceptData.generated_locations}` },
-    prompt_characters: { text: `<h2>${fieldNames.prompt_characters}</h2>\n${conceptData.generated_characters}` },
-    prompt_protagonist: { text: `<h2>${fieldNames.prompt_protagonist}</h2>\n${conceptData.generated_protagonist}` }
-  }
-  if (characterName) { context.prompt_protagonist.text += `\nJméno postavy: ${characterName}\n` }
-  if (isFilledArray(inventory)) { context.prompt_protagonist.text += `\nInventář: ${inventory.join(', ')}\n` }
-  if (exclude) { delete context[exclude] }
-  return Object.values(context).map(item => item.text).join('\n\n')
 }
