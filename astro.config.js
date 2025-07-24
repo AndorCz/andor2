@@ -17,7 +17,10 @@ export default defineConfig({
         sourceMapsUploadOptions: {
           project: 'andor2',
           authToken: SENTRY_AUTH_TOKEN
-        }
+        },
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 0,
+        tracesSampleRate: 0 // disable performance monitoring
       })
   ].filter(Boolean),
   output: 'server',
