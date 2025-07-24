@@ -21,8 +21,20 @@
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
 
     // add bookmark
-    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id, game_main_thread: game.game_thread, game_discussion_thread: game.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+    const { error: bookmarkError } = await supabase.from('bookmarks').upsert({ user_id: user.id, game_id: data.id, game_main_thread: data.game_thread, game_discussion_thread: data.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
     if (bookmarkError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + bookmarkError.message)}`) }
+
+    const { error: readErrorMain } = await supabase.from('read_threads').upsert({ user_id: user.id, thread_id: data.game_thread }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    if (readErrorMain) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + readErrorMain.message)}`) }
+
+    const { error: readErrorDisc } = await supabase.from('read_threads').upsert({ user_id: user.id, thread_id: data.discussion_thread }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    if (readErrorDisc) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + readErrorDisc.message)}`) }
+
+    const { error: unreadErrorMain } = await supabase.from('unread_threads').upsert({ user_id: user.id, thread_id: data.game_thread, unread_count: 0 }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    if (unreadErrorMain) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + unreadErrorMain.message)}`) }
+
+    const { error: unreadErrorDisc } = await supabase.from('unread_threads').upsert({ user_id: user.id, thread_id: data.discussion_thread, unread_count: 0 }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    if (unreadErrorDisc) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + unreadErrorDisc.message)}`) }
 
     return Astro.redirect(`/game/${data.id}?toastType=success&toastText=${encodeURIComponent('Hra byla přidána')}`)
   }

@@ -43,6 +43,9 @@ export const GET = async ({ request, locals, redirect }) => {
     const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, solo_id: gameData.id }, { onConflict: 'user_id, solo_id', ignoreDuplicates: true })
     if (bookmarkError) { throw new Error('Chyba při přidávání záložky: ' + bookmarkError.message) }
 
+    await locals.supabase.from('read_threads').upsert({ user_id: locals.user.id, thread_id: gameData.thread }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+    await locals.supabase.from('unread_threads').upsert({ user_id: locals.user.id, thread_id: gameData.thread, unread_count: 0 }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+
     // Generate character portrait image
     const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, portraitPrompt, 'npc')
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }

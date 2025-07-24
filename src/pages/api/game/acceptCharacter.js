@@ -24,8 +24,18 @@ export const GET = async ({ request, url, redirect, locals }) => {
   if (messageUpdateError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
 
   // add game bookmark
-  const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: gameId }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
-  if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
+  const { data: gameData, error: gameError } = await locals.supabase
+    .from('games')
+    .select('game_thread, discussion_thread')
+    .eq('id', gameId)
+    .single()
+  if (gameError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(gameError.message)) }
+
+  const { error: bookmarkError } = await locals.supabase.from('bookmarks').upsert({ user_id: locals.user.id, game_id: gameId, game_main_thread: gameData.game_thread, game_discussion_thread: gameData.discussion_thread }, { onConflict: 'user_id, game_id', ignoreDuplicates: true })
+  if (bookmarkError) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(bookmarkError.message)) }
+
+  await locals.supabase.from('read_threads').upsert([{ user_id: locals.user.id, thread_id: gameData.game_thread }, { user_id: locals.user.id, thread_id: gameData.discussion_thread }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
+  await locals.supabase.from('unread_threads').upsert([{ user_id: locals.user.id, thread_id: gameData.game_thread, unread_count: 0 }, { user_id: locals.user.id, thread_id: gameData.discussion_thread, unread_count: 0 }], { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
 
   if (data) {
     return redirect(`/game/${gameId}?tab=chars&toastType=success&toastText=` + encodeURIComponent('Postava byla přijata'))
