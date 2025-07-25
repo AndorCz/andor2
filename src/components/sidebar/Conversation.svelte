@@ -34,6 +34,7 @@
   const sortedIds = [us.id, them.id].sort() // create a unique channel name, the same for both participants
 
   function handleScroll () {
+    if (!messagesEl) return
     distanceFromBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
     userHasScrolledUp = distanceFromBottom > 50 // Threshold to consider as manual scroll
     if (messagesEl && hasMoreMessages && !isLoading) {
@@ -157,6 +158,7 @@
   }
 
   async function handleClearUnread () {
+    if (!$activeConversation || !us || !them) return
     const now = new Date().toISOString()
     let success = false
     if ($activeConversation.type === 'character') {

@@ -260,6 +260,7 @@
 
   function clearUnreadCharacter (themId, usId) {
     const flatCharacters = characters.allGrouped.flatMap(group => group.characters)
+    if (!flatCharacters || flatCharacters.length === 0) return
     const character = flatCharacters.find(c => c.id === usId)
     if (character) {
       if (character.unread > 0) { character.unread-- }

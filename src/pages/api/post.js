@@ -76,7 +76,7 @@ export const PATCH = async ({ url, request, locals }) => {
 export const DELETE = async ({ url, request, locals }) => {
   const id = url.searchParams.get('id')
   if (!id) { return new Response(JSON.stringify({ error: 'Chybí id příspěvku' }), { status: 500 }) }
-  const { data, error } = await locals.supabase.from('posts').delete().eq('id', id).select().single()
+  const { error } = await locals.supabase.from('posts').delete().eq('id', id).select().single()
   if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
   return new Response('{}')
 }
