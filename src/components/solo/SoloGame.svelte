@@ -255,11 +255,11 @@
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
       <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>{user.solo_limit}</div>
-      <button onclick={() => { isCharacterOpen = true }} class='material square' title='Postava' use:tooltip>backpack</button>
-      <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
       {#if user.id}
         <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
+      <button onclick={() => { isCharacterOpen = true }} class='material square' title='Postava' use:tooltip>person</button>
+      <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
     </div>
   </div>
   <div class='content'>
@@ -390,15 +390,23 @@
       padding-bottom: 0px;
     }
     .buttons {
-      display: flex;
-      flex-direction: column;
-      flex: 0.1;
-      gap: 5px;
+      display: block;
+      width: 85px;
+      flex: 0 0 auto;
     }
+      .buttons .limit {
+        padding-top: 6px;
+        vertical-align: bottom;
+      }
       .buttons button, .buttons .limit {
+        display: inline-block;
+        text-align: center;
         width: 35px;
         height: 35px;
         font-size: 20px;
+        margin: 2px;
+      }
+      .buttons button {
         padding: 0px;
       }
   }
