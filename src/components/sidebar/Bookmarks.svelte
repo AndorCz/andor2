@@ -11,24 +11,21 @@
   let sorting = $state(false)
   let saving = $state(false)
   let showHandles = $state(false)
-  const bookmarkNumber = $derived($bookmarks.games.length + $bookmarks.boards.length + $bookmarks.works.length)
+  const bookmarkNumber = $derived(($bookmarks.games?.length || 0) + ($bookmarks.boards?.length || 0) + ($bookmarks.works?.length || 0))
 
-  $bookmarks.solo.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
-  $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
-  $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
-  $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
+  if ($bookmarks.solo) $bookmarks.solo.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
+  if ($bookmarks.games) $bookmarks.games.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
+  if ($bookmarks.boards) $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
+  if ($bookmarks.works) $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
 
   onMount(() => {
-    if ($bookmarks.games.length) {
+    if ($bookmarks.games?.length) {
       new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
-    if ($bookmarks.games.length) {
-      new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
-    }
-    if ($bookmarks.boards.length) {
+    if ($bookmarks.boards?.length) {
       new Sortable(boardsEl, { animation: 150, handle: '.handle', group: { name: 'boards', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('boards', sort) })
     }
-    if ($bookmarks.works.length) {
+    if ($bookmarks.works?.length) {
       new Sortable(worksEl, { animation: 150, handle: '.handle', group: { name: 'works', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('works', sort) })
     }
   })
@@ -55,7 +52,7 @@
 {#if $bookmarks.games.length > 0}
   <a href='/games'><h4>Hry</h4></a>
   <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
-    {#each $bookmarks.games as bookmark}
+    {#each $bookmarks.games as bookmark (bookmark.id)}
       <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/game/' + bookmark.id + '?tab=game'}>
           {bookmark.name}
@@ -75,7 +72,7 @@
   <hr>
   <a href='/solo'><h4>Sólo</h4></a>
   <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
-    {#each $bookmarks.solo as bookmark}
+    {#each $bookmarks.solo as bookmark (bookmark.id)}
       <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
         <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
@@ -90,7 +87,7 @@
   <hr>
   <a href='/boards'><h4>Diskuze</h4></a>
   <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
-    {#each $bookmarks.boards as bookmark}
+    {#each $bookmarks.boards as bookmark (bookmark.id)}
       <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/board/' + bookmark.id}>
           {bookmark.name}
@@ -110,7 +107,7 @@
   <hr>
   <a href='/works'><h4>Tvorba</h4></a>
   <ul class='works' bind:this={worksEl} class:saving class:showHandles>
-    {#each $bookmarks.works as bookmark}
+    {#each $bookmarks.works as bookmark (bookmark.id)}
       <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
         <a href={'/work/' + bookmark.id}>
           {bookmark.name}

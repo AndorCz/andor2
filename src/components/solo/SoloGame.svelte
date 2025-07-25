@@ -92,7 +92,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ soloId: game.id, postHash, characterName: character.name })
       })
-      if (!res.ok) { throw new Error(`HTTP error, status: ${res.status}`) }
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Příspěvek se nepodařilo vygenerovat')
+      }
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
 

@@ -18,25 +18,35 @@
       Object.keys($gameStore.dice).forEach(type => {
         $gameStore.dice[type] = Number($gameStore.dice[type].toString().replace(/[^0-9]/g, ''))
       })
-      diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
-      diceBox.initialize()
+      try {
+        diceBox = new DiceBox('#diceBox', { sounds: true, assetPath: '/dice/' })
+        diceBox.initialize()
+      } catch (e) {
+        console.error('Failed to initialize dice box:', e)
+        showError('Nepodařilo se načíst kostky')
+      }
     }
   })
 
   async function showRoll () {
-    // convert into czech dice notation (eg. '2k4,3k6,1k20,2k10')
-    const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
-    if (diceNotation) {
-      // rolls are happening on the server
-      const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
-      const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
-      const json = await res.json()
-      if (res.error || json.error) { return showError(res.error || json.error) }
-      json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
-      await diceBox.roll(json.results)
-      onRoll()
-    } else {
-      showError('Nemáš vybrané žádné kostky')
+    try {
+      // convert into czech dice notation (eg. '2k4,3k6,1k20,2k10')
+      const diceNotation = Object.entries($gameStore.dice).filter(([key, value]) => value > 0).map(([key, value]) => `${value}${key}`).join(',')
+      if (diceNotation) {
+        // rolls are happening on the server
+        const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
+        const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
+        const json = await res.json()
+        if (res.error || json.error) { return showError(res.error || json.error) }
+        json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
+        await diceBox.roll(json.results)
+        onRoll()
+      } else {
+        showError('Nemáš vybrané žádné kostky')
+      }
+    } catch (e) {
+      console.error('Error during dice roll:', e)
+      showError('Nepodařilo se hodit kostky')
     }
   }
 
