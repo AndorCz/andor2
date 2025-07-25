@@ -134,14 +134,14 @@
     try {
       // Reset the generating array in the database
       const { error: resetError } = await supabase.from('solo_concepts').update({
-        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image'],
+        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'abilities', 'header_image', 'storyteller_image'],
         generation_error: ''
       }).eq('id', concept.id)
 
       if (resetError) { throw new Error(resetError.message) }
 
       // Update local state
-      concept.generating = ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
+      concept.generating = ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'abilities', 'header_image', 'storyteller_image']
       concept.generation_error = ''
       concept = { ...concept } // Trigger reactivity
 
@@ -178,6 +178,7 @@
         <li><span class='material'>{concept.generating.includes('storyteller_image') ? 'hourglass_top' : 'check'}</span><span class='wide'>Obrázek vypravěče</span></li>
         <li><span class='material'>{concept.generating.includes('protagonist_names') ? 'hourglass_top' : 'check'}</span><span class='wide'>Jména pro postavu</span></li>
         <li><span class='material'>{concept.generating.includes('inventory') ? 'hourglass_top' : 'check'}</span><span class='wide'>Inventář</span></li>
+        <li><span class='material'>{concept.generating.includes('abilities') ? 'hourglass_top' : 'check'}</span><span class='wide'>Schopnosti</span></li>
         <li><span class='material'>{concept.generating.includes('generated_plan') ? 'hourglass_top' : 'check'}</span><span class='wide'>Příběh</span></li>
       </ul>
     </div>
@@ -217,12 +218,24 @@
         <summary>Postava</summary>
         <div class='inner'>
           <p>{@html concept.generated_protagonist}</p>
-          <h3>Inventář</h3>
-          <ul class='inventory grid'>
-            {#each concept.inventory as item, i (i)}
-              <li>{item}</li>
-            {/each}
-          </ul>
+          <div class='character-lists'>
+            <div>
+              <h3>Inventář</h3>
+              <ul class='inventory grid'>
+                {#each concept.inventory as item, i (i)}
+                  <li>{item}</li>
+                {/each}
+              </ul>
+            </div>
+            <div>
+              <h3>Schopnosti</h3>
+              <ul class='abilities grid'>
+                {#each concept.abilities as abil, i (i)}
+                  <li>{abil}</li>
+                {/each}
+              </ul>
+            </div>
+          </div>
         </div>
       </details>
       {#if openGames.length > 0}
@@ -417,13 +430,14 @@
         box-shadow: var(--shadow);
         padding: 15px;
       }
-    .inventory {
+    .character-lists {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
     }
-      .inventory li {
-        margin-bottom: 10px;
-      }
+    .inventory li, .abilities li {
+      margin-bottom: 10px;
+    }
 
   @media (max-width: 500px) {
     .headline {

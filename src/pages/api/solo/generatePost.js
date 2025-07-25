@@ -67,12 +67,15 @@ export const POST = async ({ request, locals }) => {
 
       // Prepare post history for the AI model
       const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-      // Add a system message to the history with current inventory for the model's context
+      // Add a system message to the history with current inventory and abilities for the model's context
       if (gameData.inventory && gameData.inventory.length > 0) {
         history.push({ role: 'model', parts: [{ text: `[System Information: The player's current inventory contains: ${gameData.inventory.join(', ')}]` }] })
       }
+      if (conceptData.abilities && conceptData.abilities.length > 0) {
+        history.push({ role: 'model', parts: [{ text: `[System Information: The player's abilities are: ${conceptData.abilities.join(', ')}]` }] })
+      }
       storytellerParams.config.systemInstruction = `${storytellerInstructions}
-        ${getContext(conceptData, null, characterName, gameData.inventory)}
+        ${getContext(conceptData, null, characterName, gameData.inventory, conceptData.abilities)}
         <h2>Plán hry:</h2>
         ${conceptData.generated_plan}
       `

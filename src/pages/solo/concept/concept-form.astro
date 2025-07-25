@@ -15,7 +15,7 @@
       // Create the concept record
       const { data: conceptData, error } = await supabase.from('solo_concepts').insert({
         author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags, illustration_style: illustrationStyle,
-        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'header_image', 'storyteller_image']
+        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'abilities', 'header_image', 'storyteller_image']
       }).select().single()
 
       if (error) { throw new Error('Error creating concept: ' + error.message) }

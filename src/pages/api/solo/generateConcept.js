@@ -15,7 +15,7 @@ async function generateConcept (locals, params, sendEvent) {
     const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
 
     // Load existing data for chat history
-    const { data: existingData } = await locals.supabase.from('solo_concepts').select('generated_world, generated_factions, generated_locations, generated_characters, generated_protagonist, generating').eq('id', id).single()
+    const { data: existingData } = await locals.supabase.from('solo_concepts').select('generated_world, generated_factions, generated_locations, generated_characters, generated_protagonist, abilities, generating').eq('id', id).single()
     const currentGenerating = [...(existingData.generating || [])]
     const prompts = getPrompts(existingData)
 
@@ -29,7 +29,7 @@ async function generateConcept (locals, params, sendEvent) {
 
     const chat = ai.chats.create({ ...assistantParams, history })
 
-    let responseWorld, responseFactions, responseLocations, responseCharacters, responseProtagonist, responseHeaderImagePrompt, responseStorytellerImagePrompt, npcData
+    let responseWorld, responseFactions, responseLocations, responseCharacters, responseProtagonist, responseAbilities, responseHeaderImagePrompt, responseStorytellerImagePrompt, npcData
 
     // World
     if (currentGenerating.includes('generated_world')) {
@@ -193,6 +193,17 @@ async function generateConcept (locals, params, sendEvent) {
       const { error: updateErrorProtagonistNames } = await locals.supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: currentGenerating }).eq('id', id)
       if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
       sendEvent('step_complete', { step: 'protagonist_names', generating: currentGenerating })
+    }
+
+    // Abilities
+    if (currentGenerating.includes('abilities')) {
+      sendEvent('progress', { step: 'abilities', message: 'Generuji schopnosti...' })
+      const abilitiesContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.abilities }]
+      const abilitiesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: abilitiesContents })
+      currentGenerating.splice(currentGenerating.indexOf('abilities'), 1)
+      const { error: updateErrorAbilities } = await locals.supabase.from('solo_concepts').update({ abilities: JSON.parse(abilitiesResponse.text), generating: currentGenerating }).eq('id', id)
+      if (updateErrorAbilities) { throw new Error(updateErrorAbilities.message) }
+      sendEvent('step_complete', { step: 'abilities', generating: currentGenerating })
     }
 
     // Inventory

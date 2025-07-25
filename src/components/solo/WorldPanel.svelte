@@ -39,8 +39,8 @@
   }
   .panel {
     position: fixed;
-    z-index: 2000;
-    width: 50%;
+    z-index: 99999;
+    max-width: 600px;
     top: 0px;
     bottom: 0px;
     right: 0px;

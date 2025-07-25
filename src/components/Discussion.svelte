@@ -137,8 +137,9 @@
     editing = post.id
     textareaValue = post.content
     textareaRef.triggerEdit(post.id, post.content)
-    document.getElementsByClassName('headlines')[0].scrollIntoView({ behavior: 'smooth' })
     $discussionStore.activeIdentity = post.owner
+    const headlineEl = document.getElementsByClassName('headlines')[0]
+    if (headlineEl) { headlineEl.scrollIntoView({ behavior: 'smooth' }) }
     // saving is done in submitPost
   }
 

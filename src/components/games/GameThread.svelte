@@ -63,13 +63,13 @@
 
   let timeout
   async function saveUnsent () { // debounced
-    if (textareaRef) {
-      clearTimeout(timeout)
-      timeout = setTimeout(async () => {
+    clearTimeout(timeout)
+    timeout = setTimeout(async () => {
+      if (textareaRef) {
         const content = await textareaRef.getContent()
         $gameStore.unsent = textareaValue = content || ''
-      }, 500) // Delay in ms, adjust as needed
-    }
+      }
+    }, 500) // Delay in ms, adjust as needed
   }
 
   async function loadPosts () {

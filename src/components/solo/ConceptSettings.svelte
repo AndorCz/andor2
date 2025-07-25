@@ -94,6 +94,23 @@
     savingValues.inventory = false
   }
 
+  async function regenerateAbilities () {
+    savingValues.abilities = true
+    const response = await fetch('/api/solo/generateField', { method: 'POST', body: JSON.stringify({ conceptId: concept.id, field: 'abilities' }), headers: { 'Content-Type': 'application/json' } })
+    if (!response.ok) {
+      const { error } = await response.json()
+      savingValues.abilities = false
+      return handleError(new Error(`API error: ${error.message || 'Chyba generování schopností'}`))
+    }
+    const { data, error } = await supabase.from('solo_concepts').select().eq('id', concept.id).single()
+    if (error) {
+      savingValues.abilities = false
+      return handleError(error)
+    }
+    concept.abilities = data.abilities
+    savingValues.abilities = false
+  }
+
   async function saveTags () {
     savingValues.tags = true
     const { error } = await supabase.from('solo_concepts').update({ tags }).eq('id', concept.id)
@@ -194,6 +211,27 @@
         <button onclick={() => { concept.inventory.push('') }} class='add'>Přidat předmět</button>
         <ButtonLoading label='Přegenerovat' handleClick={regenerateItems} loading={savingValues.inventory} class='add' />
         <button onclick={() => onSave('inventory')} disabled={savingValues.inventory || JSON.stringify(originalValues.inventory) === JSON.stringify(concept.inventory)} class='save'>Uložit předměty</button>
+      </center>
+    </div>
+
+    <h2>Schopnosti</h2>
+    <div>
+      <div class='columns'>
+        {#if Array.isArray(concept.abilities)}
+          {#each concept.abilities as ab, index (index)}
+            <div class='name row'>
+              <input type='text' bind:value={concept.abilities[index]} placeholder='Schopnost' />
+              {#if concept.abilities.length > 1}<button onclick={() => { concept.abilities.splice(index, 1) }} class='material delete square' title='Smazat schopnost' use:tooltip>delete</button>{/if}
+            </div>
+          {/each}
+        {:else}
+          <center class='info'>Schopnosti se právě generují...</center>
+        {/if}
+      </div>
+      <center>
+        <button onclick={() => { concept.abilities.push('') }} class='add'>Přidat schopnost</button>
+        <ButtonLoading label='Přegenerovat' handleClick={regenerateAbilities} loading={savingValues.abilities} class='add' />
+        <button onclick={() => onSave('abilities')} disabled={savingValues.abilities || JSON.stringify(originalValues.abilities) === JSON.stringify(concept.abilities)} class='save'>Uložit schopnosti</button>
       </center>
     </div>
 

@@ -10,7 +10,7 @@
   import Post from '@components/common/Post.svelte'
   import ImagePost from '@components/common/ImagePost.svelte'
   import WorldPanel from '@components/solo/WorldPanel.svelte'
-  import InventoryPanel from '@components/solo/InventoryPanel.svelte'
+  import CharacterPanel from '@components/solo/CharacterPanel.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   const { user = {}, game = {}, character = {}, concept = {}, readonly } = $props()
@@ -25,7 +25,7 @@
   let hasMorePosts = $state(true)
   let displayedPosts = $state([])
   let displayedCount = $state(50)
-  let isInventoryOpen = $state(false)
+  let isCharacterOpen = $state(false)
   let userHasScrolledUp = $state(false)
   let distanceFromBottom = $state(0)
   let previousPostsLength = 0
@@ -253,16 +253,16 @@
 
 <main>
   <WorldPanel {concept} bind:isOpen={isWorldOpen} />
-  <InventoryPanel {game} bind:isOpen={isInventoryOpen} />
+  <CharacterPanel {game} {concept} bind:isOpen={isCharacterOpen} />
   <div class='headline'>
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
       <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>{user.solo_limit}</div>
-      <button onclick={() => { isInventoryOpen = true }} class='material square' title='Inventář' use:tooltip>backpack</button>
-      <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
       {#if user.id}
         <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
+      <button onclick={() => { isCharacterOpen = true }} class='material square' title='Postava' use:tooltip>person</button>
+      <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
     </div>
   </div>
   <div class='content'>
@@ -289,13 +289,17 @@
         {/if}
       {/if}
     </div>
-    {#if !readonly && !game.ended}
-      {#if user.solo_limit <= 0}
-        <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
+    {#if !readonly}
+      {#if game.ended}
+        <center class='info'>Konec hry</center>
       {:else}
-        <div class='input'>
-          <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
-        </div>
+        {#if user.solo_limit <= 0}
+          <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
+        {:else}
+          <div class='input'>
+            <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+          </div>
+        {/if}
       {/if}
     {/if}
   </div>
@@ -389,15 +393,23 @@
       padding-bottom: 0px;
     }
     .buttons {
-      display: flex;
-      flex-direction: column;
-      flex: 0.1;
-      gap: 5px;
+      display: block;
+      width: 85px;
+      flex: 0 0 auto;
     }
+      .buttons .limit {
+        padding-top: 6px;
+        vertical-align: bottom;
+      }
       .buttons button, .buttons .limit {
+        display: inline-block;
+        text-align: center;
         width: 35px;
         height: 35px;
         font-size: 20px;
+        margin: 2px;
+      }
+      .buttons button {
         padding: 0px;
       }
   }
