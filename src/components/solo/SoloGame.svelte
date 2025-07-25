@@ -10,7 +10,7 @@
   import Post from '@components/common/Post.svelte'
   import ImagePost from '@components/common/ImagePost.svelte'
   import WorldPanel from '@components/solo/WorldPanel.svelte'
-  import InventoryPanel from '@components/solo/InventoryPanel.svelte'
+  import CharacterPanel from '@components/solo/CharacterPanel.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   const { user = {}, game = {}, character = {}, concept = {}, readonly } = $props()
@@ -25,7 +25,7 @@
   let hasMorePosts = $state(true)
   let displayedPosts = $state([])
   let displayedCount = $state(50)
-  let isInventoryOpen = $state(false)
+  let isCharacterOpen = $state(false)
   let userHasScrolledUp = $state(false)
   let distanceFromBottom = $state(0)
   let previousPostsLength = 0
@@ -250,12 +250,12 @@
 
 <main>
   <WorldPanel {concept} bind:isOpen={isWorldOpen} />
-  <InventoryPanel {game} bind:isOpen={isInventoryOpen} />
+  <CharacterPanel {game} {concept} bind:isOpen={isCharacterOpen} />
   <div class='headline'>
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
       <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>{user.solo_limit}</div>
-      <button onclick={() => { isInventoryOpen = true }} class='material square' title='Inventář' use:tooltip>backpack</button>
+      <button onclick={() => { isCharacterOpen = true }} class='material square' title='Postava' use:tooltip>backpack</button>
       <button onclick={() => { isWorldOpen = true }} class='material square' title='Svět' use:tooltip>globe</button>
       {#if user.id}
         <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>

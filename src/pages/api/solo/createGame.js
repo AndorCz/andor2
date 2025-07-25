@@ -18,7 +18,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const { data: concept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', conceptId).single()
     if (conceptError) { throw new Error('Chyba při načítání konceptu: ' + conceptError.message) }
     if (!concept) { throw new Error('Koncept nebyl nalezen') }
-    const context = getContext(concept, null, characterName, concept.inventory)
+    const context = getContext(concept, null, characterName, concept.inventory, concept.abilities)
     const prompts = getPrompts(concept)
 
     // Increment the concept's play count

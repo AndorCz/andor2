@@ -30,6 +30,7 @@ export const getPrompts = (concept) => {
     prompt_storyteller_image: `Napiš plaintext: AI prompt k vygenerování portrétu pro NPC vypravěče této TTRPG hry. Obrázek by měl být ve stejném stylu jako hlavní obrázek hry a měl by být portrétem tajemné siluety, někoho, kdo by mohl být skrytou božskou bytostí v tomto světě. Duch, prázdný plášť, létající světlo, mrak, digitální bytost jako z Matrixu atd. Cokoliv, co se hodí k tématu hry. Výstup musí být prostý text, v angličtině, bez HTML, jeden odstavec, maximální délka 480 tokenů. ${artStyleAffix} ${imageSafetyAffix}\n`,
     protagonist_names: 'Napiš plaintext: 10 různorodých jmen pro postavu, kterou bude hráč hrát. Čtyři jména jasně mužská, čtyři jasně ženská, dvě neutrální. Jména by měla by ladit s atmosférou světa. Použij buď jazyky daného světa, nebo stylová jména česká. Jména by měla být většinou včetně příjmení, s přezdívkou, výjimečně jen jedno jméno samotné.\n',
     inventory: 'Napiš plaintext: Seznam vybavení hlavní postavy (jasný a definitivní, žádné "nebo") - co by měla postava nést s sebou na začátku hry. Seznam by měl obsahovat 5-15 položek, které sedí k původu či povolání postavy, zásadní pro její přežití, nebo jsou podstatné pro příběh. Zohledni přinejmenším tyto možnosti: platidla, oblečení, výzbroj (zbroje, zbraně, munice etc), cestovní vybavení (voda, jídlo, léky etc), dopravní prostředky, zvířata, osobní předměty, questové předměty. \n',
+    abilities: 'Napiš plaintext: Seznam 5-10 schopností nebo dovedností hlavní postavy, které vychází z jejího popisu a minulosti. Každou schopnost popiš jedním krátkým výrazem. \n',
     annotation: 'Napiš plaintext: Jeden odstavec poutavého reklamního textu, který naláká hráče k zahrání této hry. Zaměř se na atmosféru a hlavní témata příběhu. Výstup musí být plaintext, bez HTML a CSS stylů.\n',
     first_image: `Napiš plaintext: AI prompt k vygenerování ilustračního obrázku pro první scénu této hry. Obrázek by měl zachytit podstatu první scény, ukazovat její charakteristické rysy a atmosféru. Napiš podrobný popis scény a zejména velmi podobně herní postavy a předměty. Výstup musí být prostý text, v angličtině, bez HTML. ${imageSafetyAffix} ${illustrationStyleAffix}\n`,
     protagonist_image: `Napiš plaintext: AI prompt k vygenerování portrétu hráčské postavy v TTRPG hře. Napiš podrobný popis vzhledu, obrázek by měl zachytit podstatu postavy, ukazovat její charakteristické rysy a oděv. Výstup musí být prostý text, v angličtině, bez HTML. ${imageSafetyAffix} ${artStyleAffix}\n`,
@@ -99,10 +100,10 @@ export const imageSizes = {
   npc: { width: 200, height: 400 }
 }
 
-export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy' }
+export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy', abilities: 'Schopnosti postavy' }
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated
-export function getContext (conceptData, exclude, characterName, inventory) {
+export function getContext (conceptData, exclude, characterName, inventory, abilities) {
   const context = {
     basePrompt: { text: `Hra se bude jmenovat "${decodeURIComponent(conceptData.name)}". Budou následovat podklady (setting) pro tuto hru.` },
     prompt_world: { text: `<h2>${fieldNames.prompt_world}</h2>\n${conceptData.generated_world}` },
@@ -113,6 +114,7 @@ export function getContext (conceptData, exclude, characterName, inventory) {
   }
   if (characterName) { context.prompt_protagonist.text += `\nJméno postavy: ${characterName}\n` }
   if (isFilledArray(inventory)) { context.prompt_protagonist.text += `\nInventář: ${inventory.join(', ')}\n` }
+  if (isFilledArray(abilities)) { context.prompt_protagonist.text += `\nSchopnosti: ${abilities.join(', ')}\n` }
   if (exclude) { delete context[exclude] }
   return Object.values(context).map(item => item.text).join('\n\n')
 }
