@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { bookmarks } from '@lib/stores'
+  import { isFilledArray } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import Sortable from 'sortablejs'
 
@@ -19,13 +20,13 @@
   if ($bookmarks.works) $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
 
   onMount(() => {
-    if ($bookmarks.games?.length) {
+    if (isFilledArray($bookmarks.games)) {
       new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
-    if ($bookmarks.boards?.length) {
+    if (isFilledArray($bookmarks.boards)) {
       new Sortable(boardsEl, { animation: 150, handle: '.handle', group: { name: 'boards', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('boards', sort) })
     }
-    if ($bookmarks.works?.length) {
+    if (isFilledArray($bookmarks.works)) {
       new Sortable(worksEl, { animation: 150, handle: '.handle', group: { name: 'works', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('works', sort) })
     }
   })
@@ -49,7 +50,7 @@
   }
 </script>
 
-{#if $bookmarks.games.length > 0}
+{#if isFilledArray($bookmarks.games)}
   <a href='/games'><h4>Hry</h4></a>
   <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
     {#each $bookmarks.games as bookmark (bookmark.id)}
@@ -68,7 +69,7 @@
   </ul>
 {/if}
 
-{#if $bookmarks.solo.length > 0}
+{#if isFilledArray($bookmarks.solo)}
   <hr>
   <a href='/solo'><h4>Sólo</h4></a>
   <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
@@ -83,7 +84,7 @@
   </ul>
 {/if}
 
-{#if $bookmarks.boards.length > 0}
+{#if isFilledArray($bookmarks.boards)}
   <hr>
   <a href='/boards'><h4>Diskuze</h4></a>
   <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
@@ -103,7 +104,7 @@
   </ul>
 {/if}
 
-{#if $bookmarks.works.length > 0}
+{#if isFilledArray($bookmarks.works)}
   <hr>
   <a href='/works'><h4>Tvorba</h4></a>
   <ul class='works' bind:this={worksEl} class:saving class:showHandles>

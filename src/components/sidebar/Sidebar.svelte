@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { redirectWithToast } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
+  import { redirectWithToast, isFilledArray } from '@lib/utils'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import User from '@components/sidebar/User.svelte'
   import People from '@components/sidebar/People.svelte'
@@ -260,14 +260,15 @@
 
   function clearUnreadCharacter (themId, usId) {
     const flatCharacters = characters.allGrouped.flatMap(group => group.characters)
-    if (!flatCharacters || flatCharacters.length === 0) return
-    const character = flatCharacters.find(c => c.id === usId)
-    if (character) {
-      if (character.unread > 0) { character.unread-- }
-      const contact = character.contacts.find(c => c.id === themId)
-      if (contact) {
-        contact.unread = 0
-        unreadCharacters = flatCharacters.some(c => c.contacts.some(contact => contact.unread > 0))
+    if (isFilledArray(flatCharacters)) {
+      const character = flatCharacters.find(c => c.id === usId)
+      if (character) {
+        if (character.unread > 0) { character.unread-- }
+        const contact = character.contacts.find(c => c.id === themId)
+        if (contact) {
+          contact.unread = 0
+          unreadCharacters = flatCharacters.some(c => c.contacts.some(contact => contact.unread > 0))
+        }
       }
     }
   }
