@@ -240,12 +240,13 @@
   }
 
   async function uploadImage (file) {
+    console.log('type', file.type)
     const img = document.createElement('img')
     img.src = URL.createObjectURL(file)
     await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
     if (img.width > 2000 || img.height > 2000) {
-      const resizedBlob = await resizeImage(img, 2000, 2000, 'image/jpeg')
-      file = new File([resizedBlob], file.name, { type: 'image/jpeg' }) // blob to file
+      const resizedBlob = await resizeImage(img, 2000, 2000, file.type)
+      file = new File([resizedBlob], file.name, { type: file.type }) // blob to file
     }
     const { data, error } = await supabase.storage.from('posts').upload(`${user.id}/${new Date().getTime()}.png`, file)
     if (error) { handleError(error) }
