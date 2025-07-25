@@ -286,13 +286,17 @@
         {/if}
       {/if}
     </div>
-    {#if !readonly && !game.ended}
-      {#if user.solo_limit <= 0}
-        <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
+    {#if !readonly}
+      {#if game.ended}
+        <center class='info'>Konec hry</center>
       {:else}
-        <div class='input'>
-          <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
-        </div>
+        {#if user.solo_limit <= 0}
+          <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
+        {:else}
+          <div class='input'>
+            <TextareaExpandable {user} bind:this={inputEl} bind:value={inputValue} {onSave} loading={isGenerating} disabled={isGenerating} singleLine enterSend showButton disableEmpty placeholder='Co uděláš?' />
+          </div>
+        {/if}
       {/if}
     {/if}
   </div>
