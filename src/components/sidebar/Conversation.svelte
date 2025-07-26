@@ -12,6 +12,7 @@
 
   let channel
   let inputEl
+  let editing = null
   let messagesEl
   let textareaValue = ''
   let previousMessagesLength = 0
@@ -110,7 +111,6 @@
         messageOffset = 0
         hasMoreMessages = true
         $messages = []
-        editingMessage = null // Reset editing state on full reload
       }
 
       let query
@@ -179,22 +179,20 @@
     if (success) { conversationReadAt = now }
   }
 
-  let editingMessage = null
-
   async function sendMessage () {
     if (textareaValue.trim() === '') return
 
-    if (editingMessage) {
-      const { error } = await supabase.from('messages').update({ content: textareaValue }).eq('id', editingMessage.id)
+    if (editing) {
+      const { error } = await supabase.from('messages').update({ content: textareaValue }).eq('id', editing)
       if (error) { return handleError(error) }
       // Update message in local store
-      const index = $messages.findIndex(m => m.id === editingMessage.id)
+      const index = $messages.findIndex(m => m.id === editing)
       if (index !== -1) {
         $messages[index].content = textareaValue
         $messages = $messages
       }
       textareaValue = ''
-      editingMessage = null
+      editing = null
     } else {
       // Insert new message
       const messageData = {
@@ -211,7 +209,7 @@
   }
 
   function onEdit (message) {
-    editingMessage = message
+    editing = message.id
     inputEl.triggerEdit(message.id, message.content)
   }
 
@@ -278,13 +276,13 @@
 
           <div class='messages' bind:this={messagesEl} on:scroll={handleScroll}>
             {#if isLoading && !$messages.length}
-              <div class="loading-indicator">Načítám zprávy...</div>
+              <div class='loading-indicator'>Načítám zprávy...</div>
             {:else if hasMoreMessages}
-              <div class="loading-more">
+              <div class='loading-more'>
                 {#if isLoading}
-                  <div class="loading-indicator">Načítám starší zprávy...</div>
+                  <div class='loading-indicator'>Načítám starší zprávy...</div>
                 {:else}
-                  <div class="load-more-hint">Scrollujte nahoru pro načtení starších zpráv</div>
+                  <div class='load-more-hint'>Scrollujte nahoru pro načtení starších zpráv</div>
                 {/if}
               </div>
             {/if}
@@ -296,7 +294,7 @@
               <center>Žádné zprávy</center>
             {/if}
           </div>
-          <TextareaExpandable forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editingMessage ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
+          <TextareaExpandable bind:editing forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editing ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
         {:catch error}
           <span class='error'>Konverzaci se nepodařilo načíst</span>
         {/await}
