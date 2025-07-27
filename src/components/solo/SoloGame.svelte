@@ -258,7 +258,7 @@
     <a href='/solo/concept/{concept.id}'><h1>{game.name}</h1></a>
     <div class='buttons'>
       <div class='limit' title='Denní limit počtu odpovědí od AI vypravěče' use:tooltip>{user.solo_limit}</div>
-      {#if user.id}
+      {#if user.id === game.player}
         <button onclick={showSettings} class='material settings square' title='Nastavení hry' use:tooltip>settings</button>
       {/if}
       <button onclick={() => { isCharacterOpen = true }} class='material square' title='Postava' use:tooltip>person</button>
