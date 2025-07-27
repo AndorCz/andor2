@@ -123,7 +123,7 @@
     </div>
   </div>
   {#if post.illustration}
-    <img src={post.illustration} alt='Illustration' title={post.prompt || ''} class='aside' />
+    <img src={post.illustration} alt='Illustration' title={post.prompt || ''} class='aside illustration' />
   {/if}
 </div>
 
@@ -264,6 +264,9 @@
     .edited {
       font-size: 12px;
       color: var(--dim);
+    }
+    .illustration {
+      object-fit: contain;
     }
 
   @media (max-width: 860px) {
