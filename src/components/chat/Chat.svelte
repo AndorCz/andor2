@@ -80,6 +80,7 @@
   }
 
   async function setupReplyListeners () { // pre-requisite for replies
+    if (!postsEl) return
     // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
     const cites = document.querySelectorAll('cite[data-id]')
     for (const citeEl of cites) {
