@@ -139,17 +139,19 @@
         // Reverse to get chronological order (oldest first)
         $messages = data ? data.reverse() : []
       } else if (data && data.length > 0) {
-        // When loading more (older) messages, add them to the beginning
-        const scrollHeight = messagesEl.scrollHeight
-        const scrollPosition = messagesEl.scrollTop
-
         // Prepend older messages to the beginning
         $messages = [...data.reverse(), ...$messages]
 
-        // After the DOM updates, restore the scroll position
-        await tick() // ensure DOM is updated
-        const newScrollHeight = messagesEl.scrollHeight
-        messagesEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
+        if (messagesEl) {
+          // When loading more (older) messages, add them to the beginning
+          const scrollHeight = messagesEl.scrollHeight
+          const scrollPosition = messagesEl.scrollTop
+
+          // After the DOM updates, restore the scroll position
+          await tick() // ensure DOM is updated
+          const newScrollHeight = messagesEl.scrollHeight
+          messagesEl.scrollTop = scrollPosition + (newScrollHeight - scrollHeight)
+        }
       }
       if (initialLoad) { handleClearUnread() } // This will use 'now' as the read_at time
     } finally {

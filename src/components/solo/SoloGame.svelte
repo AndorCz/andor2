@@ -189,6 +189,7 @@
   }
 
   function handleScroll () {
+    if (!postsEl) return
     distanceFromBottom = postsEl.scrollHeight - postsEl.scrollTop - postsEl.clientHeight
     userHasScrolledUp = distanceFromBottom > 50 // Threshold to consider as manual scroll
     if (postsEl && hasMorePosts) {
