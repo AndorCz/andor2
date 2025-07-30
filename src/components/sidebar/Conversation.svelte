@@ -11,9 +11,9 @@
   export let clearUnread
 
   let channel
-  let inputEl
   let editing = null
   let messagesEl
+  let textareaRef
   let textareaValue = ''
   let previousMessagesLength = 0
   let scrollHandlerAttached = false
@@ -193,7 +193,6 @@
         $messages[index].content = textareaValue
         $messages = $messages
       }
-      textareaValue = ''
       editing = null
     } else {
       // Insert new message
@@ -205,14 +204,14 @@
       }
       const { data: newMessagesData, error } = await supabase.from('messages').insert(messageData).select()
       if (error) { return handleError(error) }
-      textareaValue = ''
       $messages = [...$messages, ...newMessagesData]
     }
+    textareaRef.clearContent()
   }
 
   function onEdit (message) {
     editing = message.id
-    inputEl.triggerEdit(message.id, message.content)
+    textareaRef.triggerEdit(message.id, message.content)
   }
 
   async function onDelete (messageId) {
@@ -296,7 +295,7 @@
               <center>Žádné zprávy</center>
             {/if}
           </div>
-          <TextareaExpandable bind:editing forceBubble {user} bind:this={inputEl} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editing ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
+          <TextareaExpandable bind:this={textareaRef} bind:editing forceBubble {user} bind:value={textareaValue} onSave={sendMessage} minHeight={70} enterSend showButton allowHtml disableEmpty placeholder={editing ? 'Upravit zprávu...' : 'Napsat zprávu...'} />
         {:catch error}
           <span class='error'>Konverzaci se nepodařilo načíst</span>
         {/await}
