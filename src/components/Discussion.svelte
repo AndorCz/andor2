@@ -91,6 +91,10 @@
     if (saving || textareaValue === '') { return false }
     saving = true
     const identity = useIdentities ? getIdentity() : userIdentity
+    if (!identity) {
+      saving = false
+      return showError('Chybí identita pro příspěvek')
+    }
     let audience = null
     let response
     if (data.id === 3) { // Special board "Nahlášení obsahu"

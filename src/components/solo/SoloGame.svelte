@@ -51,6 +51,7 @@
   async function onSave () {
     if (inputValue.trim() === '') return
     if (isGenerating) return // Prevent multiple submissions while generating
+    if (!character) { return showError('Chybí informace o postavě') }
     const { data: newPostData, error } = await supabase.from('posts').insert({ thread: game.thread, owner: character.id, owner_type: 'character', content: inputValue, identifier: getStamp() }).select().single()
     newPostData.owner_portrait = character.portrait
     newPostData.owner_name = character.name

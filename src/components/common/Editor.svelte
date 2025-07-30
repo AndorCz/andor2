@@ -240,7 +240,6 @@
   }
 
   async function uploadImage (file) {
-    console.log('type', file.type)
     const img = document.createElement('img')
     img.src = URL.createObjectURL(file)
     await new Promise(resolve => { img.onload = resolve }) // wait for the image to load
@@ -248,7 +247,8 @@
       const resizedBlob = await resizeImage(img, 2000, 2000, file.type)
       file = new File([resizedBlob], file.name, { type: file.type }) // blob to file
     }
-    const { data, error } = await supabase.storage.from('posts').upload(`${user.id}/${new Date().getTime()}.png`, file)
+    const extension = file.name.split('.').pop()
+    const { data, error } = await supabase.storage.from('posts').upload(`${user.id}/${new Date().getTime()}.${extension}`, file)
     if (error) { handleError(error) }
     return { data, img }
   }
