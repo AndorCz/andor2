@@ -96,10 +96,14 @@
     saving = true
     if (allowHtml) {
       value = await tiptap.getHTML() // get latest html from editor
-      await onSave()
-      tiptap.commands.clearContent(true)
+      const result = await onSave()
+      if (!result?.error && result !== false) {
+        tiptap.commands.clearContent(true)
+        value = ''
+      }
     } else {
-      await onSave() // otherwise the binded textarea value is used
+      const result = await onSave() // otherwise the binded textarea value is used
+      if (!result?.error && result !== false) { value = '' }
     }
     saving = false
   }

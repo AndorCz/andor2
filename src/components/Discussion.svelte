@@ -88,7 +88,7 @@
   }
 
   async function submitPost () {
-    if (saving || textareaValue === '') { return }
+    if (saving || textareaValue === '') { return false }
     saving = true
     const identity = useIdentities ? getIdentity() : userIdentity
     let audience = null
@@ -107,9 +107,12 @@
       textareaValue = ''
       $discussionStore.unsent = ''
       await loadPosts()
-      saving = false
       editing = false
+      saving = false
+      return true
     }
+    saving = false
+    return false
   }
 
   async function deletePost (post) {
