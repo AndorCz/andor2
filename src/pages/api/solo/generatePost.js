@@ -1,9 +1,9 @@
 import { generateImage } from '@lib/solo/server-replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { getImageUrl, getStamp } from '@lib/utils'
-import { getAI, getStorytellerParams } from '@lib/solo/server-gemini'
+import { getStorytellerParams, getAI } from '@lib/solo/server-moonshot'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
-import { storytellerInstructions, getContext } from '@lib/solo/solo'
+import { storytellerInstructions, getContext, illustrationStyleAffixes, getResponseSchema } from '@lib/solo/solo'
 
 const imageBuckets = { header: 'headers', scene: 'scenes', item: 'items', npc: 'npcs' }
 
@@ -11,8 +11,6 @@ export const POST = async ({ request, locals }) => {
   if (locals.user.solo_limit <= 0) {
     return new Response(JSON.stringify({ error: 'Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.' }), { status: 403 })
   } else {
-    const ai = getAI(locals.runtime.env)
-
     async function addPost (thread, ownerType, ownerId, postData, postHash) {
       if (!postData || !postData.post || !postData.post.trim()) {
         throw new Error('Cannot save empty post content')
@@ -46,6 +44,8 @@ export const POST = async ({ request, locals }) => {
       const { soloId, postHash, characterName } = await request.json()
       if (!locals.user?.id) { return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) }
 
+      // TODO: Merge into a single query
+
       const { data: gameData, error: gameError } = await locals.supabase.from('solo_games').select('*').eq('id', soloId).single()
       if (gameError) { return new Response(JSON.stringify({ error: gameError.message }), { status: 500 }) }
       if (!gameData || gameData.player !== locals.user.id) {
@@ -54,33 +54,43 @@ export const POST = async ({ request, locals }) => {
 
       const { data: conceptData, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', gameData.concept_id).single()
       if (conceptError) { return new Response(JSON.stringify({ error: conceptError.message }), { status: 500 }) }
-      const storytellerParams = getStorytellerParams(conceptData)
 
       const { data: npcs, error: npcsError } = await locals.supabase.from('npcs').select('*').or(`solo_game.eq.${gameData.id},solo_concept.eq.${gameData.concept_id}`)
       if (npcsError) { return new Response(JSON.stringify({ error: npcsError.message }), { status: 500 }) }
-      storytellerParams.config.responseSchema.properties.character.properties.slug.enum = npcs.map(npc => npc.slug) // Update the enum with available NPC slugs
+      const npcSlugs = npcs.map(npc => npc.slug)
 
       const { data: posts, error: postsError } = await locals.supabase.from('posts').select('*').match({ thread: gameData.thread }).order('created_at', { ascending: true })
       if (postsError) { return new Response(JSON.stringify({ error: postsError.message }), { status: 500 }) }
-      const lastPost = posts[posts.length - 1]
-      posts.pop()
 
-      // Prepare post history for the AI model
-      const history = posts.map(post => ({ role: post.owner_type === 'user' ? 'user' : 'model', parts: [{ text: post.content }] }))
-      // Add a system message to the history with current inventory and abilities for the model's context
-      if (gameData.inventory && gameData.inventory.length > 0) {
-        history.push({ role: 'model', parts: [{ text: `[System Information: The player's current inventory contains: ${gameData.inventory.join(', ')}]` }] })
-      }
-      if (conceptData.abilities && conceptData.abilities.length > 0) {
-        history.push({ role: 'model', parts: [{ text: `[System Information: The player's abilities are: ${conceptData.abilities.join(', ')}]` }] })
-      }
-      storytellerParams.config.systemInstruction = `${storytellerInstructions}
+      // Prepare system instruction for the AI model
+      let systemInstruction = `${storytellerInstructions}
         ${getContext(conceptData, null, characterName, gameData.inventory, conceptData.abilities)}
         <h2>Plán hry:</h2>
         ${conceptData.generated_plan}
       `
-      const chat = ai.chats.create({ ...storytellerParams, history })
-      const response = await chat.sendMessageStream({ message: lastPost.content })
+      const illustrationStyleAffix = illustrationStyleAffixes[conceptData.illustration_style] || 'ink'
+      const responseSchema = getResponseSchema(illustrationStyleAffix)
+      if (npcSlugs) { responseSchema.properties.character.properties.slug.enum = npcSlugs } // Update the enum with available NPC slugs
+
+      systemInstruction += `\n\nOčekávaná JSON struktura odpovědi:\n${JSON.stringify(responseSchema)}`
+
+      // Add a system message with current inventory and abilities for the model's context
+      if (gameData.inventory && gameData.inventory.length > 0) {
+        systemInstruction += `\n\nInventář postavy hráče obsahuje: ${gameData.inventory.join(', ')}`
+      }
+      if (conceptData.abilities && conceptData.abilities.length > 0) {
+        systemInstruction += `\n\nSchopnosti postavy hráče jsou: ${conceptData.abilities.join(', ')}`
+      }
+
+      const storytellerParams = getStorytellerParams()
+
+      storytellerParams.messages = [{ role: 'system', content: systemInstruction }]
+      // Prepare post history for the AI model
+      const history = posts.map(post => ({ role: post.owner_type === 'character' ? 'user' : 'assistant', content: post.content }))
+      storytellerParams.messages.push(...history)
+
+      const ai = getAI(locals.runtime.env)
+      const response = await ai.chat.completions.create(storytellerParams)
 
       // Create async generator for streaming
       async function * generateStreamData () {
@@ -88,10 +98,12 @@ export const POST = async ({ request, locals }) => {
         const parser = new StreamingJSONParser()
 
         try {
-          // Process the Gemini stream
+          // Process the OpenAI stream
           for await (const chunk of response) {
-            if (chunk.text) {
-              const events = parser.processChunk(chunk.text)
+            // Extract content from OpenAI streaming format
+            const content = chunk.choices?.[0]?.delta?.content
+            if (content) {
+              const events = parser.processChunk(content)
 
               for (const event of events) {
                 if (event.character) {
@@ -153,7 +165,7 @@ export const POST = async ({ request, locals }) => {
           }
         } catch (error) {
           if (error.name !== 'AbortError') {
-            console.error('Error in Gemini stream:', error)
+            console.error('Error in AI stream:', error)
           }
           throw error
         }
