@@ -68,10 +68,6 @@
         const lines = chunk.split('\n')
 
         for (const line of lines) {
-          // if (line.startsWith('event:')) {
-          //   const eventType = line.substring(6).trim()
-          //   continue
-          // }
           if (line.startsWith('data:')) {
             const data = JSON.parse(line.substring(5).trim())
             handleSSEEvent(data)

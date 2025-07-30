@@ -16,7 +16,7 @@
   }
 
   async function renamePage () {
-    const name = window.prompt('Nový název stránky', page.name).trim()
+    const name = window.prompt('Nový název stránky', page.name)?.trim()
     if (!name) { return showError('Název nesmí být prázdný') }
     const slug = createSlug(name)
     const { error } = await supabase.from('codex_pages').update({ name, slug }).eq('id', page.id)

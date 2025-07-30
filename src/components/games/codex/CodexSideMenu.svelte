@@ -27,8 +27,7 @@
   })
 
   async function addPage () {
-    const nameInput = window.prompt('Název nové stránky')
-    const name = nameInput ? nameInput.trim() : ''
+    const name = window.prompt('Název nové stránky')?.trim()
     if (!name) { return showError('Název nesmí být prázdný') }
     const slug = createSlug(name)
     const { data, error } = await supabase.from('codex_pages').insert({ game: game.id, slug, section: activeSection.id, name, content: `<h1>${name}</h1>` }).select()
