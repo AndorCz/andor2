@@ -208,7 +208,7 @@
       response = await sendPost('POST', { thread: 1, content: textareaValue, owner: user.id, ownerType: 'user', postType: 'other' })
     }
     if (!response.error) {
-      textareaValue = ''
+      textareaEl.clearContent()
       await loadPosts()
       editing = false
       saving = false
