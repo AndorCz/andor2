@@ -24,7 +24,6 @@
   let stickTop = $state(false)
   let stickBottom = $state(false)
   let resizeObserver
-  let sidebarScrollEnabled = $state(false)
 
   // unread
   let unreadBookmarks = $state(false)
@@ -67,45 +66,14 @@
   }
 
   function updateHeight () {
-    if (pathname !== '/chat' && sectionEl && !sidebarScrollEnabled) {
-      const sidebarRect = sectionEl.getBoundingClientRect()
-      const sidebarHeight = sidebarRect.height
-      const documentHeight = Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight
-      )
-      const contentHeight = documentHeight - window.innerHeight
-
-      // Only enable sidebar scroll if sidebar is significantly taller than content
-      // and would cause scrolling issues
-      if (sidebarHeight > window.innerHeight && contentHeight < sidebarHeight * 0.7) {
-        enableSidebarScroll()
+    if (pathname !== '/chat' && sectionEl) {
+      heightOverflow = sectionEl.getBoundingClientRect().height - window.innerHeight
+      if (heightOverflow > 0) {
+        addDynamicScroll()
       } else {
-        heightOverflow = sidebarHeight - window.innerHeight
-        if (heightOverflow > 0) {
-          addDynamicScroll()
-        } else {
-          removeDynamicScroll()
-        }
+        removeDynamicScroll()
       }
     }
-  }
-
-  function enableSidebarScroll () {
-    if (sidebarScrollEnabled) return
-
-    removeDynamicScroll()
-    sidebarScrollEnabled = true
-
-    if (sectionEl) {
-      sectionEl.style.position = 'fixed'
-      sectionEl.style.top = '0px'
-      sectionEl.style.height = '100vh'
-      sectionEl.style.overflowY = 'auto'
-      sectionEl.style.scrollbarWidth = 'thin'
-    }
-    stickTop = false
-    stickBottom = false
   }
 
   function addDynamicScroll () {
@@ -116,14 +84,9 @@
   }
 
   function removeDynamicScroll () {
-    if (!sidebarScrollEnabled) {
-      stickTop = true
-    }
+    stickTop = true
     if (scrollingRegistered) {
-      if (sectionEl && !sidebarScrollEnabled) {
-        sectionEl.style.top = 'initial'
-        sectionEl.style.position = 'absolute'
-      }
+      sectionEl.style.top = 'initial'
       stickBottom = false
       window.removeEventListener('scroll', dynamicScroll)
       scrollingRegistered = false
