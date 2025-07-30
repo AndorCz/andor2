@@ -1,6 +1,6 @@
 ---
 import 'tippy.js/dist/tippy.css'
-import pkg from '../../package.json' assert { type: 'json' }
+import pkg from '../../package.json' with { type: 'json' }
 import Store from '@components/common/Store.svelte'
 import Header from '@components/Header.svelte'
 import Sidebar from '@components/sidebar/Sidebar.svelte'
@@ -123,20 +123,31 @@ if (user.id) {
     main {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
+    /* Sidebar height constraint for solo layout - matches main element height */
+    :global(aside) {
+      position: relative;
+    }
+      :global(aside section) {
+        max-height: calc(100svh + 226px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
       .content {
         scroll-snap-align: start;
+        height: 100svh;
         padding: 30px;
         background-color: var(--panel);
         border-radius: 0px 0px 10px 10px;
         max-width: 100vw;
-        height: 100svh;
+        overflow-y: auto;
       }
       html.no-scroll-snap .content {
         scroll-snap-align: none;
         height: auto;
       }
-
   footer {
     margin-top: 20px;
     padding: 20px;
@@ -158,6 +169,22 @@ if (user.id) {
   @media (max-width: 1000px) {
     #wrapper {
       contain: content;
+    }
+    /* Reset sidebar constraints on mobile */
+    :global(aside) {
+      position: static;
+    }
+      :global(aside section) {
+        max-height: none; /* Remove constraint on mobile */
+        overflow-y: visible;
+        scrollbar-width: auto;
+      }
+  }
+
+  @media (max-width: 860px) {
+    /* Update calc for mobile header height */
+    :global(aside section) {
+      max-height: calc(100svh + 150px); /* 100svh content + mobile header height */
     }
   }
 
