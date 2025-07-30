@@ -108,7 +108,7 @@
     }
     if (!response.error) {
       page = 0
-      textareaValue = ''
+      textareaRef.clearContent()
       $discussionStore.unsent = ''
       await loadPosts()
       editing = false

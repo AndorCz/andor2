@@ -83,28 +83,23 @@
     const val = allowHtml ? tiptap.getHTML() : editorRef.value
     const shouldCancel = (val === originalValue) ? true : window.confirm('Opravdu zrušit úpravu?')
     if (shouldCancel) {
-      if (cancelClearsValue) {
-        value = ''
-        if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
-      }
+      if (cancelClearsValue) { clearContent() }
       editing = false
     }
+  }
+
+  export function clearContent () {
+    value = ''
+    if (allowHtml) { editorRef.getEditor().commands.clearContent(true) }
+    isEmpty = true
+    editing = false
   }
 
   async function triggerSave (html) {
     if (saving || disabled) { return } // prevent double save
     saving = true
-    if (allowHtml) {
-      value = await tiptap.getHTML() // get latest html from editor
-      const result = await onSave()
-      if (!result?.error && result !== false) {
-        tiptap.commands.clearContent(true)
-        value = ''
-      }
-    } else {
-      const result = await onSave() // otherwise the binded textarea value is used
-      if (!result?.error && result !== false) { value = '' }
-    }
+    if (allowHtml) { value = await tiptap.getHTML() } // get latest html from editor
+    await onSave()
     saving = false
   }
 
