@@ -211,23 +211,23 @@
 
   async function loadBookmarksData () {
     const { data, error } = await supabase.from('user_bookmarks').select().eq('user_id', user.id)
-    const groupedData = { solo: [], games: [], boards: [], works: [] }
-    data.forEach(item => {
-      if (item.solo_id) {
-        groupedData.solo.push({ ...item, id: item.solo_id })
-      } else if (item.game_id) {
-        groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread, unread_discussion: item.unread_secondary })
-      } else if (item.board_id) {
-        groupedData.boards.push({ ...item, id: item.board_id })
-      } else if (item.work_id) {
-        groupedData.works.push({ ...item, id: item.work_id })
-      }
-    })
     if (error) { throw error }
+    const groupedData = { solo: [], games: [], boards: [], works: [] }
     if (data) {
-      $bookmarks = groupedData
+      data.forEach(item => {
+        if (item.solo_id) {
+          groupedData.solo.push({ ...item, id: item.solo_id })
+        } else if (item.game_id) {
+          groupedData.games.push({ ...item, id: item.game_id, unread_game: item.unread, unread_discussion: item.unread_secondary })
+        } else if (item.board_id) {
+          groupedData.boards.push({ ...item, id: item.board_id })
+        } else if (item.work_id) {
+          groupedData.works.push({ ...item, id: item.work_id })
+        }
+      })
       unreadBookmarks = getBookmarkUnread(groupedData)
     }
+    $bookmarks = groupedData
   }
 
   async function loadUsersData () {
