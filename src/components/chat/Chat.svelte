@@ -198,7 +198,7 @@
   }
 
   async function submitPost () {
-    if (saving || textareaValue === '') { return }
+    if (saving || textareaValue === '') { return false }
     saving = true
     let response
     if (editing) {
@@ -209,9 +209,12 @@
     if (!response.error) {
       textareaValue = ''
       await loadPosts()
-      saving = false
       editing = false
+      saving = false
+      return true
     }
+    saving = false
+    return false
   }
 
   function removeTyping (name) {

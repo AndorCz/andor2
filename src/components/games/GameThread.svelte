@@ -97,7 +97,7 @@
   }
 
   async function submitPost () {
-    if (saving || textareaValue === '') { return }
+    if (saving || textareaValue === '') { return false }
     saving = true
     let response
     const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
@@ -111,9 +111,12 @@
       textareaValue = ''
       $gameStore.unsent = ''
       await loadPosts()
-      saving = false
       editing = false
+      saving = false
+      return true
     }
+    saving = false
+    return false
   }
 
   async function deletePost (post) {
