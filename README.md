@@ -1,8 +1,8 @@
 
-# Andor2 ALPHA
+# Andor2
 
 Andor is a web app for playing role-playing games online.
-The target audience are players of TTRPG games, using the czech language.
+The target audience are players of TTRPG games, primarily in czech language.
 The initial version will be an experimental MVP, with limited functionality.
 
 ## List of features
