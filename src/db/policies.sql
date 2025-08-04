@@ -93,8 +93,7 @@ alter table public.works enable row level security;
 create policy "READ for everyone" on public.works for select to public using (true);
 create policy "ALL for owners" on public.works for all to authenticated using (owner = (select auth.uid()));
 create policy "INSERT for owners, unpublished" on public.works for insert to authenticated with check (published = false);
-create policy "ALL for works for Sargo and Hitomi" on public.works for all to authenticated using (auth.uid() = 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f' OR auth.uid() = 'c3304e31-9687-413f-a478-214c865bf5a2');
-
+create policy "ALL for works for Sargo and Hitomi" on public.works to authenticated using (((select auth.uid()) = 'a78d91c6-3af6-4163-befd-e7b5d21d9c0f'::uuid) or ((select auth.uid()) = 'c3304e31-9687-413f-a478-214c865bf5a2'::uuid));
 
 -- GENERAL --------------------------------------------
 
