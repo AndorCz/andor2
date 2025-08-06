@@ -260,15 +260,15 @@
   }
 
   function clearUnreadCharacter (themId, usId) {
-    const flatCharacters = characters.allGrouped.flatMap(group => group.characters)
+    const flatCharacters = characters.allGrouped?.flatMap(group => group.characters) || []
     if (isFilledArray(flatCharacters)) {
       const character = flatCharacters.find(c => c.id === usId)
       if (character) {
         if (character.unread > 0) { character.unread-- }
-        const contact = character.contacts.find(c => c.id === themId)
+        const contact = character.contacts?.find(c => c.id === themId)
         if (contact) {
           contact.unread = 0
-          unreadCharacters = flatCharacters.some(c => c.contacts.some(contact => contact.unread > 0))
+          unreadCharacters = flatCharacters.some(c => c.contacts?.some(contact => contact.unread > 0))
         }
       }
     }
