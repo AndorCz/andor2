@@ -35,6 +35,6 @@
       <Board data={boardData} {user} {isMod} client:only='svelte' />
     )
   ) : (
-    <p>Do této diskuze nemáš přístup</p>
+    <Board data={{ id: boardData.id, header: boardData.header, name: boardData.name }} {user} {isMod} denied client:only='svelte' />
   ))}
 </Layout>

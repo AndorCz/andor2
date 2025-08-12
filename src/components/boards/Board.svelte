@@ -7,7 +7,7 @@
   import Discussion from '@components/Discussion.svelte'
   import EditableLong from '@components/common/EditableLong.svelte'
 
-  let { user = {}, data = $bindable({}), isMod = false } = $props()
+  let { user = {}, data = $bindable({}), isMod = false, denied = false } = $props()
 
   const boardStore = getSavedStore('board-' + data.id)
   const bookmarkId = $derived($bookmarks.boards.find(b => b.id === data.id)?.bookmark_id)
@@ -52,9 +52,11 @@
 <div class='headline'>
   <h1>{data.name}</h1>
   <div class='buttons'>
-    {#key $boardStore.hideHeader}
-      <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
-    {/key}
+    {#if !denied}
+      {#key $boardStore.hideHeader}
+        <button onclick={toggleHeader} class='material toggleHeader square' class:active={!$boardStore.hideHeader} title={!$boardStore.hideHeader ? 'Skrýt nástěnku' : 'Zobrazit nástěnku'} use:tooltip>assignment</button>
+      {/key}
+    {/if}
     {#if user.id}
       {#key bookmarkId}
         <button onclick={() => { bookmarkId ? removeBookmark() : addBookmark() }} class='material bookmark square' class:active={bookmarkId} title={bookmarkId ? 'Odebrat záložku' : 'Sledovat'} use:tooltip>{bookmarkId ? 'bookmark_remove' : 'bookmark'}</button>
@@ -66,20 +68,23 @@
   </div>
 </div>
 
-{#if !$boardStore.hideHeader}
-  <EditableLong allowHtml {user} bind:value={data.header} onSave={updateBoardHeader} canEdit={isMod} />
-  <p class='mods'>
-    {#if data.mods.length}Správci:{:else}Správce:{/if}&nbsp;
-    <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
-    {#if data.mods.length}
-      {#await supabase.rpc('get_user_names', { ids: data.mods }).single() then mods}
-        {#each mods.data as mod (mod.id)}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
-      {/await}
-    {/if}
-  </p>
+{#if denied}
+  <p>Do této diskuze nemáš přístup</p>
+{:else}
+  {#if !$boardStore.hideHeader}
+    <EditableLong allowHtml {user} bind:value={data.header} onSave={updateBoardHeader} canEdit={isMod} />
+    <p class='mods'>
+      {#if data.mods.length}Správci:{:else}Správce:{/if}&nbsp;
+      <a href={'/user?id=' + data.owner.id} class='user' title='vlastník diskuze' use:tooltip><span class='material owner'>star</span>{data.owner.name}</a>
+      {#if data.mods.length}
+        {#await supabase.rpc('get_user_names', { ids: data.mods }).single() then mods}
+          {#each mods.data as mod (mod.id)}, <a href={'/user?id=' + mod.id} class='user'>{mod.name}</a>{/each}
+        {/await}
+      {/if}
+    </p>
+  {/if}
+  <Discussion {data} {user} canModerate={isMod} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection='boards' />
 {/if}
-
-<Discussion {data} {user} canModerate={isMod} unread={data.unread} thread={data.thread} slug={'board-' + data.id} contentSection='boards' />
 
 <style>
   .headline {
