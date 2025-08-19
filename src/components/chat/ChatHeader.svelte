@@ -8,8 +8,9 @@
 </script>
 
 <ul id='header'>
-  <li><a href='/'><span class='material'>star</span><span>Novinky</span></a></li>
+  <li><a href='/'><span class='material'>star</span><span>Nové</span></a></li>
   <li><a href='/games'><span class='material'>casino</span><span>Hry</span></a></li>
+  <li><a href='/solo'><span class='material'>robot_2</span><span>AI</span></a></li>
   <li><a href='/works'><span class='material'>edit</span><span>Tvorba</span></a></li>
   <li><a href='/boards'><span class='material'>forum</span><span>Diskuze</span></a></li>
   <li><a href='/chat' class='active'><span class='material'>chat</span><span>Chat</span></a></li>
