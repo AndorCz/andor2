@@ -69,7 +69,7 @@ export const GET = async ({ request, locals, redirect }) => {
     const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
-    let firstImagePrompt = firstPost.image.prompt
+    let firstImagePrompt = firstPost.image?.prompt
     if (!firstImagePrompt) {
       const metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu nejlépe vystihnout vizuálně a popiš jako plaintext prompt pro vygenerování ilustračního obrázku:\n${firstPost.post}` }
       const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
