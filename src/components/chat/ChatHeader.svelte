@@ -13,7 +13,6 @@
   <li><a href='/solo'><span class='material'>robot_2</span><span>AI</span></a></li>
   <li><a href='/works'><span class='material'>edit</span><span>Tvorba</span></a></li>
   <li><a href='/boards'><span class='material'>forum</span><span>Diskuze</span></a></li>
-  <li><a href='/chat' class='active'><span class='material'>chat</span><span>Chat</span></a></li>
 </ul>
 
 <style>
@@ -39,7 +38,17 @@
         align-items: center;
         text-decoration: none;
       }
-      #header li a.active {
-        color: var(--text);
+  @media (max-width: 530px) {
+    #header {
+      padding: 10px;
+      gap: 10px;
+      justify-content: center;
+    }
+      #header li a {
+        font-size: 14px;
       }
+    #header li a span.material {
+      font-size: 20px;
+    }
+  }
 </style>
