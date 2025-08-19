@@ -1,7 +1,8 @@
-import { getAI } from '@lib/solo/server-moonshot'
+import { Type } from '@google/genai'
+import { getAI } from '@lib/solo/server-gemini'
 import { getStamp } from '@lib/utils'
 import { generateImage } from '@lib/solo/server-replicate'
-import { getPrompts, assistantInstructions } from '@lib/solo/solo'
+import { getPrompts, assistantParams, assistantInstructions } from '@lib/solo/solo'
 
 async function generateConcept (locals, params, sendEvent) {
   const { id, name, world, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, plan, generating = [] } = params
@@ -10,118 +11,102 @@ async function generateConcept (locals, params, sendEvent) {
   try {
     const env = locals.runtime.env
     const ai = getAI(env)
-    const basePrompt = `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"`
+    const structuredConfig = { config: { responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }, responseMimeType: 'application/json' } }
+    const basePrompt = { text: `Hra kterou připravujeme se jmenuje "${decodeURIComponent(name)}"` }
 
+    // Load existing data for chat history
     const { data: existingData } = await locals.supabase.from('solo_concepts').select('generated_world, generated_factions, generated_locations, generated_characters, generated_protagonist, abilities, generating').eq('id', id).single()
     const currentGenerating = [...(existingData.generating || [])]
     const prompts = getPrompts(existingData)
 
-    const messages = [
-      { role: 'system', content: assistantInstructions },
-      { role: 'user', content: basePrompt }
-    ]
+    // Build chat history with previous responses
+    const history = [{ role: 'user', parts: [{ text: assistantInstructions }, basePrompt] }]
+    if (existingData.generated_world) { history.push({ role: 'model', parts: [{ text: existingData.generated_world }] }) }
+    if (existingData.generated_factions) { history.push({ role: 'model', parts: [{ text: existingData.generated_factions }] }) }
+    if (existingData.generated_locations) { history.push({ role: 'model', parts: [{ text: existingData.generated_locations }] }) }
+    if (existingData.generated_characters) { history.push({ role: 'model', parts: [{ text: existingData.generated_characters }] }) }
+    if (existingData.generated_protagonist) { history.push({ role: 'model', parts: [{ text: existingData.generated_protagonist }] }) }
 
-    async function ask (prompt) {
-      messages.push({ role: 'user', content: prompt })
-      const res = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages })
-      const text = res.choices[0].message.content
-      messages.push({ role: 'assistant', content: text })
-      return text
-    }
+    const chat = ai.chats.create({ ...assistantParams, history })
 
     let responseWorld, responseFactions, responseLocations, responseCharacters, responseProtagonist, responseHeaderImagePrompt, responseStorytellerImagePrompt, npcData
 
     // World
     if (currentGenerating.includes('generated_world')) {
       sendEvent('progress', { step: 'generated_world', message: 'Generuji svět...' })
-      let promptWorld = prompts.prompt_world
-      if (world) { promptWorld += `Vypravěč uvedl toto zadání: "${world}"` }
-      const worldText = await ask(promptWorld)
+      const promptWorld = { text: prompts.prompt_world }
+      if (world) { promptWorld.text += `Vypravěč uvedl toto zadání: "${world}"` }
+      responseWorld = await chat.sendMessage({ message: promptWorld })
       currentGenerating.splice(currentGenerating.indexOf('generated_world'), 1)
-      const { error: updateErrorWorld } = await locals.supabase.from('solo_concepts').update({ generated_world: worldText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorWorld } = await locals.supabase.from('solo_concepts').update({ generated_world: responseWorld.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorWorld) { throw new Error(updateErrorWorld.message) }
       sendEvent('step_complete', { step: 'generated_world', generating: currentGenerating })
-      responseWorld = { text: worldText }
     } else {
-      messages.push({ role: 'user', content: prompts.prompt_world })
-      messages.push({ role: 'assistant', content: existingData.generated_world })
       responseWorld = { text: existingData.generated_world }
     }
 
     // Factions
     if (currentGenerating.includes('generated_factions')) {
       sendEvent('progress', { step: 'generated_factions', message: 'Generuji frakce...' })
-      let promptFactions = prompts.prompt_factions
-      if (factions) { promptFactions += `Vypravěč uvedl toto zadání: "${factions}"` }
-      const factionsText = await ask(promptFactions)
+      const promptFactions = { text: prompts.prompt_factions }
+      if (factions) { promptFactions.text += `Vypravěč uvedl toto zadání: "${factions}"` }
+      responseFactions = await chat.sendMessage({ message: promptFactions })
       currentGenerating.splice(currentGenerating.indexOf('generated_factions'), 1)
-      const { error: updateErrorFactions } = await locals.supabase.from('solo_concepts').update({ generated_factions: factionsText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorFactions } = await locals.supabase.from('solo_concepts').update({ generated_factions: responseFactions.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorFactions) { throw new Error(updateErrorFactions.message) }
       sendEvent('step_complete', { step: 'generated_factions', generating: currentGenerating })
-      responseFactions = { text: factionsText }
     } else {
-      messages.push({ role: 'user', content: prompts.prompt_factions })
-      messages.push({ role: 'assistant', content: existingData.generated_factions })
       responseFactions = { text: existingData.generated_factions }
     }
 
     // Locations
     if (currentGenerating.includes('generated_locations')) {
       sendEvent('progress', { step: 'generated_locations', message: 'Generuji místa...' })
-      let promptLocations = prompts.prompt_locations
-      if (locations) { promptLocations += `Vypravěč uvedl toto zadání: "${locations}"` }
-      const locationsText = await ask(promptLocations)
+      const promptLocations = { text: prompts.prompt_locations }
+      if (locations) { promptLocations.text += `Vypravěč uvedl toto zadání: "${locations}"` }
+      responseLocations = await chat.sendMessage({ message: promptLocations })
       currentGenerating.splice(currentGenerating.indexOf('generated_locations'), 1)
-      const { error: updateErrorLocations } = await locals.supabase.from('solo_concepts').update({ generated_locations: locationsText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorLocations } = await locals.supabase.from('solo_concepts').update({ generated_locations: responseLocations.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorLocations) { throw new Error(updateErrorLocations.message) }
       sendEvent('step_complete', { step: 'generated_locations', generating: currentGenerating })
-      responseLocations = { text: locationsText }
     } else {
-      messages.push({ role: 'user', content: prompts.prompt_locations })
-      messages.push({ role: 'assistant', content: existingData.generated_locations })
       responseLocations = { text: existingData.generated_locations }
     }
 
     // Characters
     if (currentGenerating.includes('generated_characters')) {
       sendEvent('progress', { step: 'generated_characters', message: 'Generuji postavy...' })
-      let promptCharacters = prompts.prompt_characters
-      if (characters) { promptCharacters += `Vypravěč uvedl toto zadání: "${characters}"` }
-      const charactersText = await ask(promptCharacters)
+      const promptCharacters = { text: prompts.prompt_characters }
+      if (characters) { promptCharacters.text += `Vypravěč uvedl toto zadání: "${characters}"` }
+      responseCharacters = await chat.sendMessage({ message: promptCharacters })
       currentGenerating.splice(currentGenerating.indexOf('generated_characters'), 1)
-      const { error: updateErrorCharacters } = await locals.supabase.from('solo_concepts').update({ generated_characters: charactersText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorCharacters } = await locals.supabase.from('solo_concepts').update({ generated_characters: responseCharacters.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorCharacters) { throw new Error(updateErrorCharacters.message) }
       sendEvent('step_complete', { step: 'generated_characters', generating: currentGenerating })
-      responseCharacters = { text: charactersText }
     } else {
-      messages.push({ role: 'user', content: prompts.prompt_characters })
-      messages.push({ role: 'assistant', content: existingData.generated_characters })
       responseCharacters = { text: existingData.generated_characters }
     }
 
     // Protagonist
     if (currentGenerating.includes('generated_protagonist')) {
       sendEvent('progress', { step: 'generated_protagonist', message: 'Generuji protagonistu...' })
-      let promptProtagonist = prompts.prompt_protagonist
-      if (protagonist) { promptProtagonist += `Vypravěč uvedl toto zadání: "${protagonist}"` }
-      const protagonistText = await ask(promptProtagonist)
+      const promptProtagonist = { text: prompts.prompt_protagonist }
+      if (protagonist) { promptProtagonist.text += `Vypravěč uvedl toto zadání: "${protagonist}"` }
+      responseProtagonist = await chat.sendMessage({ message: promptProtagonist })
       currentGenerating.splice(currentGenerating.indexOf('generated_protagonist'), 1)
-      const { error: updateErrorProtagonist } = await locals.supabase.from('solo_concepts').update({ generated_protagonist: protagonistText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorProtagonist } = await locals.supabase.from('solo_concepts').update({ generated_protagonist: responseProtagonist.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorProtagonist) { throw new Error(updateErrorProtagonist.message) }
       sendEvent('step_complete', { step: 'generated_protagonist', generating: currentGenerating })
-      responseProtagonist = { text: protagonistText }
     } else {
-      messages.push({ role: 'user', content: prompts.prompt_protagonist })
-      messages.push({ role: 'assistant', content: existingData.generated_protagonist })
       responseProtagonist = { text: existingData.generated_protagonist }
     }
 
     // Annotation
     if (currentGenerating.includes('annotation')) {
       sendEvent('progress', { step: 'annotation', message: 'Generuji anotaci...' })
-      const annotationText = await ask(prompts.annotation)
+      const responseAnnotation = await chat.sendMessage({ message: prompts.annotation })
       currentGenerating.splice(currentGenerating.indexOf('annotation'), 1)
-      const { error: updateErrorAnnotation } = await locals.supabase.from('solo_concepts').update({ annotation: annotationText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorAnnotation } = await locals.supabase.from('solo_concepts').update({ annotation: responseAnnotation.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorAnnotation) { throw new Error(updateErrorAnnotation.message) }
       sendEvent('step_complete', { step: 'annotation', generating: currentGenerating })
     }
@@ -129,14 +114,13 @@ async function generateConcept (locals, params, sendEvent) {
     // Header image prompt
     if (currentGenerating.includes('generated_header_image')) {
       sendEvent('progress', { step: 'generated_header_image', message: 'Generuji popis obrázku hlavičky...' })
-      let headerImagePrompt = prompts.prompt_header_image
-      if (promptHeaderImage) { headerImagePrompt += `Vypravěč uvedl toto zadání: "${promptHeaderImage}"` }
-      const headerText = await ask(headerImagePrompt)
+      const headerImagePrompt = { text: prompts.prompt_header_image }
+      if (promptHeaderImage) { headerImagePrompt.text += `Vypravěč uvedl toto zadání: "${promptHeaderImage}"` }
+      responseHeaderImagePrompt = await chat.sendMessage({ message: headerImagePrompt })
       currentGenerating.splice(currentGenerating.indexOf('generated_header_image'), 1)
-      const { error: updateErrorImage } = await locals.supabase.from('solo_concepts').update({ generated_header_image: headerText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorImage } = await locals.supabase.from('solo_concepts').update({ generated_header_image: responseHeaderImagePrompt.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorImage) { throw new Error(updateErrorImage.message) }
       sendEvent('step_complete', { step: 'generated_header_image', generating: currentGenerating })
-      responseHeaderImagePrompt = { text: headerText }
     } else {
       const { data } = await locals.supabase.from('solo_concepts').select('generated_header_image').eq('id', id).single()
       responseHeaderImagePrompt = { text: data.generated_header_image }
@@ -145,14 +129,13 @@ async function generateConcept (locals, params, sendEvent) {
     // Storyteller image prompt
     if (currentGenerating.includes('generated_storyteller_image')) {
       sendEvent('progress', { step: 'generated_storyteller_image', message: 'Generuji popis obrázku vypravěče...' })
-      let storytellerImagePrompt = prompts.prompt_storyteller_image
-      if (promptStorytellerImage) { storytellerImagePrompt += `Vypravěč uvedl toto zadání: "${promptStorytellerImage}"` }
-      const storytellerText = await ask(storytellerImagePrompt)
+      const storytellerImagePrompt = { text: prompts.prompt_storyteller_image }
+      if (promptStorytellerImage) { storytellerImagePrompt.text += `Vypravěč uvedl toto zadání: "${promptStorytellerImage}"` }
+      responseStorytellerImagePrompt = await chat.sendMessage({ message: storytellerImagePrompt })
       currentGenerating.splice(currentGenerating.indexOf('generated_storyteller_image'), 1)
-      const { error: updateErrorStorytellerImage } = await locals.supabase.from('solo_concepts').update({ generated_storyteller_image: storytellerText, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorStorytellerImage } = await locals.supabase.from('solo_concepts').update({ generated_storyteller_image: responseStorytellerImagePrompt.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorStorytellerImage) { throw new Error(updateErrorStorytellerImage.message) }
       sendEvent('step_complete', { step: 'generated_storyteller_image', generating: currentGenerating })
-      responseStorytellerImagePrompt = { text: storytellerText }
     } else {
       const { data } = await locals.supabase.from('solo_concepts').select('generated_storyteller_image').eq('id', id).single()
       responseStorytellerImagePrompt = { text: data.generated_storyteller_image }
@@ -204,10 +187,10 @@ async function generateConcept (locals, params, sendEvent) {
     // Protagonist names
     if (currentGenerating.includes('protagonist_names')) {
       sendEvent('progress', { step: 'protagonist_names', message: 'Generuji jména pro postavu...' })
-      const protagonistContents = `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":\n${responseWorld.text}\n${responseProtagonist.text}\n${prompts.protagonist_names}\nOdpověz ve formátu JSON pole řetězců.`
-      const protagonistNamesResponse = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages: [{ role: 'system', content: assistantInstructions }, { role: 'user', content: protagonistContents }] })
+      const protagonistContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.protagonist_names }]
+      const protagonistNamesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: protagonistContents })
       currentGenerating.splice(currentGenerating.indexOf('protagonist_names'), 1)
-      const { error: updateErrorProtagonistNames } = await locals.supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.choices[0].message.content), generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorProtagonistNames } = await locals.supabase.from('solo_concepts').update({ protagonist_names: JSON.parse(protagonistNamesResponse.text), generating: currentGenerating }).eq('id', id)
       if (updateErrorProtagonistNames) { throw new Error(updateErrorProtagonistNames.message) }
       sendEvent('step_complete', { step: 'protagonist_names', generating: currentGenerating })
     }
@@ -215,10 +198,10 @@ async function generateConcept (locals, params, sendEvent) {
     // Abilities
     if (currentGenerating.includes('abilities')) {
       sendEvent('progress', { step: 'abilities', message: 'Generuji schopnosti...' })
-      const abilitiesContents = `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":\n${responseWorld.text}\n${responseProtagonist.text}\n${prompts.abilities}\nOdpověz ve formátu JSON pole řetězců.`
-      const abilitiesResponse = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages: [{ role: 'system', content: assistantInstructions }, { role: 'user', content: abilitiesContents }] })
+      const abilitiesContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.abilities }]
+      const abilitiesResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: abilitiesContents })
       currentGenerating.splice(currentGenerating.indexOf('abilities'), 1)
-      const { error: updateErrorAbilities } = await locals.supabase.from('solo_concepts').update({ abilities: JSON.parse(abilitiesResponse.choices[0].message.content), generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorAbilities } = await locals.supabase.from('solo_concepts').update({ abilities: JSON.parse(abilitiesResponse.text), generating: currentGenerating }).eq('id', id)
       if (updateErrorAbilities) { throw new Error(updateErrorAbilities.message) }
       sendEvent('step_complete', { step: 'abilities', generating: currentGenerating })
     }
@@ -226,10 +209,10 @@ async function generateConcept (locals, params, sendEvent) {
     // Inventory
     if (currentGenerating.includes('inventory')) {
       sendEvent('progress', { step: 'inventory', message: 'Generuji inventář...' })
-      const inventoryContents = `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":\n${responseWorld.text}\n${responseProtagonist.text}\n${prompts.inventory}\nOdpověz ve formátu JSON pole řetězců.`
-      const inventoryResponse = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages: [{ role: 'system', content: assistantInstructions }, { role: 'user', content: inventoryContents }] })
+      const inventoryContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":` }, { text: responseWorld.text }, { text: responseProtagonist.text }, { text: prompts.inventory }]
+      const inventoryResponse = await ai.models.generateContent({ ...assistantParams, ...structuredConfig, contents: inventoryContents })
       currentGenerating.splice(currentGenerating.indexOf('inventory'), 1)
-      const { error: updateErrorInventory } = await locals.supabase.from('solo_concepts').update({ inventory: JSON.parse(inventoryResponse.choices[0].message.content), generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorInventory } = await locals.supabase.from('solo_concepts').update({ inventory: JSON.parse(inventoryResponse.text), generating: currentGenerating }).eq('id', id)
       if (updateErrorInventory) { throw new Error(updateErrorInventory.message) }
       sendEvent('step_complete', { step: 'inventory', generating: currentGenerating })
     }
@@ -237,17 +220,19 @@ async function generateConcept (locals, params, sendEvent) {
     // Plan
     if (currentGenerating.includes('generated_plan')) {
       sendEvent('progress', { step: 'generated_plan', message: 'Generuji příběh...' })
-      const planParts = [`Následující text popisuje setting pro TTRPG hru pod názvem "${name}":`, responseWorld.text, responseFactions.text, responseLocations.text, responseCharacters.text, responseProtagonist.text, prompts.prompt_plan]
-      if (plan) { planParts.push(`Vypravěč uvedl toto zadání: "${plan}"`) }
-      const planPrompt = planParts.join('\n')
-      const planResponse = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages: [{ role: 'system', content: assistantInstructions }, { role: 'user', content: planPrompt }] })
-      const generatedPlan = planResponse.choices[0].message.content
+      const ai2 = getAI(env)
+      const planConfig = { config: { responseSchema: { type: Type.OBJECT, properties: { text: { type: Type.STRING } } }, responseMimeType: 'application/json' } }
+      const planContents = [{ text: `Následující text popisuje setting pro TTRPG hru pod názvem "${name}":` }, { text: responseWorld.text }, { text: responseFactions.text }, { text: responseLocations.text }, { text: responseCharacters.text }, { text: responseProtagonist.text }, { text: prompts.prompt_plan }]
+      if (plan) { planContents.push({ text: `Vypravěč uvedl toto zadání: "${plan}"` }) }
+      const planResponse = await ai2.models.generateContent({ ...assistantParams, ...planConfig, contents: planContents, model: 'gemini-2.5-pro' })
+      const generatedPlan = { text: planResponse.text }
       currentGenerating.splice(currentGenerating.indexOf('generated_plan'), 1)
-      const { error: updateErrorPlan } = await locals.supabase.from('solo_concepts').update({ generated_plan: generatedPlan, generating: currentGenerating }).eq('id', id)
+      const { error: updateErrorPlan } = await locals.supabase.from('solo_concepts').update({ generated_plan: generatedPlan.text, generating: currentGenerating }).eq('id', id)
       if (updateErrorPlan) { throw new Error(updateErrorPlan.message) }
       sendEvent('step_complete', { step: 'generated_plan', generating: currentGenerating })
     }
 
+    // Release concept when generation completes
     const { error: updateError } = await locals.supabase.from('solo_concepts').update({ published: true, generating: [], custom_header: getStamp(), storyteller: npcData.id, generation_error: '' }).eq('id', id)
     if (updateError) { throw new Error(updateError.message) }
     console.log('Generation completed successfully for concept:', id)
@@ -259,7 +244,7 @@ async function generateConcept (locals, params, sendEvent) {
 }
 
 export const GET = async ({ locals }) => {
-  return new Response('OK:' + locals.runtime.env.MOONSHOT_API_KEY, { status: 200 })
+  return new Response('OK:' + locals.runtime.env.PRIVATE_GEMINI, { status: 200 })
 }
 
 export const POST = async ({ request, locals }) => {
@@ -278,6 +263,7 @@ export const POST = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: { message: 'Error starting generation: ' + startError.message } }), { status: 500 })
   }
 
+  // Create Server-Sent Events stream
   const stream = new ReadableStream({
     async start (controller) {
       const encoder = new TextEncoder()
@@ -288,10 +274,13 @@ export const POST = async ({ request, locals }) => {
       }
 
       try {
+        // Send initial event
         sendEvent('start', { status: 'Generation started' })
 
+        // Run the generation with SSE updates
         await generateConcept(locals, data, sendEvent)
 
+        // Send completion event
         sendEvent('complete', { status: 'Generation completed' })
         controller.close()
       } catch (error) {
@@ -312,4 +301,3 @@ export const POST = async ({ request, locals }) => {
     }
   })
 }
-

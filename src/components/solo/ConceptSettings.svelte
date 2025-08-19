@@ -42,6 +42,10 @@
           if (error) { throw error }
           if (data && !data.generating.includes(field)) {
             concept = data // Update the full concept with server data
+            // Update originalValues with the new data
+            Object.keys(originalValues).forEach(key => {
+              originalValues[key] = Array.isArray(data[key]) ? [...data[key]] : data[key]
+            })
             if (field === 'prompt_header_image' || field === 'prompt_storyteller_image') { window.location.reload() } // Reload to show new image
             showSuccess('Pole bylo úspěšně aktualizováno a podklady přegenerovány')
             clearInterval(checkLoop)
@@ -56,7 +60,8 @@
     } finally {
       concept[field] = value
       savingValues[field] = false
-      originalValues[field] = value
+      // Update originalValues with the saved value (deep copy for arrays)
+      originalValues[field] = Array.isArray(value) ? [...value] : value
     }
   }
 
@@ -313,7 +318,7 @@
     </button>
   {/if}
   {#if tab === 'generated'}
-    <p class='info'>Pole na této stránce jsou automaticky generovaná. Můžeš je upravit ručně, ale mohou být přegenerovaná úpravou vstupů na předchozí záložce.</p>
+    <p class='info'>Pole na této stránce jsou automaticky generováná. Můžeš je upravit ručně, ale mohou být přegenerovaná úpravou vstupů na předchozí záložce.</p>
     <h2>Svět</h2>
     <EditableLong {user} value={concept.generated_world} onSave={(value) => onSave('generated_world', value)} canEdit allowHtml />
     <h2>Frakce</h2>
