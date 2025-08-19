@@ -38,7 +38,7 @@
 
     <div class='row'>
       <div class='labels'><label for='promptWorld'>Svět</label></div>
-      <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='promptWorld' name='promptWorld' minHeight={75} maxlength={1000} /></div>
+      <div class='inputs'><TextareaExpandable placeholder='V jakém světě a časovém období se hra odehrává?' {user} id='promptWorld' name='promptWorld' minHeight={75} maxlength={2000} /></div>
     </div>
 
     <div class='row'>

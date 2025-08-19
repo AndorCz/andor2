@@ -177,7 +177,7 @@
 
     <h2>Svět</h2>
     <div class='row'>
-      <TextareaExpandable {user} bind:value={concept.prompt_world} loading={concept.generating.includes('prompt_world')} placeholder='V jakém světě a časovém období se hra odehrává?' maxlength={1000} />
+      <TextareaExpandable {user} bind:value={concept.prompt_world} loading={concept.generating.includes('prompt_world')} placeholder='V jakém světě a časovém období se hra odehrává?' maxlength={2000} />
       <button onclick={() => onSave('prompt_world', true)} disabled={concept.generating.includes('prompt_world') || savingValues.prompt_world || originalValues.prompt_world === concept.prompt_world} class='material save square' title='Uložit' use:tooltip>check</button>
     </div>
 

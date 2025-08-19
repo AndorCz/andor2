@@ -106,7 +106,7 @@ export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', pr
 export function getContext (conceptData, exclude, characterName, inventory, abilities) {
   const context = {
     basePrompt: { text: `Hra se bude jmenovat "${decodeURIComponent(conceptData.name)}". Budou následovat podklady (setting) pro tuto hru.` },
-    prompt_world: { text: `<h2>${fieldNames.prompt_world}</h2>\n${conceptData.generated_world}` },
+    prompt_world: { text: `<h2>${fieldNames.prompt_world}</h2>\n${conceptData.prompt_world}\n${conceptData.generated_world}` },
     prompt_factions: { text: `<h2>${fieldNames.prompt_factions}</h2>\n${conceptData.generated_factions}` },
     prompt_locations: { text: `<h2>${fieldNames.prompt_locations}</h2>\n${conceptData.generated_locations}` },
     prompt_characters: { text: `<h2>${fieldNames.prompt_characters}</h2>\n${conceptData.generated_characters}` },
