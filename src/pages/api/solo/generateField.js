@@ -1,8 +1,7 @@
-import { Type } from '@google/genai'
 import { generateImage } from '@lib/solo/server-replicate'
-import { getStamp, clone } from '@lib/utils'
-import { getAI } from '@lib/solo/server-gemini'
-import { getPrompts, getContext, fieldNames, assistantParams } from '@lib/solo/solo'
+import { getStamp } from '@lib/utils'
+import { getAI } from '@lib/solo/server-moonshot'
+import { getPrompts, getContext, fieldNames, assistantInstructions } from '@lib/solo/solo'
 
 // Generate content of a single field of a solo game concept
 export const POST = async ({ request, locals, redirect }) => {
@@ -13,50 +12,41 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Save updated field data, mark concept as generating and load current concept data
     const updatedConcept = { generating: [field] }
-    if (typeof value === 'string' && field !== 'protagonist_names' && field !== 'inventory' && field !== 'abilities') { updatedConcept[field] = value } // If value is provided, update the field with it
+    if (typeof value === 'string' && field !== 'protagonist_names' && field !== 'inventory' && field !== 'abilities') { updatedConcept[field] = value }
     const { data: conceptData, error: markingError } = await locals.supabase.from('solo_concepts').update(updatedConcept).eq('id', conceptId).select().single()
     if (markingError) { throw new Error(markingError.message) }
 
     const prompts = getPrompts(conceptData)
-    const generationParams = clone(assistantParams)
+    const systemContent = `${assistantInstructions}${getContext(conceptData, field, null, conceptData.inventory, conceptData.abilities)}`
+    let userContent = prompts[field]
+    if (value) { userContent += `\nVypravěč uvedl toto zadání: "${value}"` }
 
-    // Set common parameters for generation
-    if (['prompt_world', 'prompt_protagonist', 'prompt_plan', 'protagonist_names', 'inventory', 'abilities', 'prompt_locations', 'prompt_factions', 'prompt_characters', 'prompt_header_image', 'prompt_storyteller_image'].includes(field)) {
-      generationParams.config.systemInstruction += getContext(conceptData, field, null, conceptData.inventory, conceptData.abilities)
-      generationParams.contents = [{ text: prompts[field], role: 'user' }]
-      if (value) { generationParams.contents[0].text += `\nVypravěč uvedl toto zadání: "${value}"` }
-    }
+    const messages = [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userContent }
+    ]
 
-    // Structured output for names
-    if (field === 'protagonist_names' || field === 'inventory' || field === 'abilities') {
-      generationParams.config.responseSchema = { type: Type.ARRAY, items: { type: Type.STRING } }
-      generationParams.config.responseMimeType = 'application/json'
-    }
-
-    // Generate new content
-    const modelResponse = await ai.models.generateContent(generationParams)
-    if (modelResponse.candidates?.[0].finish_reason === 'SAFETY') { throw new Error('Generovaný obsah byl zablokován kvůli bezpečnostním pravidlům AI. Zkus prosím změnit zadání.') }
-    // const responseLast = modelResponse.candidates?.[0]?.content?.parts?.[0]?.text || modelResponse.text // probably not needed
+    const response = await ai.chat.completions.create({ model: 'kimi-k2-0711-preview', messages })
 
     const newData = { generating: [] }
     const target = field.replace('prompt_', 'generated_')
-    newData[target] = field === 'protagonist_names' || field === 'inventory' || field === 'abilities' ? JSON.parse(modelResponse.text) : modelResponse.text
+    newData[target] = ['protagonist_names', 'inventory', 'abilities'].includes(field) ? JSON.parse(response.choices[0].message.content) : response.choices[0].message.content
 
     // Update game plan if needed
     if (['prompt_world', 'prompt_factions', 'prompt_locations', 'prompt_characters', 'prompt_protagonist', 'prompt_plan'].includes(field)) {
-      generationParams.model = 'gemini-2.5-flash'
-      generationParams.config.thinkingConfig = { thinkingBudget: 1000 }
-
-      // If a plan-relevant field have changed, include it in the plan prompt
       let prompt = prompts.prompt_plan
       if (field !== 'prompt_plan') {
         prompt = `${fieldNames[field]}: ${newData[target]}\n\n${prompts.prompt_plan}`
       }
       if (conceptData.prompt_plan) { prompt += `\nVypravěč uvedl toto zadání: "${conceptData.prompt_plan}"` }
-      generationParams.contents = [{ text: prompt, role: 'user' }]
-
-      const planResponse = await ai.models.generateContent(generationParams)
-      newData.generated_plan = planResponse.text
+      const planResponse = await ai.chat.completions.create({
+        model: 'kimi-k2-0711-preview',
+        messages: [
+          { role: 'system', content: assistantInstructions },
+          { role: 'user', content: prompt }
+        ]
+      })
+      newData.generated_plan = planResponse.choices[0].message.content
     }
 
     // Update header image if requested
@@ -93,3 +83,4 @@ export const POST = async ({ request, locals, redirect }) => {
     return new Response(JSON.stringify({ error: { message: 'Chyba při generování pole: ' + error.message } }), { status: 500 })
   }
 }
+

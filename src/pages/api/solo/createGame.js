@@ -1,8 +1,8 @@
 // Create a new game from a solo concept
 import { generateImage } from '@lib/solo/server-replicate'
 import { getStamp, getImageUrl } from '@lib/utils'
-import { getAI, getStorytellerParams } from '@lib/solo/server-gemini'
-import { getPrompts, assistantParams, getContext } from '@lib/solo/solo'
+import { getAI, getStorytellerParams } from '@lib/solo/server-moonshot'
+import { getPrompts, assistantInstructions, getContext, storytellerInstructions } from '@lib/solo/solo'
 
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
@@ -32,10 +32,15 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate player character portrait prompt
     const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
-    const characterImagePromptResponse = await ai.chat.completions.create({ ...assistantParams, messages: [{ role: 'system', content: context }, { role: 'user', content: characterImagePromptMessage.text }] })
-    if (characterImagePromptResponse.error) { throw new Error('Chyba při generování promptu pro portrét postavy: ' + characterImagePromptResponse.error.message) }
+    const characterImagePromptResponse = await ai.chat.completions.create({
+      model: 'kimi-k2-0711-preview',
+      messages: [
+        { role: 'system', content: `${assistantInstructions}\n${context}` },
+        { role: 'user', content: characterImagePromptMessage.text }
+      ]
+    })
     if (!characterImagePromptResponse?.choices?.[0]?.message?.content) { throw new Error('Chyba při generování promptu pro portrét postavy: neúplná nebo prázdná odpověď od AI') }
-    const portraitPrompt = characterImagePromptResponse.choices[0].message.content
+    const portraitPrompt = characterImagePromptResponse.choices[0].message.content.trim()
 
     // Create a new player character
     const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getStamp(), portrait_prompt: portraitPrompt }).select().single()
@@ -57,29 +62,31 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const storytellerParams = getStorytellerParams(concept)
+    const storytellerParams = getStorytellerParams()
     const systemInstructions = {
       role: 'system',
-      content: `${context}
-      <h2>Plán hry</h2>
-      ${concept.generated_plan}`
+      content: `${storytellerInstructions}\n${context}\n<h2>Plán hry</h2>\n${concept.generated_plan}`
     }
     const firstPostPrompt = {
       role: 'user',
-      content: `<h2>Instrukce</h2>
-      ${prompts.firstPost}`
+      content: `<h2>Instrukce</h2>\n${prompts.firstPost}`
     }
     storytellerParams.messages = [systemInstructions, firstPostPrompt]
     const response = await ai.chat.completions.create(storytellerParams)
-    const firstPost = response.choices[0].message.content
+    const firstPost = JSON.parse(response.choices[0].message.content)
 
     // Generate illustration for the first post
-    let firstImagePrompt = firstPost.image.prompt
+    let firstImagePrompt = firstPost.image?.prompt
     if (!firstImagePrompt) {
       const metaPrompt = { role: 'user', content: prompts.first_image + `Pro následující popis scény vymysli jak scénu nejlépe vystihnout vizuálně a popiš jako plaintext prompt pro vygenerování ilustračního obrázku:\n${firstPost.post}` }
-      const firstImagePromptResponse = await ai.chat.completions.create({ ...assistantParams, messages: [{ role: 'system', content: context }, metaPrompt] })
-      if (firstImagePromptResponse.error) { throw new Error('Chyba při generování promptu pro ilustraci: ' + firstImagePromptResponse.error.message) }
-      firstImagePrompt = firstImagePromptResponse.text
+      const firstImagePromptResponse = await ai.chat.completions.create({
+        model: 'kimi-k2-0711-preview',
+        messages: [
+          { role: 'system', content: `${assistantInstructions}\n${context}` },
+          metaPrompt
+        ]
+      })
+      firstImagePrompt = firstImagePromptResponse.choices[0].message.content
     }
     const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, 'scene')
     if (sceneImageError) { throw new Error(sceneImageError.message) }

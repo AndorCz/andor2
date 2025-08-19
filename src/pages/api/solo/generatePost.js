@@ -82,7 +82,7 @@ export const POST = async ({ request, locals }) => {
         systemInstruction += `\n\nSchopnosti postavy hráče jsou: ${conceptData.abilities.join(', ')}`
       }
 
-      const storytellerParams = getStorytellerParams()
+      const storytellerParams = { ...getStorytellerParams(), stream: true }
 
       storytellerParams.messages = [{ role: 'system', content: systemInstruction }]
       // Prepare post history for the AI model
