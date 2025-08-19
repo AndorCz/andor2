@@ -32,10 +32,8 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate player character portrait prompt
     const characterImagePromptMessage = { text: prompts.protagonist_image + `Postava se jmenuje "${characterName}"` }
-    const characterImagePromptResponse = await ai.chat.completions.create({ ...assistantParams, messages: [{ role: 'system', content: context }, { role: 'user', content: characterImagePromptMessage.text }] })
-    if (characterImagePromptResponse.error) { throw new Error('Chyba při generování promptu pro portrét postavy: ' + characterImagePromptResponse.error.message) }
-    if (!characterImagePromptResponse?.choices?.[0]?.message?.content) { throw new Error('Chyba při generování promptu pro portrét postavy: neúplná nebo prázdná odpověď od AI') }
-    const portraitPrompt = characterImagePromptResponse.choices[0].message.content
+    const characterImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [{ text: context }, characterImagePromptMessage] })
+    const portraitPrompt = characterImagePromptResponse.text
 
     // Create a new player character
     const { data: characterData, error: characterError } = await locals.supabase.from('characters').insert({ name: characterName, appearance: concept.generated_protagonist, player: locals.user.id, solo_game: gameData.id, portrait: getStamp(), portrait_prompt: portraitPrompt }).select().single()
@@ -57,28 +55,24 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Generate first post
-    const storytellerParams = getStorytellerParams(concept)
-    const systemInstructions = {
-      role: 'system',
-      content: `${context}
-      <h2>Plán hry</h2>
-      ${concept.generated_plan}`
-    }
     const firstPostPrompt = {
-      role: 'user',
-      content: `<h2>Instrukce</h2>
-      ${prompts.firstPost}`
+      text: `
+        ${context}
+        <h2>Plán hry</h2>
+        ${concept.generated_plan}
+        <h2>Instrukce</h2>
+        ${prompts.firstPost}
+      `
     }
-    storytellerParams.messages = [systemInstructions, firstPostPrompt]
-    const response = await ai.chat.completions.create(storytellerParams)
-    const firstPost = response.choices[0].message.content
+    const storytellerParams = getStorytellerParams(concept)
+    const response = await ai.models.generateContent({ ...storytellerParams, contents: [firstPostPrompt] })
+    const firstPost = JSON.parse(response.text)
 
     // Generate illustration for the first post
     let firstImagePrompt = firstPost.image.prompt
     if (!firstImagePrompt) {
-      const metaPrompt = { role: 'user', content: prompts.first_image + `Pro následující popis scény vymysli jak scénu nejlépe vystihnout vizuálně a popiš jako plaintext prompt pro vygenerování ilustračního obrázku:\n${firstPost.post}` }
-      const firstImagePromptResponse = await ai.chat.completions.create({ ...assistantParams, messages: [{ role: 'system', content: context }, metaPrompt] })
-      if (firstImagePromptResponse.error) { throw new Error('Chyba při generování promptu pro ilustraci: ' + firstImagePromptResponse.error.message) }
+      const metaPrompt = { text: prompts.first_image + `Pro následující popis scény vymysli jak scénu nejlépe vystihnout vizuálně a popiš jako plaintext prompt pro vygenerování ilustračního obrázku:\n${firstPost.post}` }
+      const firstImagePromptResponse = await ai.models.generateContent({ ...assistantParams, contents: [...context, metaPrompt] })
       firstImagePrompt = firstImagePromptResponse.text
     }
     const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, 'scene')

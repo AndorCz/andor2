@@ -29,7 +29,7 @@ async function generateConcept (locals, params, sendEvent) {
 
     const chat = ai.chats.create({ ...assistantParams, history })
 
-    let responseWorld, responseFactions, responseLocations, responseCharacters, responseProtagonist, responseAbilities, responseHeaderImagePrompt, responseStorytellerImagePrompt, npcData
+    let responseWorld, responseFactions, responseLocations, responseCharacters, responseProtagonist, responseHeaderImagePrompt, responseStorytellerImagePrompt, npcData
 
     // World
     if (currentGenerating.includes('generated_world')) {

@@ -134,7 +134,6 @@
   .block {
     background-color: var(--block);
     display: flex;
-    flex-direction: row-reverse;
     margin-bottom: 5px;
     min-height: 115px;
   }
