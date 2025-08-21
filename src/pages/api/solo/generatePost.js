@@ -166,8 +166,9 @@ export const POST = async ({ request, locals }) => {
         } catch (error) {
           if (error.name !== 'AbortError') {
             console.error('Error in AI stream:', error)
-          }
-          throw error
+            // Send error to client through the stream instead of throwing
+            yield { error: 'An error occurred while generating the response. Please try again.' }
+          } // Client disconnected, just end the stream gracefully
         }
       }
 

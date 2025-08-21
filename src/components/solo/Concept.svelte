@@ -18,14 +18,16 @@
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
 
   onMount(async () => {
-    // Start SSE generation if concept needs generating
-    if (concept.generating.length > 0) {
-      startGeneration()
-    } else {
-      // Load open games for this concept
-      const { data, error } = await supabase.from('solo_games').select().match({ concept_id: concept.id, player: user.id }).order('created_at', { ascending: false })
-      if (error) { handleError(error) }
-      if (data) { openGames = data }
+    if (user.id) {
+      // Start SSE generation if concept needs generating
+      if (concept.generating.length > 0) {
+        startGeneration()
+      } else {
+        // Load open games for this concept
+        const { data, error } = await supabase.from('solo_games').select().match({ concept_id: concept.id, player: user.id }).order('created_at', { ascending: false })
+        if (error) { handleError(error) }
+        if (data) { openGames = data }
+      }
     }
   })
 
@@ -234,7 +236,7 @@
           </div>
         </div>
       </details>
-      {#if openGames.length > 0}
+      {#if user && openGames.length > 0}
         <div class='games'>
           <h2>Tvoje rozehrané hry</h2>
           <ul class='games'>
@@ -244,25 +246,27 @@
           </ul>
         </div>
       {/if}
-      <h2>Nová hra</h2>
-      <div class='names'>
-        <h3>Jméno postavy</h3>
-        <div class='grid'>
-          {#each concept.protagonist_names as name (name)}
-            <label title='Jméno protagonisty'>
-              <input type='radio' name='protagonist_name' value={name} bind:group={selectedName} />
-              <span>{name}</span>
-            </label>
-          {/each}
+      {#if user.id}
+        <h2>Nová hra</h2>
+        <div class='names'>
+          <h3>Jméno postavy</h3>
+          <div class='grid'>
+            {#each concept.protagonist_names as name (name)}
+              <label title='Jméno protagonisty'>
+                <input type='radio' name='protagonist_name' value={name} bind:group={selectedName} />
+                <span>{name}</span>
+              </label>
+            {/each}
+          </div>
         </div>
-      </div>
-      <div class='create'>
-        {#if creatingGame}
-          <Loading />
-        {:else}
-          <button onclick={once(startGame)} class='large'>Začít novou hru</button>
-        {/if}
-      </div>
+        <div class='create'>
+          {#if creatingGame}
+            <Loading />
+          {:else}
+            <button onclick={once(startGame)} class='large'>Začít novou hru</button>
+          {/if}
+        </div>
+      {/if}
     </div>
     <aside>
       <ul>
