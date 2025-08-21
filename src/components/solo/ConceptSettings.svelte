@@ -320,21 +320,21 @@
   {#if tab === 'generated'}
     <p class='info'>Pole na této stránce jsou automaticky generováná. Můžeš je upravit ručně, ale mohou být přegenerovaná úpravou vstupů na předchozí záložce.</p>
     <h2>Svět</h2>
-    <EditableLong {user} value={concept.generated_world} onSave={(value) => onSave('generated_world', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_world} onSave={(value) => onSave('generated_world', false)} canEdit allowHtml />
     <h2>Frakce</h2>
-    <EditableLong {user} value={concept.generated_factions} onSave={(value) => onSave('generated_factions', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_factions} onSave={(value) => onSave('generated_factions', false)} canEdit allowHtml />
     <h2>Místa</h2>
-    <EditableLong {user} value={concept.generated_locations} onSave={(value) => onSave('generated_locations', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_locations} onSave={(value) => onSave('generated_locations', false)} canEdit allowHtml />
     <h2>Postavy</h2>
-    <EditableLong {user} value={concept.generated_characters} onSave={(value) => onSave('generated_characters', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_characters} onSave={(value) => onSave('generated_characters', false)} canEdit allowHtml />
     <h2>Protagonista</h2>
-    <EditableLong {user} value={concept.generated_protagonist} onSave={(value) => onSave('generated_protagonist', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_protagonist} onSave={(value) => onSave('generated_protagonist', false)} canEdit allowHtml />
     <h2>Plán hry</h2>
-    <EditableLong {user} value={concept.generated_plan} onSave={(value) => onSave('generated_plan', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_plan} onSave={(value) => onSave('generated_plan', false)} canEdit allowHtml />
     <h2>Obrázek hlavičky</h2>
-    <EditableLong {user} value={concept.generated_header_image} onSave={(value) => onSave('generated_header_image', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_header_image} onSave={(value) => onSave('generated_header_image', false)} canEdit allowHtml />
     <h2>Ikonka vypravěče</h2>
-    <EditableLong {user} value={concept.generated_storyteller_image} onSave={(value) => onSave('generated_storyteller_image', value)} canEdit allowHtml />
+    <EditableLong {user} bind:value={concept.generated_storyteller_image} onSave={(value) => onSave('generated_storyteller_image', false)} canEdit allowHtml />
   {/if}
 </main>
 
