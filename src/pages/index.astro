@@ -32,7 +32,7 @@
         try {
                const { data: randomPost, error: randomError } = await supabase
                        .from('npc_posts_random')
-                       .select('id, content, owner, owner_name, created_at')
+                       .select('id, content, owner, owner_name, created_at, concept_id, concept_name')
                        .limit(1)
                        .maybeSingle()
                 if (randomError) { throw randomError }
@@ -40,7 +40,8 @@
                         npcPost = {
                                 id: randomPost.id,
                                 content_type: 'post',
-                                title: 'Náhodný příspěvek',
+                                title: randomPost.concept_name,
+                                url: `/solo/concept/${randomPost.concept_id}`,
                                 content: randomPost.content,
                                 character: randomPost.owner,
                                 character_name: randomPost.owner_name,

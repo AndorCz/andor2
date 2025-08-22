@@ -514,9 +514,11 @@ create or replace view posts_owner as
 
 create or replace view npc_posts_random as
   select
-    *
-  from posts_owner
-  where owner_type = 'npc'
+    po.*, sc.id as concept_id, sc.name as concept_name
+  from posts_owner po
+    join npcs on po.owner = npcs.id
+    left join solo_concepts sc on npcs.solo_concept = sc.id
+  where po.owner_type = 'npc'
   order by random();
 
 
