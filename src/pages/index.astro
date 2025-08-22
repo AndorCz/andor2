@@ -1,10 +1,11 @@
 ---
-	import Layout from '@layouts/layout.astro'
-	import Editorial from '@components/homepage/Editorial.svelte'
-	import Latest from '@components/homepage/Latest.svelte'
-	import NewsFeed from '@components/homepage/NewsFeed.svelte'
+  import Layout from '@layouts/layout.astro'
+  import Latest from '@components/homepage/Latest.svelte'
+  import NewsFeed from '@components/homepage/NewsFeed.svelte'
+  import NewsItem from '@components/homepage/NewsItem.svelte'
+  import Editorial from '@components/homepage/Editorial.svelte'
 
-	let newsError, lastEditorial, news, maxPage
+  let newsError, lastEditorial, news, maxPage, npcPost
 	const { supabase, user } = Astro.locals
 	const params = Object.fromEntries(Astro.url.searchParams)
 
@@ -16,17 +17,27 @@
 		newsError = 'Chyba načtení editorialu: ' + error.message
 	}
 
-	const publishedOnly = params.preview ? false : true // preview unpublished news
-	const page = params.page ? parseInt(params.page) : 0
-	const limit = 5
-	try {
-		const res2 = await supabase.from('news_reactions').select('*', { count: 'exact' }).eq('published', publishedOnly).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
-		if (res2.error) { throw res2.error }
-		news = res2.data
-		maxPage = Math.ceil(res2.count / limit) - 1
-	} catch (error) {
-		newsError = 'Chyba načtení novinek: ' + error.message
-	}
+  const publishedOnly = params.preview ? false : true // preview unpublished news
+  const page = params.page ? parseInt(params.page) : 0
+  const limit = 5
+  try {
+    const res2 = await supabase.from('news_reactions').select('*', { count: 'exact' }).eq('published', publishedOnly).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    if (res2.error) { throw res2.error }
+    news = res2.data
+    maxPage = Math.ceil(res2.count / limit) - 1
+  } catch (error) {
+    newsError = 'Chyba načtení novinek: ' + error.message
+  }
+
+  try {
+    const { data: randomPost, error: randomPostError } = await supabase.from('npc_posts_random').select('id, content, owner, owner_name, created_at, concept_id, concept_name').limit(1).maybeSingle()
+    if (randomPostError) { throw randomPostError }
+    if (randomPost) {
+      npcPost = { id: randomPost.id, content_type: 'post', title: randomPost.concept_name, content: randomPost.content, character: randomPost.owner, character_name: randomPost.owner_name, created_at: randomPost.created_at, owner_id: user?.id }
+    }
+  } catch (error) {
+    newsError = 'Chyba načtení příspěvku: ' + error.message
+  }
 ---
 
 <Layout title='Hlavní strana'>
@@ -35,10 +46,11 @@
 		<aside>
 			<Latest client:only='svelte' />
 		</aside>
-		<content>
-			<NewsFeed {user} {news} {page} {maxPage} client:only='svelte' />
-		</content>
-	</main>
+    <content>
+      {npcPost ? <NewsItem {user} item={npcPost} client:only='svelte' /> : null}
+      <NewsFeed {user} {news} {page} {maxPage} client:only='svelte' />
+    </content>
+  </main>
 </Layout>
 
 <style>
