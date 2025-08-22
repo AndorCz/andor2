@@ -33,7 +33,7 @@
     const { data: randomPost, error: randomPostError } = await supabase.from('npc_posts_random').select('id, content, owner, owner_name, created_at, concept_id, concept_name').limit(1).maybeSingle()
     if (randomPostError) { throw randomPostError }
     if (randomPost) {
-      npcPost = { id: randomPost.id, content_type: 'post', title: randomPost.concept_name, content: randomPost.content, character: randomPost.owner, character_name: randomPost.owner_name, created_at: randomPost.created_at, owner_id: user?.id }
+      npcPost = { id: randomPost.id, content_type: 'post', title: randomPost.concept_name, game_url: `/solo/concept/${randomPost.concept_id}`, content: randomPost.content, character: randomPost.owner, character_name: randomPost.owner_name, created_at: randomPost.created_at, owner_id: user?.id }
     }
   } catch (error) {
     newsError = 'Chyba načtení příspěvku: ' + error.message
