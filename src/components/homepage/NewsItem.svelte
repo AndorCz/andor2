@@ -41,11 +41,11 @@
       <h4 class='subheadline'>{subHeadline[item.content_type] || item.subheadline}</h4>
     {/if}
     {#if item.url}
-      <a href={item.url}><h3 class='headline'>Ukázka z <em>{item.title}</em></h3></a>
+      <a href={item.url}><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
     {:else if item.content_id}
-      <a href={path[item.content_type] + item.content_id}><h3 class='headline'>Ukázka z <em>{item.title}</em></h3></a>
+      <a href={path[item.content_type] + item.content_id}><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
     {:else}
-      <h3 class='headline'>Ukázka z <em>{item.title}</em></h3>
+      <h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3>
     {/if}
     <div class={'post ' + $platform}>
       {#if $platform === 'desktop'}
