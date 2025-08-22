@@ -30,13 +30,11 @@
         }
 
         try {
-                const { data: randomPost, error: randomError } = await supabase
-                        .from('posts_owner')
-                        .select('id, content, owner, owner_name, created_at')
-                        .eq('owner_type', 'npc')
-                        .order('random')
-                        .limit(1)
-                        .maybeSingle()
+               const { data: randomPost, error: randomError } = await supabase
+                       .from('npc_posts_random')
+                       .select('id, content, owner, owner_name, created_at')
+                       .limit(1)
+                       .maybeSingle()
                 if (randomError) { throw randomError }
                 if (randomPost) {
                         npcPost = {

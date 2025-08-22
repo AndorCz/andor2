@@ -21,6 +21,7 @@ drop type if exists post_content_type;
 drop view if exists posts_owner;
 drop view if exists discussion_posts_owner;
 drop view if exists game_posts_owner;
+drop view if exists npc_posts_random;
 drop view if exists board_list;
 drop view if exists game_list;
 drop view if exists work_list;
@@ -507,8 +508,16 @@ create or replace view posts_owner as
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
     left join characters on p.owner = characters.id and p.owner_type = 'character'
     left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
-    left join npcs on p.owner = npcs.id and p.owner_type = 'npc'
+  left join npcs on p.owner = npcs.id and p.owner_type = 'npc'
   order by p.created_at desc;
+
+
+create or replace view npc_posts_random as
+  select
+    *
+  from posts_owner
+  where owner_type = 'npc'
+  order by random();
 
 
 create or replace view game_posts_owner as
