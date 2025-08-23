@@ -91,7 +91,7 @@ Tvým cílem je vést příběh podle "Plánu hry". Každá odpověď by měla p
 Pokud plán hry v kontextu chybí, napiš "<p class='info'>Plán hry není k dispozici, pokračuji improvizací</p>".
 
 Konec hry:
-Pokud postava zemře nebo příběh skončí, nastav "end" na true. Jinak pole vynech.`
+Pokud postava zemře nebo příběh skončí, nastav "end" na true. Jinak pole vynech. Nikdy nekonči hru aniž by příspěvek obsahoval jasný dějový závěr. Pokud postava zemře, popiš to v příspěvku a pak hru ukonči.`
 
 export const imageSizes = {
   header: { width: 1100, height: 226 },
