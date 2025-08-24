@@ -10,7 +10,11 @@
     const userName = data.get('userName')
     const oldUserName = data.get('oldUserName')
     const oldPassword = data.get('oldPassword')
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (oldPassword && oldUserName) {
+      if (emailRegex.test(oldUserName)) {
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být e-mailová adresa'))
+      }
       const hashedPassword = md5(oldPassword).toString()
       const { data: userInfoMigrate, error: userError } = await supabase.from('old_users').select('old_id, old_created_at').eq('old_login', oldUserName.toLowerCase()).eq('old_psw', hashedPassword).maybeSingle()
       if (userError) { return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Chyba čtení starých uživatelů: ' + userError.message)) }
@@ -31,7 +35,10 @@
       }
 
     } else {
-      if (userName) {
+    if (userName) {
+      if (emailRegex.test(userName)) {
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být e-mailová adresa'))
+      }
       // Check availability
       const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
       if (loginCheck) {

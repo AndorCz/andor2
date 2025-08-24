@@ -66,6 +66,7 @@
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     if (newLogin.length < 1) { return showError('Login musí mít alespoň 1 znak') }
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLogin)) { return showError('Login nesmí být e-mailová adresa') }
 
     // Get info about old user
     const hashedPassword = md5(oldPassword).toString()
