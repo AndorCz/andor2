@@ -291,6 +291,11 @@
     }
     .block .left { padding: 15px 10px }
     .block .image { width: 100% }
+    .headline {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
     .headline .button, .headline button {
       padding: 7px;
     }

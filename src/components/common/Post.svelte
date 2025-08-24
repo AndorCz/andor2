@@ -298,4 +298,9 @@
       padding: 15px;
     }
   }
+  @media (max-width: 500px) {
+    .illustration {
+      max-width: 20%;
+    }
+  }
 </style>

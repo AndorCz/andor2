@@ -115,6 +115,7 @@
   @media (max-width: 500px) {
     .headline {
       padding-bottom: 0px;
+      margin-bottom: 20px;
     }
     .buttons {
       display: flex;

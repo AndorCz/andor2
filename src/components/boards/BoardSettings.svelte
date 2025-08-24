@@ -304,4 +304,12 @@
       margin: 0px -15px;
     }
   }
+  @media (max-width: 500px) {
+    .headline {
+      margin-top: 10px;
+      padding: 0px;
+      padding-left: 20px;
+      padding-bottom: 20px;
+    }
+  }
 </style>

@@ -533,6 +533,7 @@
   #veil.active {
     visibility: visible;
     opacity: 1;
+    z-index: 99;
   }
 }
 @media (max-width: 420px) {

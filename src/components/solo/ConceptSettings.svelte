@@ -162,7 +162,7 @@
 </div>
 
 <nav class='tabs secondary'>
-  <button onclick={() => { tab = 'prompts' }} class={tab === 'prompts' ? 'active' : ''}>Uživatelské vstupy</button>
+  <button onclick={() => { tab = 'prompts' }} class={tab === 'prompts' ? 'active' : ''}>Zadání</button>
   <button onclick={() => { tab = 'generated' }} class={tab === 'generated' ? 'active' : ''}>Generované podklady (spoiler)</button>
 </nav>
 
@@ -349,7 +349,8 @@
     z-index: 10;
   }
     .wrapper {
-      padding: 0px 30px;
+      max-width: 600px;
+      margin: auto;
     }
       .headline .backlink {
         font-family: var(--headlineFont);
@@ -433,6 +434,14 @@
     }
     .headline {
       margin: 0px -15px;
+    }
+  }
+  @media (max-width: 500px) {
+    .headline {
+      margin-top: 10px;
+      padding: 0px;
+      padding-left: 20px;
+      padding-bottom: 20px;
     }
   }
 </style>
