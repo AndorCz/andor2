@@ -1,6 +1,5 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { supabase, handleError } from '@lib/database-browser'
   import { redirectWithToast, isFilledArray } from '@lib/utils'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
   import User from '@components/sidebar/User.svelte'
@@ -43,8 +42,11 @@
   // loading states
   let loading = $state(false)
   let currentTab = $state('')
+  let supabase
+  let handleError
 
   onMount(async () => {
+    ({ supabase, handleError } = await import('@lib/database-browser'))
     userStore = getSavedStore('user')
     $userStore.activePanel = $userStore.activePanel || 'booked'
     document.getElementById($userStore.activePanel)?.classList.add('active')

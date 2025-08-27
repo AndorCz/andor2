@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
-  import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
 
   const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
@@ -9,6 +8,7 @@
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
   let errorFetchingHeader = $state(false)
+  let supabase
 
   async function getHeaderUrl () {
     try {
@@ -20,7 +20,8 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
+    ({ supabase } = await import('@lib/database-browser'))
     $headerPreview = null // clear preview, only used momentarily after upload
     initToasts()
     lookForToast()

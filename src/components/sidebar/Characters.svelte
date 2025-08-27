@@ -1,5 +1,5 @@
 <script>
-  import { getPortraitUrl } from '@lib/database-browser'
+  import { onMount } from 'svelte'
   import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
 
@@ -9,6 +9,15 @@
   // if there are more than 20 characters across all games and stranded, the lists will be collapsed by default
   const listTooLong = isFilledArray(characters.allGrouped) ? (characters.allGrouped.reduce((acc, game) => acc + game.characters.length, 0) + characters.myStranded.length) > 20 : false
   const expandedLists = $state({})
+  let getPortraitUrl
+
+  function portraitUrl (id, hash) {
+    return getPortraitUrl ? getPortraitUrl(id, hash) : ''
+  }
+
+  onMount(async () => {
+    ({ getPortraitUrl } = await import('@lib/database-browser'))
+  })
 
   function openProfile (character) {
     window.location = `${window.location.origin}/game/character?id=${character.id}`
@@ -38,7 +47,7 @@
           {#if character.state !== 'dead' || $userStore.showDead}
             <button onclick={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
               {#if character.portrait}
-                <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
+                <img src={portraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
               {:else}
                 <span class='portrait gap'></span>
               {/if}
@@ -73,7 +82,7 @@
                 <li class='mine'>
                   <button onclick={() => { selected = { character, gameIndex, characterIndex } }}>
                     {#if character.portrait}
-                      <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
+                      <img src={portraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
                     {:else}
                       <span class='portrait gap'></span>
                     {/if}
@@ -110,7 +119,7 @@
               <li class='mine'>
                 <button onclick={openProfile(character)}>
                   {#if character.portrait}
-                    {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                    <img src={portraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
                   {:else}
                     <span class='portrait gap'></span>
                   {/if}

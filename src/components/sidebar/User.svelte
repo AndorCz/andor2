@@ -1,11 +1,16 @@
 <script>
+  import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
-  import { supabase } from '@lib/database-browser'
   import { uploadPortrait } from '@lib/utils'
   import { activeConversation } from '@lib/stores'
   import PortraitInput from '@components/common/PortraitInput.svelte'
 
   const { user = {} } = $props()
+  let supabase
+
+  onMount(async () => {
+    ({ supabase } = await import('@lib/database-browser'))
+  })
 
   async function onPortraitChange (file) {
     await uploadPortrait(supabase, user.id, 'profiles', file)

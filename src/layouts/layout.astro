@@ -37,6 +37,8 @@ if (user.id) {
     <!-- fonts -->
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
+    <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap'>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap'>
     <!-- font css response output placed manually to base.css, as workaround for google not serving properly to opera gx -->
@@ -61,7 +63,7 @@ if (user.id) {
     <HeaderCrop client:only='svelte' />
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:only='svelte' />
+        <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:load />
         <div class='content'>
           <Arrows client:only='svelte' />
           <slot />
@@ -78,7 +80,7 @@ if (user.id) {
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
-        <Sidebar {pathname} {user} client:only='svelte' />
+        <Sidebar {pathname} {user} client:load />
       ) : null}
     </div>
     <!-- analytics -->

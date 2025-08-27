@@ -2,14 +2,22 @@
   import { onMount } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
-  import { supabase, getPortraitUrl, handleError } from '@lib/database-browser'
+  
+  let supabase
+  let getPortraitUrl
+  let handleError
 
   const { user, users = [], openConversation } = $props()
 
   let groups = $state({ unread: [], active: [], contacts: [] })
   let showContacts = $state(false)
 
-  onMount(() => {
+  function portraitUrl (id, hash) {
+    return getPortraitUrl ? getPortraitUrl(id, hash) : ''
+  }
+
+  onMount(async () => {
+    ({ supabase, getPortraitUrl, handleError } = await import('@lib/database-browser'))
     const next = { unread: [], active: [], contacts: [] }
     users.forEach(user => {
       if (user.unread) {
@@ -37,7 +45,7 @@
       <li>
         <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
           {#if user.portrait}
-            <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
+            <img src={portraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
           {:else}
             <span class='gap'></span>
           {/if}
@@ -62,7 +70,7 @@
         <li>
           <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
-              <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
+              <img src={portraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
               <span class='gap'></span>
             {/if}
@@ -82,7 +90,7 @@
         <li class:offline={!user.active} class='row'>
           <button class='opener' onclick={() => openConversation({ them: user, type: 'user' })}>
             {#if user.portrait}
-              <img src={getPortraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
+              <img src={portraitUrl(user.id, user.portrait)} class='portrait' alt={user.name} />
             {:else}
               <span class='gap'></span>
             {/if}

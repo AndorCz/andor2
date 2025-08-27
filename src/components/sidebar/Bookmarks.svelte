@@ -2,8 +2,10 @@
   import { onMount } from 'svelte'
   import { bookmarks } from '@lib/stores'
   import { isFilledArray } from '@lib/utils'
-  import { supabase, handleError } from '@lib/database-browser'
   import Sortable from 'sortablejs'
+
+  let supabase
+  let handleError
 
   let soloEl = $state()
   let gamesEl = $state()
@@ -19,7 +21,8 @@
   if ($bookmarks.boards) $bookmarks.boards.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
   if ($bookmarks.works) $bookmarks.works.sort((a, b) => a.index - b.index || a.name.localeCompare(b.name))
 
-  onMount(() => {
+  onMount(async () => {
+    ({ supabase, handleError } = await import('@lib/database-browser'))
     if (isFilledArray($bookmarks.games)) {
       new Sortable(gamesEl, { animation: 150, handle: '.handle', group: { name: 'games', pull: false }, onStart: sortStart, onEnd: (sort) => sortEnd('games', sort) })
     }
