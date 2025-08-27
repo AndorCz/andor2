@@ -41,6 +41,9 @@
 ---
 
 <Layout title=' - RPG hry online: Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD), AI vypravěč'>
+  {!user.id ? (
+    <h1>TTRPG: Stolní RPG hry online - Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD) a další</h1>
+  ) : null}
   {newsError ? <p>{newsError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
 	<main>
 		<aside>
@@ -54,6 +57,12 @@
 </Layout>
 
 <style>
+  h1 {
+    font-size: 18pt;
+    padding-top: 0px;
+    margin-top: 0px;
+    padding-bottom: 20px;
+  }
 	main {
 		display: flex;
 		gap: 20px;
