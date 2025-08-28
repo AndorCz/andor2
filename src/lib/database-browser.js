@@ -7,9 +7,11 @@ export const supabase = createBrowserClient(
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 )
 
-// prevention of https://ishwar-rimal.medium.com/typeerror-failed-to-fetch-a-k-a-pain-in-the-ass-fa04dda1514c
-window.addEventListener('unload', () => { window.isWindowClosed = true })
-window.onbeforeunload = () => { window.isWindowClosed = true }
+if (typeof window !== 'undefined') {
+  // prevention of https://ishwar-rimal.medium.com/typeerror-failed-to-fetch-a-k-a-pain-in-the-ass-fa04dda1514c
+  window.addEventListener('unload', () => { window.isWindowClosed = true })
+  window.onbeforeunload = () => { window.isWindowClosed = true }
+}
 
 export function handleError (error) {
   if (!window.isWindowClosed) { // ignore fetch errors (cancelled fetches) when the page is closing/reloading

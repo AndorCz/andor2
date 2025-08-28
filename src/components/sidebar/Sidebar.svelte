@@ -58,7 +58,7 @@
     await loadTabData($userStore.activePanel) // Load first tab data on mount
   })
 
-  onDestroy(() => { resizeObserver.disconnect() })
+  onDestroy(() => { if (resizeObserver) resizeObserver.disconnect() })
 
   function setupResizeObserver () {
     resizeObserver = new ResizeObserver(entries => {
