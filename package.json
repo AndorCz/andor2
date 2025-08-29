@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@3d-dice/dice-box-threejs": "0.0.12",
-    "@astrojs/cloudflare": "^12.6.0",
+    "@astrojs/cloudflare": "^12.6.6",
     "@astrojs/svelte": "^7.1.0",
     "@google/genai": "1.7.0",
     "@google/generative-ai": "0.16.0",
