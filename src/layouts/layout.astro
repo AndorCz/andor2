@@ -63,7 +63,7 @@ if (user.id) {
     <HeaderCrop client:only='svelte' />
     <div id='wrapper'>
       <main>
-        <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:load />
+        <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:load='svelte' />
         <div class='content'>
           <Arrows client:only='svelte' />
           <slot />
@@ -80,7 +80,7 @@ if (user.id) {
       </main>
       <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
       {(user.name || (!user.name && !user.email)) ? (
-        <Sidebar {pathname} {user} client:load />
+        <Sidebar {pathname} {user} client:load='svelte' />
       ) : null}
     </div>
     <!-- analytics -->
