@@ -53,81 +53,79 @@
   }
 </script>
 
-<div class='wrapper'>
-  {#if isFilledArray($bookmarks.games)}
-    <a href='/games'><h4>Hry</h4></a>
-    <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
-      {#each $bookmarks.games as bookmark (bookmark.id)}
-        <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
-          <a href={'/game/' + bookmark.id + '?tab=game'}>
-            {bookmark.name}
-            {#if (bookmark.unread_game || bookmark.unread_discussion) && window.location.pathname !== '/game/' + bookmark.id}
-              <span class='unread'>{bookmark.unread_game} | {bookmark.unread_discussion}</span>
-            {/if}
-          </a>
-          <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-            <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-          </svg>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+{#if isFilledArray($bookmarks.games)}
+  <a href='/games'><h4>Hry</h4></a>
+  <ul class='games' bind:this={gamesEl} class:saving class:showHandles>
+    {#each $bookmarks.games as bookmark (bookmark.id)}
+      <li class='bookmark' class:active={'/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/game/' + bookmark.id + '?tab=game'}>
+          {bookmark.name}
+          {#if (bookmark.unread_game || bookmark.unread_discussion) && window.location.pathname !== '/game/' + bookmark.id}
+            <span class='unread'>{bookmark.unread_game} | {bookmark.unread_discussion}</span>
+          {/if}
+        </a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
-  {#if isFilledArray($bookmarks.solo)}
-    <hr>
-    <a href='/solo'><h4>Sólo</h4></a>
-    <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
-      {#each $bookmarks.solo as bookmark (bookmark.id)}
-        <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
-          <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
-          <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-            <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-          </svg>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+{#if isFilledArray($bookmarks.solo)}
+  <hr>
+  <a href='/solo'><h4>Sólo</h4></a>
+  <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
+    {#each $bookmarks.solo as bookmark (bookmark.id)}
+      <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/solo/game/' + bookmark.id}>{bookmark.name}</a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
-  {#if isFilledArray($bookmarks.boards)}
-    <hr>
-    <a href='/boards'><h4>Diskuze</h4></a>
-    <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
-      {#each $bookmarks.boards as bookmark (bookmark.id)}
-        <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
-          <a href={'/board/' + bookmark.id}>
-            {bookmark.name}
-            {#if bookmark.unread && window.location.pathname !== '/board/' + bookmark.id}
-              <span class='unread'>{bookmark.unread}</span>
-            {/if}
-          </a>
-          <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-            <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-          </svg>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+{#if isFilledArray($bookmarks.boards)}
+  <hr>
+  <a href='/boards'><h4>Diskuze</h4></a>
+  <ul class='boards' bind:this={boardsEl} class:saving class:showHandles>
+    {#each $bookmarks.boards as bookmark (bookmark.id)}
+      <li class='bookmark' class:active={'/board/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/board/' + bookmark.id}>
+          {bookmark.name}
+          {#if bookmark.unread && window.location.pathname !== '/board/' + bookmark.id}
+            <span class='unread'>{bookmark.unread}</span>
+          {/if}
+        </a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
-  {#if isFilledArray($bookmarks.works)}
-    <hr>
-    <a href='/works'><h4>Tvorba</h4></a>
-    <ul class='works' bind:this={worksEl} class:saving class:showHandles>
-      {#each $bookmarks.works as bookmark (bookmark.id)}
-        <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
-          <a href={'/work/' + bookmark.id}>
-            {bookmark.name}
-            {#if bookmark.unread && window.location.pathname !== '/work/' + bookmark.id}
-              <span class='unread'>{bookmark.unread}</span>
-            {/if}
-          </a>
-          <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-            <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-          </svg>
-        </li>
-      {/each}
-    </ul>
-  {/if}
-</div>
+{#if isFilledArray($bookmarks.works)}
+  <hr>
+  <a href='/works'><h4>Tvorba</h4></a>
+  <ul class='works' bind:this={worksEl} class:saving class:showHandles>
+    {#each $bookmarks.works as bookmark (bookmark.id)}
+      <li class='bookmark' class:active={'/work/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>
+        <a href={'/work/' + bookmark.id}>
+          {bookmark.name}
+          {#if bookmark.unread && window.location.pathname !== '/work/' + bookmark.id}
+            <span class='unread'>{bookmark.unread}</span>
+          {/if}
+        </a>
+        <svg class='handle' class:hidden={sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+          <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+        </svg>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
 {#if bookmarkNumber === 0}
   <div class='empty'>Žádné záložky</div>
