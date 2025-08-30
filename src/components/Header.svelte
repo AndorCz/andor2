@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte'
   import { headerPreview } from '@lib/stores'
-  import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
 
   const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
@@ -9,6 +8,7 @@
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
   let errorFetchingHeader = $state(false)
+  let supabase
 
   async function getHeaderUrl () {
     try {
@@ -20,16 +20,18 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
+    ({ supabase } = await import('@lib/database-browser'))
     $headerPreview = null // clear preview, only used momentarily after upload
     initToasts()
     lookForToast()
     document.addEventListener('astro:page-load', () => { lookForToast() })
     // chat presence
-    const chatChannel = supabase.channel('chat')
+    const chatChannel = supabase.channel('chat-01')
     chatChannel.on('presence', { event: 'sync' }, () => { // sync is called on every presence change
       const newState = chatChannel.presenceState()
       chatPeople = Object.keys(newState).length
+      console.log(newState)
     })
     chatChannel.subscribe()
     if (headerStorage) { getHeaderUrl() }

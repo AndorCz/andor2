@@ -3,9 +3,15 @@
   import { waitForMediaLoad } from '@lib/utils'
   import { activeConversation, lightboxImage } from '@lib/stores'
   import { onMount, tick, onDestroy, afterUpdate } from 'svelte'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import ConversationPost from '@components/sidebar/ConversationPost.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+
+  let supabase
+  let handleError
+  let getPortraitUrl
+  function portraitUrl (id, hash) {
+    return getPortraitUrl ? getPortraitUrl(id, hash) : ''
+  }
 
   export let user
   export let clearUnread
@@ -53,7 +59,8 @@
     }
   })
 
-  onMount(() => {
+  onMount(async () => {
+    ({ supabase, handleError, getPortraitUrl } = await import('@lib/database-browser'))
     // init conversation, listen for new messages in the conversation. we can listen to only 'us' in the recipient column
     const filter = `${recipientColumn}=eq.${us.id}` // not possible to filter for two columns at the moment, so we have to filter the sender on the client-side
     channel = supabase
@@ -263,7 +270,7 @@
         {:then}
           <h2>
             {#if them.portrait}
-              <img src={getPortraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
+              <img src={portraitUrl(them.id, them.portrait)} class='portrait' alt={them.name} />
             {/if}
             <div class='label'>
               {#if $activeConversation.type === 'character'}

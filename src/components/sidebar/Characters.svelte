@@ -1,7 +1,7 @@
 <script>
-  import { getPortraitUrl } from '@lib/database-browser'
-  import { isFilledArray } from '@lib/utils'
   import { tooltip } from '@lib/tooltip'
+  import { isFilledArray } from '@lib/utils'
+  import { getPortraitUrl } from '@lib/database-browser'
 
   const { characters = { allGrouped: [], myStranded: [] }, openConversation, userStore } = $props()
 
@@ -34,7 +34,7 @@
     <h4 class='header spaced'>Kontakty</h4>
     <ul class='characters'>
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
-        {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
+        {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character (character.id)}
           {#if character.state !== 'dead' || $userStore.showDead}
             <button onclick={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
               {#if character.portrait}
@@ -58,7 +58,8 @@
     </ul>
   {:else}
     {#if isFilledArray(characters.allGrouped)}
-      {#each characters.allGrouped as { id, name, characters }, gameIndex}
+      {#each characters.allGrouped as { id, name, characters }, gameIndex (id)}
+        {#if containsCharacters(characters)}
         <h4 class='header'>
           <a href={'/game/' + id}>{name}</a>
           {#if listTooLong}
@@ -68,7 +69,7 @@
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex] || !listTooLong}>
           {#if isFilledArray(characters)}
-            {#each characters as character, characterIndex}
+            {#each characters as character, characterIndex (character.id)}
               {#if character.state !== 'dead' || $userStore.showDead}
                 <li class='mine'>
                   <button onclick={() => { selected = { character, gameIndex, characterIndex } }}>
@@ -90,6 +91,7 @@
           {/if}
         </ul>
         <hr>
+        {/if}
       {/each}
     {:else}
       <div class='empty'>Žádné postavy</div>
@@ -105,12 +107,12 @@
           {/if}
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists.stranded || !listTooLong}>
-          {#each characters.myStranded as character}
+          {#each characters.myStranded as character (character.id)}
             {#if character.state !== 'dead' || $userStore.showDead}
               <li class='mine'>
-                <button onclick={openProfile(character)}>
+                <button onclick={() => openProfile(character)}>
                   {#if character.portrait}
-                    {#await getPortraitUrl(character.id, character.portrait) then url}<img src={url} class='portrait' alt={character.name} />{/await}
+                    <img src={getPortraitUrl(character.id, character.portrait)} class='portrait' alt={character.name} />
                   {:else}
                     <span class='portrait gap'></span>
                   {/if}
