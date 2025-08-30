@@ -26,7 +26,7 @@
     lookForToast()
     document.addEventListener('astro:page-load', () => { lookForToast() })
     // chat presence
-    const chatChannel = supabase.channel('chat')
+    const chatChannel = supabase.channel('chat-01')
     chatChannel.on('presence', { event: 'sync' }, () => { // sync is called on every presence change
       const newState = chatChannel.presenceState()
       chatPeople = Object.keys(newState).length

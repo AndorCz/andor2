@@ -26,7 +26,7 @@
   const replies = {}
 
   onMount(async () => {
-    channel = supabase.channel('chat', { config: { presence: { key: user.id } } })
+    channel = supabase.channel('chat-01', { config: { presence: { key: user.id } } })
     channel
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: 'thread=eq.1' }, (payload) => {
         loadPosts()
