@@ -277,7 +277,7 @@
 
 <div id='veil' class:active={showSidebar || $activeConversation} onclick={() => { showSidebar = false }}></div>
 
-<aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:chat={pathname === '/chat'}>
+<aside class:conversation={user.id && $activeConversation} class:active={showSidebar || $activeConversation} class:scrollable={pathname.startsWith('/chat') || pathname.startsWith('/tirien')}>
   <section bind:this={sectionEl} class:stickTop={stickTop} class:stickBottom={stickBottom}>
     {#if user.name || user.email}
       {#if $activeConversation}
@@ -353,7 +353,7 @@
     aside.conversation {
       width: 420px;
     }
-    aside.chat {
+    aside.scrollable {
       height: fit-content;
     }
     section {
@@ -362,8 +362,8 @@
       padding-left: 20px;
       padding-bottom: 20px;
     }
-      /* chat only */
-      aside.chat section {
+      /* mini layout only */
+      aside.scrollable section {
         max-height: 100svh;
         overflow-y: auto;
         scrollbar-width: none;
