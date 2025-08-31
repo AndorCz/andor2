@@ -139,6 +139,7 @@
 
 <style>
   .headline, .subheadline {
+    display: inline-block;
     margin: 0px;
   }
     .headline {
