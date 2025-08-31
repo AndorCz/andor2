@@ -1,5 +1,5 @@
 ---
-	import LayoutChat from '@layouts/layoutChat.astro'
+	import LayoutMini from '@layouts/LayoutMini.astro'
   import Chat from '@components/chat/Chat.svelte'
 
   const { user, supabase } = Astro.locals
@@ -15,7 +15,7 @@
   }
 ---
 
-<LayoutChat title='Chat' headerStatic='/header_chat.jpg'>
+<LayoutMini title='Chat' headerStatic='/header_chat.jpg'>
 	<main>
     {user.id ? (
       <Chat {user} {unread} client:only='svelte' />
@@ -25,7 +25,7 @@
       </center>
     )}
 	</main>
-</LayoutChat>
+</LayoutMini>
 
 <style>
 	center {

@@ -1,6 +1,9 @@
 <script>
   import { onMount } from 'svelte'
   import { initToasts } from '@lib/toasts'
+  import { platform } from '@components/common/MediaQuery.svelte'
+
+  const { pathname } = $props()
 
   onMount(() => {
     initToasts()
@@ -13,6 +16,10 @@
   <li><a href='/solo'><span class='material'>robot_2</span><span>AI</span></a></li>
   <li><a href='/works'><span class='material'>edit</span><span>Tvorba</span></a></li>
   <li><a href='/boards'><span class='material'>forum</span><span>Diskuze</span></a></li>
+  {#if $platform === 'desktop'}
+    <li><a href='/chat' class:active={pathname.startsWith('/chat')}><span class='material'>chat</span><span>Chat</span></a></li>
+    <li><a href='/tirien' class:active={pathname.startsWith('/tirien')}><span class='material'>castle</span><span>Město</span></a></li>
+  {/if}
 </ul>
 
 <style>
@@ -37,6 +44,9 @@
         gap: 10px;
         align-items: center;
         text-decoration: none;
+      }
+      #header li a.active {
+        color: var(--text);
       }
   @media (max-width: 530px) {
     #header {

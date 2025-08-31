@@ -1,0 +1,30 @@
+---
+import LayoutMini from '@layouts/LayoutMini.astro'
+
+// Get user session from your auth system
+const session = Astro.locals.session
+const sessionToken = session?.access_token
+const userId = session?.user?.id
+---
+
+<LayoutMini title='Tirien: Hlavní město Andoru'>
+  <div class='tirien-iframe-container'>
+    <iframe 
+      src={`https://tirien.cz?session=${sessionToken}&user=${userId}`}
+      width='100%' 
+      height='600px'
+      frameborder='0'
+      allow='autoplay; encrypted-media; fullscreen'>
+    </iframe>
+  </div>
+</LayoutMini>
+
+<style>
+  .tirien-iframe-container {
+    width: 100%;
+    padding-top: 100px;
+  }
+  iframe {
+    border-radius: 20px;
+  }
+</style>

@@ -3,6 +3,7 @@
   import { headerPreview } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
+  import { platform } from '@components/common/MediaQuery.svelte'
 
   const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
 
@@ -43,16 +44,19 @@
     <a href='/' id='logo'></a>
     {#if showMenu}
       <nav class='tabs'>
-        <a href='/' class={pathname === '/' ? 'active' : ''}>Nové</a>
-        <a href='/games' class={pathname.startsWith('/game') ? 'active' : ''}>Hry</a>
-        <a href='/solo' class={pathname.startsWith('/solo') ? 'active' : ''}>AI</a>
-        <a href='/works' class={pathname.startsWith('/work') ? 'active' : ''}>Tvorba</a>
-        <a href='/boards' class={pathname.startsWith('/board') ? 'active' : ''}>Diskuze</a>
-        <a href='/chat' class={pathname.startsWith('/chat') ? 'active' : ''}>
+        <a href='/' class:active={pathname === '/'}>Nové</a>
+        <a href='/games' class:active={pathname.startsWith('/game')}>Hry</a>
+        <a href='/solo' class:active={pathname.startsWith('/solo')}>AI</a>
+        <a href='/works' class:active={pathname.startsWith('/work')}>Tvorba</a>
+        <a href='/boards' class:active={pathname.startsWith('/board')}>Diskuze</a>
+        <a href='/chat' class:active={pathname.startsWith('/chat')}>
           <span>Chat</span>
           {#if chatPeople}({chatPeople}){/if}
           {#if chatUnread}<span class='unread badge'></span>{/if}
         </a>
+        {#if $platform === 'desktop'}
+          <a href='/tirien' class:active={pathname.startsWith('/tirien')}>Město</a>
+        {/if}
       </nav>
     {/if}
   </header>
@@ -86,6 +90,9 @@
       bottom: -1px;
       left: 30px;
     }
+      nav a {
+        position: relative;
+      }
   .badge {
     top: 10px;
     right: 5px;
