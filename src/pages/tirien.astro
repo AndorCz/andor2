@@ -1,16 +1,18 @@
 ---
 import LayoutMini from '@layouts/layoutMini.astro'
 
-// Get user session from your auth system
-const session = Astro.locals.session
-const sessionToken = session?.access_token
-const userId = session?.user?.id
+// Get supabase user auth
+const accessToken = Astro.cookies.get('sb-access-token')?.value
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value
+
+// Path based on environment
+const path = import.meta.env.DEV ? 'http://localhost:5173' : 'https://tirien.cz'
 ---
 
 <LayoutMini title='Tirien: Hlavní město Andoru'>
   <div class='tirien-iframe-container'>
     <iframe 
-      src={`https://tirien.cz?session=${sessionToken}&user=${userId}`}
+      src={`${path}?accessToken=${accessToken}&refreshToken=${refreshToken}`}
       width='100%' 
       height='600px'
       frameborder='0'
@@ -23,6 +25,7 @@ const userId = session?.user?.id
   .tirien-iframe-container {
     width: 100%;
     padding-top: 100px;
+    padding-bottom: 40px;
   }
   iframe {
     border-radius: 20px;
