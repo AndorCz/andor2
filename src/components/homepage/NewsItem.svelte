@@ -41,9 +41,9 @@
       <h4 class='subheadline'>{subHeadline[item.content_type] || item.subheadline}</h4>
     {/if}
     {#if item.game_url}
-      <a href={item.game_url}><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
+      <a href={item.game_url} class='block'><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
     {:else if item.content_id}
-      <a href={path[item.content_type] + item.content_id}><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
+      <a href={path[item.content_type] + item.content_id} class='block'><h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3></a>
     {:else}
       <h3 class='headline'>Ukázka ze hry <em>{item.title}</em></h3>
     {/if}
@@ -104,9 +104,9 @@
       <h4 class='subheadline'>{item.subheadline || subHeadline[item.content_type]}</h4>
     {/if}
     {#if item.content_id}
-      <a href={path[item.content_type] + item.content_id}><h2 class='headline'>{item.title}</h2></a>
+      <a href={path[item.content_type] + item.content_id} class='block'><h2 class='headline'>{item.title}</h2></a>
     {:else if item.url}
-      <a href={item.url}><h2 class='headline'>{item.title}</h2></a>
+      <a href={item.url} class='block'><h2 class='headline'>{item.title}</h2></a>
     {:else}
       <h2 class='headline'>{item.title}</h2>
     {/if}
@@ -139,11 +139,14 @@
 
 <style>
   .headline, .subheadline {
-    display: inline-block;
     margin: 0px;
   }
     .headline {
       margin-bottom: 20px;
+    }
+    .block {
+      display: block;
+      width: fit-content;
     }
 
   /* Type 'text' / 'game' / 'work' / 'board' */

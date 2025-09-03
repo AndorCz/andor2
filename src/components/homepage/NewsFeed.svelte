@@ -11,7 +11,7 @@
 
 <div id='news'>
   <h3>Upoutávky<a href='https://andor2.cz/board/35' class='material' title='Chceš propagovat hru, diskuzi, či dílo? Popiš svoji představu do diskuze "Zadání upoutávky", kam tě vezme kliknutí na tuto ikonku.' use:tooltip>info</a></h3>
-  {#each news as item}
+  {#each news as item (item.id)}
     <NewsItem {user} {item} />
   {/each}
   <div class='pagination'>
