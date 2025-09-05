@@ -3,7 +3,6 @@
 
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
-  import { redirectWithToast } from '@lib/utils'
   import { showError } from '@lib/toasts'
   import md5 from 'crypto-js/md5'
 
@@ -14,6 +13,7 @@
   let password = $state('')
   let password2 = $state('')
   let isConfirming = $state(false)
+  let showEmailNotice = $state(false)
   // let captchaToken = ''
 
   onMount(() => {
@@ -42,7 +42,7 @@
     if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } }) // captchaToken
     if (error) { return handleError(error) }
-    if (data.user) { redirectWithToast({ toastType: 'success', toastText: 'Prosím potvrď svůj e-mail pro dokončení registrace.' }) }
+    if (data.user) { showEmailNotice = true }
   }
 
   async function validateUser () {
@@ -94,14 +94,21 @@
     if (authError) { return handleError(authError) }
     if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
     if (authData && authData.user) {
-      redirectWithToast({ toastType: 'success', toastText: 'Prosím zkontroluj svůj e-mail pro dokončení registrace' })
+      showEmailNotice = true
     }
   }
 
 </script>
 
 <main>
-  {#if !isConfirming}
+  {#if showEmailNotice}
+    <div>
+      <h1>Zkontroluj svůj e-mail</h1>
+      <p>Na adresu <strong>{email}</strong> jsme ti poslali potvrzovací e-mail.</p>
+      <p>Prosím klikni na odkaz v e-mailu pro dokončení registrace.</p>
+      <p class='note'>Pokud e-mail nevidíš, zkontroluj složku spam.</p>
+    </div>
+  {:else if !isConfirming}
     <div class='newUser'>
       <h1>Nová registrace</h1>
       <form onsubmit={preventDefault(signUpNewUser)}>
