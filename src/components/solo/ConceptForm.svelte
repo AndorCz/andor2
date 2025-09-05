@@ -4,6 +4,7 @@
   import { preventSubmit } from '@lib/utils'
   import { illustrationStyles } from '@lib/solo/solo'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import PortraitInput from '@components/common/PortraitInput.svelte'
 
   const { user = {} } = $props()
 
@@ -77,6 +78,10 @@
       <div class='row'>
         <div class='labels'><label for='promptStorytellerImage'>Avatar vypravěče</label></div>
         <div class='inputs'><TextareaExpandable placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' {user} id='promptStorytellerImage' name='promptStorytellerImage' minHeight={75} maxlength={500} /></div>
+      </div>
+      <div class='row'>
+        <div class='labels'><label>Obrázek vypravěče</label></div>
+        <div class='inputs'><PortraitInput table='npcs' displayHeight={180} /></div>
       </div>
     {:else}
       <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>

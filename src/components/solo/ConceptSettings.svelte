@@ -4,12 +4,13 @@
   import { gameTags } from '@lib/constants'
   import { onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
-  import { clone, getStamp } from '@lib/utils'
+  import { clone, getStamp, uploadPortrait } from '@lib/utils'
   import { illustrationStyles } from '@lib/solo/solo'
   import EditableLong from '@components/common/EditableLong.svelte'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
-  import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { supabase, handleError } from '@lib/database-browser'
+  import PortraitInput from '@components/common/PortraitInput.svelte'
 
   let { concept, user } = $props()
 
@@ -25,6 +26,7 @@
   const savingValues = $state({})
   const originalValues = $state(clone(concept))
   const tagItems = [...gameTags]
+  let storyteller = $state({ id: concept.storyteller, portrait: getStamp() })
 
   async function onSave (field, generated = false) {
     const value = concept[field]
@@ -126,6 +128,14 @@
     showSuccess('Tagy byly úspěšně uloženy')
   }
 
+  async function onStorytellerPortraitChange (file) {
+    try {
+      await uploadPortrait(supabase, concept.storyteller, 'npcs', file)
+    } catch (error) {
+      handleError(error)
+    }
+  }
+
   function showConcept () {
     window.location.href = `/solo/concept/${concept.id}`
   }
@@ -143,7 +153,7 @@
     if (removeError) { return handleError(removeError) }
 
     // Delete storyteller image
-    const { error: storytellerError } = await supabase.storage.from('avatars').remove(`${concept.storyteller}.jpg`)
+    const { error: storytellerError } = await supabase.storage.from('portraits').remove(`${concept.storyteller}.jpg`)
     if (storytellerError) { return handleError(storytellerError) }
 
     window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
@@ -297,7 +307,7 @@
     <h2>Ikonka vypravěče</h2>
     <div class='row'>
       <div class='avatar'>
-        <img src={getPortraitUrl(concept.storyteller, getStamp())} class='portrait' alt='avatar vypravěče' />
+        <PortraitInput identity={storyteller} onPortraitChange={onStorytellerPortraitChange} table='npcs' displayWidth={70} displayHeight={90} />
         <TextareaExpandable {user} bind:value={concept.prompt_storyteller_image} loading={concept.generating.includes('prompt_storyteller_image')} placeholder='Popiš vizuálně avatar vypravěče (nepovinné)' maxlength={1000} minHeight={180} />
       </div>
       <button onclick={() => onSave('prompt_storyteller_image', true)} disabled={concept.generating.includes('prompt_storyteller_image') || savingValues.prompt_storyteller_image || originalValues.prompt_storyteller_image === concept.prompt_storyteller_image} class='material save square' title='Uložit' use:tooltip>check</button>
@@ -409,11 +419,6 @@
     justify-content: flex-end;
     gap: 10px;
   }
-    .portrait {
-      display: block;
-      width: 70px;
-      height: fit-content;
-    }
   .styleSelect {
     min-width: 200px;
   }

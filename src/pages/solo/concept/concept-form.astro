@@ -1,6 +1,7 @@
 ---
   import Layout from '@layouts/layout.astro'
   import ConceptForm from '@components/solo/ConceptForm.svelte'
+  import { base64ToBlob, getStamp } from '@lib/utils'
 
   const { supabase, user, runtime } = Astro.locals
 
@@ -9,16 +10,37 @@
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
     const fields = ['conceptName', 'promptWorld', 'promptPlan', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage', 'illustrationStyle']
     const [name, world, plan, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, illustrationStyle] = fields.map(field => formData.get(field))
+    const storytellerImage = formData.get('newPortrait')
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
     try {
+      // Prepare generating steps
+      let generating = ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'abilities', 'header_image', 'storyteller_image']
+      if (storytellerImage) {
+        generating = generating.filter(step => step !== 'generated_storyteller_image' && step !== 'storyteller_image')
+      }
+
       // Create the concept record
       const { data: conceptData, error } = await supabase.from('solo_concepts').insert({
         author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags, illustration_style: illustrationStyle,
-        generating: ['annotation', 'generated_world', 'generated_factions', 'generated_locations', 'generated_characters', 'generated_protagonist', 'generated_header_image', 'generated_storyteller_image', 'generated_plan', 'protagonist_names', 'inventory', 'abilities', 'header_image', 'storyteller_image']
+        generating
       }).select().single()
 
       if (error) { throw new Error('Error creating concept: ' + error.message) }
+
+      // Upload custom storyteller image if provided
+      if (storytellerImage) {
+        const portraitStamp = getStamp()
+        const gameSlug = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s/g, '')
+        const npc = { name: 'Vypravěč', slug: `vypravec-${gameSlug}`, solo_concept: conceptData.id, storyteller: true, created_at: new Date(), portrait: portraitStamp }
+        const { data: npcData, error: npcError } = await supabase.from('npcs').insert(npc).select().single()
+        if (npcError) { throw new Error('Error creating storyteller NPC: ' + npcError.message) }
+        const blob = base64ToBlob(storytellerImage)
+        const { error: uploadError } = await supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, blob, { upsert: true })
+        if (uploadError) { throw new Error(uploadError.message) }
+        const { error: updateConceptError } = await supabase.from('solo_concepts').update({ storyteller: npcData.id }).eq('id', conceptData.id)
+        if (updateConceptError) { throw new Error(updateConceptError.message) }
+      }
 
       // Redirect user to the new concept page that shows loading state
       return Astro.redirect(`/solo/concept/${conceptData.id}?toastType=success&toastText=${encodeURIComponent('Herní koncept byl přidán')}`)
