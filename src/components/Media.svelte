@@ -1,4 +1,6 @@
 <script>
+  import { lightboxImage } from '@lib/stores'
+
   function download (url, name) {
     const link = document.createElement('a')
     link.href = url
@@ -38,40 +40,67 @@
     <img src='/media/logo/raster/andor2_black.png' alt='Andor 2 logo černá verze' />
     <p class='label'>Černé</p>
   </div>
-  <div class='card' onclick={() => { download('/media/logo/raster/andor2_1024x1024.png', 'andor2_1024x1024.png') }}>
-    <img src='/media/logo/raster/andor2_1024x1024.png' alt='Andor 2 logo 1024x1024' />
-    <p class='label'>Mramor 1024px</p>
+  <div class='card' onclick={() => { download('/media/logo/raster/andor2_1024_white.jpg', 'andor2_1024_white.jpg') }}>
+    <img src='/media/logo/raster/andor2_1024_white.jpg' alt='Andor 2 logo 1024x1024 bílý mramor' />
+    <p class='label'>Bílé 1024px</p>
+  </div>
+  <div class='card' onclick={() => { download('/media/logo/raster/andor2_1024_black.jpg', 'andor2_1024_black.jpg') }}>
+    <img src='/media/logo/raster/andor2_1024_black.jpg' alt='Andor 2 logo 1024x1024 černý mramor' />
+    <p class='label'>Černé 1024px</p>
+  </div>
+  <div class='card' onclick={() => { download('/media/logo/raster/andor2_1024_black2.jpg', 'andor2_1024_black2.jpg') }}>
+    <img src='/media/logo/raster/andor2_1024_black2.jpg' alt='Andor 2 logo 1024x1024 černý mramor' />
+    <p class='label'>Černé 2 1024px</p>
   </div>
 </div>
 
 <h2>Bannery</h2>
 <div class='grid'>
   <div class='card'>
-    <img src='/media/banner/banner1.jpg' alt='Andor 2 banner 1' />
+    <img src='/media/banner/banner1.jpg' alt='Andor 2 banner 1' onclick={() => { $lightboxImage = '/media/banner/banner1.jpg' }} />
     <p class='label'>Banner 1</p>
   </div>
 </div>
 
 <h2>Obrázky</h2>
 <div class='card'>
-  <img src='/media/art/spring.jpg' alt='Andor 2 upscale jaro' />
-  <p class='label'>Upscale jaro</p>
+  <img src='/media/art/spring.jpg' alt='Andor 2 jaro' onclick={() => { $lightboxImage = '/media/art/spring.jpg' }} />
+  <p class='label'>Jaro</p>
 </div>
 <div class='card'>
-  <img src='/media/art/winter.jpg' alt='Andor 2 upscale zima' />
-  <p class='label'>Upscale zima</p>
+  <img src='/media/art/winter.jpg' alt='Andor 2 zima' onclick={() => { $lightboxImage = '/media/art/winter.jpg' }} />
+  <p class='label'>Zima</p>
 </div>
 <div class='card'>
-  <img src='/media/art/art1.jpg' alt='Andor 2 art 1' />
-  <p class='label'>Art 1</p>
+  <img src='/media/art/castle1.jpg' alt='Andor 2 hrad 1' onclick={() => { $lightboxImage = '/media/art/castle1.jpg' }} />
+  <p class='label'>Hrad 1</p>
 </div>
 <div class='card'>
-  <img src='/media/art/art2.jpg' alt='Andor 2 art 2' />
-  <p class='label'>Art 2</p>
+  <img src='/media/art/castle2.jpg' alt='Andor 2 hrad 2' onclick={() => { $lightboxImage = '/media/art/castle2.jpg' }} />
+  <p class='label'>Hrad 2</p>
 </div>
 <div class='card'>
-  <img src='/media/art/art3.jpg' alt='Andor 2 art 3' />
-  <p class='label'>Art 3</p>
+  <img src='/media/art/castle3.jpg' alt='Andor 2 hrad 3' onclick={() => { $lightboxImage = '/media/art/castle3.jpg' }} />
+  <p class='label'>Hrad 3</p>
+</div>
+
+<div class='grid small'>
+  <div class='card'>
+    <img src='/media/art/inventor.jpg' alt='Andor 2 vynálezce' onclick={() => { $lightboxImage = '/media/art/inventor.jpg' }} />
+    <p class='label'>Vynálezce</p>
+  </div>
+  <div class='card'>
+    <img src='/media/art/executioner.jpg' alt='Andor 2 kat' onclick={() => { $lightboxImage = '/media/art/executioner.jpg' }} />
+    <p class='label'>Kat</p>
+  </div>
+  <div class='card'>
+    <img src='/media/art/sage.jpg' alt='Andor 2 mudrc' onclick={() => { $lightboxImage = '/media/art/sage.jpg' }} />
+    <p class='label'>Mudrc</p>
+  </div>
+  <div class='card'>
+    <img src='/media/art/gnome.jpg' alt='Andor 2 gnóm' onclick={() => { $lightboxImage = '/media/art/gnome.jpg' }} />
+    <p class='label'>Gnóm</p>
+  </div>
 </div>
 
 <h2>Barvy</h2>
@@ -139,5 +168,7 @@
         display: block;
         flex: 1;
         object-fit: contain;
+      }
+      .small {
       }
 </style>
