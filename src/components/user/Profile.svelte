@@ -2,6 +2,7 @@
   import { activeConversation } from '@lib/stores'
   import { getPortraitUrl } from '@lib/database-browser'
   import GameList from '@components/games/GameList.svelte'
+  import SoloList from '@components/solo/SoloList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
 
@@ -30,6 +31,9 @@
 
 <h2>Hry</h2>
 <GameList {user} games={data.games} showTabs={false} />
+
+<h2>Sólo koncepty</h2>
+<SoloList {user} concepts={data.concepts} showTabs={false} />
 
 <h2>Diskuze</h2>
 <BoardList {user} boards={data.boards} />

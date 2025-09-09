@@ -4,7 +4,7 @@
   import { gameTags } from '@lib/constants'
   import { isFilledArray, addURLParam } from '@lib/utils'
 
-  const { user = {}, concepts = [], page = 0, maxPage = 20 } = $props()
+  const { user = {}, concepts = [], page = 0, maxPage = 0, showTabs = true } = $props()
 
   let sort = $state('games')
 
@@ -36,21 +36,23 @@
   }
 </script>
 
-<div class='headline flex'>
-  <h1>Sólo rychlovky</h1>
-    <div class='buttons'>
-      <select bind:value={sort} onchange={setSort}>
-        <option value='games'>Dle popularity</option>
-        <option value='new'>Dle data</option>
-        <option value='name'>Dle názvu</option>
-        <option value='author'>Dle autora</option>
-      </select>
-      {#if user.id}
-        <a href='/solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
-        <a href='/solo/concept/concept-form' class='button mobile material'>add</a>
-      {/if}
-    </div>
-</div>
+{#if showTabs}
+  <div class='headline flex'>
+    <h1>Sólo rychlovky</h1>
+      <div class='buttons'>
+        <select bind:value={sort} onchange={setSort}>
+          <option value='games'>Dle popularity</option>
+          <option value='new'>Dle data</option>
+          <option value='name'>Dle názvu</option>
+          <option value='author'>Dle autora</option>
+        </select>
+        {#if user.id}
+          <a href='/solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
+          <a href='/solo/concept/concept-form' class='button mobile material'>add</a>
+        {/if}
+      </div>
+  </div>
+{/if}
 
 {#if isFilledArray(concepts)}
   {#each concepts as concept (concept.id)}

@@ -12,7 +12,12 @@
   const { data: games, error: gamesError } = await supabase.from('game_list').select('*').eq('owner', userId)
   if (gamesError) { console.error('error loading user games', gamesError) }
   data.games = games
-  
+
+  // load user's concepts
+  const { data: concepts, error: conceptsError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('author', userId)
+  if (conceptsError) { console.error('error loading user concepts', conceptsError) }
+  data.concepts = concepts
+
   // load user's boards
   const { data: boards, error: boardsError } = await supabase.from('board_list').select('*').eq('owner', userId)
   if (boardsError) { console.error('error loading user boards', boardsError) }
