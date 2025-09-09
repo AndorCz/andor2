@@ -15,7 +15,7 @@ export function handleError (error) {
   if (!window.isWindowClosed) { // ignore fetch errors (cancelled fetches) when the page is closing/reloading
     console.error(error)
     window.showError('Chyba: ' + error.message)
-    return Promise.reject(error)
+    throw error
   }
 }
 

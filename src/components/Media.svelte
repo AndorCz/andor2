@@ -18,15 +18,15 @@
 <h3>Vektor</h3>
 <div class='grid'>
   <div class='card' onclick={() => { download('/media/logo/vector/andor2.eps', 'andor2.eps') }}>
-    <img src='/media/logo/raster/andor2_black.png' alt='Andor 2 logo náhled' />
+    <img src='/media/logo/raster/andor2_white.png' alt='Andor 2 logo náhled' />
     <p class='label'>EPS</p>
   </div>
   <div class='card' onclick={() => { download('/media/logo/vector/andor2.psd', 'andor2.psd') }}>
-    <img src='/media/logo/raster/andor2_black.png' alt='Andor 2 logo náhled' />
+    <img src='/media/logo/raster/andor2_white.png' alt='Andor 2 logo náhled' />
     <p class='label'>PSD</p>
   </div>
   <div class='card' onclick={() => { download('/media/logo/vector/andor2.svg', 'andor2.svg') }}>
-    <img src='/media/logo/raster/andor2_black.png' alt='Andor 2 logo náhled' />
+    <img src='/media/logo/raster/andor2_white.png' alt='Andor 2 logo náhled' />
     <p class='label'>SVG</p>
   </div>
 </div>

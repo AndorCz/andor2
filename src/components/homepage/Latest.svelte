@@ -26,6 +26,9 @@
     const { data: games, error: gameError } = await gameQuery.limit(5)
     if (gameError) { handleError(gameError) }
 
+    const { data: concepts, error: soloError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').match({ published: true }).order('created_at', { ascending: false }).limit(5)
+    if (soloError) { handleError(soloError) }
+
     const { data: works, error: workError } = await supabase.from('work_list').select('*').match({ published: true }).order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(5)
     if (workError) { handleError(workError) }
 
@@ -35,8 +38,8 @@
     const { data: characters, error: characterError } = await supabase.from('characters').select('*').match({ open: true, state: 'alive' }).is('transfer_to', null).order('name')
     if (characterError) { handleError(characterError) }
 
-    if (games && works && boards && characters) {
-      latestData = { games, works, boards, characters }
+    if (games && works && boards && characters && concepts) {
+      latestData = { games, works, boards, characters, concepts }
     }
     loading = false
   }
@@ -72,6 +75,25 @@
           </a>
         </div>
       {/each}
+    </div>
+    <div id='concepts'>
+      <div class='group'>
+        <a href='/solo' class='headline'><h4>Nové sólo koncepty</h4></a>
+        {#each latestData.concepts as concept (concept.id)}
+          <div class='item'>
+            <a href='./user?id={concept.author.id}' class='user owner' title={concept.author.name} use:tooltip>
+              {#if concept.author.portrait}
+                <img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />
+              {:else}
+                <img src='/default_user.jpg' class='icon' alt={concept.author.name} />
+              {/if}
+            </a>
+            <a href={`/concept/${concept.id}`}>
+              <h3>{concept.name}</h3>
+            </a>
+          </div>
+        {/each}
+      </div>
     </div>
     <div class='group'>
       <a href='/works' class='headline'><h4>Nová tvorba</h4></a>
