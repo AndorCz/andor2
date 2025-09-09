@@ -152,7 +152,8 @@
           }
           // parse HTML format
           if (event.clipboardData.types.indexOf('text/html') !== -1) {
-            const html = event.clipboardData.getData('text/html')
+            let html = event.clipboardData.getData('text/html')
+            html = html.replace(/background-color:[^;]+;/g, '')
             editor.commands.insertContent(html)
             event.preventDefault()
             showSuccess('Vložen obsah s formátovám dle zdrojové stránky. Pro čistý text použij ctrl/cmd + shift + v')
