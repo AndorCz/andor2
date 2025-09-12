@@ -251,6 +251,16 @@
       await loadPosts()
     }
   }
+
+  async function reopenGame () {
+    const { error } = await supabase.from('solo_games').update({ ended: false }).eq('id', game.id)
+    if (error) {
+      handleError(error)
+    } else {
+      game.ended = false
+      showSuccess('Hra byla znovu otevřena')
+    }
+  }
 </script>
 
 <main>
@@ -293,7 +303,10 @@
     </div>
     {#if !readonly}
       {#if game.ended}
-        <center class='info'>Konec hry</center>
+        <center class='info'>
+          Konec hry<br>
+          <button onclick={reopenGame}>Znovu otevřít</button>
+        </center>
       {:else}
         {#if user.solo_limit <= 0}
           <center class='info'>Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.</center>
