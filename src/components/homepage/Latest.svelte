@@ -88,7 +88,7 @@
                 <img src='/default_user.jpg' class='icon' alt={concept.author.name} />
               {/if}
             </a>
-            <a href={`/concept/${concept.id}`}>
+            <a href={`/solo/concept/${concept.id}`}>
               <h3>{concept.name}</h3>
             </a>
           </div>
