@@ -7,6 +7,7 @@ import Store from '@components/common/Store.svelte'
 import Arrows from '@components/common/Arrows.svelte'
 import Lightbox from '@components/common/Lightbox.svelte'
 import HeaderCrop from '@components/common/HeaderCrop.svelte'
+import PublishConsentModal from '@components/user/PublishConsentModal.svelte'
 import { ViewTransitions } from 'astro:transitions'
 
 const { version } = pkg
@@ -59,6 +60,7 @@ if (user.id) {
 	<body>
     <Lightbox client:only='svelte' />
     <HeaderCrop client:only='svelte' />
+    <PublishConsentModal user={user} client:only='svelte' />
     <div id='wrapper'>
       <main>
         <Header {pathname} {headerStatic} {headerStorage} {chatUnread} client:only='svelte' />
