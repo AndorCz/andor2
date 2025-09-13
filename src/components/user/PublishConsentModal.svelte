@@ -15,7 +15,7 @@
 {#if open}
   <div id='consentVeil'></div>
   <div id='consentModal'>
-    <p>Souhlasíš s publikováním tvých příspěvků z veřejných her na hlavní stránce a sociálních sítích pod jménem tvé postavy?</p>
+    <p>Souhlasíš s publikováním tvých příspěvků z veřejných her na hlavní stránce a sociálních sítích pod jménem tvé postavy?<br>Tuto volbu můžeš později kdykoliv změnit v uživatelském nastavení.</p>
     <div class='buttons'>
       <button onclick={() => setConsent(true)}>Souhlasím</button>
       <button onclick={() => setConsent(false)}>Nesouhlasím</button>

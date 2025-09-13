@@ -61,6 +61,7 @@ create type post_content_type as enum ('game', 'other');
 create table profiles (
   id uuid not null primary key,
   name citext unique not null,
+  publish_consent boolean,
   portrait text,
   created_at timestamp with time zone default current_timestamp,
   last_activity timestamp with time zone,
@@ -68,7 +69,6 @@ create table profiles (
   theme text default 'obsidian',
   solo_limit int4 default 10,
   autorefresh boolean default false,
-  publish_consent boolean,
   -- editor_bubble boolean default false,
   colors text[] default '{}',
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
@@ -123,6 +123,7 @@ create table solo_concepts (
   custom_header text,
   storyteller uuid,
   illustration_style text default 'ink'::text,
+  tone public.solo_tone default 'neutral'::solo_tone,
   protagonist_names text[],
   prompt_world text,
   prompt_protagonist text,
