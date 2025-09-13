@@ -4,9 +4,10 @@
   import NewsFeed from '@components/homepage/NewsFeed.svelte'
   import NewsItem from '@components/homepage/NewsItem.svelte'
   import Editorial from '@components/homepage/Editorial.svelte'
+  import PotwAnnouncement from '@components/homepage/PotwAnnouncement.svelte'
 
-  let newsError, lastEditorial, news, maxPage, npcPost
-	const { supabase, user } = Astro.locals
+  let newsError, lastEditorial, news, maxPage, npcPost, potw, potwWeekId
+        const { supabase, user } = Astro.locals
 	const params = Object.fromEntries(Astro.url.searchParams)
 
 	try {
@@ -50,6 +51,31 @@
       newsError = 'Chyba načtení příspěvku: ' + error.message
     }
   }
+
+  // Post of the week winner announcement
+  const today = new Date()
+  if (today.getDay() === 1) {
+    const currentWeekStart = new Date(today)
+    currentWeekStart.setHours(0, 0, 0, 0)
+    currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7))
+    const previousWeekStart = new Date(currentWeekStart)
+    previousWeekStart.setDate(previousWeekStart.getDate() - 7)
+    potwWeekId = currentWeekStart.toISOString().slice(0, 10)
+    try {
+      const { data: weekPosts, error: potwError } = await supabase
+        .from('game_posts_owner')
+        .select('*')
+        .gte('created_at', previousWeekStart.toISOString())
+        .lt('created_at', currentWeekStart.toISOString())
+        .or('audience.is.null,audience.eq.{}')
+      if (potwError) { throw potwError }
+      if (weekPosts && weekPosts.length) {
+        potw = weekPosts.reduce((best, p) => ((p.hearts?.length || 0) > (best.hearts?.length || 0) ? p : best), weekPosts[0])
+      }
+    } catch (error) {
+      // ignore errors, don't block page rendering
+    }
+  }
 ---
 
 <Layout title='RPG hry online: Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD), AI vypravěč'>
@@ -57,7 +83,8 @@
     <h1>TTRPG: Stolní RPG hry online - Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD) a další</h1>
   ) : null}
   {newsError ? <p>{newsError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
-	<main>
+  <PotwAnnouncement winner={potw} weekId={potwWeekId} client:only='svelte' />
+        <main>
 		<aside>
 			<Latest client:only='svelte' />
 		</aside>
