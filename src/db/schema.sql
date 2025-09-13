@@ -68,6 +68,7 @@ create table profiles (
   theme text default 'obsidian',
   solo_limit int4 default 10,
   autorefresh boolean default false,
+  publish_consent boolean,
   -- editor_bubble boolean default false,
   colors text[] default '{}',
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade

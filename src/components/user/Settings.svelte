@@ -11,6 +11,7 @@
   let password2 = $state('')
   let newEmail = $state(user.email)
   let originalAutorefresh = $state(user.autorefresh)
+  let originalPublishConsent = $state(user.publish_consent)
   // let originalEditorBubble = user.editor_bubble
   let originalTheme = $state(user.theme)
   let newColor = $state('')
@@ -27,6 +28,7 @@
   async function updateUser (theme = false) {
     const data = {
       autorefresh: user.autorefresh,
+      publish_consent: user.publish_consent,
       // editor_bubble: user.editor_bubble,
       theme: user.theme,
       colors: user.colors
@@ -34,6 +36,7 @@
     const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
     if (error) { return showError(error.message) }
     originalAutorefresh = user.autorefresh
+    originalPublishConsent = user.publish_consent
     // originalEditorBubble = user.editor_bubble
     originalTheme = user.theme
     showSuccess('Nastavení bylo uloženo')
@@ -144,6 +147,15 @@
       <input type='color' id='nameColor' name='nameColor' bind:value={newColor} />
       <input type='text' bind:value={newColor}>
       <button onclick={addColor} class='material square' title='Uložit' use:tooltip>check</button>
+    </div>
+
+    <h2>Publikování příspěvků</h2>
+    <div class='rowInner'>
+      <select bind:value={user.publish_consent} id='publishConsent' name='publishConsent'>
+        <option value={true}>Souhlasím</option>
+        <option value={false}>Nesouhlasím</option>
+      </select>
+      <button onclick={updateUser} class='material' disabled={originalPublishConsent === user.publish_consent} title='Uložit' use:tooltip>check</button>
     </div>
 
     <h2>Auto-refresh herních příspěvků</h2>
