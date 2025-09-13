@@ -53,6 +53,7 @@ create type work_type as enum ('text', 'image', 'audio');
 create type work_tag as enum ( 'story', 'continued', 'preview', 'thought', 'fanfiction', 'scifi', 'fantasy', 'mythology', 'horror', 'detective', 'romance', 'fairytale', 'dystopia', 'humorous', 'fromlife', 'motivational', 'biography', 'gameworld', 'gamematerial', 'editorial', 'announcement', 'project', 'erotica', 'portrait', 'landscape', 'abstract', 'guitar', 'piano', 'orchestral', 'electronic' );
 create type work_category as enum ( 'prose', 'poetry', 'game', 'painting', 'drawing', 'photo', 'digital', 'instrumental', 'vocal', 'ambient', 'other' );
 create type post_content_type as enum ('game', 'other');
+create type solo_tone as enum ('neutral', 'horror', 'comedy', 'drama', 'noir', 'romance', 'scifi', 'fantasy');
 
 
 -- TABLES --------------------------------------------
@@ -122,6 +123,7 @@ create table solo_concepts (
   custom_header text,
   storyteller uuid,
   illustration_style text default 'ink'::text,
+  tone public.solo_tone not null default 'neutral'::solo_tone,
   protagonist_names text[],
   prompt_world text,
   prompt_protagonist text,

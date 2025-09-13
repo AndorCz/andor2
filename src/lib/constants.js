@@ -57,6 +57,17 @@ export const gameTags = [
   { value: 'other', label: 'Ostatní' }
 ]
 
+export const soloTones = [
+  { value: 'neutral', label: 'Neutrální' },
+  { value: 'horror', label: 'Horor' },
+  { value: 'comedy', label: 'Komedie' },
+  { value: 'drama', label: 'Drama' },
+  { value: 'noir', label: 'Noir' },
+  { value: 'romance', label: 'Romantický' },
+  { value: 'scifi', label: 'Sci-fi' },
+  { value: 'fantasy', label: 'Fantasy' }
+]
+
 export const workCategoriesText = [
   { value: 'prose', label: 'Próza' },
   { value: 'poetry', label: 'Poezie' },

@@ -1,12 +1,19 @@
 import { GoogleGenAI } from '@google/genai'
 import { illustrationStyleAffixes, storytellerInstructions, getResponseSchema } from '@lib/solo/solo'
+import { soloTones } from '@lib/constants'
 
 export const getStorytellerParams = (concept, history, npcSlugs, systemInstruction) => {
   const illustrationStyleAffix = illustrationStyleAffixes[concept.illustration_style] || 'ink'
   const responseSchema = getResponseSchema(illustrationStyleAffix)
 
   if (npcSlugs) { responseSchema.properties.character.properties.slug.enum = npcSlugs } // Update the enum with available NPC slugs
-  if (!systemInstruction) { systemInstruction = storytellerInstructions }
+  if (!systemInstruction) {
+    systemInstruction = storytellerInstructions
+    const toneLabel = soloTones.find(t => t.value === concept.tone)?.label
+    if (toneLabel && concept.tone !== 'neutral') {
+      systemInstruction += ` Vyprávěj v žánru: ${toneLabel.toLowerCase()}.`
+    }
+  }
 
   return {
     model: 'gemini-2.5-pro',
