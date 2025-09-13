@@ -62,12 +62,7 @@
     previousWeekStart.setDate(previousWeekStart.getDate() - 7)
     potwWeekId = currentWeekStart.toISOString().slice(0, 10)
     try {
-      const { data: weekPosts, error: potwError } = await supabase
-        .from('game_posts_owner')
-        .select('*')
-        .gte('created_at', previousWeekStart.toISOString())
-        .lt('created_at', currentWeekStart.toISOString())
-        .or('audience.is.null,audience.eq.{}')
+      const { data: weekPosts, error: potwError } = await supabase.from('game_posts_voting').select('*')
       if (potwError) { throw potwError }
       if (weekPosts && weekPosts.length) {
         potw = weekPosts.reduce((best, p) => ((p.hearts?.length || 0) > (best.hearts?.length || 0) ? p : best), weekPosts[0])

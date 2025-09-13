@@ -461,6 +461,28 @@ create table contacts (
 -- VIEWS --------------------------------------------
 
 
+create or replace view game_posts_voting as
+  select
+    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.moderated, p.dice, p.created_at,
+    c.name as owner_name,
+    c.portrait as owner_portrait,
+    g.id as game_id,
+    r.*
+  from posts p
+  join games g on p.thread = g.game_thread
+  left join characters c on p.owner = c.id
+  left join profiles pr on c.player = pr.id
+  left join reactions r on p.id = r.item_id and r.item_type = 'post'
+  where g.id is not null
+    and g.open_game is true
+    and p.created_at >= date_trunc('week', current_date)
+    and p.audience is null
+    and pr.publish_consent is true
+    and p.dice is false
+    and p.moderated is false
+  order by p.created_at desc;
+
+
 create or replace view news_reactions as
   select n.id, n.title, n.content_type, n.content_id, n.image_url, n.subheadline, n.button_text, n.url, n.content, n.published, n.owner, p.id as owner_id, p.name as owner_name, p.portrait as owner_portrait, n.character, n.character_name, n.created_at, r.thumbs, r.frowns, r.shocks, r.hearts, r.laughs
   from news n

@@ -12,12 +12,7 @@ currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay(
 
 let posts, loadError
 try {
-  const { data, error } = await supabase
-    .from('game_posts_owner')
-    .select('*')
-    .gte('created_at', currentWeekStart.toISOString())
-    .or('audience.is.null,audience.eq.{}')
-    .order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('game_posts_voting').select().order('created_at', { ascending: false })
   if (error) { throw error }
   posts = data
 } catch (err) {
@@ -26,7 +21,7 @@ try {
 ---
 
 <Layout title='Příspěvek týdne'>
-  <h1>Hlasování o příspěvek týdne</h1>
+  <h1>Hlasování o příspěvek týdne ({posts?.length})</h1>
   {loadError ? <p>{loadError}</p> : (
     <div>
       {posts?.map((post) => <Post {post} {user} allowReactions allowedReactions={['hearts']} client:only='svelte' />)}
