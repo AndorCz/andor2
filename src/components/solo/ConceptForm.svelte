@@ -1,6 +1,6 @@
 <script>
   import Select from 'svelte-select'
-  import { gameTags } from '@lib/constants'
+  import { gameTags, soloTones } from '@lib/constants'
   import { preventSubmit } from '@lib/utils'
   import { illustrationStyles } from '@lib/solo/solo'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
@@ -19,7 +19,8 @@
     promptCharacters: '',
     promptHeaderImage: '',
     promptStorytellerImage: '',
-    illustrationStyle: 'ink'
+    illustrationStyle: 'ink',
+    tone: 'neutral'
   }
 
   const conceptStore = getSavedStore('soloConceptForm', defaultConcept)
@@ -103,21 +104,32 @@
       <center><button type='button' class='small' onclick={() => { showAdvanced = true }}>Zobrazit pokročilé</button></center>
     {/if}
 
-    <div class='row'>
-      <div class='labels'>Styl ilustrace</div>
-      <div class='inputs'>
-        <select bind:value={$conceptStore.illustrationStyle} name='illustrationStyle' class='styleSelect'>
-          {#each illustrationStyles as style (style.value)}
-            <option value={style.value}>{style.label}</option>
-          {/each}
-        </select>
-      </div>
+  <div class='row'>
+    <div class='labels'>Styl ilustrace</div>
+    <div class='inputs'>
+      <select bind:value={$conceptStore.illustrationStyle} name='illustrationStyle' class='styleSelect'>
+        {#each illustrationStyles as style (style.value)}
+          <option value={style.value}>{style.label}</option>
+        {/each}
+      </select>
     </div>
+  </div>
+
+  <div class='row'>
+    <div class='labels'>Žánr vyprávění</div>
+    <div class='inputs'>
+      <select bind:value={$conceptStore.tone} name='tone' class='styleSelect'>
+        {#each soloTones as tone (tone.value)}
+          <option value={tone.value}>{tone.label}</option>
+        {/each}
+      </select>
+    </div>
+  </div>
 
     <div class='row'>
       <div class='labels'><label for='soloTags'>Tagy<span class='info'>(max 3)</span></label></div>
-      <div class='inputs'>
-        <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
+    <div class='inputs'>
+      <Select items={maxTags ? [] : tagItems} multiple bind:value={selectedTags} placeholder=''>
           {#snippet empty()}<div >Více tagů nelze přidat</div>{/snippet}
         </Select>
         <input type='hidden' name='soloTags' bind:this={tagsInputRef} />

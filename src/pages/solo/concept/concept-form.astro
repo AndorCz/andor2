@@ -8,8 +8,8 @@
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
     const tags = formData.get('soloTags') ? formData.get('soloTags').split(',') : []
-    const fields = ['conceptName', 'promptWorld', 'promptPlan', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage', 'illustrationStyle']
-    const [name, world, plan, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, illustrationStyle] = fields.map(field => formData.get(field))
+    const fields = ['conceptName', 'promptWorld', 'promptPlan', 'promptFactions', 'promptLocations', 'promptCharacters', 'promptProtagonist', 'promptHeaderImage', 'promptStorytellerImage', 'illustrationStyle', 'tone']
+    const [name, world, plan, factions, locations, characters, protagonist, promptHeaderImage, promptStorytellerImage, illustrationStyle, tone] = fields.map(field => formData.get(field))
     const storytellerImage = formData.get('newPortrait')
 
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno herního konceptu.')}`) }
@@ -22,7 +22,7 @@
 
       // Create the concept record
       const { data: conceptData, error } = await supabase.from('solo_concepts').insert({
-        author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags, illustration_style: illustrationStyle,
+        author: user.id, name, prompt_world: world, prompt_plan: plan, prompt_protagonist: protagonist, prompt_locations: locations, prompt_factions: factions, prompt_characters: characters, prompt_header_image: promptHeaderImage, prompt_storyteller_image: promptStorytellerImage, tags, illustration_style: illustrationStyle, tone,
         generating
       }).select().single()
 

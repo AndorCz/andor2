@@ -4,6 +4,7 @@ import { getImageUrl, getStamp } from '@lib/utils'
 import { getStorytellerParams, getAI } from '@lib/solo/server-moonshot'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
 import { storytellerInstructions, getContext, illustrationStyleAffixes, getResponseSchema } from '@lib/solo/solo'
+import { soloTones } from '@lib/constants'
 
 const imageBuckets = { header: 'headers', scene: 'scenes', item: 'items', npc: 'npcs' }
 
@@ -68,6 +69,10 @@ export const POST = async ({ request, locals }) => {
         <h2>Plán hry:</h2>
         ${conceptData.generated_plan}
       `
+      const toneLabel = soloTones.find(t => t.value === conceptData.tone)?.label
+      if (toneLabel && conceptData.tone !== 'neutral') {
+        systemInstruction += `\nVyprávěj v žánru: ${toneLabel.toLowerCase()}.`
+      }
       const illustrationStyleAffix = illustrationStyleAffixes[conceptData.illustration_style] || 'ink'
       const responseSchema = getResponseSchema(illustrationStyleAffix)
       if (npcSlugs) { responseSchema.properties.character.properties.slug.enum = npcSlugs } // Update the enum with available NPC slugs

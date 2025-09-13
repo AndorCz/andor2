@@ -1,7 +1,7 @@
 <script>
   import Select from 'svelte-select'
   import { tooltip } from '@lib/tooltip'
-  import { gameTags } from '@lib/constants'
+  import { gameTags, soloTones } from '@lib/constants'
   import { onDestroy } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { clone, getStamp, uploadPortrait } from '@lib/utils'
@@ -294,6 +294,15 @@
       <select bind:value={concept.illustration_style} onchange={() => onSave('illustration_style')} class='styleSelect'>
         {#each illustrationStyles as style (style.value)}
           <option value={style.value}>{style.label}</option>
+        {/each}
+      </select>
+    </div>
+
+    <h2>Žánr vyprávění</h2>
+    <div class='row'>
+      <select bind:value={concept.tone} onchange={() => onSave('tone')} class='styleSelect'>
+        {#each soloTones as tone (tone.value)}
+          <option value={tone.value}>{tone.label}</option>
         {/each}
       </select>
     </div>
