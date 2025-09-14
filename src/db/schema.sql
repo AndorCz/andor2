@@ -38,6 +38,9 @@ create extension if not exists pg_cron;
 -- running every day at 5:00
 select cron.schedule('trim-chat', '0 5 * * *', $$select delete_old_chat_posts()$$);
 select cron.schedule('reset-limits', '0 5 * * *', $$select reset_limits()$$);
+-- update random posts showcase every hour
+select cron.schedule('refresh-game-showcase', '0 * * * *', 'refresh materialized view game_showcase_random;');
+select cron.schedule('refresh-npc-posts', '0 * * * *', 'refresh materialized view npc_posts_random;');
 
 create extension if not exists citext;
 
@@ -514,16 +517,6 @@ create or replace view posts_owner as
   order by p.created_at desc;
 
 
-create or replace view npc_posts_random as
-  select
-    po.*, sc.id as concept_id, sc.name as concept_name
-  from posts_owner po
-    join npcs on po.owner = npcs.id
-    left join solo_concepts sc on npcs.solo_concept = sc.id
-  where po.owner_type = 'npc'
-  order by random();
-
-
 create or replace view game_posts_owner as
   select
     p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.updated_at, p.important,
@@ -598,6 +591,46 @@ from bookmarks b
   left join unread_threads ut_board on b.board_thread = ut_board.thread_id and b.user_id = ut_board.user_id
   left join unread_threads ut_work on b.work_thread = ut_work.thread_id and b.user_id = ut_work.user_id
 where b.user_id = (select auth.uid());
+
+
+create or replace view game_showcase_random as
+  select * from game_showcase_pool order by random() limit 1;
+
+create or replace view npc_posts_random as
+  select * from npc_posts_pool order by random() limit 1;
+
+
+-- MATERIALIZED VIEWS -------------------------------------
+
+
+create materialized view game_showcase_pool as
+  select
+    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.moderated, p.dice, p.created_at,
+    c.name as owner_name,
+    c.portrait as owner_portrait,
+    g.id as game_id,
+    g.name as game_name,
+    r.*
+  from posts p
+  join games g on p.thread = g.game_thread and g.open_game is true
+  join characters c on p.owner = c.id
+  join profiles pr on c.player = pr.id and pr.publish_consent is true
+  left join reactions r on p.id = r.item_id and r.item_type = 'post'
+  where p.created_at >= date_trunc('week', current_date)
+    and p.audience is null
+    and p.dice is false
+    and p.moderated is false
+    and length(p.content) > 500
+    and p.owner_type = 'character';
+
+
+create materialized view npc_posts_pool as
+  select
+    po.*, sc.id as concept_id, sc.name as concept_name
+  from posts_owner po
+    join npcs on po.owner = npcs.id
+    left join solo_concepts sc on npcs.solo_concept = sc.id
+  where po.owner_type = 'npc';
 
 
 -- FUNCTIONS --------------------------------------------
