@@ -4,10 +4,9 @@
   import NewsFeed from '@components/homepage/NewsFeed.svelte'
   import NewsItem from '@components/homepage/NewsItem.svelte'
   import Editorial from '@components/homepage/Editorial.svelte'
-  import PotwAnnouncement from '@components/homepage/PotwAnnouncement.svelte'
 
-  let newsError, lastEditorial, news, maxPage, npcPost, potw, potwWeekId
-        const { supabase, user } = Astro.locals
+  let newsError, lastEditorial, news, maxPage, addShowcase, showcasePost
+  const { supabase, user } = Astro.locals
 	const params = Object.fromEntries(Astro.url.searchParams)
 
 	try {
@@ -30,61 +29,36 @@
     newsError = 'Chyba načtení novinek: ' + error.message
   }
 
-  // Check if we should show npcPost (only if last news is older than 3 days or no news exists)
-  let shouldShowNpcPost = false
+  // Check if we should show showcasePost (only if last news is older than 3 days or no news exists)
   if (news && news.length > 0) {
     const lastNewsDate = new Date(news[0].created_at)
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-    shouldShowNpcPost = lastNewsDate < threeDaysAgo
+    addShowcase = lastNewsDate < threeDaysAgo
   } else {
-    shouldShowNpcPost = true // Show if no news exists
+    addShowcase = true // Show if no news exists
   }
 
-  if (shouldShowNpcPost) {
+  if (addShowcase) {
     try {
-      const { data: randomPost, error: randomPostError } = await supabase.from('npc_posts_random').select('id, content, owner, owner_name, created_at, concept_id, concept_name').limit(1).maybeSingle()
+      const isGame = Math.random() < 0.5 // 50% chance to show game or npc post
+      const { data: randomPost, error: randomPostError } = isGame
+        ? await supabase.from('game_showcase_random').select('id, content, owner, owner_name, created_at, game_id, game_name').limit(1).maybeSingle()
+        : await supabase.from('npc_posts_random').select('id, content, owner, owner_name, created_at, concept_id, concept_name').limit(1).maybeSingle()
       if (randomPostError) { throw randomPostError }
-      if (randomPost) {
-        npcPost = { id: randomPost.id, content_type: 'post', title: randomPost.concept_name, game_url: `/solo/concept/${randomPost.concept_id}`, content: randomPost.content, character: randomPost.owner, character_name: randomPost.owner_name, created_at: randomPost.created_at, owner_id: user?.id }
-      }
-    } catch (error) {
-      newsError = 'Chyba načtení příspěvku: ' + error.message
-    }
-  }
-
-  // Post of the week winner announcement
-  const today = new Date()
-  if (today.getDay() === 1) {
-    const currentWeekStart = new Date(today)
-    currentWeekStart.setHours(0, 0, 0, 0)
-    currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7))
-    const previousWeekStart = new Date(currentWeekStart)
-    previousWeekStart.setDate(previousWeekStart.getDate() - 7)
-    potwWeekId = currentWeekStart.toISOString().slice(0, 10)
-    try {
-      const { data: weekPosts, error: potwError } = await supabase.from('game_posts_voting').select('*')
-      if (potwError) { throw potwError }
-      if (weekPosts && weekPosts.length) {
-        potw = weekPosts.reduce((best, p) => ((p.hearts?.length || 0) > (best.hearts?.length || 0) ? p : best), weekPosts[0])
-      }
-    } catch (error) {
-      // ignore errors, don't block page rendering
-    }
+      if (randomPost) { showcasePost = { id: randomPost.id, content_type: 'post', title: randomPost.game_name || randomPost.concept_name, game_url: isGame ? `/game/${randomPost.game_id}` : `/solo/concept/${randomPost.concept_id}`, content: randomPost.content, character: randomPost.owner, character_name: randomPost.owner_name, created_at: randomPost.created_at, owner_id: user?.id } }
+    } catch (error) { newsError = 'Chyba načtení příspěvku: ' + error.message }
   }
 ---
 
 <Layout title='RPG hry online: Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD), AI vypravěč'>
-  {!user.id ? (
-    <h1>TTRPG: Stolní RPG hry online - Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD) a další</h1>
-  ) : null}
+  {!user.id ? (<h1>TTRPG: Stolní RPG hry online - Dračí Doupě (DrD), Dungeons and Dragons (D&D, DnD) a další</h1>) : null}
   {newsError ? <p>{newsError}</p> : <Editorial {lastEditorial} client:only='svelte' />}
-  <PotwAnnouncement winner={potw} weekId={potwWeekId} client:only='svelte' />
-        <main>
+  <main>
 		<aside>
 			<Latest client:only='svelte' />
 		</aside>
     <content>
-      {npcPost ? <NewsItem {user} item={npcPost} client:only='svelte' /> : null}
+      {addShowcase ? <NewsItem {user} item={showcasePost} client:only='svelte' /> : null}
       <NewsFeed {user} {news} {page} {maxPage} client:only='svelte' />
     </content>
   </main>
