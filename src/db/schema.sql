@@ -755,6 +755,8 @@ begin
   insert into characters values (character_row.*);
   -- update the original character to change the player
   update characters set player = auth.uid() where id = character_id;
+  update messages set sender_user = auth.uid() where sender_character = character_id;
+  update messages set recipient_user = auth.uid() where recipient_character = character_id;
   return character_row.id;
 end;
 $$ language plpgsql security definer;
@@ -841,6 +843,8 @@ begin
   insert into characters values (character_row.*);
   -- update the original character to change the player
   update characters set player = new_owner where id = character_id;
+  update messages set sender_user = new_owner where sender_character = character_id;
+  update messages set recipient_user = new_owner where recipient_character = character_id;
   return character_row.id;
 end;
 $$ language plpgsql security definer;
