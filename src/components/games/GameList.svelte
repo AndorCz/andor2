@@ -16,9 +16,9 @@
   const platform = $derived($platformStore)
   const initialSearchTerm = (searchTerm || '').trim()
   let searchValue = $state(searchTerm || '')
-  const trimmedSearchValue = $derived(() => ($searchValue || '').trim())
-  const canSearch = $derived(() => Boolean(trimmedSearchValue) && trimmedSearchValue !== initialSearchTerm)
-  const showClearButton = $derived(() => Boolean(initialSearchTerm) && (!trimmedSearchValue || trimmedSearchValue === initialSearchTerm))
+  const trimmedSearchValue = $derived(($searchValue || '').trim())
+  const canSearch = $derived(trimmedSearchValue !== initialSearchTerm)
+  const showClearButton = $derived(Boolean(initialSearchTerm) && trimmedSearchValue === initialSearchTerm)
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -67,7 +67,11 @@
   }
 
   function handleSearch () {
-    if (!trimmedSearchValue) { return }
+    if (!trimmedSearchValue) {
+      if (!initialSearchTerm) { return }
+      clearSearch()
+      return
+    }
     const url = new URL(window.location.href)
     url.searchParams.set('search', trimmedSearchValue)
     url.searchParams.delete('page')
