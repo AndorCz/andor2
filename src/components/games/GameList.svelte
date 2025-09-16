@@ -14,10 +14,11 @@
   let sort = $state('new')
   let activeTab = $state('open')
   const platform = $derived($platformStore)
+  const initialSearchTerm = (searchTerm || '').trim()
   let searchValue = $state(searchTerm || '')
-  const trimmedSearchTerm = $derived(() => (searchTerm || '').trim())
-  const trimmedSearchValue = $derived(() => searchValue.trim())
-  const showClearButton = $derived(() => Boolean(trimmedSearchTerm) && trimmedSearchValue === trimmedSearchTerm)
+  const trimmedSearchValue = $derived(() => ($searchValue || '').trim())
+  const canSearch = $derived(() => Boolean(trimmedSearchValue) && trimmedSearchValue !== initialSearchTerm)
+  const showClearButton = $derived(() => Boolean(initialSearchTerm) && (!trimmedSearchValue || trimmedSearchValue === initialSearchTerm))
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -110,7 +111,7 @@
             title='Vyhledat'
             aria-label='Vyhledat'
             onclick={handleSearch}
-            disabled={!trimmedSearchValue}
+            disabled={!canSearch}
           >search</button>
         {/if}
       </div>
