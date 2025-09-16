@@ -9,19 +9,16 @@
 
   const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0, searchTerm = '' } = $props()
 
-  let listView = $state(false)
   let gameListStore
   let sort = $state('new')
+  let listView = $state(false)
   let activeTab = $state('open')
-  const platform = $derived($platformStore)
-  const initialSearchTerm = (searchTerm || '').trim()
   let searchValue = $state(searchTerm || '')
-  const trimmedSearchValue = $derived(($searchValue || '').trim())
-  const canSearch = $derived(trimmedSearchValue !== initialSearchTerm)
-  const showClearButton = $derived(Boolean(initialSearchTerm) && trimmedSearchValue === initialSearchTerm)
+  const platform = $derived($platformStore)
+  const showClearButton = $derived(Boolean(searchTerm) && searchValue.trim() === searchTerm)
 
-  function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
+  function getCategory (value) { return gameCategories.find(category => category.value === value).label }
 
   // functions to run only in the browser
   let getHeaderUrl = $state(() => {})
@@ -67,13 +64,14 @@
   }
 
   function handleSearch () {
-    if (!trimmedSearchValue) {
-      if (!initialSearchTerm) { return }
+    const trimmed = searchValue.trim()
+    if (!trimmed) {
+      if (!searchTerm) { return }
       clearSearch()
       return
     }
     const url = new URL(window.location.href)
-    url.searchParams.set('search', trimmedSearchValue)
+    url.searchParams.set('search', trimmed)
     url.searchParams.delete('page')
     window.location.href = url.toString()
   }
@@ -99,24 +97,11 @@
     <h1>Hry</h1>
     <div class='buttons'>
       <div class='searchBox'>
-        <input
-          type='text'
-          placeholder='Hledat hry'
-          aria-label='Hledat hry'
-          bind:value={searchValue}
-          onkeydown={handleSearchKeydown}
-        />
+        <input type='text' placeholder='Hledat hry' aria-label='Hledat hry' bind:value={searchValue} onkeydown={handleSearchKeydown} />
         {#if showClearButton}
           <button type='button' class='material small' title='Zrušit hledání' aria-label='Zrušit hledání' onclick={clearSearch}>close</button>
         {:else}
-          <button
-            type='button'
-            class='material small'
-            title='Vyhledat'
-            aria-label='Vyhledat'
-            onclick={handleSearch}
-            disabled={!canSearch}
-          >search</button>
+          <button type='button' class='material small' title='Vyhledat' aria-label='Vyhledat' onclick={handleSearch} >search</button>
         {/if}
       </div>
       <select bind:value={sort} onchange={setSort}>
