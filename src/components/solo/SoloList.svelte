@@ -4,9 +4,11 @@
   import { gameTags } from '@lib/constants'
   import { isFilledArray, addURLParam } from '@lib/utils'
 
-  const { user = {}, concepts = [], page = 0, maxPage = 0, showTabs = true } = $props()
+  const { user = {}, concepts = [], page = 0, maxPage = 0, showHeadline = false, searchTerm = '' } = $props()
 
   let sort = $state('games')
+  let searchValue = $state(searchTerm || '')
+  const showClearButton = $derived(Boolean(searchTerm) && searchValue.trim() === searchTerm)
 
   // functions to run only in the browser
   let getHeaderUrl = $state(() => {})
@@ -34,12 +36,48 @@
     const newUrl = addURLParam('page', newPage, true)
     window.location.href = newUrl
   }
+
+  function handleSearch () {
+    const trimmed = searchValue.trim()
+    if (!trimmed) {
+      if (!searchTerm) { return }
+      clearSearch()
+      return
+    }
+    const url = new URL(window.location.href)
+    url.searchParams.set('search', trimmed)
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
+
+  function clearSearch () {
+    searchValue = ''
+    const url = new URL(window.location.href)
+    url.searchParams.delete('search')
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
+
+  function handleSearchKeydown (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      handleSearch()
+    }
+  }
 </script>
 
-{#if showTabs}
+{#if showHeadline}
   <div class='headline flex'>
     <h1>Sólo rychlovky</h1>
       <div class='buttons'>
+        <div class='searchBox'>
+          <input type='text' placeholder='Hledat koncepty' aria-label='Hledat koncepty' bind:value={searchValue} onkeydown={handleSearchKeydown} />
+          {#if showClearButton}
+            <button type='button' class='material small' title='Zrušit hledání' aria-label='Zrušit hledání' onclick={clearSearch}>close</button>
+          {:else}
+            <button type='button' class='material small' title='Vyhledat' aria-label='Vyhledat' onclick={handleSearch}>search</button>
+          {/if}
+        </div>
         <select bind:value={sort} onchange={setSort}>
           <option value='games'>Dle popularity</option>
           <option value='new'>Dle data</option>
@@ -100,12 +138,40 @@
   .buttons {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
   }
     .buttons select {
       width: fit-content;
       padding: 10px;
       padding-right: 35px;
       font-size: 16px;
+    }
+  .searchBox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border-radius: 6px;
+  }
+    .searchBox input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: inherit;
+      width: 220px;
+    }
+    .searchBox input::placeholder {
+      color: var(--dim);
+    }
+    .searchBox button {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
     }
 
   .mobile { display: none }
@@ -198,8 +264,14 @@
     h1 { padding-left: 10px }
     .desktop { display: none }
     .mobile { display: block }
-    .headline .button {
-      padding: 10px;
+    .headline {
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
     }
   }
 
@@ -210,8 +282,18 @@
     }
     .block .left { padding: 15px 10px }
     .block .image { width: 100% }
-    .headline .button {
-      padding: 7px;
+    .headline {
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: nowrap;
+    }
+    .searchBox input {
+      width: 140px;
     }
   }
 </style>

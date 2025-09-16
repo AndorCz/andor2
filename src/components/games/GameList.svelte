@@ -222,7 +222,6 @@
     align-items: center;
     gap: 10px;
     background: var(--panel);
-    padding: 6px 12px;
     border-radius: 6px;
   }
     .searchBox input {
@@ -374,15 +373,15 @@
     h1 { padding-left: 10px }
     .desktop { display: none }
     .mobile { display: block }
-    .headline .button, .headline button {
-      padding: 10px;
+    .headline {
+      flex-direction: column;
+      padding-bottom: 20px;
     }
-    .searchBox {
-      width: 100%;
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
     }
-      .searchBox input {
-        width: 100%;
-      }
   }
 
   @media (max-width: 500px) {
@@ -393,15 +392,18 @@
     .block .left { padding: 15px 10px }
     .block .image { width: 100% }
     .mode { display: none }
-    .headline .button, .headline button {
-      padding: 7px;
+    .headline {
+      flex-direction: column;
+      padding-bottom: 20px;
     }
-    .searchBox {
-      padding: 5px 10px;
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: nowrap;
     }
-      .searchBox button {
-        width: 28px;
-        height: 28px;
-      }
+    .searchBox input {
+      width: 140px;
+    }
   }
 </style>
