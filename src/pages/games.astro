@@ -6,34 +6,86 @@
 
   const tab = Astro.url.searchParams.get('tab') || 'open'
   const sort = Astro.url.searchParams.get('sort') || 'new'
+  const searchTerm = (Astro.url.searchParams.get('search') || '').trim()
 
-  const page = parseInt(Astro.url.searchParams.get('page') || '0')
+  let page = Number.parseInt(Astro.url.searchParams.get('page') || '0', 10)
+  if (Number.isNaN(page) || page < 0) { page = 0 }
+
   const limit = 20
 
-  let query = supabase.from('game_list').select('*', { count: 'exact' })
-  switch (tab) {
-    case 'open': query.match({ archived: false, published: true, recruitment_open: true }); break
-    case 'public': query.match({ archived: false, published: true, open_game: true }); break
-    case 'private': query.match({ archived: false, published: true, open_game: false }); break
-    case 'archive': query.match({ archived: true, published: true }); break
-    case 'all': query.match({ published: true }); break
+  function createBaseQuery () {
+    const query = supabase.from('game_list').select('*', { count: 'exact' })
+    switch (tab) {
+      case 'open': return query.match({ archived: false, published: true, recruitment_open: true })
+      case 'public': return query.match({ archived: false, published: true, open_game: true })
+      case 'private': return query.match({ archived: false, published: true, open_game: false })
+      case 'archive': return query.match({ archived: true, published: true })
+      case 'all': return query.match({ published: true })
+      default: return query
+    }
   }
 
-  switch (sort) {
-    case 'name': query.order('name'); break
-    case 'new': query.order('created_at', { ascending: false }); break
-    case 'active': query.not('last_post', 'is', null).order('last_post', { ascending: false }); break
-    case 'category': query.order('category'); break
-    case 'system': query.order('system'); break
-    case 'count': query.order('post_count', { ascending: false }); break
-    case 'owner': query.order('owner_name'); break
+  function applySort (query) {
+    switch (sort) {
+      case 'name': return query.order('name')
+      case 'new': return query.order('created_at', { ascending: false })
+      case 'active': return query.not('last_post', 'is', null).order('last_post', { ascending: false })
+      case 'category': return query.order('category')
+      case 'system': return query.order('system')
+      case 'count': return query.order('post_count', { ascending: false })
+      case 'owner': return query.order('owner_name')
+      default: return query
+    }
   }
 
-  const { data: games, count, error } = await query.range(page * limit, page * limit + limit - 1)
-  const maxPage = Math.ceil(count / limit) - 1
+  let games = []
+  let count = 0
+  let error
+  let maxPage = 0
+
+  if (searchTerm) {
+    const likeTerm = `%${searchTerm}%`
+    const { data: nameMatches = [], error: nameError } = await createBaseQuery().ilike('name', likeTerm)
+    const { data: annotationMatches = [], error: annotationError } = await createBaseQuery().ilike('annotation', likeTerm)
+
+    error = nameError || annotationError
+
+    const lowerTerm = searchTerm.toLowerCase()
+    const sortByMatch = (collection, field) => {
+      return [...collection].sort((a, b) => {
+        const aValue = (a[field] || '').toLowerCase()
+        const bValue = (b[field] || '').toLowerCase()
+        const aIndex = aValue.indexOf(lowerTerm)
+        const bIndex = bValue.indexOf(lowerTerm)
+        if (aIndex === bIndex) { return aValue.localeCompare(bValue, 'cs') }
+        return aIndex - bIndex
+      })
+    }
+
+    const orderedNameMatches = sortByMatch(nameMatches, 'name')
+    const orderedAnnotationMatches = sortByMatch(annotationMatches, 'annotation')
+
+    const uniqueGames = new Map()
+    for (const game of orderedNameMatches) { uniqueGames.set(game.id, game) }
+    for (const game of orderedAnnotationMatches) { if (!uniqueGames.has(game.id)) { uniqueGames.set(game.id, game) } }
+
+    games = Array.from(uniqueGames.values())
+    count = games.length
+    page = 0
+    maxPage = 0
+  } else {
+    const rangeStart = page * limit
+    const rangeEnd = rangeStart + limit - 1
+    const { data, count: total, error: queryError } = await applySort(createBaseQuery()).range(rangeStart, rangeEnd)
+    games = data || []
+    count = total ?? 0
+    error = queryError
+    maxPage = count > 0 ? Math.ceil(count / limit) - 1 : 0
+  }
+
   if (error) { console.error(error) }
 ---
 
 <Layout title='Hry'>
-  <GameList {user} {games} {page} {maxPage} showHeadline client:only='svelte' />
+  <GameList {user} {games} {page} {maxPage} showHeadline searchTerm={searchTerm} client:only='svelte' />
 </Layout>
