@@ -120,8 +120,8 @@
         </div>
       {/if}
       {#if user.id}
-        <a href='./game/game-form' class='button desktop'>Vytvořit novou hru</a>
-        <a href='./game/game-form' class='button mobile material'>add</a>
+        <a href='./game/game-form' class='button desktop newGame'>Vytvořit novou hru</a>
+        <a href='./game/game-form' class='button mobile material newGame square'>add</a>
       {/if}
     </div>
   </div>
@@ -382,6 +382,11 @@
       flex-direction: row;
       gap: 30px;
     }
+    .newGame {
+      position: absolute;
+      top: 30px;
+      right: 20px;
+    }
   }
 
   @media (max-width: 500px) {
@@ -400,7 +405,6 @@
       display: flex;
       flex-direction: row;
       gap: 20px;
-      flex-wrap: nowrap;
     }
     .searchBox input {
       width: 140px;

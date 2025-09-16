@@ -112,7 +112,7 @@
       }
   }
 
-  @media (max-width: 530px) {
+  @media (max-width: 590px) {
     nav {
       left: 0px;
       display: flex;

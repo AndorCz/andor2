@@ -85,8 +85,8 @@
           <option value='author'>Dle autora</option>
         </select>
         {#if user.id}
-          <a href='/solo/concept/concept-form' class='button desktop'>Vytvořit nový koncept</a>
-          <a href='/solo/concept/concept-form' class='button mobile material'>add</a>
+          <a href='/solo/concept/concept-form' class='button desktop newGame'>Vytvořit nový koncept</a>
+          <a href='/solo/concept/concept-form' class='button mobile material newGame square'>add</a>
         {/if}
       </div>
   </div>
@@ -272,6 +272,11 @@
       display: flex;
       flex-direction: row;
       gap: 30px;
+    }
+    .newGame {
+      position: absolute;
+      top: 30px;
+      right: 20px;
     }
   }
 
