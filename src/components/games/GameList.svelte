@@ -7,13 +7,17 @@
   import { gameCategories, gameSystems } from '@lib/constants'
   import { platform as platformStore } from '@components/common/MediaQuery.svelte'
 
-  const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0 } = $props()
+  const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0, searchTerm = '' } = $props()
 
   let listView = $state(false)
   let gameListStore
   let sort = $state('new')
   let activeTab = $state('open')
   const platform = $derived($platformStore)
+  let searchValue = $state(searchTerm || '')
+  const trimmedSearchTerm = $derived(() => (searchTerm || '').trim())
+  const trimmedSearchValue = $derived(() => searchValue.trim())
+  const showClearButton = $derived(() => Boolean(trimmedSearchTerm) && trimmedSearchValue === trimmedSearchTerm)
 
   function getCategory (value) { return gameCategories.find(category => category.value === value).label }
   function getSystem (value) { return gameSystems.find(system => system.value === value).label }
@@ -60,12 +64,56 @@
     const newUrl = addURLParam('page', newPage, true)
     window.location.href = newUrl
   }
+
+  function handleSearch () {
+    if (!trimmedSearchValue) { return }
+    const url = new URL(window.location.href)
+    url.searchParams.set('search', trimmedSearchValue)
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
+
+  function clearSearch () {
+    searchValue = ''
+    const url = new URL(window.location.href)
+    url.searchParams.delete('search')
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
+
+  function handleSearchKeydown (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      handleSearch()
+    }
+  }
 </script>
 
 {#if showHeadline}
   <div class='headline flex'>
     <h1>Hry</h1>
     <div class='buttons'>
+      <div class='searchBox'>
+        <input
+          type='text'
+          placeholder='Hledat hry'
+          aria-label='Hledat hry'
+          bind:value={searchValue}
+          onkeydown={handleSearchKeydown}
+        />
+        {#if showClearButton}
+          <button type='button' class='material small' title='Zrušit hledání' aria-label='Zrušit hledání' onclick={clearSearch}>close</button>
+        {:else}
+          <button
+            type='button'
+            class='material small'
+            title='Vyhledat'
+            aria-label='Vyhledat'
+            onclick={handleSearch}
+            disabled={!trimmedSearchValue}
+          >search</button>
+        {/if}
+      </div>
       <select bind:value={sort} onchange={setSort}>
         <option value='new'>Dle data</option>
         <option value='active'>Dle aktivity</option>
@@ -170,12 +218,41 @@
   .buttons {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
   }
     .buttons select {
       width: fit-content;
       padding: 10px;
       padding-right: 35px;
       font-size: 16px;
+    }
+  .searchBox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+    .searchBox input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: inherit;
+      width: 220px;
+    }
+    .searchBox input::placeholder {
+      color: var(--dim);
+    }
+    .searchBox button {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
     }
   .name a:first-letter {
     text-transform: uppercase;
@@ -310,6 +387,12 @@
     .headline .button, .headline button {
       padding: 10px;
     }
+    .searchBox {
+      width: 100%;
+    }
+      .searchBox input {
+        width: 100%;
+      }
   }
 
   @media (max-width: 500px) {
@@ -323,5 +406,12 @@
     .headline .button, .headline button {
       padding: 7px;
     }
+    .searchBox {
+      padding: 5px 10px;
+    }
+      .searchBox button {
+        width: 28px;
+        height: 28px;
+      }
   }
 </style>
