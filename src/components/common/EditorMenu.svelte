@@ -18,6 +18,12 @@
   let isBold = $state(false)
   let isLink = $state(false)
   let selectionEmpty = $state(0)
+  let canDecrease = $state(false)
+  let canIncrease = $state(false)
+  let canToggleBold = $state(false)
+  let canToggleItalic = $state(false)
+  let canToggleUnderline = $state(false)
+  let canToggleStrike = $state(false)
 
   $effect(() => {
     if (editor && !isInitialized) {
@@ -31,7 +37,7 @@
     if (editor) { editor.off('selectionUpdate') }
   })
 
-  function updateStyles () {
+  async function updateStyles () {
     // update current styles
     const headingLevel = editor.getAttributes('heading').level
     currentStyle = headingLevel ? `heading${headingLevel}` : 'paragraph'
@@ -44,6 +50,12 @@
     isStrike = editor.isActive('strike')
     isLink = editor.isActive('link')
     selectionEmpty = editor.state.selection.empty
+    canDecrease = editor.can().chain().focus().decreaseSize().run()
+    canIncrease = editor.can().chain().focus().increaseSize().run()
+    canToggleBold = editor.can().chain().focus().toggleBold().run()
+    canToggleItalic = editor.can().chain().focus().toggleItalic().run()
+    canToggleUnderline = editor.can().chain().focus().toggleUnderline().run()
+    canToggleStrike = editor.can().chain().focus().toggleStrike().run()
   }
 
   const styleOptions = [
@@ -131,13 +143,13 @@
     <span><Dropdown openUp={isBottom} selected={currentAlign} defaultLabel='format_align_left' iconsOnly options={alignOptions} onselect={handleAlignSelect} title='Zarovnání' /></span>
     <span><Dropdown openUp={isBottom} selected={currentFont} defaultLabel='brand_family' options={fontOptions} onselect={handleFontSelect} title='Font' /></span>
     <span class='sep'></span>
-    <button type='button' class='material' onclick={() => editor.chain().focus().decreaseSize().run()} disabled={!editor.can().chain().focus().decreaseSize().run()}>text_decrease</button>
-    <button type='button' class='material' onclick={() => editor.chain().focus().increaseSize().run()} disabled={!editor.can().chain().focus().increaseSize().run()}>text_increase</button>
+    <button type='button' class='material' onclick={() => editor.chain().focus().decreaseSize().run()} disabled={!canDecrease}>text_decrease</button>
+    <button type='button' class='material' onclick={() => editor.chain().focus().increaseSize().run()} disabled={!canIncrease}>text_increase</button>
     <span class='sep'></span>
-    <button type='button' onclick={() => { editor.chain().focus().toggleBold().run(); isBold = !isBold }} disabled={!editor.can().chain().focus().toggleBold().run()} class={isBold ? 'material active' : 'material'} title='Tučně'>format_bold</button>
-    <button type='button' onclick={() => { editor.chain().focus().toggleItalic().run(); isItalic = !isItalic }} disabled={!editor.can().chain().focus().toggleItalic().run()} class={isItalic ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
-    <button type='button' onclick={() => { editor.chain().focus().toggleUnderline().run(); isUnderline = !isUnderline }} disabled={!editor.can().chain().focus().toggleUnderline().run()} class={isUnderline ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
-    <button type='button' onclick={() => { editor.chain().focus().toggleStrike().run(); isStrike = !isStrike }} disabled={!editor.can().chain().focus().toggleStrike().run()} class={isStrike ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
+    <button type='button' onclick={() => { editor.chain().focus().toggleBold().run(); isBold = !isBold }} disabled={!canToggleBold} class={isBold ? 'material active' : 'material'} title='Tučně'>format_bold</button>
+    <button type='button' onclick={() => { editor.chain().focus().toggleItalic().run(); isItalic = !isItalic }} disabled={!canToggleItalic} class={isItalic ? 'material active' : 'material'} title='Kurzívou'>format_italic</button>
+    <button type='button' onclick={() => { editor.chain().focus().toggleUnderline().run(); isUnderline = !isUnderline }} disabled={!canToggleUnderline} class={isUnderline ? 'material active' : 'material'} title='Podtrhnout'>format_underlined</button>
+    <button type='button' onclick={() => { editor.chain().focus().toggleStrike().run(); isStrike = !isStrike }} disabled={!canToggleStrike} class={isStrike ? 'material active' : 'material'} title='Přeškrtnout'>format_strikethrough</button>
     <button type='button' onclick={resetTextStyle} title='Reset stylů textu' class='material' disabled={selectionEmpty}>format_clear</button>
     <span class='sep'></span>
     <button type='button' onclick={() => editor.chain().focus().setDetails().run()} class='material' title='Spoiler'>preview</button>

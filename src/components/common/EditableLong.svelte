@@ -2,8 +2,8 @@
   // Shows a long text that can be edited in place
   import Loading from '@components/common/Loading.svelte'
   import DOMPurify from 'dompurify'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { tooltip } from '@lib/tooltip'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   let { user, onSave, value = $bindable(''), placeholder = '', loading = false, canEdit = false, allowHtml = false, enterSend = false, mentionList = null, fonts = null } = $props()
 
