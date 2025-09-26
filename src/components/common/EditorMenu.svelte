@@ -18,12 +18,12 @@
   let isBold = $state(false)
   let isLink = $state(false)
   let selectionEmpty = $state(0)
-  let canDecrease = $state(false)
-  let canIncrease = $state(false)
-  let canToggleBold = $state(false)
-  let canToggleItalic = $state(false)
-  let canToggleUnderline = $state(false)
-  let canToggleStrike = $state(false)
+  let canDecrease = $state(true)
+  let canIncrease = $state(true)
+  let canToggleBold = $state(true)
+  let canToggleItalic = $state(true)
+  let canToggleUnderline = $state(true)
+  let canToggleStrike = $state(true)
 
   $effect(() => {
     if (editor && !isInitialized) {
