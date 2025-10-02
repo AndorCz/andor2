@@ -1503,7 +1503,27 @@ end;
 $$ language plpgsql security definer;
 
 
--- Function run with Cron
+create or replace function public.update_profile_last_activity_from_post()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  target_profile uuid;
+begin
+  if new.owner_type = 'user' then
+    target_profile := new.owner;
+  elsif new.owner_type = 'character' then
+    select player into target_profile from public.characters where id = new.owner;
+  end if;
+  if target_profile is not null then
+    update public.profiles
+    set last_activity = now()
+    where id = target_profile;
+  end if;
+  return new;
+end;
+$$;
+
+
+-- Functions run with Cron
 
 
 create or replace function delete_old_chat_posts () returns void as $$
@@ -1625,6 +1645,8 @@ create or replace trigger decrement_user_message_unread_on_delete after delete o
 -- Triggers for character message unread counts
 create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
 create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
+-- Trigger to update profile last_activity on new post
+create or replace trigger posts_update_last_activity after insert on public.posts for each row execute function public.update_profile_last_activity_from_post();
 
 
 -- WEBHOOKS --------------------------------------------
