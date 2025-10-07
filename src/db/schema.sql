@@ -39,8 +39,8 @@ create extension if not exists pg_cron;
 select cron.schedule('trim-chat', '0 5 * * *', $$select delete_old_chat_posts()$$);
 select cron.schedule('reset-limits', '0 5 * * *', $$select reset_limits()$$);
 -- update random posts showcase every hour
-select cron.schedule('refresh-game-showcase', '0 * * * *', 'refresh materialized view game_showcase_random;');
-select cron.schedule('refresh-npc-posts', '0 * * * *', 'refresh materialized view npc_posts_random;');
+select cron.schedule('refresh-game-showcase', '0 * * * *', 'refresh materialized view game_showcase_pool;');
+select cron.schedule('refresh-npc-posts', '0 * * * *', 'refresh materialized view npc_posts_pool;');
 
 create extension if not exists citext;
 
@@ -624,13 +624,14 @@ create materialized view game_showcase_pool as
     and p.owner_type = 'character';
 
 
-create materialized view npc_posts_pool as
+create or replace materialized view npc_posts_pool as
   select
     po.*, sc.id as concept_id, sc.name as concept_name
   from posts_owner po
     join npcs on po.owner = npcs.id
     left join solo_concepts sc on npcs.solo_concept = sc.id
-  where po.owner_type = 'npc';
+  where po.owner_type = 'npc'
+    and po.created_at >= now() - interval '1 month';
 
 
 -- FUNCTIONS --------------------------------------------
