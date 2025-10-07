@@ -23,7 +23,7 @@
     generating = true
 
     const basePrompt = `Jsi pomocník vypravěče pro TTRPG (tabletop role-playing) hru hranou online přes textové příspěvky, v českém jazyce.
-      Tvá úloha je pro vypravěče napsat podklady pro hru, formátované pomocí HTML 5 značek (důležité!). Ne markdown. Pouze text, žádné obrázky.
+      Tvá úloha je pro vypravěče napsat podklady pro hru, formátované pomocí HTML 5 značek (důležité!), ale bez CSS stylů. Ne markdown. Pouze text, žádné obrázky a styly.
       Hra kterou připravujeme se jmenuje "${decodeURIComponent(game.name)}"
       Základní popis hry zní: "${decodeURIComponent(game.annotation)}"
       ${codex}
