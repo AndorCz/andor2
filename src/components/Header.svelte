@@ -40,7 +40,7 @@
 {#if errorFetchingHeader}
   <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
 {:else if pathname !== '/chat'}
-  <header style="--header-path: url({$headerPreview || headerUrl || '/header.jpg'})">
+  <header style="--header-path: url({$headerPreview || headerUrl || '/header_autumn.jpg'})">
     <a href='/' id='logo'></a>
     {#if showMenu}
       <nav class='tabs'>
