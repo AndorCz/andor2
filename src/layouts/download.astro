@@ -19,6 +19,7 @@ try {
   console.error(error)
 }
 
+const base = await fetch('https://andor2.cz/css/common/base.css').then((res) => res.text())
 const obsidian = await fetch('https://andor2.cz/css/obsidian.css').then((res) => res.text())
 ---
 
@@ -33,6 +34,7 @@ const obsidian = await fetch('https://andor2.cz/css/obsidian.css').then((res) =>
     <link rel='icon' href='https://www.andor2.cz/favicon.png' type='image/png' />
     <link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap' rel='stylesheet' onload="this.onload=null; this.rel='stylesheet'">
 
+    <style type='text/css' set:html={`${base}`}></style>
     <style type='text/css' set:html={`${obsidian}`}></style>
 
     <title>Andor2.cz ― {title} - záloha hry</title>
