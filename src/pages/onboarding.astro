@@ -5,7 +5,6 @@
   const { supabase, user } = Astro.locals
 
   if (Astro.request.method === 'POST') {
-
     const data = await Astro.request.formData()
     const userName = data.get('userName')
     const oldUserName = data.get('oldUserName')
@@ -35,26 +34,26 @@
       }
 
     } else {
-    if (userName) {
-      if (emailRegex.test(userName)) {
-        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být e-mailová adresa'))
-      }
-      // Check availability
-      const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
-      if (loginCheck) {
-        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno patřilo někomu z původního Andoru a je rezervováno.'))
-      }
+      if (userName) {
+        if (emailRegex.test(userName)) {
+          return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být e-mailová adresa'))
+        }
+        // Check availability
+        const { data: loginCheck, error: loginError } = await supabase.from('old_users').select('old_login').eq('old_login', userName).maybeSingle()
+        if (loginCheck) {
+          return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno patřilo někomu z původního Andoru a je rezervováno.'))
+        }
 
-      const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
-      if (error) {
-        console.error(error)
-        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'))
+        const { error } = await supabase.from('profiles').insert({ id: user.id, name: userName })
+        if (error) {
+          console.error(error)
+          return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Toto jméno je již zabrané. Pokud ho máš na původním Andoru, napiš na eskel.work@gmail.com a vyřešíme to.'))
+        } else {
+          return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
+        }
       } else {
-        return Astro.redirect('/?toastType=success&toastText=' + encodeURIComponent('Uživatelský profil byl dokončen'))
+        return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být prázdná'))
       }
-    } else {
-      return Astro.redirect('/?toastType=error&toastText=' + encodeURIComponent('Přezdívka nesmí být prázdná'))
-    }
     }
   }
 ---

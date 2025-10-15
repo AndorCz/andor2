@@ -108,11 +108,11 @@
 
 <main>
   {#if showOtp}
-    <div>
+    <div class='wrapper'>
       <h1>Zkontroluj svůj e-mail</h1>
       <p>Na adresu <strong>{email}</strong> jsme ti poslali potvrzovací e-mail s přihlašovacím kódem.</p>
       <p class='note'>Pokud e-mail nevidíš, zkontroluj složku spam.</p>
-      <input type='text' bind:value={otp} placeholder='Zadej kód z e-mailu' />
+      <input type='text' bind:value={otp} placeholder='Kód z e-mailu' />
       <button type='button' onclick={verifyOtp} disabled={!otp || otp.length !== 6}>Potvrdit registraci</button>
     </div>
   {:else if !isConfirming}
@@ -201,6 +201,11 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+  .wrapper {
+    margin: auto;
+    margin-bottom: 40px;
+    max-width: 500px;
   }
   .center {
     margin: auto;
