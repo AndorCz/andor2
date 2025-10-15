@@ -1,19 +1,20 @@
 <script>
-  import { preventDefault } from 'svelte/legacy'
-
+  import md5 from 'crypto-js/md5'
   import { onMount } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
   import { showError } from '@lib/toasts'
-  import md5 from 'crypto-js/md5'
+  import { preventDefault } from 'svelte/legacy'
 
+  let otp = $state('')
   let email = $state('')
   let oldLogin = $state('')
   let newLogin = $state('')
-  let oldPassword = $state('')
-  let password = $state('')
+  let password1 = $state('')
   let password2 = $state('')
+  let oldPassword = $state('')
   let isConfirming = $state(false)
-  let showEmailNotice = $state(false)
+  let showOtp = $state(false)
+  let showImport = $state(false)
   // let captchaToken = ''
 
   onMount(() => {
@@ -38,11 +39,11 @@
 
   async function signUpNewUser () {
     // if (!await verifyCaptcha()) { return showError('Captcha tvrdí že nejsi člověk. Prosím obnov stránku a zkus to znovu, nebo napiš na eskel.work@gmail.com') }
-    if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
-    if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } }) // captchaToken
+    if (password1.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
+    if (password1 !== password2) { return showError('Potvrzení hesla nesouhlasí') }
+    const { data, error } = await supabase.auth.signUp({ email, password: password1, options: { emailRedirectTo: window.location.origin } }) // captchaToken
     if (error) { return handleError(error) }
-    if (data.user) { showEmailNotice = true }
+    if (data.user) { showOtp = true }
   }
 
   async function validateUser () {
@@ -63,8 +64,8 @@
   }
 
   async function signUpMigrate () {
-    if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
-    if (password !== password2) { return showError('Potvrzení hesla nesouhlasí') }
+    if (password1.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
+    if (password1 !== password2) { return showError('Potvrzení hesla nesouhlasí') }
     if (newLogin.length < 1) { return showError('Login musí mít alespoň 1 znak') }
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLogin)) { return showError('Login nesmí být e-mailová adresa') }
 
@@ -90,64 +91,76 @@
     if (userExisted) { return showError('Zdá se že se snažíš zabrat cizí login') }
 
     // Create user (All is good - we can proceed with registration)
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password })
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password: password1, options: { emailRedirectTo: window.location.origin } })
     if (authError) { return handleError(authError) }
     if (authError || !authData) { return showError('Chyba registrace: ' + authError.message) }
     if (authData && authData.user) {
-      showEmailNotice = true
+      showOtp = true
     }
   }
 
+  async function verifyOtp () {
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'signup' })
+    if (error) { return handleError(error) }
+    window.location.href = '/'
+  }
 </script>
 
 <main>
-  {#if showEmailNotice}
+  {#if showOtp}
     <div>
       <h1>Zkontroluj svůj e-mail</h1>
-      <p>Na adresu <strong>{email}</strong> jsme ti poslali potvrzovací e-mail.</p>
-      <p>Prosím klikni na odkaz v e-mailu pro dokončení registrace.</p>
+      <p>Na adresu <strong>{email}</strong> jsme ti poslali potvrzovací e-mail s přihlašovacím kódem.</p>
       <p class='note'>Pokud e-mail nevidíš, zkontroluj složku spam.</p>
+      <input type='text' bind:value={otp} placeholder='Zadej kód z e-mailu' />
+      <button type='button' onclick={verifyOtp} disabled={!otp || otp.length !== 6}>Potvrdit registraci</button>
     </div>
   {:else if !isConfirming}
-    <div class='newUser'>
-      <h1>Nová registrace</h1>
-      <form onsubmit={preventDefault(signUpNewUser)}>
-        <div class='row'>
-          <label for='email'>E-mail</label>
-          <input type='email' id='email' bind:value={email} />
-        </div>
-        <div class='row'>
-          <label for='password'>Heslo</label>
-          <input type='password' id='password' bind:value={password} />
-        </div>
-        <div class='row'>
-          <label for='password'>Potvrzení hesla</label>
-          <input type='password' id='password2' bind:value={password2} />
-        </div>
-        <center>
-          <button type='submit' class='large'>Registrovat</button>
-        </center>
-      </form>
-    </div>
 
-    <div class='divider'></div>
-
-    <div class='oldUser'>
-      <h1>Uživatel Andor.cz</h1>
-      <form onsubmit={preventDefault(validateUser)}>
-        <div class='row'>
-          <label for='login'>Login</label>
-          <input type='text' id='oldLogin' bind:value={oldLogin} />
-        </div>
-        <div class='row'>
-          <label for='password'>Heslo</label>
-          <input type='password' id='oldPassword' bind:value={oldPassword} />
-        </div>
-        <center>
-          <button type='submit' class='large'>Importovat</button>
-        </center>
-      </form>
-    </div>
+    {#if !showImport}
+      <div class='newUser'>
+        <h1>Nová registrace</h1>
+        <form onsubmit={preventDefault(signUpNewUser)}>
+          <div class='row'>
+            <label for='email'>E-mail</label>
+            <input type='email' id='email' bind:value={email} />
+          </div>
+          <div class='row'>
+            <label for='password'>Heslo</label>
+            <input type='password' id='password1' bind:value={password1} />
+          </div>
+          <div class='row'>
+            <label for='password'>Potvrzení hesla</label>
+            <input type='password' id='password2' bind:value={password2} />
+          </div>
+          <center>
+            <button type='submit' class='large'>Registrovat</button>
+          </center>
+        </form>
+      </div>
+      <div class='importPrompt'>
+        <h3>Měl/a jsi účet na starém Andor.cz (A1)?</h3>
+        <button type='button' onclick={() => { showImport = true }}>Importovat účet</button>
+      </div>
+    {:else}
+      <div class='oldUser'>
+        <a href='/signup'>&larr; Zpět na novou registraci</a>
+        <h1>Uživatel Andor.cz (A1)</h1>
+        <form onsubmit={preventDefault(validateUser)}>
+          <div class='row'>
+            <label for='login'>Login</label>
+            <input type='text' id='oldLogin' bind:value={oldLogin} />
+          </div>
+          <div class='row'>
+            <label for='password'>Heslo</label>
+            <input type='password' id='oldPassword' bind:value={oldPassword} />
+          </div>
+          <center>
+            <button type='submit' class='large'>Importovat</button>
+          </center>
+        </form>
+      </div>
+    {/if}
   {:else}
     <div class='center'>
       <h1>Potvrzení importu</h1>
@@ -163,7 +176,7 @@
         </div>
         <div class='row'>
           <label for='password'>Nové Heslo</label>
-          <input type='password' id='password' bind:value={password} />
+          <input type='password' id='password1' bind:value={password1} />
         </div>
         <div class='row'>
           <label for='password'>Potvrzení hesla</label>
@@ -182,30 +195,19 @@
 <div id='captchaEl'></div>
 
 <style>
-  main {
+  form {
+    margin: auto;
+    max-width: 500px;
     display: flex;
-    justify-content: space-around;
-    height: fit-content;
-    gap: 40px;
+    flex-direction: column;
+    gap: 20px;
   }
-    form {
-      margin: auto;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
   .center {
     margin: auto;
   }
   .row {
     display: flex;
     align-items: center;
-  }
-  .divider {
-    width: 5px;
-    align-self: stretch;
-    background-color: var(--block);
   }
   label {
     display: block;
@@ -218,14 +220,15 @@
   button {
     margin-top: 20px;
   }
-
-  @media (max-width: 600px) {
-    main {
-      flex-direction: column;
-      gap: 40px;
-    }
-    .divider {
-      display: none;
-    }
+  .importPrompt {
+    margin: 40px auto;
+    padding: 20px;
+    text-align: center;
+    border-radius: 20px;
+    border: 1px solid var(--overlay);
+    background-color: var(--block);
   }
+    .importPrompt h3 {
+      margin: 0px;
+    }
 </style>

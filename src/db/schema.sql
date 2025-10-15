@@ -74,6 +74,7 @@ create table profiles (
   autorefresh boolean default false,
   -- editor_bubble boolean default false,
   colors text[] default '{}',
+  publish_consent boolean,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 
