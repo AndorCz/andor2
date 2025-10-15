@@ -9,6 +9,7 @@
 
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
+  let tirienPeople = $state(0)
   let errorFetchingHeader = $state(false)
 
   async function getHeaderUrl () {
@@ -33,6 +34,13 @@
       chatPeople = Object.keys(newState).length
     })
     chatChannel.subscribe()
+    // tirien presence
+    const tirienChannel = supabase.channel('tirien-global')
+    tirienChannel.on('presence', { event: 'sync' }, () => {
+      const newState = tirienChannel.presenceState()
+      tirienPeople = Object.keys(newState).length
+    })
+    tirienChannel.subscribe()
     if (headerStorage) { getHeaderUrl() }
   })
 </script>
@@ -55,7 +63,10 @@
           {#if chatUnread}<span class='unread badge'></span>{/if}
         </a>
         {#if $platform === 'desktop'}
-          <a href='/tirien' class:active={pathname.startsWith('/tirien')}>Město</a>
+          <a href='/tirien' class:active={pathname.startsWith('/tirien')}>
+            <span>Město</span>
+            {#if tirienPeople}({tirienPeople}){/if}
+          </a>
         {/if}
       </nav>
     {/if}
