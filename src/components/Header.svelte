@@ -9,7 +9,7 @@
 
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
-  let tirienPeople = $state(0)
+  // let tirienPeople = $state(0)
   let errorFetchingHeader = $state(false)
 
   async function getHeaderUrl () {
@@ -35,12 +35,14 @@
     })
     chatChannel.subscribe()
     // tirien presence
+    /*
     const tirienChannel = supabase.channel('tirien-global')
     tirienChannel.on('presence', { event: 'sync' }, () => {
       const newState = tirienChannel.presenceState()
       tirienPeople = Object.keys(newState).length
     })
     tirienChannel.subscribe()
+    */
     if (headerStorage) { getHeaderUrl() }
   })
 </script>
@@ -65,7 +67,7 @@
         {#if $platform === 'desktop'}
           <a href='/tirien' class:active={pathname.startsWith('/tirien')}>
             <span>Město</span>
-            {#if tirienPeople}({tirienPeople}){/if}
+            <!--{#if tirienPeople}({tirienPeople}){/if}-->
           </a>
         {/if}
       </nav>
