@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { headerPreview } from '@lib/stores'
   import { supabase } from '@lib/database-browser'
   import { initToasts, lookForToast } from '@lib/toasts'
@@ -9,7 +9,7 @@
 
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
-  // let tirienPeople = $state(0)
+  let tirienPeople = $state(0)
   let errorFetchingHeader = $state(false)
 
   async function getHeaderUrl () {
@@ -22,28 +22,39 @@
     }
   }
 
+  let chatChannel
+  let tirienChannel
+
   onMount(() => {
     $headerPreview = null // clear preview, only used momentarily after upload
     initToasts()
     lookForToast()
     document.addEventListener('astro:page-load', () => { lookForToast() })
     // chat presence
-    const chatChannel = supabase.channel('chat-01')
+    chatChannel = supabase.channel('chat-01')
     chatChannel.on('presence', { event: 'sync' }, () => { // sync is called on every presence change
       const newState = chatChannel.presenceState()
       chatPeople = Object.keys(newState).length
     })
     chatChannel.subscribe()
     // tirien presence
-    /*
-    const tirienChannel = supabase.channel('tirien-global')
+    tirienChannel = supabase.channel('tirien-global')
     tirienChannel.on('presence', { event: 'sync' }, () => {
       const newState = tirienChannel.presenceState()
       tirienPeople = Object.keys(newState).length
     })
     tirienChannel.subscribe()
-    */
     if (headerStorage) { getHeaderUrl() }
+  })
+
+  onDestroy(() => {
+    // Clean up channel subscriptions to prevent memory leaks and zombie connections
+    if (chatChannel) {
+      supabase.removeChannel(chatChannel)
+    }
+    if (tirienChannel) {
+      supabase.removeChannel(tirienChannel)
+    }
   })
 </script>
 
@@ -67,7 +78,7 @@
         {#if $platform === 'desktop'}
           <a href='/tirien' class:active={pathname.startsWith('/tirien')}>
             <span>Město</span>
-            <!--{#if tirienPeople}({tirienPeople}){/if}-->
+            {#if tirienPeople}({tirienPeople}){/if}
           </a>
         {/if}
       </nav>
