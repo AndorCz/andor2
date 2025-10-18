@@ -1,5 +1,5 @@
 ---
-import LayoutMini from '@layouts/layoutMini.astro'
+import LayoutTirien from '@layouts/layoutTirien.astro'
 
 // Get supabase user auth
 const accessToken = Astro.cookies.get('sb-access-token')?.value
@@ -15,7 +15,7 @@ if (accessToken && refreshToken) {
 const iframeSrc = `${path}${params.size ? `?${params}` : ''}`
 ---
 
-<LayoutMini title='Tirien: Hlavní město Andoru'>
+<LayoutTirien title='Tirien: Hlavní město Andoru' sidePadding={false}>
   <div class='tirien-iframe-container'>
     <iframe 
       src={iframeSrc}
@@ -25,15 +25,11 @@ const iframeSrc = `${path}${params.size ? `?${params}` : ''}`
       allow='autoplay; encrypted-media; fullscreen'>
     </iframe>
   </div>
-</LayoutMini>
+</LayoutTirien>
 
 <style>
   .tirien-iframe-container {
     width: 100%;
-    padding-top: 100px;
-    padding-bottom: 40px;
-  }
-  iframe {
-    border-radius: 20px;
+    padding-top: 55px;
   }
 </style>

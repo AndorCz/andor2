@@ -1,0 +1,147 @@
+---
+import 'tippy.js/dist/tippy.css'
+import { ViewTransitions } from 'astro:transitions'
+import pkg from '../../package.json' with { type: 'json' }
+import Sidebar from '@components/sidebar/Sidebar.svelte'
+import Store from '@components/common/Store.svelte'
+import Arrows from '@components/common/Arrows.svelte'
+import Lightbox from '@components/common/Lightbox.svelte'
+import MiniHeader from '@components/common/MiniHeader.svelte'
+
+const { version } = pkg
+const { pathname } = new URL(Astro.url, Astro.site)
+const { user } = Astro.locals
+const { title, headerStatic, headerStorage, sidePadding = true } = Astro.props
+---
+
+<html lang='cs'>
+	<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name='description' content='Andor2.cz ― Dračí Doupě online, TTRPG, VTT, RPG hry online, Dungeons & Dragons, D&D, DnD, Vampire, Call of Cthulhu, Pathfinder, Shadowrun, One Ring, Cyberpunk, Fate, Star Wars, Warhammer, Pán Prstenů' />
+    <link rel='manifest' href='/manifest.json'>
+
+    <link rel='icon' href='/favicon.png' type='image/png' />
+
+    <!-- fonts -->
+    <link rel='preconnect' href='https://fonts.googleapis.com'>
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,900;1,400;1,900&display=swap'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@100..900&family=Orbitron:wght@400..900&display=swap'>
+    <!-- font css response output placed manually to base.css, as workaround for google not serving properly to opera gx -->
+    <!-- <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:wght,FILL@100..700,1&subset=latin-ext&icon_names=add,archive,arrow_back,arrow_back_ios,arrow_drop_down,arrow_drop_up,arrow_selector_tool,assignment,backpack,bookmark,bookmark_remove,brand_family,casino,castle,chat,check,chevron_left,chevron_right,circle,close,code,content_copy,content_paste,delete,domino_mask,done,download,edit,explore,favorite,fiber_manual_record,filter_alt,format_align_center,format_align_justify,format_align_left,format_align_right,format_bold,format_clear,format_color_reset,format_h1,format_h2,format_h3,format_h4,format_image_left,format_image_right,format_ink_highlighter,format_italic,format_paragraph,format_quote,format_size,format_strikethrough,format_underlined,forum,globe,group,groups,hourglass_top,image,info,keep,keep_off,label_important,light_mode,link,link_off,login,logout,mail,mail_off,menu,minimize,mode_night,more_vert,notifications,notifications_off,person,person_add,photo_size_select_large,photo_size_select_small,picture_in_picture_center,preview,redo,remove,reply,robot_2,schedule,search,send,settings,share,shield,side_navigation,skull,sort,star,table_rows,table_rows_narrow,text_decrease,text_increase,transfer_within_a_station,unarchive,undo,unfold_more,unsubscribe,upload,verified,visibility,visibility_off,warning&display=block' />-->
+
+    <!-- styles -->
+    <link rel='stylesheet' href={`/css/common/base.css?v=${version}`}>
+    <link rel='stylesheet' href={`/css/${user.theme || 'obsidian'}.css?v=${version}`}>
+
+    <ViewTransitions />
+    <title>Andor2.cz{title ? ` ― ${title}` : ''}</title>
+  </head>
+	<body>
+    <Lightbox client:only='svelte' />
+    <div id='center'>
+      <main id='scrollable'>
+        <MiniHeader client:only='svelte' {pathname} />
+        <div class={`content ${sidePadding ? 'mini' : 'nano'}`}>
+          <slot />
+        </div>
+      </main>
+      <!-- show sidebar when logged in or logged out, not in onboarding when name is missing -->
+      {(user.name || (!user.name && !user.email)) ? (
+        <Sidebar {pathname} {user} client:only='svelte' />
+      ) : null}
+    </div>
+    <!-- analytics -->
+    <script async src='https://www.googletagmanager.com/gtag/js?id=G-W0K9N4XNHJ'></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag () { window.dataLayer.push(arguments) }
+      gtag('js', new Date())
+      gtag('config', 'G-W0K9N4XNHJ')
+    </script>
+  </body>
+</html>
+
+<style>
+  body {
+    margin-top: 0px;
+  }
+  #center {
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    contain: content;
+  }
+    #scrollable {
+      contain: content;
+      height: 100svh;
+      overflow: auto;
+      outline: none;
+      position: relative;
+      flex: 1;
+    }
+      .content {
+        position: relative;
+        padding: 0px;
+        height: 100svh;
+        background: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+    footer {
+      margin-top: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+  
+  button.up {
+    position: sticky;
+    top: 0px;
+    right: 0px;
+    z-index: 9;
+    border-radius: 0 0 0 100%;
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+  }
+
+  @media (max-width: 1200px) {
+    .content {
+      padding: 20px 30px 30px 30px;
+    }
+  }
+
+  @media (max-width: 860px) {
+    #header {
+      justify-content: space-between;
+      gap: 0px;
+    }
+    body {
+      margin: 0px;
+    }
+    main {
+      border-radius: 0px;
+    }
+      .content {
+        padding: 15px;
+        min-height: calc(100svh - 150px);
+      }
+    footer {
+      display: none;
+    }
+  }
+
+  @media (max-width: 530px) {
+    #header li .material {
+      display: none;
+    }
+      .content {
+        padding: 0px 15px;
+      }
+  }
+</style>
