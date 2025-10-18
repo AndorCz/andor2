@@ -7,12 +7,18 @@ const refreshToken = Astro.cookies.get('sb-refresh-token')?.value
 
 // Path based on environment
 const path = import.meta.env.DEV ? 'http://localhost:5173' : 'https://tirien.cz'
+const params = new URLSearchParams()
+if (accessToken && refreshToken) {
+  params.set('accessToken', accessToken)
+  params.set('refreshToken', refreshToken)
+}
+const iframeSrc = `${path}${params.size ? `?${params}` : ''}`
 ---
 
 <LayoutMini title='Tirien: Hlavní město Andoru'>
   <div class='tirien-iframe-container'>
     <iframe 
-      src={`${path}?accessToken=${accessToken}&refreshToken=${refreshToken}`}
+      src={iframeSrc}
       width='100%' 
       height='600px'
       frameborder='0'
