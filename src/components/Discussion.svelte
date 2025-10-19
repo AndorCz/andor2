@@ -8,13 +8,12 @@
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
 
-  let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false } = $props()
+  let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false, mentionList = [] } = $props()
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
 
-  let mentionList = $state([])
   let posts = $state([])
   let textareaRef = $state()
   let textareaValue = $state($discussionStore.unsent || '') // load unsent post
@@ -46,7 +45,14 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    mentionList = await loadAllPosters()
+    const posters = await loadAllPosters()
+    if (isFilledArray(mentionList)) { // combine and deduplicate, used for game discussions to add players to characters
+      const combined = [...mentionList, ...posters]
+      const uniquePosters = new Map(combined.map((poster) => [poster.id, poster]))
+      mentionList = Array.from(uniquePosters.values())
+    } else {
+      mentionList = posters
+    }
     if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
       addCharacterNameStyles(data.characters)
     }
