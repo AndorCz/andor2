@@ -1,9 +1,14 @@
 ---
 import LayoutTirien from '@layouts/layoutTirien.astro'
 
+export const prerender = false
+
 const { user } = Astro.locals
 
-  // Get supabase user auth
+// Avoid caching so the iframe always reflects current auth cookies
+Astro.response.headers.set('Cache-Control', 'no-store')
+
+// Get supabase user auth
 const accessToken = Astro.cookies.get('sb-access-token')?.value
 const refreshToken = Astro.cookies.get('sb-refresh-token')?.value
 
