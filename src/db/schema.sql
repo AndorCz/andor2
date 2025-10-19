@@ -959,8 +959,18 @@ begin
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
-      -- search content and owner character name
-      and (_search is null or (lower(p.content) like '%' || search_lower || '%') or (lower(p.owner_name) like '%' || search_lower || '%'))
+      -- search content, owner character name, and any characters in the audience
+      and (
+        _search is null
+        or lower(p.content) like '%' || search_lower || '%'
+        or lower(p.owner_name) like '%' || search_lower || '%'
+        or exists (
+          select 1
+          from unnest(coalesce(p.audience, '{}'::uuid[])) as audience_id
+          join characters c on c.id = audience_id
+          where lower(c.name) like '%' || search_lower || '%'
+        )
+      )
     ), ordered_posts as (
       select
         to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post,
