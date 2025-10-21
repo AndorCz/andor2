@@ -1,90 +1,153 @@
 
 # Andor2
 
-Andor is a web app for playing role-playing games online.
-The target audience are players of TTRPG games, primarily in czech language.
-The initial version will be an experimental MVP, with limited functionality.
+Andor2 is a comprehensive web application for playing tabletop role-playing games (TTRPGs) online. It supports multiple game systems and provides a full-featured platform for game masters and players to create, manage, and play RPG campaigns collaboratively.
 
-## List of features
-  - Authentication (Email and Google)
-  - List of games
-  - Game
-    - AI storyteller's assistant
-    - Player characters, assigned to users
-    - Game thread
-      - Filtering
-      - Whispered posts
-    - Dice
-    - Maps
-    - Codex of game information
-    - Discussion: Meta gaming chat
-  - Works (User submitted short stories, images and music)
-  - Boards (General discussion threads on various topics)
-  - General chat
-  - User DMs
-  - Character DMs
+The platform is primarily targeted at Czech-speaking TTRPG players but supports international use with multiple game systems.
 
-## Pages
+## Features
 
-  ### Index: List of games
-    Components: Table with names - links to game pages
+### Core Functionality
+- **Authentication**: Email and Google OAuth login
+- **Game Management**: Create and manage RPG campaigns
+- **Character Management**: Player characters with detailed profiles
+- **Game Threads**: Structured game session posts with filtering and whispered posts
+- **Dice Rolling**: Integrated 3D dice system with sound effects
+- **Interactive Maps**: Upload and manage campaign maps
+- **Codex**: Game information database with sections and pages
+- **Discussion Boards**: Meta-gaming chat and general discussion threads
+- **General Chat**: Real-time messaging
+- **Direct Messages**: User-to-user and character-to-character messaging
+- **Solo Games**: AI-powered solo adventures
+- **User Works**: Community content including short stories, images, and music
 
-  ### Game: Game thread
-    Components: Player and character management, text input, posts, paging
+### Supported Game Systems
+- Dungeons & Dragons 5th Edition (D&D 5e)
+- Vampire: The Masquerade 5th Edition
+- Dračí doupě 1.6 (Czech system)
+- Cyberpunk 2020
+- Call of Cthulhu
+- Warhammer
+- Shadowrun
+- Pathfinder
+- GURPS
+- Fate
+- Savage Worlds
+- Dungeon World
+- And many more...
 
-  ### Login: Authenticate with Google
-    Components: Google login button
+### AI Integration
+- AI Storyteller Assistant for game masters
+- Multiple AI providers: OpenAI, Google Gemini, AIML, Replicate, Moonshot
+- Intelligent NPC generation and management
 
-  Folder structure is based on [Astro's recommended project structure](https://docs.astro.build/en/core-concepts/project-structure).
+## Tech Stack
 
-## Tech stack
+### Frontend
+- **Astro**: Static site generation and server-side rendering
+- **Svelte**: Reactive UI components
+- **TipTap**: Rich text editor
+- **PixiJS**: Canvas rendering for maps and graphics
+- **3D Dice**: WebGL dice rolling simulation
 
-  ### Tools
-  - [Git](https://git-scm.com) for version control
+### Backend
+- **Astro Server**: API routes and server-side logic
+- **Supabase**: PostgreSQL database, authentication, and storage
+- **Cloudflare Workers**: Serverless hosting and edge computing
 
-  ### Back-end
-  - [Astro](https://docs.astro.build)
-  - [Supabase](https://supabase.com) - database, auth
-  - [OpenAI API](https://openai.com/blog/openai-api/), model GPT-4o
-  - [Gemini API](https://ai.google.dev/gemini-api), model Gemini 1.5
+### Development Tools
+- **Vite**: Fast build tool and dev server
+- **ESLint**: Code linting
+- **Prettier**: Code formatting
+- **Sentry**: Error monitoring and performance tracking
 
-  ### Front-end
-  - [Svelte](https://svelte.dev) for UI components, within Astro
-  - [Svelte Testing Library](https://testing-library.com/docs/svelte-testing-library/intro) for unit tests
+### Third-party Services
+- **Database & Auth**: Supabase
+- **Hosting**: Cloudflare Pages/Workers
+- **Email**: Brevo (formerly Sendinblue)
+- **AI Providers**: OpenAI, Google Gemini, AIML, Replicate, Moonshot
+- **Push Notifications**: OneSignal
+- **CAPTCHA**: Cloudflare Turnstile
 
-## 🧞 Commands
+## Getting Started
 
-All commands are run from the root of the project, from a terminal:
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Supabase CLI (for local development)
 
-| Command                   | Action                                           |
-| :-------------------------| :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+### Installation
 
-# Astro
-
-The framework does server-side rendering. In case a client-side hydration is needed, use a directive such as this:
+1. Clone the repository:
+```bash
+git clone https://github.com/AndorCz/andor2.git
+cd andor2
 ```
-<UserPanel client:load />
+
+2. Install dependencies:
+```bash
+npm install
 ```
 
-## 🚀 Project Structure
+3. Set up environment variables:
+Copy `.env` and configure your API keys and secrets.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+4. Start Supabase locally (optional for development):
+```bash
+npm run db
 ```
 
-Astro looks for `.astro` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+5. Sync database schema:
+```bash
+npm run sync
+```
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+6. Start the development server:
+```bash
+npm run dev
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+The application will be available at `http://localhost:4321`.
+
+## Available Scripts
+
+| Command                   | Description                                      |
+| :------------------------ | :------------------------------------------------ |
+| `npm install`             | Install dependencies                              |
+| `npm run dev`             | Start development server at `localhost:4321`     |
+| `npm run build`           | Build production site to `./dist/`                |
+| `npm run preview`         | Preview production build locally                  |
+| `npm run db`              | Start local Supabase instance                     |
+| `npm run functions`       | Serve Supabase Edge Functions locally             |
+| `npm run sync`            | Sync database schema with local Supabase          |
+| `npm run astro ...`       | Run Astro CLI commands                            |
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable Svelte components
+├── layouts/            # Astro page layouts
+├── lib/                # Utility libraries and stores
+├── pages/              # Astro pages and API routes
+├── prompts/            # AI system prompts for different games
+├── db/                 # Database schema and policies
+└── ...
+
+public/                 # Static assets
+supabase/              # Supabase configuration and migrations
+```
+
+## Contributing
+
+This project is licensed under GPL v3. See `LICENSE.md` for details.
+
+## Deployment
+
+The application is configured for deployment on Cloudflare Pages with Workers. Use `npm run build` to generate the production build, then deploy the `dist/` directory.
+
+For local Cloudflare development:
+```bash
+npm run dev-cloudflare
+```
+
