@@ -227,12 +227,23 @@
     fileInputEl.value = ''
   }
 
-  function addImageUrl () {
+  async function addImageUrl () {
     const url = window.prompt('Veřejná cesta k obrázku:')
-    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
-      editor.chain().focus().setImage({ src: url }).run()
-    } else {
+    if (!(url && (url.startsWith('https://') || url.startsWith('http://')))) {
       return window.alert('Obrázek musí být veřejně dostupný')
+    }
+
+    const img = new window.Image()
+    img.src = url
+
+    try {
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+      })
+      editor.chain().focus().setImage({ src: url, width: img.naturalWidth || img.width, height: img.naturalHeight || img.height }).run()
+    } catch (error) {
+      editor.chain().focus().setImage({ src: url }).run()
     }
   }
 
