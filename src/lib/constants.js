@@ -21,6 +21,7 @@ export const gameSystems = [
   { value: 'base', label: 'Bez systému' },
   { value: 'dnd5', label: 'D&D e5' },
   { value: 'vampire5', label: 'Vampire e5' },
+  { value: 'dracihlidka', label: 'Dračí Hlídka' },
   { value: 'yearzero', label: 'Year Zero Engine' },
   { value: 'drd1', label: 'Dračí doupě e1.6' },
   { value: 'cyberpunk', label: 'Cyberpunk 2020' },

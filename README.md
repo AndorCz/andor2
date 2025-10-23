@@ -64,7 +64,7 @@ The platform is primarily targeted at Czech-speaking TTRPG players but supports 
 ### Third-party Services
 - **Database & Auth**: Supabase
 - **Hosting**: Cloudflare Pages/Workers
-- **Email**: Brevo (formerly Sendinblue)
+- **Email**: Amazon SES
 - **AI Providers**: OpenAI, Google Gemini, AIML, Replicate, Moonshot
 - **Push Notifications**: OneSignal
 - **CAPTCHA**: Cloudflare Turnstile
