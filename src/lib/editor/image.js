@@ -23,10 +23,10 @@ export const CustomImage = Image.extend({
       }
     }
     const alignmentStyle = getAlignmentStyle(node.attrs.alignment)
-    const imageWidth = node.attrs.width < this.editor.view.dom.offsetWidth ? node.attrs.width : this.editor.view.dom.offsetWidth
-    // const aspectRatio = node.attrs.height / node.attrs.width
-    const width = imageWidth ? `width: ${imageWidth * node.attrs.size / 100}px;` : ''
-    const sizeStyle = `${width} object-fit: contain; height: auto; max-width: 100%;` // height: fit-content is problematic in safari
+    const size = node.attrs.size ?? 100
+    const widthStyle = `width: ${size}%;`
+    const maxWidthStyle = node.attrs.width ? `max-width: ${node.attrs.width}px;` : 'max-width: 100%;'
+    const sizeStyle = `${widthStyle} ${maxWidthStyle} object-fit: contain; height: auto;` // height: fit-content is problematic in safari
     const style = `${alignmentStyle} ${sizeStyle}`
     return ['img', { ...HTMLAttributes, style }]
   },
