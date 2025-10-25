@@ -95,6 +95,9 @@
     <button class='clear material clean' onclick={clearPortrait} title='Smazat' use:tooltip>delete</button>
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
+  {#if identity.reward_icon}
+    <a href={identity.reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>
+  {/if}
 </div>
 
 <style>
@@ -139,5 +142,17 @@
     }
       .clear:hover {
         font-size: 28px;
+      }
+    .reward {
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      width: 50px;
+      height: 50px;
+      transition: transform 0.2s ease-in-out;
+    }
+      .reward:hover {
+        transform: scale(1.1);
+        filter: brightness(1.2);
       }
 </style>

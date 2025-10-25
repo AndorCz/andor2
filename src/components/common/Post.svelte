@@ -12,10 +12,16 @@
 
   let expanded = $state(false)
   let contentEl = $state()
+  let iconEl = $state()
+  let portraitEl = $state()
+  let rewardEl = $state()
   const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
 
   onMount(() => {
     checkMeMentioned()
+    positionReward()
+    window.addEventListener('resize', positionReward)
+    return () => window.removeEventListener('resize', positionReward)
   })
 
   function onHeaderClick () {
@@ -51,21 +57,31 @@
       if (reply.textContent === user.name + ':') { reply.classList.add('highlight') }
     })
   }
+
+  function positionReward () {
+    if ($platform === 'desktop' && iconEl && portraitEl && rewardEl) {
+      const iconHeight = iconEl.offsetHeight
+      const portraitHeight = portraitEl.offsetHeight
+      const effectiveHeight = Math.min(portraitHeight, iconHeight)
+      rewardEl.style.top = `${effectiveHeight - 35}px`
+    }
+  }
 </script>
 
 <div onclick={onImageClick} class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
   {#if $platform === 'desktop'}
-    <div class='icon' style='--iconSize: {iconSize}px'>
+    <div class='icon' style='--iconSize: {iconSize}px' bind:this={iconEl}>
       {#if post.owner_portrait}
-        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} bind:this={portraitEl} />
       {:else if post.owner_type === 'character'}
-        <img src='/default_char.jpg' class='portrait' alt={post.owner_name} />
+        <img src='/default_char.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} />
       {:else}
-        <img src='/default_user.jpg' class='portrait' alt={post.owner_name} />
+        <img src='/default_user.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} />
       {/if}
     </div>
   {/if}
   <div class='body'>
+    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' bind:this={rewardEl} /></a>{/if}
     <div class='header'>
       {#if unread}
         <span class='badge'></span>
@@ -110,6 +126,7 @@
           {:else}
             <img src='/default_user.jpg' class='portrait' alt={post.owner_name} />
           {/if}
+          {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' bind:this={rewardEl} /></a>{/if}
         </div>
       {/if}
       {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
@@ -159,7 +176,7 @@
       .icon img {
         display: block;
       }
-      .desktop .icon img {
+      .desktop .icon .portrait {
         position: absolute;
         top: 0px;
         left: 0px;
@@ -169,10 +186,6 @@
       .mobile .icon {
         border: 1px solid var(--panel);
         float: left;
-        /*
-        margin-top: -16px;
-        margin-left: -15px;
-        */
         margin-right: 15px;
         margin-bottom: 5px;
       }
@@ -268,6 +281,21 @@
     .illustration {
       object-fit: contain;
     }
+    .iconBottom {
+      border: 1px red solid;
+    }
+    .reward {
+      position: absolute;
+      left: 40px;
+      width: 50px;
+      height: 50px;
+      z-index: 99;
+      transition: transform 0.2s ease-in-out;
+    }
+      .reward:hover {
+        transform: scale(1.1);
+        filter: brightness(1.2);
+      }
 
   @media (max-width: 860px) {
     .post {
@@ -302,5 +330,15 @@
     .illustration {
       max-width: 20%;
     }
+    .icon {
+      position: relative;
+      overflow: visible;
+    }
+      .reward {
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        left: unset;
+      }
   }
 </style>

@@ -75,6 +75,7 @@ create table profiles (
   -- editor_bubble boolean default false,
   colors text[] default '{}',
   publish_consent boolean,
+  reward_icon text default null,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 
@@ -485,7 +486,11 @@ create or replace view discussion_posts_owner as
       when p.owner_type = 'user' then profiles.portrait
       when p.owner_type = 'character' then characters.portrait
     end as owner_portrait,
-    reactions.*
+    reactions.*,
+    case
+      when p.owner_type = 'user' then profiles.reward_icon
+      else null
+    end as owner_reward_icon
   from
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
@@ -508,7 +513,11 @@ create or replace view posts_owner as
       when p.owner_type = 'npc' then npcs.portrait
     end as owner_portrait,
     get_character_names (p.audience) as audience_names,
-    reactions.*
+    reactions.*,
+    case
+      when p.owner_type = 'user' then profiles.reward_icon
+      else null
+    end as owner_reward_icon
   from
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
@@ -520,7 +529,7 @@ create or replace view posts_owner as
 
 create or replace view game_posts_owner as
   select
-    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.openai_post, p.moderated, p.dice, p.created_at, p.updated_at, p.important,
+    p.*,
     characters.name as owner_name,
     characters.portrait as owner_portrait,
     games.id as game_id
@@ -1235,6 +1244,7 @@ begin
           p.id,
           p.name,
           p.portrait,
+          p.reward_icon,
           exists(select 1 from unread_users u where u.id = p.id) as has_unread,
           exists(select 1 from contact_ids c where c.id = p.id) as contacted,
           p.last_activity > now() - interval '5 minutes' as active,
@@ -1252,6 +1262,7 @@ begin
           'id',         cu.id,
           'name',       cu.name,
           'portrait',   cu.portrait,
+          'reward_icon', cu.reward_icon,
           'has_unread', cu.has_unread,
           'contacted',  cu.contacted,
           'active',     cu.active,
