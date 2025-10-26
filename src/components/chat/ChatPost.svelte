@@ -50,6 +50,7 @@
         <a href={'/user?id=' + post.owner} class='user'>
           <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
         </a>
+        {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>{/if}
       {/if}
     </div>
     <Reactions {user} {post} type='post' />
@@ -59,6 +60,7 @@
         <a href={'/user?id=' + post.owner} class='user'>
           <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
         </a>
+        {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>{/if}
       {/if}
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
@@ -171,6 +173,22 @@
       font-size: 12px;
       color: var(--dim);
     }
+    .reward {
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      width: 40px;
+      height: 40px;
+      transition: transform 0.2s ease-in-out;
+    }
+      .reward:hover {
+        transform: scale(1.1);
+        filter: brightness(1.2);
+      }
+    .theirs .reward {
+      left: -10px;
+    }
+
   @media (max-width: 500px) {
     .portrait {
       min-width: 50px;
