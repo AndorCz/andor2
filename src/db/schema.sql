@@ -1677,7 +1677,7 @@ create or replace trigger posts_update_last_activity after insert on public.post
 
 create trigger notify after insert on public.posts for each row
 execute function supabase_functions.http_request (
-  'https://zwclrcefxleqmzhhfcte.supabase.co/functions/v1/notify', 'POST', '{ "Content-Type":"application/json" }', '{}', '1000'
+  'https://zwclrcefxleqmzhhfcte.supabase.co/functions/v1/notify2', 'POST', '{ "Content-Type":"application/json" }', '{}', '1000'
 );
 
 
