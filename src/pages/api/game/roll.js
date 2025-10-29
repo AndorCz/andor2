@@ -3,9 +3,27 @@ const rollDice = (sides, count) => {
 }
 
 export const GET = async ({ request, url, redirect, locals }) => {
-  let { thread, dice, owner, audience } = Object.fromEntries(url.searchParams)
+  let { thread, dice, owner, audience, range } = Object.fromEntries(url.searchParams)
 
-  if (thread && dice && owner) {
+  if (thread && owner && (dice || range)) {
+    audience = audience && audience.length ? JSON.parse(audience) : null
+
+    if (range) {
+      const parsedRange = parseInt(range, 10)
+      if (Number.isNaN(parsedRange) || parsedRange < 1) {
+        return new Response(JSON.stringify({ error: 'Neplatný rozsah pro hod čísla' }), { status: 400 })
+      }
+
+      const roll = rollDice(parsedRange, 1)[0]
+      const post = `<div class='diceRoll'><div class='row'><span class='type'>1-${parsedRange}:</span><b>${roll}</b></div></div>`
+
+      const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience, post_type: 'game' }
+      const { error } = await locals.supabase.from('posts').insert(postData)
+      if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
+
+      return new Response(JSON.stringify({ number: roll }), { status: 200 })
+    }
+
     // parse dice notation
     const diceObject = dice.split(',').reduce((acc, curr) => { const [count, type] = curr.split('k').map(Number); acc['k' + type] = count; return acc }, {})
 
@@ -37,7 +55,6 @@ export const GET = async ({ request, url, redirect, locals }) => {
     post += '</div>'
 
     // save as a post to db
-    audience = audience && audience.length ? JSON.parse(audience) : null
     const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience, post_type: 'game' }
     const { error } = await locals.supabase.from('posts').insert(postData)
     if (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500 }) }
