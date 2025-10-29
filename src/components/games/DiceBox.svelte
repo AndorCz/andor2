@@ -50,6 +50,26 @@
     }
   }
 
+  async function showNumberRoll () {
+    try {
+      const input = window.prompt('Zadej horní hranici hodu (minimálně 1)', '100')
+      if (input === null) { return }
+
+      const max = parseInt(input.toString().replace(/[^0-9]/g, ''), 10)
+      if (!max || max < 1) { return showError('Neplatná hodnota rozsahu') }
+
+      const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds
+      const res = await fetch(`/api/game/roll?thread=${threadId}&range=${max}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
+      const json = await res.json()
+      if (!res.ok || json.error) { return showError(json.error || 'Nepodařilo se hodit číslo') }
+      showSuccess(`Padlo číslo ${json.number}`)
+      onRoll()
+    } catch (e) {
+      console.error('Error during number roll:', e)
+      showError('Nepodařilo se hodit číslo')
+    }
+  }
+
   function parseNotation (event) {
     const dicePattern = /(\d+)(k\d+)/g
     let match
@@ -147,7 +167,10 @@
         <input type='text' value={notation} oninput={parseNotation} size='48' />
         <button onclick={copyNotation} class='copy material plain'>content_copy</button>
       </div>
-      <button onclick={showRoll} class='roll'>Hodit kostky</button>
+      <div class='rollButtons'>
+        <button onclick={showNumberRoll} class='roll small'>Hodit číslo</button>
+        <button onclick={showRoll} class='roll'>Hodit kostky</button>
+      </div>
     </div>
   </div>
 {/if}
@@ -266,6 +289,9 @@
       padding: 20px 0px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
     }
     .notation {
       position: relative;
@@ -277,6 +303,18 @@
         position: absolute;
         top: 15px;
         right: 15px;
+      }
+    .rollButtons {
+      display: flex;
+      gap: 10px;
+    }
+      .roll {
+        background: var(--primary);
+        color: white;
+      }
+      .roll.small {
+        padding: 0 16px;
+        font-size: 0.9rem;
       }
 
   .info {
