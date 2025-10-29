@@ -168,8 +168,8 @@
         <button onclick={copyNotation} class='copy material plain'>content_copy</button>
       </div>
       <div class='rollButtons'>
-        <button onclick={showNumberRoll} class='roll small'>Hodit číslo</button>
-        <button onclick={showRoll} class='roll'>Hodit kostky</button>
+        <button onclick={showNumberRoll} class='roll'>Hodit jedno číslo</button>
+        <button onclick={showRoll} class='roll'>Hodit všechny kostky</button>
       </div>
     </div>
   </div>
@@ -306,16 +306,8 @@
       }
     .rollButtons {
       display: flex;
-      gap: 10px;
+      gap: 20px;
     }
-      .roll {
-        background: var(--primary);
-        color: white;
-      }
-      .roll.small {
-        padding: 0 16px;
-        font-size: 0.9rem;
-      }
 
   .info {
     margin: 60px 0px;
