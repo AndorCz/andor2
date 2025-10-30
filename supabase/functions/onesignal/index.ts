@@ -18,8 +18,8 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     const supabaseClient = createClient(
-      Deno.env.get('PUBLIC_SUPABASE_URL') ?? '',
-      Deno.env.get('PUBLIC_SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SERVICE_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     )
 
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         console.error('Failed to get character data', error)
         return new Response(`Edge function (Notify) error: ${error.message}`, { status: 400, headers: { 'Content-Type': 'application/json' } })
       }
-      
+
       console.log('external_id', character.player)
 
       // Build OneSignal notification object
