@@ -9,6 +9,7 @@
   import { CustomHeading } from '@lib/editor/heading'
   import { MentionRender } from '@lib/editor/mentionRender'
   import { CustomTextAlign } from '@lib/editor/alignment'
+  import { Poll, PollQuestion, PollOptions, PollOption } from '@lib/editor/poll'
   import { EnterKeyHandler } from '@lib/editor/enter'
   import { onMount, onDestroy } from 'svelte'
   import { supabase, handleError } from '@lib/database-browser'
@@ -78,7 +79,11 @@
       CustomTextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right', 'justify']
-      })
+      }),
+      Poll,
+      PollQuestion,
+      PollOptions,
+      PollOption
     ]
 
     if (forceBubble) {
@@ -251,6 +256,29 @@
     editor.chain().focus().addReply({ postId, name, user }).run()
   }
 
+  function addPoll () {
+    const question = window.prompt('Jaká je otázka ankety?')
+    if (!question) { return }
+    const answersInput = window.prompt('Zadej možnosti (oddělené čárkou nebo novým řádkem):')
+    if (!answersInput) { return }
+    const answers = answersInput
+      .split(/\n|,/)
+      .map(option => option.trim())
+      .filter(Boolean)
+
+    if (answers.length < 2) {
+      window.showError?.('Anketa musí mít alespoň dvě možnosti')
+      return
+    }
+
+    const inserted = editor.chain().focus().insertPoll({ question, answers }).run()
+    if (!inserted) {
+      window.showError?.('Nepodařilo se vložit anketu, zkus to prosím znovu')
+    } else {
+      showSuccess('Anketa byla vložena do příspěvku')
+    }
+  }
+
   async function uploadImage (file) {
     const img = document.createElement('img')
     img.src = URL.createObjectURL(file)
@@ -311,6 +339,7 @@
       </DropdownSlot>
       <button type='button' onclick={() => editor.chain().focus().undo().run()} disabled={!canUndo} class='material' title='Zpět'>undo</button>
       <button type='button' onclick={() => editor.chain().focus().redo().run()} disabled={!canRedo} class='material' title='Znovu'>redo</button>
+      <button type='button' onclick={addPoll} class='material' title='Přidat anketu'>poll</button>
     </div>
   {/if}
 </div>

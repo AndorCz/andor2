@@ -1,6 +1,6 @@
 <script>
   import DOMPurify from 'dompurify'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy, tick } from 'svelte'
   import { tooltip } from '@lib/tooltip'
   import { platform } from '@components/common/MediaQuery.svelte'
   import { formatDate } from '@lib/utils'
@@ -15,13 +15,24 @@
   let iconEl = $state()
   let portraitEl = $state()
   let rewardEl = $state()
+  let pollControllers = []
+  let pollsMounted = false
   const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
 
   onMount(() => {
     checkMeMentioned()
     positionReward()
     window.addEventListener('resize', positionReward)
-    return () => window.removeEventListener('resize', positionReward)
+    pollsMounted = true
+    setupPolls()
+    return () => {
+      window.removeEventListener('resize', positionReward)
+    }
+  })
+
+  onDestroy(() => {
+    clearPollControllers()
+    pollsMounted = false
   })
 
   function onHeaderClick () {
@@ -66,6 +77,159 @@
       rewardEl.style.top = `${effectiveHeight - 35}px`
     }
   }
+
+  function clearPollControllers () {
+    pollControllers.forEach(controller => controller.destroy?.())
+    pollControllers = []
+  }
+
+  async function setupPolls () {
+    if (!pollsMounted || typeof window === 'undefined') { return }
+    await tick()
+    if (!contentEl) { return }
+    clearPollControllers()
+    const pollElements = contentEl.querySelectorAll('[data-poll-id]')
+    pollElements.forEach(pollEl => {
+      const controller = createPollController(pollEl)
+      pollControllers.push(controller)
+      controller.init?.()
+    })
+  }
+
+  function createPollController (pollEl) {
+    const pollId = pollEl.getAttribute('data-poll-id')
+    if (!pollId) {
+      return { init () {}, destroy () {} }
+    }
+
+    let totalEl = pollEl.querySelector('.poll-total')
+    if (!totalEl) {
+      totalEl = document.createElement('div')
+      totalEl.className = 'poll-total'
+      pollEl.appendChild(totalEl)
+    }
+
+    const optionElements = Array.from(pollEl.querySelectorAll('[data-option-id]'))
+    if (optionElements.length === 0) {
+      return { init () {}, destroy () {} }
+    }
+
+    optionElements.forEach(optionEl => {
+      optionEl.classList.add('poll-option-interactive')
+      optionEl.setAttribute('tabindex', '0')
+      optionEl.setAttribute('role', 'button')
+      optionEl.style.setProperty('--poll-progress', '0%')
+    })
+
+    const state = {
+      counts: {},
+      total: 0,
+      selected: []
+    }
+
+    const listeners = optionElements.map(optionEl => {
+      const optionId = optionEl.getAttribute('data-option-id')
+      const handleClick = () => vote(optionId)
+      const handleKeydown = event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          vote(optionId)
+        }
+      }
+      optionEl.addEventListener('click', handleClick)
+      optionEl.addEventListener('keydown', handleKeydown)
+      return () => {
+        optionEl.removeEventListener('click', handleClick)
+        optionEl.removeEventListener('keydown', handleKeydown)
+      }
+    })
+
+    function updateTotals () {
+      optionElements.forEach(optionEl => {
+        const optionId = optionEl.getAttribute('data-option-id')
+        const count = state.counts[optionId] || 0
+        const percentage = state.total > 0 ? Math.round((count / state.total) * 100) : 0
+        optionEl.classList.toggle('selected', state.selected.includes(optionId))
+        optionEl.style.setProperty('--poll-progress', `${percentage}%`)
+        const votesEl = optionEl.querySelector('.poll-option-votes')
+        if (votesEl) {
+          votesEl.textContent = state.total > 0 ? `${count} · ${percentage}%` : '0'
+        }
+      })
+      totalEl.textContent = formatTotal(state.total)
+    }
+
+    function formatTotal (total) {
+      const abs = Math.abs(total)
+      let label = 'hlasů'
+      if (abs === 1) { label = 'hlas' }
+      else if (abs >= 2 && abs <= 4) { label = 'hlasy' }
+      return `${total} ${label}`
+    }
+
+    async function loadState () {
+      try {
+        const res = await fetch(`/api/board/poll?pollId=${encodeURIComponent(pollId)}`)
+        const data = await res.json()
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Nepodařilo se načíst výsledky ankety')
+        }
+        state.counts = data.counts || {}
+        state.total = data.total || 0
+        state.selected = Array.isArray(data.userVotes) ? data.userVotes : []
+        updateTotals()
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    async function vote (optionId) {
+      if (!optionId) { return }
+      if (!user?.id) {
+        window.showError?.('Pro hlasování se přihlas.')
+        return
+      }
+      pollEl.classList.add('poll-loading')
+      try {
+        const res = await fetch('/api/board/poll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pollId, optionId })
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Nepodařilo se uložit hlas')
+        }
+        state.counts = data.counts || {}
+        state.total = data.total || 0
+        state.selected = Array.isArray(data.userVotes) ? data.userVotes : []
+        updateTotals()
+      } catch (error) {
+        console.error(error)
+        window.showError?.(error.message || 'Nepodařilo se uložit hlas')
+      } finally {
+        pollEl.classList.remove('poll-loading')
+      }
+    }
+
+    return {
+      init: () => {
+        pollEl.classList.add('poll-ready')
+        loadState()
+      },
+      destroy: () => {
+        listeners.forEach(remove => remove())
+      }
+    }
+  }
+
+  $effect(() => {
+    if (!pollsMounted) { return }
+    // trigger reinitialization when post content changes
+    // eslint-disable-next-line no-unused-expressions
+    post.content
+    setupPolls()
+  })
 </script>
 
 <div onclick={onImageClick} class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
@@ -198,6 +362,85 @@
     flex: 1;
     overflow: hidden;
   }
+
+  .poll {
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
+    background: color-mix(in srgb, var(--panel), transparent 40%);
+    position: relative;
+  }
+    .poll-question {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .poll-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .poll-option {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background: color-mix(in srgb, var(--panel), transparent 70%);
+      overflow: hidden;
+    }
+      .poll-option::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 8px;
+        width: var(--poll-progress, 0%);
+        background: color-mix(in srgb, var(--buttonBg), transparent 70%);
+        opacity: 0.5;
+        pointer-events: none;
+        transition: width 0.2s ease;
+      }
+      .poll-option .poll-option-label,
+      .poll-option .poll-option-votes {
+        position: relative;
+        z-index: 1;
+      }
+      .poll-option .poll-option-label {
+        flex: 1;
+      }
+      .poll-option .poll-option-votes {
+        min-width: 64px;
+        text-align: right;
+        font-size: 0.85em;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.85;
+      }
+      .poll-option:hover {
+        border-color: var(--buttonBg);
+      }
+      .poll-option.selected {
+        border-color: var(--buttonBg);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--buttonBg), transparent 40%);
+      }
+      .poll-option:focus {
+        outline: 2px solid var(--buttonBg);
+        outline-offset: 2px;
+      }
+      .poll-loading .poll-option {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+    .poll-total {
+      margin-top: 12px;
+      text-align: right;
+      font-size: 0.85em;
+      opacity: 0.7;
+    }
     .content {
       background-color: var(--block);
       overflow-wrap: anywhere;
