@@ -41,12 +41,12 @@ create policy "UPDATE for mods" on public.boards for update to authenticated usi
 
 -- Board polls --
 
-alter table public.board_poll_votes enable row level security;
+alter table public.poll_votes enable row level security;
 
-create policy "SELECT for board polls" on public.board_poll_votes for select to public using (true);
-create policy "INSERT for board polls" on public.board_poll_votes for insert to authenticated with check (profile_id = (select auth.uid()));
-create policy "UPDATE for board polls" on public.board_poll_votes for update to authenticated using (profile_id = (select auth.uid())) with check (profile_id = (select auth.uid()));
-create policy "DELETE for board polls" on public.board_poll_votes for delete to authenticated using (profile_id = (select auth.uid()));
+create policy "SELECT for board polls" on public.poll_votes for select to public using (true);
+create policy "INSERT for board polls" on public.poll_votes for insert to authenticated with check (profile_id = (select auth.uid()));
+create policy "UPDATE for board polls" on public.poll_votes for update to authenticated using (profile_id = (select auth.uid())) with check (profile_id = (select auth.uid()));
+create policy "DELETE for board polls" on public.poll_votes for delete to authenticated using (profile_id = (select auth.uid()));
 
 
 -- GAMES --------------------------------------------

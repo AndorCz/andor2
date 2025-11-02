@@ -24,7 +24,7 @@ export const GET = async ({ url, locals }) => {
     }
 
     const { data, error } = await locals.supabase
-      .from('board_poll_votes')
+      .from('poll_votes')
       .select('option_id, profile_id')
       .eq('poll_id', pollId)
 
@@ -69,7 +69,7 @@ export const POST = async ({ request, locals }) => {
 
     // remove previous vote to keep only a single choice
     const { error: deleteError } = await locals.supabase
-      .from('board_poll_votes')
+      .from('poll_votes')
       .delete()
       .eq('poll_id', pollId)
       .eq('profile_id', profileId)
@@ -82,7 +82,7 @@ export const POST = async ({ request, locals }) => {
     }
 
     const { error: upsertError } = await locals.supabase
-      .from('board_poll_votes')
+      .from('poll_votes')
       .upsert({ poll_id: pollId, option_id: optionId, profile_id: profileId }, { onConflict: 'poll_id,profile_id' })
 
     if (upsertError) {
@@ -93,7 +93,7 @@ export const POST = async ({ request, locals }) => {
     }
 
     const { data, error: loadError } = await locals.supabase
-      .from('board_poll_votes')
+      .from('poll_votes')
       .select('option_id, profile_id')
       .eq('poll_id', pollId)
 
