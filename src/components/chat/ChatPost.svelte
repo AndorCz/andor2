@@ -176,7 +176,7 @@
     .reward {
       position: absolute;
       bottom: -10px;
-      right: -10px;
+      right: 0px;
       width: 40px;
       height: 40px;
       transition: transform 0.2s ease-in-out;
@@ -186,7 +186,7 @@
         filter: brightness(1.2);
       }
     .theirs .reward {
-      left: -10px;
+      left: 0px;
     }
 
   @media (max-width: 500px) {
