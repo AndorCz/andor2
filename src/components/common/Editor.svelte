@@ -257,26 +257,14 @@
   }
 
   function addPoll () {
-    const question = window.prompt('Jaká je otázka ankety?')
-    if (!question) { return }
-    const answersInput = window.prompt('Zadej možnosti (oddělené čárkou nebo novým řádkem):')
-    if (!answersInput) { return }
-    const answers = answersInput
-      .split(/\n|,/)
-      .map(option => option.trim())
-      .filter(Boolean)
-
-    if (answers.length < 2) {
-      window.showError?.('Anketa musí mít alespoň dvě možnosti')
+    const inserted = editor.chain().focus().insertPoll().run()
+    if (!inserted) {
+      window.showError?.('Nepodařilo se vložit anketu, zkus to prosím znovu')
       return
     }
 
-    const inserted = editor.chain().focus().insertPoll({ question, answers }).run()
-    if (!inserted) {
-      window.showError?.('Nepodařilo se vložit anketu, zkus to prosím znovu')
-    } else {
-      showSuccess('Anketa byla vložena do příspěvku')
-    }
+    editor.chain().focus().scrollIntoView().run()
+    showSuccess('Anketa byla vložena do příspěvku. Uprav otázku i možnosti přímo ve zprávě.')
   }
 
   async function uploadImage (file) {
@@ -418,5 +406,96 @@
       position: sticky;
       bottom: 0px;
     }
+  }
+
+  :global(.ProseMirror .poll) {
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
+    background: color-mix(in srgb, var(--panel), transparent 40%);
+    position: relative;
+  }
+  :global(.ProseMirror .poll-editor-toolbar) {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+  :global(.ProseMirror .poll-toggle) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+    color: color-mix(in srgb, var(--text), transparent 20%);
+  }
+  :global(.ProseMirror .poll-toggle input) {
+    accent-color: var(--buttonBg);
+  }
+  :global(.ProseMirror .poll-editor-inner) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  :global(.ProseMirror .poll-question) {
+    font-weight: bold;
+    min-height: 1.2em;
+  }
+  :global(.ProseMirror .poll-question.is-empty::before) {
+    content: attr(data-placeholder);
+    color: color-mix(in srgb, var(--text), transparent 45%);
+    font-weight: normal;
+  }
+  :global(.ProseMirror .poll-options) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  :global(.ProseMirror .poll-options-list) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  :global(.ProseMirror .poll-option) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
+    background: color-mix(in srgb, var(--panel), transparent 70%);
+  }
+  :global(.ProseMirror .poll-option-label) {
+    flex: 1;
+    min-height: 1.2em;
+  }
+  :global(.ProseMirror .poll-option-label.is-empty::before) {
+    content: attr(data-placeholder);
+    color: color-mix(in srgb, var(--text), transparent 45%);
+    font-style: italic;
+  }
+  :global(.ProseMirror .poll-option-votes) {
+    min-width: 64px;
+    text-align: right;
+    font-size: 0.85em;
+    opacity: 0.6;
+  }
+  :global(.ProseMirror .poll-options-actions) {
+    display: flex;
+    justify-content: flex-end;
+  }
+  :global(.ProseMirror .poll-option-add) {
+    border: none;
+    border-radius: 999px;
+    padding: 6px 12px;
+    background: color-mix(in srgb, var(--buttonBg), transparent 35%);
+    color: var(--text);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  :global(.ProseMirror .poll-option-add:hover) {
+    background: color-mix(in srgb, var(--buttonBg), transparent 20%);
   }
 </style>
