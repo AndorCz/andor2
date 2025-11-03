@@ -325,9 +325,9 @@
         <label class='button text' for='addImageStored'>Nahrát z počítače</label>
         <button type='button' onclick={addImageUrl} class='text'>Cesta z internetu</button>
       </DropdownSlot>
+      <button type='button' onclick={addPoll} class='material' title='Přidat anketu'>checklist</button>
       <button type='button' onclick={() => editor.chain().focus().undo().run()} disabled={!canUndo} class='material' title='Zpět'>undo</button>
       <button type='button' onclick={() => editor.chain().focus().redo().run()} disabled={!canRedo} class='material' title='Znovu'>redo</button>
-      <button type='button' onclick={addPoll} class='material' title='Přidat anketu'>poll</button>
     </div>
   {/if}
 </div>
