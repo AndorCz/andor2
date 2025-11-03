@@ -7,6 +7,7 @@
   import { lightboxImage } from '@lib/stores'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
   import Reactions from '@components/common/Reactions.svelte'
+  import PollRenderer from '@components/boards/PollRenderer.svelte'
 
   const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, showEdited = true } = $props()
 
@@ -21,7 +22,9 @@
     checkMeMentioned()
     positionReward()
     window.addEventListener('resize', positionReward)
-    return () => window.removeEventListener('resize', positionReward)
+    return () => {
+      window.removeEventListener('resize', positionReward)
+    }
   })
 
   function onHeaderClick () {
@@ -66,6 +69,12 @@
       rewardEl.style.top = `${effectiveHeight - 35}px`
     }
   }
+
+  $effect(() => {
+    // trigger reinitialization when post content changes
+    // eslint-disable-next-line no-unused-expressions
+    post.content
+  })
 </script>
 
 <div onclick={onImageClick} class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
@@ -130,6 +139,7 @@
         </div>
       {/if}
       {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
+      <PollRenderer {user} {contentEl} content={post.content} />
       {#if showEdited}
         {#if post.created_at !== post.updated_at}<span class='edited'>(upraveno)</span>{/if}
       {/if}
@@ -198,6 +208,7 @@
     flex: 1;
     overflow: hidden;
   }
+
     .content {
       background-color: var(--block);
       overflow-wrap: anywhere;
