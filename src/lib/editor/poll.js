@@ -68,6 +68,53 @@ export const PollOption = Node.create({
       ['span', labelAttributes, 0],
       ['span', { class: 'poll-option-votes' }]
     ]
+  },
+
+  addNodeView () {
+    return ({ node, HTMLAttributes }) => {
+      let currentNode = node
+      const container = document.createElement('div')
+      container.classList.add('poll-option')
+
+      const attrs = { ...HTMLAttributes }
+      delete attrs.class
+
+      const label = document.createElement('span')
+      label.classList.add('poll-option-label')
+      label.setAttribute('data-placeholder', 'Možnost')
+
+      const votes = document.createElement('span')
+      votes.classList.add('poll-option-votes')
+      votes.textContent = ''
+
+      container.append(label, votes)
+
+      const syncAttributes = updatedNode => {
+        applyAttributes(container, {
+          ...attrs,
+          'data-option-id': updatedNode.attrs.optionId || null
+        })
+        const isEmpty = updatedNode.content.size === 0 || updatedNode.textContent.trim() === ''
+        label.classList.toggle('is-empty', isEmpty)
+      }
+
+      syncAttributes(currentNode)
+
+      return {
+        dom: container,
+        contentDOM: label,
+        ignoreMutation (mutation) {
+          if (mutation.type === 'selection') { return false }
+          return !container.contains(mutation.target) || mutation.target === container
+        },
+        update (updatedNode) {
+          if (updatedNode.type !== currentNode.type) { return false }
+          currentNode = updatedNode
+          syncAttributes(updatedNode)
+          return true
+        }
+      }
+    }
   }
 })
 
@@ -158,6 +205,45 @@ export const PollQuestion = Node.create({
       merged.class = (merged.class || '') + ' is-empty'
     }
     return ['div', merged, 0]
+  },
+
+  addNodeView () {
+    return ({ node, HTMLAttributes }) => {
+      let currentNode = node
+      const container = document.createElement('div')
+      container.classList.add('poll-question')
+
+      const attrs = { ...HTMLAttributes }
+      delete attrs.class
+
+      const syncAttributes = updatedNode => {
+        const placeholder = attrs['data-placeholder'] || 'Zadej otázku'
+        applyAttributes(container, {
+          ...attrs,
+          'data-poll-question': '',
+          'data-placeholder': placeholder
+        })
+        const isEmpty = updatedNode.content.size === 0 || updatedNode.textContent.trim() === ''
+        container.classList.toggle('is-empty', isEmpty)
+      }
+
+      syncAttributes(currentNode)
+
+      return {
+        dom: container,
+        contentDOM: container,
+        ignoreMutation (mutation) {
+          if (mutation.type === 'selection') { return false }
+          return !container.contains(mutation.target) || mutation.target === container
+        },
+        update (updatedNode) {
+          if (updatedNode.type !== currentNode.type) { return false }
+          currentNode = updatedNode
+          syncAttributes(updatedNode)
+          return true
+        }
+      }
+    }
   }
 })
 

@@ -102,6 +102,10 @@
       return { init () {}, destroy () {} }
     }
 
+    const isMultiple = pollEl.getAttribute('data-poll-multiple') === 'true'
+    pollEl.classList.toggle('poll-is-multiple', isMultiple)
+    pollEl.setAttribute('role', isMultiple ? 'group' : 'radiogroup')
+
     let totalEl = pollEl.querySelector('.poll-total')
     if (!totalEl) {
       totalEl = document.createElement('div')
@@ -117,7 +121,8 @@
     optionElements.forEach(optionEl => {
       optionEl.classList.add('poll-option-interactive')
       optionEl.setAttribute('tabindex', '0')
-      optionEl.setAttribute('role', 'button')
+      optionEl.setAttribute('role', isMultiple ? 'checkbox' : 'radio')
+      optionEl.setAttribute('aria-checked', 'false')
       optionEl.style.setProperty('--poll-progress', '0%')
     })
 
@@ -145,18 +150,22 @@
     })
 
     function updateTotals () {
+      const hasVotes = state.total > 0
+      pollEl.classList.toggle('poll-has-votes', hasVotes)
       optionElements.forEach(optionEl => {
         const optionId = optionEl.getAttribute('data-option-id')
         const count = state.counts[optionId] || 0
         const percentage = state.total > 0 ? Math.round((count / state.total) * 100) : 0
-        optionEl.classList.toggle('selected', state.selected.includes(optionId))
+        const isSelected = state.selected.includes(optionId)
+        optionEl.classList.toggle('selected', isSelected)
+        optionEl.setAttribute('aria-checked', isSelected ? 'true' : 'false')
         optionEl.style.setProperty('--poll-progress', `${percentage}%`)
         const votesEl = optionEl.querySelector('.poll-option-votes')
         if (votesEl) {
-          votesEl.textContent = state.total > 0 ? `${count} · ${percentage}%` : '0'
+          votesEl.textContent = hasVotes ? `${count} · ${percentage}%` : 'Hlasuj'
         }
       })
-      totalEl.textContent = formatTotal(state.total)
+      totalEl.textContent = hasVotes ? formatTotal(state.total) : 'Zatím nikdo nehlasoval'
     }
 
     function formatTotal (total) {
@@ -215,6 +224,7 @@
     return {
       init: () => {
         pollEl.classList.add('poll-ready')
+        updateTotals()
         loadState()
       },
       destroy: () => {
@@ -365,81 +375,125 @@
 
   .poll {
     margin: 15px 0;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
-    background: color-mix(in srgb, var(--panel), transparent 40%);
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--panel), #000 12%);
+    background: color-mix(in srgb, var(--panel), transparent 35%);
     position: relative;
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.5);
   }
     .poll-question {
-      font-weight: bold;
-      margin-bottom: 10px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      font-size: 1.05em;
     }
     .poll-options {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .poll-option {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid color-mix(in srgb, var(--panel), #000 15%);
+      gap: 16px;
+      padding: 14px 18px 14px 60px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--panel), #000 20%);
       cursor: pointer;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      background: color-mix(in srgb, var(--panel), transparent 70%);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      background: color-mix(in srgb, var(--panel), transparent 65%);
       overflow: hidden;
     }
       .poll-option::before {
         content: '';
         position: absolute;
-        inset: 0;
-        border-radius: 8px;
+        left: 20px;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border: 2px solid color-mix(in srgb, var(--text), transparent 50%);
+        border-radius: 50%;
+        transform: translateY(-50%);
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        background: var(--block);
+        z-index: 1;
+      }
+      .poll-is-multiple .poll-option::before {
+        border-radius: 6px;
+      }
+      .poll-option::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 14px;
         width: var(--poll-progress, 0%);
-        background: color-mix(in srgb, var(--buttonBg), transparent 70%);
-        opacity: 0.5;
+        max-width: 100%;
+        background: color-mix(in srgb, var(--buttonBg), transparent 80%);
+        opacity: 0.22;
         pointer-events: none;
-        transition: width 0.2s ease;
+        transition: width 0.25s ease;
       }
       .poll-option .poll-option-label,
       .poll-option .poll-option-votes {
         position: relative;
-        z-index: 1;
+        z-index: 2;
       }
       .poll-option .poll-option-label {
+        display: block;
         flex: 1;
+        font-weight: 500;
       }
       .poll-option .poll-option-votes {
-        min-width: 64px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 96px;
         text-align: right;
-        font-size: 0.85em;
+        font-size: 0.82em;
         font-variant-numeric: tabular-nums;
-        opacity: 0.85;
+        letter-spacing: 0.04em;
       }
       .poll-option:hover {
-        border-color: var(--buttonBg);
+        border-color: color-mix(in srgb, var(--buttonBg), transparent 20%);
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -22px color-mix(in srgb, var(--buttonBg), #000 65%);
       }
       .poll-option.selected {
         border-color: var(--buttonBg);
-        box-shadow: 0 0 0 1px color-mix(in srgb, var(--buttonBg), transparent 40%);
+        box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--buttonBg), transparent 50%);
+      }
+      .poll-option.selected::before {
+        background: var(--buttonBg);
+        border-color: var(--buttonBg);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--buttonBg), transparent 55%);
       }
       .poll-option:focus {
-        outline: 2px solid var(--buttonBg);
-        outline-offset: 2px;
+        outline: 3px solid color-mix(in srgb, var(--buttonBg), transparent 45%);
+        outline-offset: 3px;
       }
       .poll-loading .poll-option {
         pointer-events: none;
-        opacity: 0.7;
+        opacity: 0.75;
+      }
+      .poll-has-votes .poll-option .poll-option-votes {
+        opacity: 0.85;
+        text-transform: none;
+        font-weight: 500;
+      }
+      .poll:not(.poll-has-votes) .poll-option .poll-option-votes {
+        text-transform: uppercase;
+        font-weight: 600;
+        opacity: 0.6;
       }
     .poll-total {
-      margin-top: 12px;
+      margin-top: 16px;
       text-align: right;
       font-size: 0.85em;
-      opacity: 0.7;
+      opacity: 0.75;
     }
     .content {
       background-color: var(--block);
