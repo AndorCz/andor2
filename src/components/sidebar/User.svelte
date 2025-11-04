@@ -28,6 +28,7 @@
     </div>
     <div id='buttons'>
       <a href='/settings' id='settings' class='button material' title='Nastavení' use:tooltip>settings</a>
+      <a href='/search' id='search' class='material square' title='Vyhledat v konverzacích' use:tooltip>search</a>
       <button onclick={logout} id='logout' class='material' title='Odhlásit' use:tooltip>logout</button>
     </div>
   </div>
@@ -56,8 +57,15 @@
       display: flex;
       gap: 10px;
     }
-      #logout, #settings {
+      #logout, #settings, #search {
         padding: 0px;
         padding: 5px;
+      }
+      #search {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 6px;
       }
 </style>
