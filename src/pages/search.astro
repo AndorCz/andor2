@@ -1,0 +1,10 @@
+---
+import Layout from '@layouts/layout.astro'
+import Search from '@components/search/Search.svelte'
+
+const { user } = Astro.locals
+---
+
+<Layout title='Vyhledávání v konverzacích'>
+  <Search {user} client:only='svelte' />
+</Layout>
