@@ -113,6 +113,16 @@
     display: flex;
     align-items: center;
   }
+  .status {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 2px 2px 4px #0006;
+    background-color: var(--accent);
+  }
   .toggle {
     display: flex;
     justify-content: space-between;

@@ -34,7 +34,7 @@
     <h4 class='header spaced'>Kontakty</h4>
     <ul class='characters'>
       {#if isFilledArray(characters.allGrouped[selected.gameIndex]?.characters[selected.characterIndex]?.contacts)}
-        {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character}
+        {#each characters.allGrouped[selected.gameIndex].characters[selected.characterIndex].contacts as character (character.id)}
           {#if character.state !== 'dead' || $userStore.showDead}
             <button onclick={() => { openConversation({ us: selected.character, them: character, type: 'character' }) }}>
               {#if character.portrait}
@@ -58,7 +58,7 @@
     </ul>
   {:else}
     {#if isFilledArray(characters.allGrouped)}
-      {#each characters.allGrouped as { id, name, characters }, gameIndex}
+      {#each characters.allGrouped as { id, name, characters }, gameIndex (gameIndex)}
         <h4 class='header'>
           <a href={'/game/' + id}>{name}</a>
           {#if listTooLong}
@@ -68,7 +68,7 @@
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists[gameIndex] || !listTooLong}>
           {#if isFilledArray(characters)}
-            {#each characters as character, characterIndex}
+            {#each characters as character, characterIndex (character.id)}
               {#if character.state !== 'dead' || $userStore.showDead}
                 <li class='mine'>
                   <button onclick={() => { selected = { character, gameIndex, characterIndex } }}>
@@ -105,7 +105,7 @@
           {/if}
         </h4>
         <ul class='characters hiddenList' class:expandedList={expandedLists.stranded || !listTooLong}>
-          {#each characters.myStranded as character}
+          {#each characters.myStranded as character (character.id)}
             {#if character.state !== 'dead' || $userStore.showDead}
               <li class='mine'>
                 <button onclick={openProfile(character)}>
@@ -276,6 +276,16 @@
     max-height: 500px;
     overflow: auto;
     transition: max-height 0.2s;
+  }
+  .status {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 2px 2px 4px #0006;
+    background-color: var(--accent);
   }
   .badge {
     right: 5px;
