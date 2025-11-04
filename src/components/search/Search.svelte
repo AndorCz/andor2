@@ -80,7 +80,7 @@
 
 <section>
   <h1>Hledat v konverzacích</h1>
-  <form class='search-form' onsubmit={handleSearch}>
+  <form onsubmit={handleSearch}>
     <input type='text' placeholder='Vyhledejte zprávy podle klíčových slov' bind:value={searchTerm} aria-label='Hledaný výraz' autofocus />
     <button type='submit' class='material square' disabled={loading}>
       {#if loading}hourglass_top{:else}search{/if}
@@ -141,116 +141,101 @@
   section {
     min-height: 300px;
   }
-  h1 {
-    margin-top: 0px;
-    margin-bottom: 30px;
-  }
-  .search-form {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-  .search-form input {
-    flex: 1;
-  }
-  .error, .status {
-    position: relative;
-    margin-top: 40px;
-    text-align: center;
-  }
-    .error {
-      color: var(--warning);
-      font-weight: bold;
+    h1 {
+      margin-top: 0px;
+      margin-bottom: 30px;
     }
-    .status {
-      color: var(--dim);
-      font-style: italic;
+    form {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
     }
-  .results {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-  }
-  .result-group {
-    padding: 20px;
-    border-radius: 12px;
-    background: var(--block);
-  }
-  .result-group header {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .title {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .title a {
-    font-size: 24px;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .title a.user {
-    color: var(--link);
-  }
-  .title a.character {
-    color: var(--prominent);
-  }
-  .meta {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    color: var(--dim);
-  }
-  .type {
-    padding: 2px 8px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 12px;
-    border: 1px solid var(--dim);
-  }
-    .type.character {
-      border-color: var(--prominent);
-      color: var(--prominent);
+      input {
+        flex: 1;
+      }
+    .error, .status {
+      position: relative;
+      margin-top: 50px;
+      text-align: center;
     }
-    .type.user {
-      border-color: var(--link);
-      color: var(--link);
+      .error {
+        color: var(--warning);
+        font-weight: bold;
+      }
+      .status {
+        color: var(--dim);
+        font-style: italic;
+      }
+    .results {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
     }
-  .messages {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  .message {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-  }
-    .message.outgoing {
-      flex-direction: row-reverse;
-      text-align: right;
-    }
-  .message-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .time {
-    color: var(--dim);
-  }
-  .portrait {
-    flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    object-position: center 20%;
-    border-radius: 10px;
-    box-shadow: 2px 2px 3px #0003;
-
-  }
+      .result-group {
+        padding: 20px;
+        border-radius: 12px;
+        background: var(--block);
+      }
+        .result-group header {
+          display: flex;
+          gap: 15px;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+          .title {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .title a {
+            font-size: 24px;
+            font-weight: 600;
+            text-decoration: none;
+          }
+          .meta {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--dim);
+          }
+          .type {
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 12px;
+            border: 1px solid var(--dim);
+          }
+      .messages {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .message-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+        .time {
+          color: var(--dim);
+        }
+        .portrait {
+          width: 64px;
+          height: 64px;
+          object-fit: cover;
+          object-position: center 20%;
+          border-radius: 10px;
+          box-shadow: 2px 2px 3px #0003;
+        }
+        .message {
+          display: flex;
+          gap: 15px;
+          align-items: flex-start;
+        }
+          .message.outgoing {
+            flex-direction: row-reverse;
+            text-align: right;
+          }
 </style>
