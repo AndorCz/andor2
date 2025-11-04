@@ -39,9 +39,12 @@
     character: id => `/game/character?id=${id}`
   }
 
-  $: groupedResults = (() => {
+  function createGroupedResults (items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return []
+    }
     const groups = new Map()
-    results.forEach(item => {
+    items.forEach(item => {
       const key = `${item.contact_type}:${item.contact_id}`
       if (!groups.has(key)) {
         groups.set(key, {
@@ -63,7 +66,9 @@
       ...group,
       messages: group.messages.slice().sort((a, b) => new Date(b.message_created_at) - new Date(a.message_created_at))
     })).sort((a, b) => new Date(b.messages[0]?.message_created_at || 0) - new Date(a.messages[0]?.message_created_at || 0))
-  })()
+  }
+
+  const groupedResults = $derived(createGroupedResults(results))
 
   function sanitizeContent (content) {
     return DOMPurify.sanitize(content || '', { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })
