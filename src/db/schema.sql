@@ -1310,7 +1310,7 @@ begin
   end if;
 
   begin
-    v_tsquery := websearch_to_tsquery('simple', v_query);
+    v_tsquery := websearch_to_tsquery('czech', unaccent(v_query));
   exception when others then
     return;
   end;
