@@ -26,6 +26,7 @@
   let diceMode = $state('icon')
   let textareaValue = $state($gameStore.unsent || '') // load unsent post
   let activeAudienceIds = $state([])
+  let previousAudienceIds = []
   let otherCharacters = $state([])
   let mentionList = $state([])
 
@@ -34,7 +35,7 @@
 
   onMount(() => {
     if (user.id) { delete game.unread.gameThread }
-    activeAudienceIds = getActiveAudience() // set audience from localStorage or default
+    setAudienceIds(getActiveAudience()) // set audience from localStorage or default
     game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
     mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
     $gameStore.activeCharacterId = getActiveCharacterId() // set default value
@@ -134,7 +135,7 @@
     textareaValue = post.content
     textareaRef.triggerEdit(post.id, post.content)
     document.getElementsByClassName('toolWrapper')[0].scrollIntoView({ behavior: 'smooth' })
-    activeAudienceIds = post.audience || ['*']
+    setAudienceIds(post.audience || ['*'])
     $gameStore.activeCharacterId = post.owner
     // saving is done in submitPost
   }
@@ -148,8 +149,21 @@
     } else { return ['*'] } // no character
   }
 
+  function setAudienceIds (ids = ['*']) {
+    activeAudienceIds = ids
+    previousAudienceIds = Array.isArray(ids) ? [...ids] : []
+  }
+
   async function onAudienceSelect () {
-    if (activeAudienceIds.includes('*')) { activeAudienceIds = ['*'] } // set all
+    const nextSelection = Array.isArray(activeAudienceIds) ? [...activeAudienceIds] : []
+    if (!nextSelection.length) {
+      setAudienceIds(['*'])
+    } else if (nextSelection.includes('*') && nextSelection.length > 1) {
+      const prevWasOnlyAll = previousAudienceIds.length === 1 && previousAudienceIds[0] === '*'
+      setAudienceIds(prevWasOnlyAll ? nextSelection.filter((id) => id !== '*') : ['*'])
+    } else {
+      setAudienceIds(nextSelection)
+    }
     await loadPosts() // filter posts based on audience selection
   }
 
@@ -207,7 +221,7 @@
   {#if searchTerms}
     <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' onclick={async () => { searchTerms = ''; await loadPosts() }}>close</button></h2>
   {:else if filterActive}
-    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' onclick={async () => { activeAudienceIds = ['*']; await loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' onclick={async () => { setAudienceIds(['*']); await loadPosts() }}>close</button></h2>
   {/if}
   <!--({activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
