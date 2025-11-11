@@ -1725,6 +1725,18 @@ end;
 $$ language plpgsql;
 
 
+create or replace function clear_character_unreads_on_death () returns trigger as $$
+begin
+  if new.state = 'dead' and coalesce(old.state, '') <> 'dead' then
+    update unread_character_message_counts
+    set unread_count = 0
+    where sender_character_id = new.id
+       or recipient_character_id = new.id;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
 -- TRIGGERS --------------------------------------------
 
 
@@ -1759,6 +1771,7 @@ create or replace trigger decrement_user_message_unread_on_delete after delete o
 -- Triggers for character message unread counts
 create or replace trigger increment_character_message_unread after insert on messages for each row when (new.recipient_character is not null and new.sender_character is not null) execute procedure increment_unread_character_message_count();
 create or replace trigger decrement_character_message_unread_on_delete after delete on messages for each row when (old.recipient_character is not null and old.sender_character is not null) execute procedure decrement_unread_character_message_count();
+create or replace trigger clear_character_unreads_after_death after update of state on characters for each row when (old.state is distinct from 'dead' and new.state = 'dead') execute procedure clear_character_unreads_on_death();
 -- Trigger to update profile last_activity on new post
 create or replace trigger posts_update_last_activity after insert on public.posts for each row execute function public.update_profile_last_activity_from_post();
 
