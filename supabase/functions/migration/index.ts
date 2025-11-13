@@ -25,11 +25,14 @@ Deno.serve(async (req)=>{
       }
     });
 
-    // Fetch the first unnotified user from old_users table
+    // Fetch the first unnotified user from old_users table that has old_email set
+    // and doesn't already exist in profiles table
     const { data: oldUser, error: oldUserError } = await supabase
       .from('old_users')
       .select('id, old_email')
       .eq('notified', false)
+      .not('old_email', 'is', null)
+      .not('id', 'in', `(SELECT old_id FROM profiles WHERE old_id IS NOT NULL)`)
       .limit(1)
       .maybeSingle();
 
