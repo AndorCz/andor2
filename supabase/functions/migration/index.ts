@@ -1,9 +1,10 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { SESClient, SendEmailCommand } from 'npm:@aws-sdk/client-ses';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SESClient, SendEmailCommand } from 'npm:@aws-sdk/client-ses'
 
 function handleError(error) {
   console.error(error);
-  return new Response(`Edge function (Migration) error: ${error.message}`, {
+  const errorResponse = { error: `Edge function (Migration) error: ${error.message}` };
+  return new Response(JSON.stringify(errorResponse), {
     status: 400,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -25,14 +26,33 @@ Deno.serve(async (req)=>{
       }
     });
 
+    // First, get all old_ids that already exist in profiles table
+    const { data: existingProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('old_id')
+      .not('old_id', 'is', null);
+
+    if (profilesError) {
+      return handleError(profilesError);
+    }
+
+    const existingOldIds = existingProfiles?.map(p => p.old_id) || [];
+
     // Fetch the first unnotified user from old_users table that has old_email set
     // and doesn't already exist in profiles table
-    const { data: oldUser, error: oldUserError } = await supabase
+    let query = supabase
       .from('old_users')
       .select('id, old_email')
       .eq('notified', false)
-      .not('old_email', 'is', null)
-      .not('id', 'in', `(SELECT old_id FROM profiles WHERE old_id IS NOT NULL)`)
+      .not('old_email', 'is', null);
+
+    // Only add the not in filter if there are existing old_ids
+    if (existingOldIds.length > 0) {
+      query = query.not('id', 'in', `(${existingOldIds.join(',')})`);
+    }
+
+    const { data: oldUser, error: oldUserError } = await query
+      .order('old_id', { ascending: true })
       .limit(1)
       .maybeSingle();
 

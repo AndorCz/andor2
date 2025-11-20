@@ -310,7 +310,7 @@
     }
     .notation {
       position: relative;
-      flex: 1 1 auto;
+      flex: 0.5;
     }
       .notation input {
         width: 100%;
@@ -328,8 +328,7 @@
     }
 
     .noteInput {
-      width: 180px;
-      flex: 0 0 auto;
+      flex: 1;
     }
 
   .info {
