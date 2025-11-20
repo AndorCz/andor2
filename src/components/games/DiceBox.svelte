@@ -185,7 +185,7 @@
       <input type='text' bind:value={note} placeholder='Poznámka' class='noteInput' maxlength='120' />
       <div class='rollButtons'>
         <button onclick={showNumberRoll} class='roll'>Hodit jedno číslo</button>
-        <button onclick={showRoll} class='roll'>Hodit všechny kostky</button>
+        <button onclick={showRoll} class='roll'>Hodit vybrané kostky</button>
       </div>
     </div>
   </div>
@@ -304,13 +304,13 @@
     .row {
       padding: 20px 0px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
+      gap: 12px;
+      flex-wrap: nowrap;
     }
     .notation {
       position: relative;
+      flex: 1 1 auto;
     }
       .notation input {
         width: 100%;
@@ -322,12 +322,14 @@
       }
     .rollButtons {
       display: flex;
-      gap: 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .noteInput {
-      width: 220px;
-      max-width: 100%;
+      width: 180px;
+      flex: 0 0 auto;
     }
 
   .info {
@@ -374,8 +376,8 @@
       top: -50px;
     }
 
-    .noteInput {
-      width: 100%;
+    .row {
+      flex-wrap: wrap;
     }
   }
 </style>
