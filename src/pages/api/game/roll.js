@@ -1,12 +1,21 @@
+const escapeHtml = (unsafe = '') => unsafe
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;')
+
 const rollDice = (sides, count) => {
   return Array.from({ length: count }, () => { return Math.floor(Math.random() * sides) + 1 })
 }
 
 export const GET = async ({ request, url, redirect, locals }) => {
-  let { thread, dice, owner, audience, range } = Object.fromEntries(url.searchParams)
+  let { thread, dice, owner, audience, range, note } = Object.fromEntries(url.searchParams)
 
   if (thread && owner && (dice || range)) {
     audience = audience && audience.length ? JSON.parse(audience) : null
+    const cleanNote = note ? escapeHtml(note.trim()) : ''
+    const noteContent = cleanNote ? `<div class='diceNote'>${cleanNote}</div>` : ''
 
     if (range) {
       const parsedRange = parseInt(range, 10)
@@ -15,7 +24,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
       }
 
       const roll = rollDice(parsedRange, 1)[0]
-      const post = `<div class='diceRoll'><div class='row'><span class='type'>1-${parsedRange}:</span><b>${roll}</b></div></div>`
+      const post = `<div class='diceRoll'><div class='row'><span class='type'>1-${parsedRange}:</span><b>${roll}</b></div></div>${noteContent}`
 
       const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience, post_type: 'game' }
       const { error } = await locals.supabase.from('posts').insert(postData)
@@ -52,7 +61,7 @@ export const GET = async ({ request, url, redirect, locals }) => {
     Object.entries(readableResults)
       .filter(([type, rolls]) => rolls.length > 0) // Filter out empty keys
       .forEach(([type, rolls]) => { post += `<div class='row'><span class='type'>${rolls.length}${type}:</span><b>${rolls.join(' ')}</b> = ${rolls.reduce((a, b) => a + b, 0)}</div>` })
-    post += '</div>'
+    post += `</div>${noteContent}`
 
     // save as a post to db
     const postData = { thread, owner, owner_type: 'character', content: post, dice: true, audience, post_type: 'game' }

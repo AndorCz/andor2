@@ -8,6 +8,7 @@
 
   let diceBox
   let notation = $state('')
+  let note = $state('')
 
   const defaults = { k4: 0, k6: 0, k8: 0, k10: 0, k12: 0, k20: 0, k100: 0 }
   $gameStore.dice = $gameStore.dice || defaults
@@ -35,7 +36,14 @@
       if (diceNotation) {
         // rolls are happening on the server
         const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
-        const res = await fetch(`/api/game/roll?thread=${threadId}&dice=${encodeURIComponent(diceNotation)}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
+        const params = new URLSearchParams({
+          thread: threadId,
+          dice: diceNotation,
+          owner: $gameStore.activeCharacterId,
+          audience: JSON.stringify(audience),
+          note
+        })
+        const res = await fetch(`/api/game/roll?${params.toString()}`, { method: 'GET' })
         const json = await res.json()
         if (res.error || json.error) { return showError(res.error || json.error) }
         json.results = json.results.replaceAll('k', 'd') // convert to english dice notation for dice-box
@@ -59,7 +67,14 @@
       if (!max || max < 1) { return showError('Neplatná hodnota rozsahu') }
 
       const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds
-      const res = await fetch(`/api/game/roll?thread=${threadId}&range=${max}&owner=${$gameStore.activeCharacterId}&audience=${encodeURIComponent(JSON.stringify(audience))}`, { method: 'GET' })
+      const params = new URLSearchParams({
+        thread: threadId,
+        range: max,
+        owner: $gameStore.activeCharacterId,
+        audience: JSON.stringify(audience),
+        note
+      })
+      const res = await fetch(`/api/game/roll?${params.toString()}`, { method: 'GET' })
       const json = await res.json()
       if (!res.ok || json.error) { return showError(json.error || 'Nepodařilo se hodit číslo') }
       showSuccess(`Padlo číslo ${json.number}`)
@@ -167,6 +182,7 @@
         <input type='text' value={notation} oninput={parseNotation} size='48' />
         <button onclick={copyNotation} class='copy material plain'>content_copy</button>
       </div>
+      <input type='text' bind:value={note} placeholder='Poznámka' class='noteInput' maxlength='120' />
       <div class='rollButtons'>
         <button onclick={showNumberRoll} class='roll'>Hodit jedno číslo</button>
         <button onclick={showRoll} class='roll'>Hodit všechny kostky</button>
@@ -309,6 +325,11 @@
       gap: 20px;
     }
 
+    .noteInput {
+      width: 220px;
+      max-width: 100%;
+    }
+
   .info {
     margin: 60px 0px;
     display: flex;
@@ -351,6 +372,10 @@
       height: 50px;
       width: 50px;
       top: -50px;
+    }
+
+    .noteInput {
+      width: 100%;
     }
   }
 </style>
