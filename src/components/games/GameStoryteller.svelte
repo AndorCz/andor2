@@ -1,6 +1,6 @@
 <script>
-  import { gatherCodex } from '@lib/ai'
   import { showSuccess } from '@lib/toasts'
+  import { gatherCodex } from '@lib/common/context'
   import { supabase, handleError } from '@lib/database-browser'
   import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
   import EditableLong from '@components/common/EditableLong.svelte'

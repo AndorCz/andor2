@@ -22,16 +22,20 @@
   let page = $state(0)
   let pages = $state()
   let loading = $state(true)
-  let searchTerms = $state('')
   let diceMode = $state('icon')
-  let textareaValue = $state($gameStore.unsent || '') // load unsent post
-  let activeAudienceIds = $state([])
-  let previousAudienceIds = []
-  let otherCharacters = $state([])
+  let searchTerms = $state('')
   let mentionList = $state([])
+  let textareaValue = $state($gameStore.unsent || '') // load unsent post
+  let otherCharacters = $state([])
+  let activeAudienceIds = $state([])
+  let previousAudienceIds = $state([])
+  let promptEl = $state()
+  let promptValue = $state('')
+  let generating = $state(false)
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const myCharacters = $derived(game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' }))
+  const activeCharacter = $derived(game.characters.find((char) => { return char.id === $gameStore.activeCharacterId }))
 
   onMount(() => {
     if (user.id) { delete game.unread.gameThread }
@@ -103,9 +107,9 @@
     let response
     const audience = activeAudienceIds.includes('*') ? null : activeAudienceIds // clean '*' from audience
     if (editing) {
-      response = await sendPost('PATCH', { id: editing, thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
+      response = await sendPost('PATCH', { id: editing, thread: game.game_thread, content: textareaValue, owner: $gameStore.activeCharacterId, ownerType: 'character', audience })
     } else {
-      response = await sendPost('POST', { thread: game.game_thread, content: textareaValue, openAiThread: game.openai_thread, owner: $gameStore.activeCharacterId, ownerType: 'character', audience, postType: 'game' })
+      response = await sendPost('POST', { thread: game.game_thread, content: textareaValue, owner: $gameStore.activeCharacterId, ownerType: 'character', audience, postType: 'game' })
     }
     if (!response.error) {
       page = 0
@@ -174,17 +178,15 @@
     }
   }
 
-  /* waiting for option to delete posts in openai api
   async function generatePost () {
-    if (textareaValue) { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
-    generatingPost = true
-    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game: game.id, annotation: game.annotation, owner: game.owner.id, system: game.system, thread: game.openai_thread }) })
+    if (textareaValue && textareaValue !== '<p></p>') { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
+    generating = true
+    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game, isStoryteller, character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }) })
     if (res.error) { return showError(res.error) }
-    const json = await res.json()
-    textareaValue = json.post
-    generatingPost = false
+    // parse streamed response
+
+    generating = false
   }
-  */
 </script>
 
 {#if game.open_game || isStoryteller || isPlayer}
@@ -210,6 +212,9 @@
         {#if game.archived}
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
+          {#if game.ai_enabled}
+            <TextareaExpandable placeholder='Prompt' {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' />
+          {/if}
           <TextareaExpandable onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
           <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
