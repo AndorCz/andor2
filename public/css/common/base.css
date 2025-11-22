@@ -434,38 +434,38 @@ select {
 	}
 
 /* #region Secondary tabs */
-.tabs.secondary button {
-	text-shadow: 1px 1px 4px #0003;
+.tabs.secondary :is(button, a) {
+text-shadow: 1px 1px 4px #0003;
 }
 .tabs.secondary:after {
-	content: '';
-	width: 100%;
-	height: 10px;
-	background-color: var(--block);
+content: '';
+width: 100%;
+height: 10px;
+background-color: var(--block);
 	position: absolute;
 	bottom: -10px;
 	left: 0px;
-	box-shadow: 2px 2px 2px #0001;
+box-shadow: 2px 2px 2px #0001;
 }
-.tabs.secondary button:not(.active) {
-	color: var(--link);
-	opacity: 1;
+.tabs.secondary :is(button, a):not(.active) {
+color: var(--link);
+opacity: 1;
 }
-.tabs.secondary button:not(.active):hover {
-	color: var(--text);
+.tabs.secondary :is(button, a):not(.active):hover {
+color: var(--text);
 }
-.tabs.secondary button.active {
-	background-color: var(--block);
-	box-shadow: 2px 0px 2px #0003;
+.tabs.secondary :is(button, a).active {
+background-color: var(--block);
+box-shadow: 2px 0px 2px #0003;
 }
-.tabs.secondary button.active:after {
-	box-shadow: -8px 0 0 0 var(--block);
+.tabs.secondary :is(button, a).active:after {
+box-shadow: -8px 0 0 0 var(--block);
 }
-.tabs.secondary button.active:before {
-	box-shadow: 8px 0 0 0 var(--block);
+.tabs.secondary :is(button, a).active:before {
+box-shadow: 8px 0 0 0 var(--block);
 }
-.tabs.secondary button:first-child::before {
-	content: none;
+.tabs.secondary :is(button, a):first-child::before {
+content: none;
 }
 /* #endregion */
 
