@@ -1002,7 +1002,7 @@ begin
       limit _limit offset _offset
     )
     select json_build_object(
-      'posts', (select json_agg(op.post || jsonb_build_object('audience_names', op.audience_names)) from ordered_posts op),
+      'posts', (select coalesce(json_agg(op.post || jsonb_build_object('audience_names', op.audience_names)), '[]'::json) from ordered_posts op),
       'count', (select count(*) from filtered_posts)
     )
   );

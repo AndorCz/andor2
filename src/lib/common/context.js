@@ -1,4 +1,5 @@
 import { isFilledArray } from '@lib/utils'
+import { gameSystems } from '@lib/constants'
 
 export async function gatherCodex (supabase, gameId) {
   const { data: codexSections, error: sectionsError } = await supabase.from('codex_sections').select('*').eq('game', gameId)
@@ -33,4 +34,37 @@ export async function gatherCodex (supabase, gameId) {
     })
   }
   return codexString !== '<h1>Informace o hře</h1>\n' ? codexString : '' // Return empty string if no codex data
+}
+
+export function gatherCharacter (char, isStoryteller) {
+  return `### ${char.name}
+Popis: ${char.bio || 'Žádný popis'}
+${isStoryteller && char.storyteller_notes ? `Poznámky vypravěče: ${char.storyteller_notes}` : ''}
+`
+}
+
+// todo: add maps
+export async function gatherGameInfo (supabase, game, isStoryteller) {
+  const customFonts = [...game.fonts, 'Lucida Handwriting', 'Caveat', 'Orbitron']
+  return `# Název hry: ${game.name}
+Anotace: ${game.annotation || 'Žádná anotace'}
+Kategorie: ${game.category}
+TTRPG systém: ${gameSystems.find(system => system.value === game.system)?.label || 'Bez systému'}
+Dostupné custom fonty: ${customFonts.join(', ')}
+
+## Popis hry
+${await gatherCodex(supabase, game.id)}
+
+## Hráčské postavy ve hře
+${game.characters.map(char => gatherCharacter(char, isStoryteller)).join('\n')}
+`
+}
+
+export function formPost (post) {
+  let content = ''
+  if (post.audience_names && post.audience_names.length > 0) {
+    content += `--- soukromý příspěvek pro: ${post.audience_names.join(', ')} ---\n`
+  }
+  content += post.content
+  return content
 }

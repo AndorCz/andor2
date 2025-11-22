@@ -1,9 +1,10 @@
 <script>
   import { onMount } from 'svelte'
   import { sendPost } from '@lib/database-browser'
+  import { platform } from '@components/common/MediaQuery.svelte'
+  import { outputTextStream } from '@lib/browser/generation'
   import { clone, addURLParam } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
-  import { platform } from '@components/common/MediaQuery.svelte'
   import Thread from '@components/common/Thread.svelte'
   import Maps from '@components/games/maps/Maps.svelte'
   import DiceBox from '@components/games/DiceBox.svelte'
@@ -181,10 +182,9 @@
   async function generatePost () {
     if (textareaValue && textareaValue !== '<p></p>') { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
     generating = true
-    const res = fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game, isStoryteller, character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }) })
-    if (res.error) { return showError(res.error) }
-    // parse streamed response
-
+    const response = await fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game, isStoryteller, character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }) })
+    if (response.error) { return showError(response.error) }
+    await outputTextStream(response, (val) => { textareaValue = val })
     generating = false
   }
 </script>
@@ -215,7 +215,7 @@
           {#if game.ai_enabled}
             <TextareaExpandable placeholder='Prompt' {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' buttonTitle='vygenerovat' />
           {/if}
-          <TextareaExpandable onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
+          <TextareaExpandable loading={generating} onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
           <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
         {/if}

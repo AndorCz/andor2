@@ -17,7 +17,7 @@
   const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash', safetySettings })
 
   async function generate () {
-    const codex = await gatherCodex(game.id)
+    const codex = await gatherCodex(supabase, game.id)
 
     game.story = ''
     generating = true
