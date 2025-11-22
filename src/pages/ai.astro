@@ -1,0 +1,197 @@
+---
+import Layout from '@layouts/layout.astro'
+import SoloList from '@components/solo/SoloList.svelte'
+import GameList from '@components/games/GameList.svelte'
+
+const { supabase, user } = Astro.locals
+
+const limit = 20
+const sectionParam = Astro.url.searchParams.get('section')
+const section = sectionParam === 'group' ? 'group' : 'solo'
+const searchTerm = (Astro.url.searchParams.get('search') || '').trim()
+const gameTabParam = Astro.url.searchParams.get('gameTab') || 'open'
+
+function getSectionUrl (target) {
+  const params = new URLSearchParams(Astro.url.searchParams)
+  params.set('section', target)
+  params.delete('page')
+  const query = params.toString()
+  return `/ai${query ? `?${query}` : ''}`
+}
+
+let soloConcepts = []
+let soloPage = Number.parseInt(Astro.url.searchParams.get('page') || '0', 10)
+let soloMaxPage = 0
+
+if (Number.isNaN(soloPage) || soloPage < 0) { soloPage = 0 }
+
+if (section === 'solo') {
+  const sort = Astro.url.searchParams.get('sort') || 'popular'
+
+  function createBaseQuery () {
+    return supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)', { count: 'exact' }).match({ published: true })
+  }
+
+  function applySort (query) {
+    switch (sort) {
+      case 'name': return query.order('name')
+      case 'new': return query.order('created_at', { ascending: false })
+      case 'games': return query.order('game_count', { ascending: false })
+      case 'author': return query.order('author')
+      default: return query.order('game_count', { ascending: false })
+    }
+  }
+
+  let error
+
+  if (searchTerm) {
+    const likeTerm = `%${searchTerm}%`
+    const { data: nameMatches = [], error: nameError } = await createBaseQuery().ilike('name', likeTerm)
+    const { data: annotationMatches = [], error: annotationError } = await createBaseQuery().ilike('annotation', likeTerm)
+
+    error = nameError || annotationError
+
+    const lowerTerm = searchTerm.toLowerCase()
+    const sortByMatch = (collection, field) => {
+      return [...collection].sort((a, b) => {
+        const aValue = (a[field] || '').toLowerCase()
+        const bValue = (b[field] || '').toLowerCase()
+        const aIndex = aValue.indexOf(lowerTerm)
+        const bIndex = bValue.indexOf(lowerTerm)
+        if (aIndex === bIndex) { return aValue.localeCompare(bValue, 'cs') }
+        return aIndex - bIndex
+      })
+    }
+
+    const orderedNameMatches = sortByMatch(nameMatches, 'name')
+    const orderedAnnotationMatches = sortByMatch(annotationMatches, 'annotation')
+
+    const uniqueConcepts = new Map()
+    for (const concept of orderedNameMatches) { uniqueConcepts.set(concept.id, concept) }
+    for (const concept of orderedAnnotationMatches) { if (!uniqueConcepts.has(concept.id)) { uniqueConcepts.set(concept.id, concept) } }
+
+    soloConcepts = Array.from(uniqueConcepts.values())
+    soloPage = 0
+    soloMaxPage = 0
+  } else {
+    const rangeStart = soloPage * limit
+    const rangeEnd = rangeStart + limit - 1
+    const { data, count: total, error: queryError } = await applySort(createBaseQuery()).range(rangeStart, rangeEnd)
+    soloConcepts = data || []
+    error = queryError
+    const count = total ?? 0
+    soloMaxPage = count > 0 ? Math.ceil(count / limit) - 1 : 0
+  }
+
+  if (error) { console.error(error) }
+}
+
+let games = []
+let gamesPage = Number.parseInt(Astro.url.searchParams.get('page') || '0', 10)
+let gamesMaxPage = 0
+
+if (Number.isNaN(gamesPage) || gamesPage < 0) { gamesPage = 0 }
+
+if (section === 'group') {
+  const gameTab = gameTabParam
+  const sort = Astro.url.searchParams.get('sort') || 'new'
+
+  function createBaseQuery () {
+    const query = supabase.from('game_list').select('*', { count: 'exact' }).eq('ai_enabled', true)
+    switch (gameTab) {
+      case 'open': return query.match({ archived: false, published: true, recruitment_open: true })
+      case 'public': return query.match({ archived: false, published: true, open_game: true })
+      case 'private': return query.match({ archived: false, published: true, open_game: false })
+      case 'archive': return query.match({ archived: true, published: true })
+      case 'all': return query.match({ published: true })
+      default: return query
+    }
+  }
+
+  function applySort (query) {
+    switch (sort) {
+      case 'name': return query.order('name')
+      case 'new': return query.order('created_at', { ascending: false })
+      case 'active': return query.not('last_post', 'is', null).order('last_post', { ascending: false })
+      case 'category': return query.order('category')
+      case 'system': return query.order('system')
+      case 'count': return query.order('post_count', { ascending: false })
+      case 'owner': return query.order('owner_name')
+      default: return query
+    }
+  }
+
+  let error
+
+  if (searchTerm) {
+    const likeTerm = `%${searchTerm}%`
+    const { data: nameMatches = [], error: nameError } = await createBaseQuery().ilike('name', likeTerm)
+    const { data: annotationMatches = [], error: annotationError } = await createBaseQuery().ilike('annotation', likeTerm)
+
+    error = nameError || annotationError
+
+    const lowerTerm = searchTerm.toLowerCase()
+    const sortByMatch = (collection, field) => {
+      return [...collection].sort((a, b) => {
+        const aValue = (a[field] || '').toLowerCase()
+        const bValue = (b[field] || '').toLowerCase()
+        const aIndex = aValue.indexOf(lowerTerm)
+        const bIndex = bValue.indexOf(lowerTerm)
+        if (aIndex === bIndex) { return aValue.localeCompare(bValue, 'cs') }
+        return aIndex - bIndex
+      })
+    }
+
+    const orderedNameMatches = sortByMatch(nameMatches, 'name')
+    const orderedAnnotationMatches = sortByMatch(annotationMatches, 'annotation')
+
+    const uniqueGames = new Map()
+    for (const game of orderedNameMatches) { uniqueGames.set(game.id, game) }
+    for (const game of orderedAnnotationMatches) { if (!uniqueGames.has(game.id)) { uniqueGames.set(game.id, game) } }
+
+    games = Array.from(uniqueGames.values())
+    gamesPage = 0
+    gamesMaxPage = 0
+  } else {
+    const rangeStart = gamesPage * limit
+    const rangeEnd = rangeStart + limit - 1
+    const { data, count: total, error: queryError } = await applySort(createBaseQuery()).range(rangeStart, rangeEnd)
+    games = data || []
+    error = queryError
+    const count = total ?? 0
+    gamesMaxPage = count > 0 ? Math.ceil(count / limit) - 1 : 0
+  }
+
+  if (error) { console.error(error) }
+}
+---
+<Layout title='AI'>
+  <nav class='tabs secondary ai-tabs'>
+    <a href={getSectionUrl('solo')} class={section === 'solo' ? 'active' : ''}>Sólo</a>
+    <a href={getSectionUrl('group')} class={section === 'group' ? 'active' : ''}>Skupinové</a>
+  </nav>
+
+  {section === 'solo'
+    ? <SoloList user={user} concepts={soloConcepts} page={soloPage} maxPage={soloMaxPage} showHeadline searchTerm={searchTerm} client:only='svelte' />
+    : <GameList user={user} games={games} page={gamesPage} maxPage={gamesMaxPage} showHeadline searchTerm={searchTerm} headlineTitle='Skupinové hry' createLink='/game/game-form?ai=true' tabParamKey='gameTab' initialTab={gameTabParam} client:only='svelte' />}
+</Layout>
+
+<style>
+  .ai-tabs {
+    margin-bottom: 10px;
+  }
+
+  .ai-tabs a {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .ai-tabs a.active {
+    background-color: var(--panel);
+  }
+</style>

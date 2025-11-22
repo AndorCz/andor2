@@ -78,7 +78,7 @@
     </div>
     <div id='concepts'>
       <div class='group'>
-        <a href='/solo' class='headline'><h4>Nové sólo koncepty</h4></a>
+        <a href='/ai' class='headline'><h4>Nové sólo koncepty</h4></a>
         {#each latestData.concepts as concept (concept.id)}
           <div class='item'>
             <a href='./user?id={concept.author.id}' class='user owner' title={concept.author.name} use:tooltip>

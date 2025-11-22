@@ -71,7 +71,7 @@
 
 {#if isFilledArray($bookmarks.solo)}
   <hr>
-  <a href='/solo'><h4>Sólo</h4></a>
+  <a href='/ai'><h4>Sólo</h4></a>
   <ul class='solo' bind:this={soloEl} class:saving class:showHandles>
     {#each $bookmarks.solo as bookmark (bookmark.id)}
       <li class='bookmark' class:active={'/solo/game/' + bookmark.id === window.location.pathname} data-id={bookmark.bookmark_id}>

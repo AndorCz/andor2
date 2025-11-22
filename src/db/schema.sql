@@ -100,6 +100,7 @@ create table games (
   recruitment_open boolean not null default true,
   open_codex boolean not null default true,
   open_game boolean not null default true,
+  ai_enabled boolean not null default false,
   open_discussion boolean not null default false,
   open_chars boolean not null default true,
   game_thread int4,

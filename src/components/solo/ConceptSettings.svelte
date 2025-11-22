@@ -156,7 +156,7 @@
     const { error: storytellerError } = await supabase.storage.from('portraits').remove(`${concept.storyteller}.jpg`)
     if (storytellerError) { return handleError(storytellerError) }
 
-    window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
+    window.location.href = '/ai?toastType=success&toastText=' + encodeURIComponent('Koncept byl smazán')
   }
 
   const maxTags = $derived(selectedTags?.length === 3)
