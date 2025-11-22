@@ -1727,7 +1727,7 @@ $$ language plpgsql;
 
 create or replace function clear_character_unreads_on_death () returns trigger as $$
 begin
-  if new.state = 'dead' and coalesce(old.state, '') <> 'dead' then
+  if new.state = 'dead' then
     update unread_character_message_counts
     set unread_count = 0
     where sender_character_id = new.id
@@ -1736,6 +1736,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+
 
 -- TRIGGERS --------------------------------------------
 
