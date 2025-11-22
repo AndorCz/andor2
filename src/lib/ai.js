@@ -1,4 +1,4 @@
-import { gatherGameInfo, formCharacterContext } from '@lib/common/context'
+import { gatherGameInfo, gatherCharacter } from '@lib/common/context'
 
 export async function getPostGenerationInstructions (supabase, data) {
   let instructions
@@ -29,7 +29,7 @@ ${styleNotes}
 ${gameInfo}
 
 ## Popis tvé postavy
-${formCharacterContext(data.character, data.isStoryteller)}`
+${gatherCharacter(data.character, data.role)}`
   }
   return instructions
 }

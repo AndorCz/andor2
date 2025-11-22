@@ -187,7 +187,15 @@
     try {
       const response = await fetch('/api/game/generatePost', {
         method: 'POST',
-        body: JSON.stringify({ game, role: activeCharacter.storyteller ? 'storyteller' : 'player', character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }),
+        body: JSON.stringify({
+          game,
+          posts,
+          character: activeCharacter,
+          role: activeCharacter.storyteller ? 'storyteller' : 'player',
+          audienceNames: activeAudienceIds.includes('*') ? null : activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', '),
+          codex: game.codexSections,
+          prompt: promptValue
+        }),
         signal: abortController.signal
       })
       if (response.error) { return showError(response.error) }

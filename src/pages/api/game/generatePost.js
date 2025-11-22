@@ -18,7 +18,12 @@ export const POST = async ({ locals, request }) => {
   const messages = [
     { role: 'system', content: instructions },
     ...posts.map(post => { return { role: 'system', content: formPost(post) } }),
-    { role: 'user', content: `--- PROMPT ${data.role === 'storyteller' ? 'VYPRAVĚČE' : 'HRÁČE'} ---\n` + data.prompt }
+    {
+      role: 'user',
+      content: `${data.audienceNames ? `Příspěvek je soukromý, jen pro: ${data.audienceNames}` : ''}
+      --- PROMPT ${data.role === 'storyteller' ? 'VYPRAVĚČE' : 'HRÁČE'} ---\n
+      ${data.prompt}`
+    }
   ]
 
   console.log('messages', messages)
