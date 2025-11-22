@@ -213,7 +213,7 @@
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
           {#if game.ai_enabled}
-            <TextareaExpandable placeholder='Prompt' {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' />
+            <TextareaExpandable placeholder='Prompt' {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' buttonTitle='vygenerovat' />
           {/if}
           <TextareaExpandable onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
           <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
