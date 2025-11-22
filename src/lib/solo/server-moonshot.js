@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 
 export const getStorytellerParams = () => {
-  return { model: 'kimi-k2-0711-preview', response_format: { type: 'json_object' } }
+  return { model: 'kimi-k2-0905-preview', response_format: { type: 'json_object' } }
 }
 
 export function getAI (env) {

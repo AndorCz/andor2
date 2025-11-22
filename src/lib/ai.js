@@ -2,9 +2,9 @@ import { gatherGameInfo, formCharacterContext } from '@lib/common/context'
 
 export async function getPostGenerationInstructions (supabase, data) {
   let instructions
-  const gameInfo = await gatherGameInfo(supabase, data.game, data.isStoryteller)
+  const gameInfo = await gatherGameInfo(supabase, data.game, data.role)
   const styleNotes = 'Používej jednoduché HTML značky pro stylování příspěvku. Používej uvozovky a tučné písmo pro zvýraznění přímé řeči. Používej kurzívu pro myšlenky postavy. Dodržuj tón a styl dle daného žánru hry. Příspěvek by neměl být příliš dlouhý, jeden až tři odstavce, podle potřeby děje.'
-  if (data.isStoryteller) {
+  if (data.role === 'storyteller') {
     // Storyteller
     instructions = `Jsi asistent vypravěče ve hře na hrdiny. Tvým úkolem je rozepsat vypravěčův vstupní text (prompt, označený jako "--- PROMPT VYPRAVĚČE ---") do plnohodnotného herního příspěvku.
 

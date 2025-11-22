@@ -18,12 +18,12 @@ export const POST = async ({ locals, request }) => {
   const messages = [
     { role: 'system', content: instructions },
     ...posts.map(post => { return { role: 'system', content: formPost(post) } }),
-    { role: 'user', content: `--- PROMPT ${data.isStoryteller ? 'VYPRAVĚČE' : 'HRÁČE'} ---\n` + data.prompt }
+    { role: 'user', content: `--- PROMPT ${data.role === 'storyteller' ? 'VYPRAVĚČE' : 'HRÁČE'} ---\n` + data.prompt }
   ]
 
   console.log('messages', messages)
 
-  const completion = await ai.chat.completions.create({ model: 'kimi-k2-thinking', messages, stream: true })
+  const completion = await ai.chat.completions.create({ model: 'kimi-k2-0905-preview', messages, stream: true }, { signal: request.signal })
 
   const stream = await getReadableStream(completion)
 

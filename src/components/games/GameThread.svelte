@@ -33,6 +33,7 @@
   let promptEl = $state()
   let promptValue = $state('')
   let generating = $state(false)
+  let abortController = $state()
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const myCharacters = $derived(game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' }))
@@ -182,10 +183,25 @@
   async function generatePost () {
     if (textareaValue && textareaValue !== '<p></p>') { if (!window.confirm('Opravdu přepsat obsah pole?')) { return } }
     generating = true
-    const response = await fetch('/api/game/generatePost', { method: 'POST', body: JSON.stringify({ game, isStoryteller, character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }) })
-    if (response.error) { return showError(response.error) }
-    await outputTextStream(response, (val) => { textareaValue = val })
-    generating = false
+    abortController = new AbortController()
+    try {
+      const response = await fetch('/api/game/generatePost', {
+        method: 'POST',
+        body: JSON.stringify({ game, role: activeCharacter.storyteller ? 'storyteller' : 'player', character: activeCharacter, posts, codex: game.codexSections, prompt: promptValue }),
+        signal: abortController.signal
+      })
+      if (response.error) { return showError(response.error) }
+      await outputTextStream(response, (val) => { textareaValue = val })
+    } catch (e) {
+      if (e.name !== 'AbortError') showError(e.message || e)
+    } finally {
+      generating = false
+      abortController = null
+    }
+  }
+
+  function stopGeneration () {
+    if (abortController) abortController.abort()
   }
 </script>
 
@@ -213,11 +229,15 @@
           <p class='info'>Hra je archivovaná, není možné do ní psát.</p>
         {:else}
           {#if game.ai_enabled}
-            <TextareaExpandable placeholder='Prompt' {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' buttonTitle='vygenerovat' />
+            <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
+            <br>
+            <TextareaExpandable placeholder={activeCharacter.storyteller ? 'Vypravěč: Napiš stručně co se má stát' : 'Hráč: Napiš stručně co chceš udělat'} onStop={stopGeneration} {generating} {mentionList} autoFocus {user} bind:this={promptEl} bind:value={promptValue} disabled={saving || generating} onSave={generatePost} showButton={true} minHeight={30} enterSend singleLine disableEmpty buttonIcon='wand_stars' buttonTitle='vygenerovat' />
+            <br>
+            <TextareaExpandable loading={generating} onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
+          {:else}
+            <TextareaExpandable loading={generating} onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
+            <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
           {/if}
-          <TextareaExpandable loading={generating} onTyping={saveUnsent} {user} allowHtml bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing={editing} fonts={game.fonts} {mentionList} showButton disableEmpty />
-          <CharacterSelect {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
-          <!--{#if isStoryteller}<button class='generate' on:click={generatePost} disabled={generatingPost}>Vygenerovat</button>{/if}-->
         {/if}
       {/if}
     </div>

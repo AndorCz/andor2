@@ -36,15 +36,15 @@ export async function gatherCodex (supabase, gameId) {
   return codexString !== '<h1>Informace o hře</h1>\n' ? codexString : '' // Return empty string if no codex data
 }
 
-export function gatherCharacter (char, isStoryteller) {
+export function gatherCharacter (char, role) {
   return `### ${char.name}
 Popis: ${char.bio || 'Žádný popis'}
-${isStoryteller && char.storyteller_notes ? `Poznámky vypravěče: ${char.storyteller_notes}` : ''}
+${role === 'storyteller' && char.storyteller_notes ? `Poznámky vypravěče: ${char.storyteller_notes}` : ''}
 `
 }
 
 // todo: add maps
-export async function gatherGameInfo (supabase, game, isStoryteller) {
+export async function gatherGameInfo (supabase, game, role) {
   const customFonts = [...game.fonts, 'Lucida Handwriting', 'Caveat', 'Orbitron']
   return `# Název hry: ${game.name}
 Anotace: ${game.annotation || 'Žádná anotace'}
@@ -56,7 +56,7 @@ Dostupné custom fonty: ${customFonts.join(', ')}
 ${await gatherCodex(supabase, game.id)}
 
 ## Hráčské postavy ve hře
-${game.characters.map(char => gatherCharacter(char, isStoryteller)).join('\n')}
+${game.characters.map(char => gatherCharacter(char, role)).join('\n')}
 `
 }
 

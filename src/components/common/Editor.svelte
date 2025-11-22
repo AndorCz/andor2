@@ -43,6 +43,12 @@
   let timeout
   // let debug = ''
 
+  $effect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value, false)
+    }
+  })
+
   onMount(() => {
     const BubbleMenuImage = BubbleMenu.extend({ name: 'bubbleMenuImage' })
     const extensions = [
