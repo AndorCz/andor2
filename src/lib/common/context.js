@@ -61,9 +61,9 @@ ${game.characters.map(char => gatherCharacter(char, role)).join('\n')}
 }
 
 export function formPost (post) {
-  let content = ''
+  let content = 'autor: ' + post.owner_name + '\n'
   if (post.audience_names && post.audience_names.length > 0) {
-    content += `--- soukromý příspěvek pro: ${post.audience_names.join(', ')} ---\n`
+    content += `soukromý příspěvek pro: ${post.audience_names.join(', ')}\n`
   }
   content += post.content
   return content

@@ -21,7 +21,7 @@ ${data.game.story || 'Žádný plán'}
 `
   } else {
     // Player character - todo: Add portrait
-    instructions = `Jsi asistent hráče ve hře na hrdiny. Tvým úkolem je rozepsat hráčův vstupní text (prompt, označený jako "--- PROMPT HRÁČE ---") do plnohodnotného herního příspěvku.
+    instructions = `Jsi asistent hráče ve hře na hrdiny. Tvým úkolem je rozepsat hráčův vstupní text (prompt, označený jako "--- PROMPT HRÁČE ---") do plnohodnotného herního příspěvku. Piš z pohledu dané postavy, v první osobě.
 
 ## Styl výstupu
 ${styleNotes}
