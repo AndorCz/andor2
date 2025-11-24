@@ -24,6 +24,23 @@
 	font-weight: 100 900;
 	src: url('/fonts/AlegreyaSans-Italic.woff2') format('woff2-variations');
 }
+/*
+@font-face {
+	font-family: 'Material Symbols Sharp';
+	font-display: block;
+	font-style: normal;
+	font-weight: 100 700;
+	src: url('/fonts/MaterialSymbolsSharpSubset.woff2') format('woff2');
+}
+*/
+/* Workaround for icon font not working in Opera GX on Windows when loaded through link rel='stylesheet' */
+@font-face {
+  font-family: 'Material Symbols Sharp';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url(https://fonts.gstatic.com/icon/font?kit=gNMyW2J8Roq16WD5tFNRaeLQk6-SHQ_R00k4c2_whPnoY9ruReYU3rHmz74m0ZkGH-VBYe1x0TV6x4yFH8F-H5Od1kzVR4x9r8__USB3vnHsbjGWnTaNm-bZyUCWfPO-o9fx6SvviKLKxZZNAegCEGTRYS8kYukhwMVdRO5iJ5Jiu_pgwVlRVbFde-Om3aeKMrT6A5_kp-g3jmTsp5-zBYgQtPZj-yTjWocUcJ21wQ2Db787-0VOCPdFDbU8tXIJrpH3kA9z-91ttljgc6m6-SbclJ6Wh-yw47k8&skey=b2b11cf3b396438f&v=v295) format('woff2');
+}
 /* #endregion */
 
 /* #region BASICS */
