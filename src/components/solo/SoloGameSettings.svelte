@@ -48,7 +48,7 @@
     if (removeError) { return handleError(removeError) }
     const { error: folderError } = await deleteStorageFolder('scenes', game.id)
     if (folderError) { return handleError(folderError) }
-    window.location.href = '/solo?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
+    window.location.href = '/ai?toastType=success&toastText=' + encodeURIComponent('Hra byla smazána')
   }
 </script>
 

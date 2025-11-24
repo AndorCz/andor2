@@ -67,7 +67,7 @@
       <nav class='tabs'>
         <a href='/' class:active={pathname === '/'}>Nové</a>
         <a href='/games' class:active={pathname.startsWith('/game')}>Hry</a>
-        <a href='/solo' class:active={pathname.startsWith('/solo')}>AI</a>
+        <a href='/ai' class:active={pathname.startsWith('/ai') || pathname.startsWith('/solo')}>AI</a>
         <a href='/works' class:active={pathname.startsWith('/work')}>Tvorba</a>
         <a href='/boards' class:active={pathname.startsWith('/board')}>Diskuze</a>
         <a href='/chat' class:active={pathname.startsWith('/chat')}>

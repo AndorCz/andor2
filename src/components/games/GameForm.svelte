@@ -3,11 +3,14 @@
   import { gameSystems, gameCategories } from '@lib/constants'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  const { user } = $props()
+  const { user, aiEnabled = false } = $props()
 </script>
 
 {#if user.id}
   <form method='POST' autocomplete='off'>
+    {#if aiEnabled}
+      <input type='hidden' name='aiEnabled' value='true' />
+    {/if}
     <div class='row'>
       <div class='labels'>
         <label for='gameName'>Název *</label>

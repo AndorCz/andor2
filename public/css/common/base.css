@@ -24,23 +24,6 @@
 	font-weight: 100 900;
 	src: url('/fonts/AlegreyaSans-Italic.woff2') format('woff2-variations');
 }
-/*
-@font-face {
-	font-family: 'Material Symbols Sharp';
-	font-display: block;
-	font-style: normal;
-	font-weight: 100 700;
-	src: url('/fonts/MaterialSymbolsSharpSubset.woff2') format('woff2');
-}
-*/
-/* Fallback for Google/Opera GX issue */
-@font-face {
-  font-family: 'Material Symbols Sharp';
-  font-style: normal;
-  font-weight: 100 700;
-  font-display: block;
-  src: url(https://fonts.gstatic.com/icon/font?kit=gNMyW2J8Roq16WD5tFNRaeLQk6-SHQ_R00k4c2_whPnoY9ruReYU3rHmz74m0ZkGH-VBYe1x0TV6x4yFH8F-H5Od1kzVR4x9r8__USB3vnHsbjGWnTaNm-bZyUCWfPO-o9fx6SvviKLKxYhNAegCEGzRYS8kYukhwBXrIiteuIrI4SwktE5RuVPa2tA1dESgXIOhp55N087HeT_lTn9TIiF1tqVpIsfUZ-6ERUQPCcwvxR3Ue0PbeF7jDum2Qlfcne1T1Jl1l_0eIi8g1JV8_O_aPpfPLnWvKA&skey=b2b11cf3b396438f&v=v289) format('woff2');
-}
 /* #endregion */
 
 /* #region BASICS */
@@ -434,38 +417,38 @@ select {
 	}
 
 /* #region Secondary tabs */
-.tabs.secondary button {
-	text-shadow: 1px 1px 4px #0003;
+.tabs.secondary :is(button, a) {
+text-shadow: 1px 1px 4px #0003;
 }
 .tabs.secondary:after {
-	content: '';
-	width: 100%;
-	height: 10px;
-	background-color: var(--block);
+content: '';
+width: 100%;
+height: 10px;
+background-color: var(--block);
 	position: absolute;
 	bottom: -10px;
 	left: 0px;
-	box-shadow: 2px 2px 2px #0001;
+box-shadow: 2px 2px 2px #0001;
 }
-.tabs.secondary button:not(.active) {
-	color: var(--link);
-	opacity: 1;
+.tabs.secondary :is(button, a):not(.active) {
+color: var(--link);
+opacity: 1;
 }
-.tabs.secondary button:not(.active):hover {
-	color: var(--text);
+.tabs.secondary :is(button, a):not(.active):hover {
+color: var(--text);
 }
-.tabs.secondary button.active {
-	background-color: var(--block);
-	box-shadow: 2px 0px 2px #0003;
+.tabs.secondary :is(button, a).active {
+background-color: var(--block);
+box-shadow: 2px 0px 2px #0003;
 }
-.tabs.secondary button.active:after {
-	box-shadow: -8px 0 0 0 var(--block);
+.tabs.secondary :is(button, a).active:after {
+box-shadow: -8px 0 0 0 var(--block);
 }
-.tabs.secondary button.active:before {
-	box-shadow: 8px 0 0 0 var(--block);
+.tabs.secondary :is(button, a).active:before {
+box-shadow: 8px 0 0 0 var(--block);
 }
-.tabs.secondary button:first-child::before {
-	content: none;
+.tabs.secondary :is(button, a):first-child::before {
+content: none;
 }
 /* #endregion */
 

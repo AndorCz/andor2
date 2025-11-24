@@ -16,8 +16,8 @@
   game.unread = game.unread || {}
 
   const gameStore = getSavedStore('game-' + game.id)
-  const isGameOwner = game.owner.id === user.id
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
+  const isGameOwner = game.owner.id === user.id
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
   const bookmarkId = $derived($bookmarks.games.find(b => b.id === game.id)?.bookmark_id)
   // let notificationEnabled = game.subscription?.notification || false

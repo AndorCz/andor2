@@ -7,12 +7,24 @@
   import { gameCategories, gameSystems } from '@lib/constants'
   import { platform as platformStore } from '@components/common/MediaQuery.svelte'
 
-  const { user = {}, games = [], showHeadline = false, showTabs = true, page = 0, maxPage = 0, searchTerm = '' } = $props()
+  const {
+    user = {},
+    games = [],
+    showHeadline = false,
+    showTabs = true,
+    page = 0,
+    maxPage = 0,
+    searchTerm = '',
+    headlineTitle = 'Hry',
+    createLink = '/game/game-form',
+    tabParamKey = 'tab',
+    initialTab = 'open'
+  } = $props()
 
   let gameListStore
   let sort = $state('new')
   let listView = $state(false)
-  let activeTab = $state('open')
+  let activeTab = $state(initialTab)
   let searchValue = $state(searchTerm || '')
   const platform = $derived($platformStore)
   const showClearButton = $derived(Boolean(searchTerm) && searchValue.trim() === searchTerm)
@@ -29,7 +41,7 @@
     getHeaderUrl = databaseBrowser.getHeaderUrl
     getPortraitUrl = databaseBrowser.getPortraitUrl
 
-    const tabParam = new URL(window.location).searchParams.get('tab')
+    const tabParam = new URL(window.location).searchParams.get(tabParamKey)
     if (tabParam) { activeTab = tabParam }
 
     const sortParam = new URL(window.location).searchParams.get('sort')
@@ -41,7 +53,7 @@
 
   function activateTab (tab) {
     activeTab = tab
-    const newUrl = addURLParam('tab', tab, true)
+    const newUrl = addURLParam(tabParamKey, tab, true)
     window.location.href = newUrl
   }
 
@@ -94,7 +106,7 @@
 
 {#if showHeadline}
   <div class='headline flex'>
-    <h1>Hry</h1>
+    <h1>{headlineTitle}</h1>
     <div class='buttons'>
       <div class='searchBox'>
         <input type='text' placeholder='Hledat hry' aria-label='Hledat hry' bind:value={searchValue} onkeydown={handleSearchKeydown} />
@@ -120,8 +132,8 @@
         </div>
       {/if}
       {#if user.id}
-        <a href='./game/game-form' class='button desktop newGame'>Vytvořit novou hru</a>
-        <a href='./game/game-form' class='button mobile material newGame square'>add</a>
+        <a href={createLink} class='button desktop newGame'>Vytvořit novou hru</a>
+        <a href={createLink} class='button mobile material newGame square'>add</a>
       {/if}
     </div>
   </div>

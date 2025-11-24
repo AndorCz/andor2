@@ -19,6 +19,8 @@
     buttonIcon = 'send',
     buttonTitle = 'Odeslat',
     editing = $bindable(false),
+    generating = false,
+    onStop = null,
     minHeight = 140,
     enterSend = false,
     disableEmpty = true,
@@ -139,6 +141,11 @@
   {/if}
   {#if showButton}
     <div class='buttons'>
+      {#if generating && onStop}
+        <button type='button' onclick={onStop} class='stop' title='Zastavit'>
+          <span class='material'>close</span>
+        </button>
+      {/if}
       {#if editing}
         <button type='button' onclick={cancelEdit} class='cancel' title='Zrušit'>
           <span class='material'>close</span>
@@ -212,7 +219,7 @@
         border-radius: 10px 0px 10px 0px;
         border-bottom: 3px var(--buttonBg) solid;
       }
-      .cancel {
+      .cancel, .stop {
         visibility: visible;
         border-radius: 0px 10px 0px 10px;
       }

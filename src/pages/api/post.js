@@ -11,7 +11,7 @@ export const GET = async ({ url, redirect, locals }) => {
     if (game) { // handle game thread
       res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset, _search: search })
       if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
-      posts = res.data.posts
+      posts = res.data.posts || []
       count = res.data.count
     } else { // handle other threads
       const query = locals.supabase.from('posts_owner').select('*', { count: 'exact' }).eq('thread', game).range(offset, offset + limit - 1)

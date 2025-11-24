@@ -1,6 +1,6 @@
 <script>
-  import { gatherCodex } from '@lib/ai'
   import { showSuccess } from '@lib/toasts'
+  import { gatherCodex } from '@lib/common/context'
   import { supabase, handleError } from '@lib/database-browser'
   import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
   import EditableLong from '@components/common/EditableLong.svelte'
@@ -17,7 +17,7 @@
   const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash', safetySettings })
 
   async function generate () {
-    const codex = await gatherCodex(game.id)
+    const codex = await gatherCodex(supabase, game.id)
 
     game.story = ''
     generating = true

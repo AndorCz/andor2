@@ -1,49 +1,35 @@
-import { supabase, handleError } from '@lib/database-browser'
-import { isFilledArray } from '@lib/utils'
+import { gatherGameInfo, gatherCharacter } from '@lib/common/context'
 
-export async function gatherCodex (gameId) {
-  const { data: codexSections, error: sectionsError } = await supabase.from('codex_sections').select('*').eq('game', gameId)
-  if (sectionsError) { return handleError(sectionsError) }
+export async function getPostGenerationInstructions (supabase, data) {
+  let instructions
+  const gameInfo = await gatherGameInfo(supabase, data.game, data.role)
+  const styleNotes = 'Používej jednoduché HTML značky pro stylování příspěvku. Používej uvozovky a tučné písmo pro zvýraznění přímé řeči. Používej kurzívu pro myšlenky postavy. Dodržuj tón a styl dle daného žánru hry. Příspěvek by neměl být příliš dlouhý, jeden až tři odstavce, podle potřeby děje.'
+  if (data.role === 'storyteller') {
+    // Storyteller
+    instructions = `Jsi asistent vypravěče ve hře na hrdiny. Tvým úkolem je rozepsat vypravěčův vstupní text (prompt, označený jako "--- PROMPT VYPRAVĚČE ---") do plnohodnotného herního příspěvku.
 
-  const { data: codexPages, error: pagesError } = await supabase.from('codex_pages').select('*').eq('game', gameId)
-  if (pagesError) { return handleError(pagesError) }
+## Styl výstupu
+${styleNotes}
+Pokud uvádíš novou scénu, můžeš použít nadpis a případně jeden z custom fontů dostupných ve hře (inline css font-family). Default je hezký font 'Alegreya', ideální pro fantasy a klasiku.
 
-  // Aggregate the codex data into a single string, with pages grouped into sections
-  let codexString = '<h1>Informace o hře</h1>\n'
+${gameInfo}
 
-  // Find codex page without codex section
-  const introPage = codexPages.find(page => !page.section)
-  if (introPage?.content) {
-    codexString += '<h2>Úvod</h2>\n'
-    codexString += `<p>${introPage.content}</p>\n`
+## Tajné poznámky vypravěče
+${data.game.notes || 'Žádné poznámky'}
+## Plán příběhu
+${data.game.story || 'Žádný plán'}
+`
+  } else {
+    // Player character - todo: Add portrait
+    instructions = `Jsi asistent hráče ve hře na hrdiny. Tvým úkolem je rozepsat hráčův vstupní text (prompt, označený jako "--- PROMPT HRÁČE ---") do plnohodnotného herního příspěvku. Piš z pohledu dané postavy, v první osobě.
+
+## Styl výstupu
+${styleNotes}
+
+${gameInfo}
+
+## Popis tvé postavy
+${gatherCharacter(data.character, data.role)}`
   }
-
-  if (isFilledArray(codexSections)) {
-    codexSections.forEach(section => {
-      const sectionPages = codexPages.filter(page => page.section === section.id)
-      if (sectionPages.length > 0) {
-        codexString += `<h2>${section.name}</h2>\n`
-        if (section.content) {
-          codexString += `<p>${section.content}</p>\n`
-        }
-        sectionPages.forEach(page => {
-          codexString += `<h3>${page.name}</h3>\n`
-          codexString += `<p>${page.content}</p>\n`
-        })
-      }
-    })
-  }
-  return codexString !== '<h1>Informace o hře</h1>\n' ? codexString : '' // Return empty string if no codex data
-}
-
-// Converts a File object to a GoogleGenerativeAI.Part object
-export async function fileToGenerativePart (file) {
-  const base64EncodedDataPromise = new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result.split(',')[1])
-    reader.readAsDataURL(file)
-  })
-  return {
-    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type }
-  }
+  return instructions
 }
