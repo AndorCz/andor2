@@ -58,6 +58,7 @@
             name: item.contact_name,
             portrait: item.contact_portrait,
             reward_icon: item.contact_reward_icon,
+            reward_link: item.contact_reward_link,
             link: linkByType[item.contact_type] ? linkByType[item.contact_type](item.contact_id) : '#'
           },
           messages: []

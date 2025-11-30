@@ -96,7 +96,7 @@
   {/if}
   <input type='hidden' name='newPortrait' bind:value={newPortraitBase64} />
   {#if identity.reward_icon}
-    <a href={identity.reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>
+    <a href={identity.reward_link || '#'} target='_blank'><img src={identity.reward_icon} class='reward' /></a>
   {/if}
 </div>
 

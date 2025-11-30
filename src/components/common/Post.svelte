@@ -90,7 +90,7 @@
     </div>
   {/if}
   <div class='body'>
-    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' bind:this={rewardEl} /></a>{/if}
+    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' bind:this={rewardEl} /></a>{/if}
     <div class='header'>
       {#if unread}
         <span class='badge'></span>

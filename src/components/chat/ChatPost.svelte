@@ -50,7 +50,7 @@
         <a href={'/user?id=' + post.owner} class='user'>
           <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
         </a>
-        {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>{/if}
+        {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' /></a>{/if}
       {/if}
     </div>
     <Reactions {user} {post} type='post' />
@@ -60,7 +60,7 @@
         <a href={'/user?id=' + post.owner} class='user'>
           <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
         </a>
-        {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' /></a>{/if}
+        {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' /></a>{/if}
       {/if}
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>

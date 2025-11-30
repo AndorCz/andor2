@@ -76,6 +76,7 @@ create table profiles (
   colors text[] default '{}',
   publish_consent boolean,
   reward_icon text default null,
+  reward_link text default null,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
 );
 
