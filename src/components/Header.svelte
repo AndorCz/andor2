@@ -7,6 +7,14 @@
 
   const { pathname, headerStatic, headerStorage, showMenu = true, chatUnread = false } = $props()
 
+  const month = new Date().getMonth()
+  let defaultHeader = $state('/header.jpg')
+  if (month === 11 || month <= 1) {
+    defaultHeader = '/header_winter.jpg'
+  } else if (month >= 8 && month <= 10) {
+    defaultHeader = '/header_autumn.jpg'
+  }
+
   let headerUrl = $state(headerStatic)
   let chatPeople = $state(0)
   let tirienPeople = $state(0)
@@ -61,7 +69,7 @@
 {#if errorFetchingHeader}
   <p>Chyba při načítání hlavičky: {errorFetchingHeader.message}</p>
 {:else if pathname !== '/chat'}
-  <header style="--header-path: url({$headerPreview || headerUrl || '/header_autumn.jpg'})">
+  <header style="--header-path: url({$headerPreview || headerUrl || defaultHeader})">
     <a href='/' id='logo'></a>
     {#if showMenu}
       <nav class='tabs'>
