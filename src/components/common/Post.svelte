@@ -16,11 +16,11 @@
   let iconEl = $state()
   let portraitEl = $state()
   let rewardEl = $state()
+  let portraitLoaded = $state(false)
   const canDelete = canDeleteAll || (post.dice ? canDeleteAll : isMyPost)
 
   onMount(() => {
     checkMeMentioned()
-    positionReward()
     window.addEventListener('resize', positionReward)
     return () => {
       window.removeEventListener('resize', positionReward)
@@ -61,15 +61,27 @@
     })
   }
 
+  function onPortraitLoad () {
+    portraitLoaded = true
+  }
+
   function positionReward () {
-    if ($platform === 'desktop' && iconEl && portraitEl && rewardEl) {
+    if ($platform === 'desktop' && iconEl && portraitEl && rewardEl && portraitLoaded) {
       const iconHeight = iconEl.offsetHeight
       const portraitHeight = portraitEl.offsetHeight
       const effectiveHeight = Math.min(portraitHeight, iconHeight)
-      console.log('effectiveHeight', effectiveHeight)
-      rewardEl.style.top = `${effectiveHeight - 35}px`
+      if (effectiveHeight > 0) {
+        rewardEl.style.top = `${effectiveHeight - 35}px`
+      }
     }
   }
+
+  $effect(() => {
+    // trigger repositioning when platform, portrait loaded state, or elements change
+    if ($platform && portraitLoaded && iconEl && portraitEl && rewardEl) {
+      positionReward()
+    }
+  })
 
   $effect(() => {
     // trigger reinitialization when post content changes
@@ -82,16 +94,16 @@
   {#if $platform === 'desktop'}
     <div class='icon' style='--iconSize: {iconSize}px' bind:this={iconEl}>
       {#if post.owner_portrait}
-        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} bind:this={portraitEl} />
+        <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} bind:this={portraitEl} onload={onPortraitLoad} />
       {:else if post.owner_type === 'character'}
-        <img src='/default_char.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} />
+        <img src='/default_char.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} onload={onPortraitLoad} />
       {:else}
-        <img src='/default_user.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} />
+        <img src='/default_user.jpg' class='portrait' alt={post.owner_name} bind:this={portraitEl} onload={onPortraitLoad} />
       {/if}
     </div>
   {/if}
   <div class='body'>
-    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward' bind:this={rewardEl}><img src={post.owner_reward_icon} /></a>{/if}
+    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward' bind:this={rewardEl}><img src={post.owner_reward_icon} alt='reward' /></a>{/if}
     <div class='header'>
       {#if unread}
         <span class='badge'></span>
@@ -136,7 +148,7 @@
           {:else}
             <img src='/default_user.jpg' class='portrait' alt={post.owner_name} />
           {/if}
-          {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward' bind:this={rewardEl}><img src={post.owner_reward_icon} /></a>{/if}
+          {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward'><img src={post.owner_reward_icon} alt='reward' /></a>{/if}
         </div>
       {/if}
       {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}
