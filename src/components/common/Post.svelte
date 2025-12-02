@@ -66,6 +66,7 @@
       const iconHeight = iconEl.offsetHeight
       const portraitHeight = portraitEl.offsetHeight
       const effectiveHeight = Math.min(portraitHeight, iconHeight)
+      console.log('effectiveHeight', effectiveHeight)
       rewardEl.style.top = `${effectiveHeight - 35}px`
     }
   }
@@ -90,7 +91,7 @@
     </div>
   {/if}
   <div class='body'>
-    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' bind:this={rewardEl} /></a>{/if}
+    {#if $platform === 'desktop' && post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward' bind:this={rewardEl}><img src={post.owner_reward_icon} /></a>{/if}
     <div class='header'>
       {#if unread}
         <span class='badge'></span>
@@ -135,7 +136,7 @@
           {:else}
             <img src='/default_user.jpg' class='portrait' alt={post.owner_name} />
           {/if}
-          {#if post.owner_reward_icon}<a href={post.owner_reward_icon} target='_blank'><img src='/rewards/pumpkin.png' class='reward' bind:this={rewardEl} /></a>{/if}
+          {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward' bind:this={rewardEl}><img src={post.owner_reward_icon} /></a>{/if}
         </div>
       {/if}
       {@html DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}

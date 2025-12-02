@@ -504,7 +504,11 @@ create or replace view discussion_posts_owner as
     case
       when p.owner_type = 'user' then profiles.reward_icon
       else null
-    end as owner_reward_icon
+    end as owner_reward_icon,
+    case
+      when p.owner_type = 'user' then profiles.reward_link
+      else null
+    end as owner_reward_link
   from
     posts p
     left join profiles on p.owner = profiles.id and p.owner_type = 'user'
@@ -1603,12 +1607,11 @@ $$ language plpgsql security definer;
 
 create or replace function add_contact_before_message () returns trigger as $$
 begin
-  if new.sender_user is not null
-     and new.recipient_user is not null
-     and new.sender_user <> new.recipient_user
+  if new.sender_user is not null and new.recipient_user is not null and new.sender_user <> new.recipient_user
+    and new.sender_character is null and new.recipient_character is null
   then
     insert into public.contacts(owner, contact_user)
-      values (new.sender_user,    new.recipient_user)
+      values (new.sender_user, new.recipient_user)
       on conflict do nothing;
     insert into public.contacts(owner, contact_user)
       values (new.recipient_user, new.sender_user)

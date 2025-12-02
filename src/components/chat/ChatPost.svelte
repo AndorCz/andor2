@@ -47,21 +47,25 @@
         </div>
       </div>
       {#if post.owner_portrait}
-        <a href={'/user?id=' + post.owner} class='user'>
-          <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
-        </a>
-        {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' /></a>{/if}
+        <div class='iconWrapper'>
+          <a href={'/user?id=' + post.owner} class='user'>
+            <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+          </a>
+          {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward'><img src={post.owner_reward_icon} /></a>{/if}
+        </div>
       {/if}
     </div>
     <Reactions {user} {post} type='post' />
   {:else}
     <div class='rowInner'>
-      {#if post.owner_portrait}
-        <a href={'/user?id=' + post.owner} class='user'>
-          <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
-        </a>
-        {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank'><img src={post.owner_reward_icon} class='reward' /></a>{/if}
-      {/if}
+      <div class='iconWrapper'>
+        {#if post.owner_portrait}
+          <a href={'/user?id=' + post.owner} class='user'>
+            <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
+          </a>
+          {#if post.owner_reward_icon}<a href={post.owner_reward_link || '#'} target='_blank' class='reward'><img src={post.owner_reward_icon} /></a>{/if}
+        {/if}
+      </div>
       <div class='toolbar' bind:this={toolbarEl}>
         <span class='time'>{formatDate(post.created_at)}</span>
         <div class='rowInner'>
@@ -96,6 +100,9 @@
       gap: 10px;
       align-items: flex-end;
     }
+      .iconWrapper {
+        position: relative;
+      }
       .theirs {
         flex-direction: row;
       }
@@ -185,9 +192,6 @@
         transform: scale(1.1);
         filter: brightness(1.2);
       }
-    .theirs .reward {
-      left: 0px;
-    }
 
   @media (max-width: 500px) {
     .portrait {
