@@ -350,6 +350,8 @@
         position: absolute;
         bottom: -10px;
         right: -10px;
+        width: 30px;
+        height: 30px;
         left: unset;
       }
   }
