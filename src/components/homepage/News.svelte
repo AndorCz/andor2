@@ -5,7 +5,7 @@
     const { data: games, error: gameError } = await supabase.from('game_list').select('*').order('created_at', { ascending: false }).limit(3)
     if (gameError) { handleError(gameError) }
 
-    const { data: works, error: workError } = await supabase.from('work_list').select('*').order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(3)
+    const { data: works, error: workError } = await supabase.from('work_list').select('*').order('published_at', { ascending: false, nullsLast: true }).not('editorial', 'eq', true).limit(3)
     if (workError) { handleError(workError) }
 
     const { data: boards, error: boardError } = await supabase.from('board_list').select('*').order('created_at', { ascending: false }).limit(3)
@@ -55,7 +55,7 @@
             {/if}
           </a>
           <div class='details'>
-            <span class='date'>{new Date(work.created_at).toLocaleDateString('cs')}</span>
+            <span class='date'>{new Date(work.published_at || work.created_at).toLocaleDateString('cs')}</span>
             <a href={'/user?id=' + work.owner} class='user'>{work.owner_name}</a>
           </div>
         </main>

@@ -240,7 +240,8 @@ async function migrateWork (workId, locals) {
       annotation: workData.annotation,
       tags: workData.tags,
       created_at: workData.post_date,
-      published: true
+      published: true,
+      published_at: workData.post_date
     }).select().single()
     if (error) throw new Error(`Failed to insert new work: ${error.message}`)
     if (!data) throw new Error('New work insertion failed without specific error.')

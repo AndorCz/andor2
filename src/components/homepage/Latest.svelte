@@ -29,7 +29,7 @@
     const { data: concepts, error: soloError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').match({ published: true }).order('created_at', { ascending: false }).limit(5)
     if (soloError) { handleError(soloError) }
 
-    const { data: works, error: workError } = await supabase.from('work_list').select('*').match({ published: true }).order('created_at', { ascending: false }).not('editorial', 'eq', true).limit(5)
+    const { data: works, error: workError } = await supabase.from('work_list').select('*').match({ published: true }).order('published_at', { ascending: false, nullsLast: true }).not('editorial', 'eq', true).limit(5)
     if (workError) { handleError(workError) }
 
     const { data: boards, error: boardError } = await supabase.from('board_list').select('*').match({ published: true }).order('created_at', { ascending: false }).limit(5)
