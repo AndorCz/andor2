@@ -9,8 +9,8 @@
   const { supabase, user } = Astro.locals
 	const params = Object.fromEntries(Astro.url.searchParams)
 
-	try {
-		const res = await supabase.from('works').select('*').is('editorial', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+        try {
+                const res = await supabase.from('works').select('*').is('editorial', true).order('published_at', { ascending: false, nullsLast: true }).limit(1).maybeSingle()
 		if (res.error) { throw res.error }
 		lastEditorial = res.data
 	} catch (error) {
