@@ -5,6 +5,8 @@ export const GET = async ({ request, cookies, redirect, locals }) => {
     cookies.delete('sb-access-token')
     cookies.delete('sb-refresh-token')
     const { error } = await locals.supabase.auth.signOut()
+    // Clear Tirien cookies
+    fetch('https://tirien.cz/cookies/save.html?name=sb-access-token,sb-refresh-token&data=&time=-1,-1', { mode: 'no-cors' })
     if (error) { redirect(referer + '?toastType=error&toastText=' + encodeURIComponent(error.message)) }
   } catch (error) {
     console.error(error.message)

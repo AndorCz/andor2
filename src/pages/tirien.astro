@@ -9,17 +9,9 @@ const { user } = Astro.locals
 // Avoid caching so the iframe always reflects current auth cookies
 Astro.response.headers.set('Cache-Control', 'no-store')
 
-// Get supabase user auth
-const accessToken = Astro.cookies.get('sb-access-token')?.value
-const refreshToken = Astro.cookies.get('sb-refresh-token')?.value
-
 // Path based on environment
 const path = import.meta.env.DEV ? 'http://localhost:5173' : 'https://tirien.cz'
 const params = new URLSearchParams()
-if (accessToken && refreshToken) {
-  params.set('accessToken', accessToken)
-  params.set('refreshToken', refreshToken)
-}
 params.set('embed', 'true')
 const iframeSrc = `${path}?${params}`
 ---

