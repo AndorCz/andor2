@@ -296,6 +296,8 @@ create table works (
   editorial boolean default false,
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
+  updated_at timestamp with time zone default current_timestamp,
+  published_at timestamp with time zone,
   constraint works_owner_fkey foreign key (owner) references profiles (id) on delete set null
 );
 
@@ -583,7 +585,7 @@ create or replace view work_list as
     left join profiles pr on w.owner = pr.id
     left join posts p on t.id = p.thread
   group by w.id, pr.id, pr.name
-  order by w.created_at desc;
+  order by coalesce(w.published_at, w.created_at) desc;
 
 
 create or replace view game_messages as
@@ -1764,6 +1766,7 @@ create or replace trigger update_solo_concept_updated_at before update on solo_c
 -- Triggers for works
 create or replace trigger add_work_thread before insert on works for each row execute function add_thread();
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
+create or replace trigger update_work_updated_at before update on works for each row execute procedure update_updated_at();
 -- Triggers for posts and messages
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
 create or replace trigger update_message_updated_at before update on messages for each row execute procedure update_updated_at();
