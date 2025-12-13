@@ -100,7 +100,7 @@
   }
 
   async function verifyOtp () {
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'signup' })
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp.trim(), type: 'signup' })
     if (error) { return handleError(error) }
     window.location.href = '/'
   }
@@ -113,7 +113,7 @@
       <p>Na adresu <strong>{email}</strong> jsme ti poslali potvrzovací e-mail s přihlašovacím kódem.</p>
       <p class='note'>Pokud e-mail nevidíš, zkontroluj složku spam.</p>
       <input type='text' bind:value={otp} placeholder='Kód z e-mailu' />
-      <button type='button' onclick={verifyOtp} disabled={!otp || otp.length !== 6}>Potvrdit registraci</button>
+      <button type='button' onclick={verifyOtp} disabled={!otp || otp.trim().length !== 6}>Potvrdit registraci</button>
     </div>
   {:else if !isConfirming}
 
