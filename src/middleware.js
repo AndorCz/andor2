@@ -37,8 +37,6 @@ export async function onRequest ({ request, cookies, locals, redirect, url }, ne
           if (newError) { console.error('Error setting session: ', newError.message) }
           if (!newError) {
             sessionData = newSession
-            // Save Tirien cookies
-            fetch('https://tirien.cz/cookies/save.html?name=sb-access-token,sb-refresh-token&data=' + encodeURIComponent(accessToken) + ',' + encodeURIComponent(refreshToken) + '&time=31536000,31536000', { mode: 'no-cors' })
           }
         }
       }

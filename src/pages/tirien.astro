@@ -10,7 +10,7 @@ const { user } = Astro.locals
 Astro.response.headers.set('Cache-Control', 'no-store')
 
 // Path based on environment
-const path = import.meta.env.DEV ? 'http://localhost:5173' : 'https://tirien.cz'
+const path = import.meta.env.DEV ? 'http://localhost:2345' : 'https://tirien.cz'
 const params = new URLSearchParams()
 params.set('embed', 'true')
 const iframeSrc = `${path}?${params}`

