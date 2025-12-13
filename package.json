@@ -1,7 +1,7 @@
 {
   "name": "andor2",
   "type": "module",
-  "version": "2.1.15",
+  "version": "2.1.16",
   "scripts": {
     "dev": "astro dev --host --port 1234",
     "dev-cloudflare": "wrangler pages dev ./dist --live-reload --compatibility-flag=nodejs_compat",
