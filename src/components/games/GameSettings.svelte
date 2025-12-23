@@ -32,10 +32,15 @@
   let isSortable = $state(false)
   let sectionSaving = $state(false)
   let sortableInstance = $state(null)
+  let codexSections = $state([])
+
+  $effect(() => {
+    codexSections = Array.isArray(game.codexSections) ? [...game.codexSections] : []
+  })
 
   const sortedCodexSections = $derived(
-    Array.isArray(game.codexSections)
-      ? [...game.codexSections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+    codexSections.length
+      ? [...codexSections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
       : []
   )
 
@@ -84,11 +89,12 @@
 
   async function addCodexSection () {
     const slug = createSlug(newCodexSection)
-    const index = game.codexSections ? game.codexSections.length : 0
+    const index = codexSections ? codexSections.length : 0
     const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index }).select()
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections || []
     game.codexSections = [...game.codexSections, newSection[0]]
+    codexSections = [...codexSections, newSection[0]]
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
   }
@@ -98,6 +104,7 @@
     const { error } = await supabase.from('codex_sections').delete().eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.filter((s) => { return s.slug !== section.slug })
+    codexSections = codexSections.filter((s) => { return s.slug !== section.slug })
     showSuccess('Sekce smazána')
   }
 
@@ -108,6 +115,7 @@
     const { error } = await supabase.from('codex_sections').update({ name, slug }).eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s })
+    codexSections = codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s })
     showSuccess('Sekce přejmenována')
   }
 
@@ -128,14 +136,17 @@
     const orderedIds = sortableInstance?.toArray?.() || Array.from(sort.from.children).map((child) => { return child.dataset.id })
     const reordered = orderedIds
       .map((id, index) => {
-        const currentSection = game.codexSections.find((s) => { return `${s.id}` === id })
+        const currentSection = codexSections.find((s) => { return `${s.id}` === id })
         if (!currentSection) { return null }
         return { ...currentSection, index }
       })
       .filter(Boolean)
 
     await Promise.all(reordered.map((section) => { return updateSectionIndex(section.id, section.index) }))
-    if (reordered.length) { game.codexSections = reordered }
+    if (reordered.length) {
+      codexSections = reordered
+      game.codexSections = reordered
+    }
     sectionSaving = false
     showSuccess('Pořadí sekcí uloženo')
   }
@@ -273,7 +284,7 @@
           {#each sortedCodexSections as section (section.id)}
             <li data-id={section.id}>
               <div class='section'>
-                <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                <svg class='handle' width='14px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
                   <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
                 </svg>
                 <h3>{section.name}</h3>
@@ -400,7 +411,7 @@
     .section, .font {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
     }
       .section h3, .font h3 {
         width: 100%;
@@ -409,7 +420,9 @@
         display: block;
         color: var(--text);
         opacity: 0.3;
-        min-width: 20px;
+        min-width: 10px;
+        width: 14px;
+        height: 20px;
         cursor: grab;
       }
         .handle:hover {
