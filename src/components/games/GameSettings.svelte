@@ -29,14 +29,13 @@
   let headlineEl = $state()
   let sectionListEl = $state(null)
   let initialized = $state(false)
-  let sorting = $state(false)
-  let showHandles = $state(false)
   let isSortable = $state(false)
   let sectionSaving = $state(false)
+  let sortableInstance = $state(null)
 
   const sortedCodexSections = $derived(
-    game.codexSections?.length
-      ? game.codexSections.toSorted((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+    Array.isArray(game.codexSections)
+      ? [...game.codexSections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
       : []
   )
 
@@ -48,7 +47,7 @@
 
   $effect(() => {
     if (!initialized && sectionListEl && sortedCodexSections.length && !isSortable) {
-      new Sortable(sectionListEl, { animation: 150, handle: '.handle', onStart, onEnd })
+      sortableInstance = new Sortable(sectionListEl, { animation: 150, handle: '.handle', dataIdAttr: 'data-id', onEnd })
       isSortable = true
       initialized = true
     }
@@ -123,23 +122,20 @@
     window.location.href = `/game/${game.id}`
   }
 
-  function onStart () {
-    sorting = true
-  }
-
   async function onEnd (sort) {
-    sorting = false
     if (sort.oldIndex === sort.newIndex) { return }
     sectionSaving = true
-    const newOrder = []
-    for (const [index, child] of Array.from(sort.from.children).entries()) {
-      const sectionId = child.dataset.id
-      await updateSectionIndex(sectionId, index)
-      const currentSection = game.codexSections.find((s) => { return `${s.id}` === sectionId })
-      if (currentSection) { newOrder.push({ ...currentSection, index }) }
-    }
-    if (newOrder.length) { game.codexSections = newOrder }
-    showHandles = false
+    const orderedIds = sortableInstance?.toArray?.() || Array.from(sort.from.children).map((child) => { return child.dataset.id })
+    const reordered = orderedIds
+      .map((id, index) => {
+        const currentSection = game.codexSections.find((s) => { return `${s.id}` === id })
+        if (!currentSection) { return null }
+        return { ...currentSection, index }
+      })
+      .filter(Boolean)
+
+    await Promise.all(reordered.map((section) => { return updateSectionIndex(section.id, section.index) }))
+    if (reordered.length) { game.codexSections = reordered }
     sectionSaving = false
     showSuccess('Pořadí sekcí uloženo')
   }
@@ -273,11 +269,11 @@
 
       <h2>Sekce kodexu</h2>
       {#if game.codexSections && game.codexSections.length}
-        <ul bind:this={sectionListEl} class:showHandles class:saving={sectionSaving}>
+        <ul bind:this={sectionListEl} class:saving={sectionSaving}>
           {#each sortedCodexSections as section (section.id)}
             <li data-id={section.id}>
               <div class='section'>
-                <svg class='handle' class:hidden={!showHandles || sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
                   <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
                 </svg>
                 <h3>{section.name}</h3>
@@ -291,9 +287,6 @@
         <p class='info'>Žádné sekce</p>
       {/if}
       <div class='row operations'>
-        {#if game.codexSections?.length}
-          <button class='reorder' onclick={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit sekce'}</button>
-        {/if}
         <div class='row newSection'>
           <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} placeholder='Nová sekce' />
           <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
@@ -413,7 +406,7 @@
         width: 100%;
       }
       .handle {
-        display: none;
+        display: block;
         color: var(--text);
         opacity: 0.3;
         min-width: 20px;
@@ -447,21 +440,9 @@
     flex-wrap: wrap;
     margin-top: 10px;
   }
-    .operations .reorder {
-      min-width: 120px;
-    }
     .operations .newSection {
       flex: 1;
     }
-  .showHandles li {
-    padding-left: 0px;
-  }
-  .showHandles .section {
-    padding-left: 10px;
-  }
-  .showHandles .handle {
-    display: block;
-  }
   ul.saving {
     opacity: 0.5;
     pointer-events: none;

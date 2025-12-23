@@ -19,7 +19,7 @@
     [
       { slug: 'index', name: 'Úvod', id: 'index', index: -1 },
       ...(sections?.length
-        ? sections.toSorted((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+        ? [...sections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
         : [])
     ]
   )
