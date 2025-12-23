@@ -34,15 +34,13 @@
   let sortableInstance = $state(null)
   let codexSections = $state([])
 
-  $effect(() => {
-    codexSections = Array.isArray(game.codexSections) ? [...game.codexSections] : []
-  })
+  function sortSections (sections) {
+    return [...sections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+  }
 
-  const sortedCodexSections = $derived(
-    codexSections.length
-      ? [...codexSections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
-      : []
-  )
+  $effect(() => {
+    codexSections = Array.isArray(game.codexSections) ? sortSections(game.codexSections) : []
+  })
 
   onMount(() => {
     setOriginal()
@@ -94,7 +92,7 @@
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections || []
     game.codexSections = [...game.codexSections, newSection[0]]
-    codexSections = [...codexSections, newSection[0]]
+    codexSections = sortSections([...codexSections, newSection[0]])
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
   }
@@ -115,7 +113,7 @@
     const { error } = await supabase.from('codex_sections').update({ name, slug }).eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s })
-    codexSections = codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s })
+    codexSections = sortSections(codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s }))
     showSuccess('Sekce přejmenována')
   }
 
@@ -146,6 +144,7 @@
     if (reordered.length) {
       codexSections = reordered
       game.codexSections = reordered
+      codexSections = sortSections(codexSections)
     }
     sectionSaving = false
     showSuccess('Pořadí sekcí uloženo')
@@ -279,12 +278,12 @@
       </div>
 
       <h2>Sekce kodexu</h2>
-      {#if game.codexSections && game.codexSections.length}
+      {#if codexSections && codexSections.length}
         <ul bind:this={sectionListEl} class:saving={sectionSaving}>
-          {#each sortedCodexSections as section (section.id)}
+          {#each codexSections as section (section.id)}
             <li data-id={section.id}>
               <div class='section'>
-                <svg class='handle' width='14px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
                   <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
                 </svg>
                 <h3>{section.name}</h3>
@@ -424,6 +423,8 @@
         width: 14px;
         height: 20px;
         cursor: grab;
+        transform: scale(1.3);
+        transform-origin: center;
       }
         .handle:hover {
           opacity: 1;
