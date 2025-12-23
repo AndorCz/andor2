@@ -1,13 +1,13 @@
 <script>
   import { onMount } from 'svelte'
-  import Sortable from 'sortablejs'
   import { tooltip } from '@lib/tooltip'
   import { createSlug } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import { gameSystems, gameCategories } from '@lib/constants'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import Sortable from 'sortablejs'
   import HeaderInput from '@components/common/HeaderInput.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   let { game = $bindable({}), user = {} } = $props()
 
@@ -32,15 +32,13 @@
   let isSortable = $state(false)
   let sectionSaving = $state(false)
   let sortableInstance = $state(null)
-  let codexSections = $state([])
+  let sortKey = $state(0)
 
   function sortSections (sections) {
     return [...sections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
   }
 
-  $effect(() => {
-    codexSections = Array.isArray(game.codexSections) ? sortSections(game.codexSections) : []
-  })
+  const codexSections = $derived(Array.isArray(game.codexSections) ? sortSections(game.codexSections) : [])
 
   onMount(() => {
     setOriginal()
@@ -50,7 +48,12 @@
 
   $effect(() => {
     if (!initialized && sectionListEl && codexSections.length && !isSortable) {
-      sortableInstance = new Sortable(sectionListEl, { animation: 150, handle: '.handle', dataIdAttr: 'data-id', onEnd })
+      sortableInstance = new Sortable(sectionListEl, {
+        animation: 150,
+        handle: '.handle',
+        dataIdAttr: 'data-id',
+        onEnd
+      })
       isSortable = true
       initialized = true
     }
@@ -92,7 +95,6 @@
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections || []
     game.codexSections = [...game.codexSections, newSection[0]]
-    codexSections = sortSections([...codexSections, newSection[0]])
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
   }
@@ -102,7 +104,6 @@
     const { error } = await supabase.from('codex_sections').delete().eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.filter((s) => { return s.slug !== section.slug })
-    codexSections = codexSections.filter((s) => { return s.slug !== section.slug })
     showSuccess('Sekce smazána')
   }
 
@@ -113,7 +114,6 @@
     const { error } = await supabase.from('codex_sections').update({ name, slug }).eq('id', section.id)
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s })
-    codexSections = sortSections(codexSections.map((s) => { return s.slug === section.slug ? { ...s, name, slug } : s }))
     showSuccess('Sekce přejmenována')
   }
 
@@ -131,21 +131,35 @@
   async function onEnd (sort) {
     if (sort.oldIndex === sort.newIndex) { return }
     sectionSaving = true
-    const orderedIds = sortableInstance?.toArray?.() || Array.from(sort.from.children).map((child) => { return child.dataset.id })
+
+    // Get the order from DOM before Svelte re-renders
+    const orderedIds = Array.from(sort.from.children).map((child) => child.dataset.id)
+
+    // Build reordered array with new indices
+    const currentSections = $state.snapshot(game.codexSections)
     const reordered = orderedIds
       .map((id, index) => {
-        const currentSection = codexSections.find((s) => { return `${s.id}` === id })
+        const currentSection = currentSections.find((s) => `${s.id}` === id)
         if (!currentSection) { return null }
         return { ...currentSection, index }
       })
       .filter(Boolean)
 
-    await Promise.all(reordered.map((section) => { return updateSectionIndex(section.id, section.index) }))
-    if (reordered.length) {
-      codexSections = reordered
-      game.codexSections = reordered
-      codexSections = sortSections(codexSections)
+    // Destroy sortable before updating state
+    if (sortableInstance) {
+      sortableInstance.destroy()
+      sortableInstance = null
+      isSortable = false
+      initialized = false
     }
+
+    await Promise.all(reordered.map((section) => updateSectionIndex(section.id, section.index)))
+    if (reordered.length) {
+      game.codexSections = reordered
+    }
+
+    // Force re-render with new key
+    sortKey++
     sectionSaving = false
     showSuccess('Pořadí sekcí uloženo')
   }
@@ -279,20 +293,22 @@
 
       <h2>Sekce kodexu</h2>
       {#if codexSections && codexSections.length}
-        <ul bind:this={sectionListEl} class:saving={sectionSaving}>
-          {#each codexSections as section (section.id)}
-            <li data-id={section.id}>
-              <div class='section'>
-                <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
-                  <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
-                </svg>
-                <h3>{section.name}</h3>
-                <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
-                <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
-              </div>
-            </li>
-          {/each}
-        </ul>
+        {#key sortKey}
+          <ul bind:this={sectionListEl} class:saving={sectionSaving}>
+            {#each codexSections as section (section.id)}
+              <li data-id={section.id}>
+                <div class='section'>
+                  <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                    <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+                  </svg>
+                  <h3>{section.name}</h3>
+                  <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
+                  <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/key}
       {:else}
         <p class='info'>Žádné sekce</p>
       {/if}
@@ -423,7 +439,7 @@
         width: 14px;
         height: 20px;
         cursor: grab;
-        transform: scale(1.6);
+        transform: scale(2);
         transform-origin: center;
       }
         .handle:hover {

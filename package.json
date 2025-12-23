@@ -55,9 +55,6 @@
     "tippy.js": "6.3.7",
     "vite": "^6.3.5"
   },
-  "optionalDependencies": {
-    "@rollup/rollup-darwin-x64": "4.53.3"
-  },
   "devDependencies": {
     "@types/eslint": "9.6.1",
     "eslint": "9.19.0",
