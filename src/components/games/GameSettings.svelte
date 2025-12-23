@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import Sortable from 'sortablejs'
   import { tooltip } from '@lib/tooltip'
   import { createSlug } from '@lib/utils'
   import { supabase, handleError } from '@lib/database-browser'
@@ -26,11 +27,31 @@
   let newFont = $state('')
   let isWelcomeMessageDirty = $state(false)
   let headlineEl = $state()
+  let sectionListEl = $state(null)
+  let initialized = $state(false)
+  let sorting = $state(false)
+  let showHandles = $state(false)
+  let isSortable = $state(false)
+  let sectionSaving = $state(false)
+
+  const sortedCodexSections = $derived(
+    game.codexSections?.length
+      ? game.codexSections.toSorted((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+      : []
+  )
 
   onMount(() => {
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
+  })
+
+  $effect(() => {
+    if (!initialized && sectionListEl && sortedCodexSections.length && !isSortable) {
+      new Sortable(sectionListEl, { animation: 150, handle: '.handle', onStart, onEnd })
+      isSortable = true
+      initialized = true
+    }
   })
 
   function setOriginal () {
@@ -64,11 +85,11 @@
 
   async function addCodexSection () {
     const slug = createSlug(newCodexSection)
-    const index = game.codexSections ? game.codexSections.length + 1 : 1
+    const index = game.codexSections ? game.codexSections.length : 0
     const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index }).select()
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections || []
-    game.codexSections = [...game.codexSections, { id: newSection[0].id, slug, name: newCodexSection }]
+    game.codexSections = [...game.codexSections, newSection[0]]
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
   }
@@ -100,6 +121,32 @@
 
   function showGame () {
     window.location.href = `/game/${game.id}`
+  }
+
+  function onStart () {
+    sorting = true
+  }
+
+  async function onEnd (sort) {
+    sorting = false
+    if (sort.oldIndex === sort.newIndex) { return }
+    sectionSaving = true
+    const newOrder = []
+    for (const [index, child] of Array.from(sort.from.children).entries()) {
+      const sectionId = child.dataset.id
+      await updateSectionIndex(sectionId, index)
+      const currentSection = game.codexSections.find((s) => { return `${s.id}` === sectionId })
+      if (currentSection) { newOrder.push({ ...currentSection, index }) }
+    }
+    if (newOrder.length) { game.codexSections = newOrder }
+    showHandles = false
+    sectionSaving = false
+    showSuccess('Pořadí sekcí uloženo')
+  }
+
+  async function updateSectionIndex (sectionId, newIndex) {
+    const { error } = await supabase.from('codex_sections').update({ index: newIndex }).eq('id', sectionId)
+    if (error) { handleError(error) }
   }
 
   function exportGame () {
@@ -226,10 +273,13 @@
 
       <h2>Sekce kodexu</h2>
       {#if game.codexSections && game.codexSections.length}
-        <ul>
-          {#each game.codexSections as section (section.id)}
-            <li>
+        <ul bind:this={sectionListEl} class:showHandles class:saving={sectionSaving}>
+          {#each sortedCodexSections as section (section.id)}
+            <li data-id={section.id}>
               <div class='section'>
+                <svg class='handle' class:hidden={!showHandles || sorting} width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                  <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+                </svg>
                 <h3>{section.name}</h3>
                 <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
                 <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
@@ -240,10 +290,14 @@
       {:else}
         <p class='info'>Žádné sekce</p>
       {/if}
-      <h3><label for='codexSection'>Nová sekce</label></h3>
-      <div class='row'>
-        <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} />
-        <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+      <div class='row operations'>
+        {#if game.codexSections?.length}
+          <button class='reorder' onclick={() => { showHandles = !showHandles }}>{showHandles ? 'Hotovo' : 'Přeřadit sekce'}</button>
+        {/if}
+        <div class='row newSection'>
+          <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} placeholder='Nová sekce' />
+          <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+        </div>
       </div>
 
       <h2>Zobrazit hody mezi příspěvky</h2>
@@ -358,6 +412,16 @@
       .section h3, .font h3 {
         width: 100%;
       }
+      .handle {
+        display: none;
+        color: var(--text);
+        opacity: 0.3;
+        min-width: 20px;
+        cursor: grab;
+      }
+        .handle:hover {
+          opacity: 1;
+        }
   .delete, .export, .archive {
     display: flex;
     gap: 10px;
@@ -375,6 +439,33 @@
       ul h3 {
         margin: 10px 0px;
       }
+
+  .operations {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+    .operations .reorder {
+      min-width: 120px;
+    }
+    .operations .newSection {
+      flex: 1;
+    }
+  .showHandles li {
+    padding-left: 0px;
+  }
+  .showHandles .section {
+    padding-left: 10px;
+  }
+  .showHandles .handle {
+    display: block;
+  }
+  ul.saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   @media (max-width: 1200px) {
     .headline {

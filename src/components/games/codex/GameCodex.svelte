@@ -11,19 +11,28 @@
   const { user, game, isStoryteller, isPlayer } = $props()
 
   let searchEl = $state()
-  let sections = $state([{ slug: 'index', name: 'Úvod' }])
+  let sections = $state([])
+  let selectedSectionSlug = $state('index')
   let searchPhrase = $state('')
   let searchResults = $state([])
-  let activeSection = $derived(sections[0])
+  const orderedSections = $derived(
+    [
+      { slug: 'index', name: 'Úvod', id: 'index', index: -1 },
+      ...(sections?.length
+        ? sections.toSorted((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+        : [])
+    ]
+  )
+  let activeSection = $derived(orderedSections.find((s) => { return s.slug === selectedSectionSlug }) || orderedSections[0])
   let indexPageContent = $state()
 
   let mentionList = $state([])
   mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, type: 'character', id: char.id } })
 
   onMount(() => {
-    if (Array.isArray(game.codexSections)) { sections = [...sections, ...game.codexSections] }
+    if (Array.isArray(game.codexSections)) { sections = [...game.codexSections] }
     const section = new URLSearchParams(window.location.search).get('codex_section')
-    if (section) { activeSection = sections.find((s) => { return s.slug === section }) || sections[0] }
+    if (section) { selectedSectionSlug = section }
   })
 
   async function loadIndex () {
@@ -39,11 +48,11 @@
   }
 
   function activate (section) {
-    activeSection = section
-    if (section.slug === 'index') {
+    selectedSectionSlug = section.slug
+    if (selectedSectionSlug === 'index') {
       window.history.pushState({}, '', window.location.pathname)
     } else {
-      updateURLParam('codex_section', section.slug)
+      updateURLParam('codex_section', selectedSectionSlug)
     }
   }
 
@@ -74,10 +83,10 @@
 
 <main>
   {#if game.open_codex || isPlayer}
-    {#if sections.length > 1}
+    {#if orderedSections.length > 1}
       <div class='row'>
         <div class='tabs tertiary codex'>
-          {#each sections as section (section.id)}
+          {#each orderedSections as section (section.id)}
             <button class='section' onclick={() => { activate(section) }} class:active={activeSection.slug === section.slug}>
               {section.name}
             </button>
