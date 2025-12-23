@@ -49,7 +49,7 @@
   })
 
   $effect(() => {
-    if (!initialized && sectionListEl && sortedCodexSections.length && !isSortable) {
+    if (!initialized && sectionListEl && codexSections.length && !isSortable) {
       sortableInstance = new Sortable(sectionListEl, { animation: 150, handle: '.handle', dataIdAttr: 'data-id', onEnd })
       isSortable = true
       initialized = true
@@ -423,7 +423,7 @@
         width: 14px;
         height: 20px;
         cursor: grab;
-        transform: scale(1.3);
+        transform: scale(1.6);
         transform-origin: center;
       }
         .handle:hover {
