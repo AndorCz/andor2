@@ -5,8 +5,9 @@
   import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess, showError } from '@lib/toasts'
   import { gameSystems, gameCategories } from '@lib/constants'
-  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
+  import Sortable from 'sortablejs'
   import HeaderInput from '@components/common/HeaderInput.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
   let { game = $bindable({}), user = {} } = $props()
 
@@ -26,11 +27,36 @@
   let newFont = $state('')
   let isWelcomeMessageDirty = $state(false)
   let headlineEl = $state()
+  let sectionListEl = $state(null)
+  let initialized = $state(false)
+  let isSortable = $state(false)
+  let sectionSaving = $state(false)
+  let sortableInstance = $state(null)
+  let sortKey = $state(0)
+
+  function sortSections (sections) {
+    return [...sections].sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.name.localeCompare(b.name))
+  }
+
+  const codexSections = $derived(Array.isArray(game.codexSections) ? sortSections(game.codexSections) : [])
 
   onMount(() => {
     setOriginal()
     const observer = new IntersectionObserver(([e]) => e.target.classList.toggle('pinned', e.intersectionRatio < 1), { threshold: [1] })
     observer.observe(headlineEl)
+  })
+
+  $effect(() => {
+    if (!initialized && sectionListEl && codexSections.length && !isSortable) {
+      sortableInstance = new Sortable(sectionListEl, {
+        animation: 150,
+        handle: '.handle',
+        dataIdAttr: 'data-id',
+        onEnd
+      })
+      isSortable = true
+      initialized = true
+    }
   })
 
   function setOriginal () {
@@ -64,11 +90,11 @@
 
   async function addCodexSection () {
     const slug = createSlug(newCodexSection)
-    const index = game.codexSections ? game.codexSections.length + 1 : 1
+    const index = codexSections ? codexSections.length : 0
     const { data: newSection, error } = await supabase.from('codex_sections').insert({ slug, game: game.id, name: newCodexSection, index }).select()
     if (error) { return handleError(error) }
     game.codexSections = game.codexSections || []
-    game.codexSections = [...game.codexSections, { id: newSection[0].id, slug, name: newCodexSection }]
+    game.codexSections = [...game.codexSections, newSection[0]]
     newCodexSection = ''
     showSuccess('Sekce přidána do kodexu')
   }
@@ -100,6 +126,47 @@
 
   function showGame () {
     window.location.href = `/game/${game.id}`
+  }
+
+  async function onEnd (sort) {
+    if (sort.oldIndex === sort.newIndex) { return }
+    sectionSaving = true
+
+    // Get the order from DOM before Svelte re-renders
+    const orderedIds = Array.from(sort.from.children).map((child) => child.dataset.id)
+
+    // Build reordered array with new indices
+    const currentSections = $state.snapshot(game.codexSections)
+    const reordered = orderedIds
+      .map((id, index) => {
+        const currentSection = currentSections.find((s) => `${s.id}` === id)
+        if (!currentSection) { return null }
+        return { ...currentSection, index }
+      })
+      .filter(Boolean)
+
+    // Destroy sortable before updating state
+    if (sortableInstance) {
+      sortableInstance.destroy()
+      sortableInstance = null
+      isSortable = false
+      initialized = false
+    }
+
+    await Promise.all(reordered.map((section) => updateSectionIndex(section.id, section.index)))
+    if (reordered.length) {
+      game.codexSections = reordered
+    }
+
+    // Force re-render with new key
+    sortKey++
+    sectionSaving = false
+    showSuccess('Pořadí sekcí uloženo')
+  }
+
+  async function updateSectionIndex (sectionId, newIndex) {
+    const { error } = await supabase.from('codex_sections').update({ index: newIndex }).eq('id', sectionId)
+    if (error) { handleError(error) }
   }
 
   function exportGame () {
@@ -225,25 +292,31 @@
       </div>
 
       <h2>Sekce kodexu</h2>
-      {#if game.codexSections && game.codexSections.length}
-        <ul>
-          {#each game.codexSections as section (section.id)}
-            <li>
-              <div class='section'>
-                <h3>{section.name}</h3>
-                <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
-                <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
-              </div>
-            </li>
-          {/each}
-        </ul>
+      {#if codexSections && codexSections.length}
+        {#key sortKey}
+          <ul bind:this={sectionListEl} class:saving={sectionSaving}>
+            {#each codexSections as section (section.id)}
+              <li data-id={section.id}>
+                <div class='section'>
+                  <svg class='handle' width='20px' height='20px' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'>
+                    <circle cx='12.5' cy='5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='12.5' r='2.5' fill='currentColor'/><circle cx='12.5' cy='20' r='2.5' fill='currentColor'/>
+                  </svg>
+                  <h3>{section.name}</h3>
+                  <button class='square material square' onclick={() => { renameCodexSection(section) }} title='Přejmenovat sekci' use:tooltip>edit</button>
+                  <button class='square material square' onclick={() => { deleteCodexSection(section) }} title='Smazat sekci' use:tooltip>delete</button>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/key}
       {:else}
         <p class='info'>Žádné sekce</p>
       {/if}
-      <h3><label for='codexSection'>Nová sekce</label></h3>
-      <div class='row'>
-        <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} />
-        <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+      <div class='row operations'>
+        <div class='row newSection'>
+          <input type='text' id='codexSection' name='codexSection' size='40' bind:value={newCodexSection} placeholder='Nová sekce' />
+          <button class='material square' onclick={addCodexSection} disabled={saving || newCodexSection.trim() === ''} title='Přidat sekci' use:tooltip>add</button>
+        </div>
       </div>
 
       <h2>Zobrazit hody mezi příspěvky</h2>
@@ -353,11 +426,25 @@
     .section, .font {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
     }
       .section h3, .font h3 {
         width: 100%;
       }
+      .handle {
+        display: block;
+        color: var(--text);
+        opacity: 0.3;
+        min-width: 10px;
+        width: 14px;
+        height: 20px;
+        cursor: grab;
+        transform: scale(2);
+        transform-origin: center;
+      }
+        .handle:hover {
+          opacity: 1;
+        }
   .delete, .export, .archive {
     display: flex;
     gap: 10px;
@@ -375,6 +462,21 @@
       ul h3 {
         margin: 10px 0px;
       }
+
+  .operations {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+    .operations .newSection {
+      flex: 1;
+    }
+  ul.saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   @media (max-width: 1200px) {
     .headline {
