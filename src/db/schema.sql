@@ -210,6 +210,7 @@ create table maps (
   image text not null,
   description text,
   hidden boolean,
+  index smallint default 0,
   fow boolean not null default false,
   fow_image text,
   characters json not null default '{}',
