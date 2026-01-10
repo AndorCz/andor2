@@ -93,13 +93,6 @@ Pokud plán hry v kontextu chybí, napiš "<p class='info'>Plán hry není k dis
 Konec hry:
 Pokud postava zemře, nebo se příběh dostane do konceptem definovaného konce, popiš uspokojivě závěr hry a nastav "end" na true. Jinak pole vynech.`
 
-export const imageSizes = {
-  header: { width: 1100, height: 226 },
-  scene: { width: 1408, height: 768 },
-  item: { width: 200, height: 400 },
-  npc: { width: 200, height: 400 }
-}
-
 export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy', abilities: 'Schopnosti postavy' }
 
 // Function to provide full context for the AI model, in array of messages. It excludes the specific part that is being generated

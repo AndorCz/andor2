@@ -1,5 +1,5 @@
 import { Type } from '@google/genai'
-import { generateImage } from '@lib/solo/server-replicate'
+import { generateImage } from '@lib/server/replicate'
 import { getStamp, clone } from '@lib/utils'
 import { getAI } from '@lib/solo/server-gemini'
 import { getPrompts, getContext, fieldNames, assistantParams } from '@lib/solo/solo'
@@ -72,7 +72,7 @@ export const POST = async ({ request, locals, redirect }) => {
 
     // Update storyteller image if requested
     if (field === 'prompt_storyteller_image') {
-      const { data: storytellerImage, error: imageError } = await generateImage(locals.runtime.env, newData.generated_storyteller_image, 'npc')
+      const { data: storytellerImage, error: imageError } = await generateImage(locals.runtime.env, newData.generated_storyteller_image, 'character')
       if (imageError) { throw new Error(imageError.message) }
       if (storytellerImage) {
         const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${conceptData.storyteller}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: newData.generated_storyteller_image } })

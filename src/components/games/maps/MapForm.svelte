@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { getImageUrl } from '@lib/utils'
   import { lightboxImage } from '@lib/stores'
   import { supabase, handleError } from '@lib/database-browser'
+  import { getImageUrl, getBase64 } from '@lib/utils'
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
@@ -46,11 +46,14 @@
       const response = await fetch('/api/game/generateMap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: map.description, userId: user.id })
+        body: JSON.stringify({ description: map.description })
       })
-      const generatedJson = await response.json() // returns 1024x1024 image
-      if (generatedJson.error) { throw generatedJson.error }
-      imageGeneratedUrl = generatedJson.data[0].url
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Chyba při generování mapy')
+      }
+      const image = await response.blob()
+      imageGeneratedUrl = await getBase64(image)
       addImage(imageGeneratedUrl)
       generatingMap = false
       imageInputEl.value = null
@@ -82,6 +85,16 @@
     </div>
   </div>
 
+  <div class='row'>
+    <div class='labels'>
+      <label for='mapDescription'>Popis mapy</label>
+    </div>
+    <div class='inputs'>
+      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' bind:value={map.description} {user} allowHtml />
+      <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
+    </div>
+  </div>
+
   <div class='row' id='addImage'>
     <label id='fileSelect' class='button' for='mapImage'>
       <span class='material'>upload</span>
@@ -91,16 +104,6 @@
     <ButtonLoading label='Generovat z popisu mapy' handleClick={generateMap} loading={generatingMap} disabled={map.description?.length < 20} />
     <input type='file' accept='image/*' bind:this={imageInputEl} bind:files onchange={showImageFromFile} id='mapImage' name='mapImage' />
     <input type='hidden' name='mapGeneratedUrl' bind:value={imageGeneratedUrl} />
-  </div>
-
-  <div class='row'>
-    <div class='labels'>
-      <label for='mapDescription'>Popis mapy</label>
-    </div>
-    <div class='inputs'>
-      <TextareaExpandable bind:this={descriptionTextareaEl} loading={generatingMap} id='mapDescription' value={map.description} {user} allowHtml />
-      <input type='hidden' bind:this={descriptionInputEl} name='mapDescription' />
-    </div>
   </div>
 
   {#if img}

@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import { imageSizes } from '@lib/solo/solo'
+import { imageSizes } from '@lib/server/replicate'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 
 const models = {

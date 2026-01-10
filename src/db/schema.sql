@@ -646,7 +646,7 @@ create materialized view game_showcase_pool as
   join characters c on p.owner = c.id
   join profiles pr on c.player = pr.id and pr.publish_consent is true
   left join reactions r on p.id = r.item_id and r.item_type = 'post'
-  where p.created_at >= date_trunc('week', current_date)
+  where p.created_at >= now() - interval '7 days'
     and p.audience is null
     and p.dice is false
     and p.moderated is false

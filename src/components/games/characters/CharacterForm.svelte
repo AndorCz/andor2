@@ -4,7 +4,7 @@
   import ButtonLoading from '@components/common/ButtonLoading.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import { supabase, handleError } from '@lib/database-browser'
-  import { cropPortrait, resizePortrait, getImage, redirectWithToast } from '@lib/utils'
+  import { getBase64, redirectWithToast } from '@lib/utils'
 
   let { isStoryteller, isGameOwner, user, character = $bindable() } = $props()
 
@@ -20,17 +20,14 @@
   async function generatePortrait () {
     try {
       generatingPortrait = true
+      // returns image buffer
       const response = await fetch('/api/game/generatePortrait', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appearance: character.appearance, userId: user.id })
+        body: JSON.stringify({ appearance: character.appearance })
       })
-      const generatedBlob = await response.blob() // returns 1024x1024 image
-      const generatedImage = await getImage(generatedBlob)
-      const cropRatio = 0.5
-      const croppedImage = cropPortrait(generatedImage, cropRatio) // crop to make narrow, returns canvas
-      const resizedImage = await resizePortrait(croppedImage, 140, 140 / cropRatio)
-      newPortraitBase64 = resizedImage.base64
+      const image = await response.blob()
+      newPortraitBase64 = await getBase64(image)
       generatingPortrait = false
     } catch (error) { handleError(error) }
   }

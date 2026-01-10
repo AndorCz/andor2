@@ -1,5 +1,5 @@
 ---
-  import { getOpenAI, createThread, getStoryteller } from '@lib/openai'
+  import { createThread, getStoryteller } from '@lib/openai'
 	import Layout from '@layouts/layout.astro'
   import GameForm from '@components/games/GameForm.svelte'
 
@@ -14,10 +14,6 @@
     const annotation = formData.get('gameAnnotation')
     const aiEnabledValue = formData.get('aiEnabled') === 'true' || aiEnabled
 
-    // const openai = getOpenAI(Astro.locals.runtime.env)
-    // const openAiThread = await createThread(openai)
-    // const openAiStoryteller = await getStoryteller(system)
-    // openai_thread: openAiThread, openai_storyteller: openAiStoryteller
     if (!name) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň jméno hry.')}`) }
     const { data, error } = await supabase.from('games').insert({ owner: user.id, name, category, system, annotation, ai_enabled: aiEnabledValue }).select().single()
     if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }

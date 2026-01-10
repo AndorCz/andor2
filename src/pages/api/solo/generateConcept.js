@@ -1,7 +1,7 @@
 import { Type } from '@google/genai'
 import { getAI } from '@lib/solo/server-gemini'
 import { getStamp } from '@lib/utils'
-import { generateImage } from '@lib/solo/server-replicate'
+import { generateImage } from '@lib/server/replicate'
 import { getPrompts, assistantParams, assistantInstructions } from '@lib/solo/solo'
 
 async function generateConcept (locals, params, sendEvent) {
@@ -172,7 +172,7 @@ async function generateConcept (locals, params, sendEvent) {
     // Storyteller image
     if (currentGenerating.includes('storyteller_image')) {
       sendEvent('progress', { step: 'storyteller_image', message: 'Generuji obrázek vypravěče...' })
-      const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, 'npc')
+      const { data: storytellerImage, error: storytellerImageError } = await generateImage(env, responseStorytellerImagePrompt.text, 'character')
       if (storytellerImageError) { throw new Error(storytellerImageError.message) }
       if (storytellerImage) {
         const { error: storytellerUploadError } = await locals.supabase.storage.from('portraits').upload(`${npcData.id}.jpg`, storytellerImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: responseStorytellerImagePrompt.text } })

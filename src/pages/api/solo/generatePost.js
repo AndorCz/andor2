@@ -1,4 +1,4 @@
-import { generateImage } from '@lib/solo/server-replicate'
+import { generateImage } from '@lib/server/replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { getImageUrl, getStamp } from '@lib/utils'
 import { getStorytellerParams, getAI } from '@lib/solo/server-moonshot'
@@ -24,7 +24,7 @@ export const POST = async ({ request, locals }) => {
     }
 
     async function addImage (prompt, type, gameId, threadId) {
-      const { data, error } = await generateImage(locals.runtime.env, prompt, type)
+      const { data, error } = await generateImage(locals.runtime.env, prompt, type === 'npc' ? 'character' : type)
       if (error) { throw new Error('Image generation failed: ' + error.message) }
       // Save image to storage
       const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageBuckets[type]).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg', upsert: true, metadata: { prompt } })

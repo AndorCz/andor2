@@ -1,5 +1,5 @@
 // Create a new game from a solo concept
-import { generateImage } from '@lib/solo/server-replicate'
+import { generateImage } from '@lib/server/replicate'
 import { getStamp, getImageUrl } from '@lib/utils'
 import { getAI, getStorytellerParams } from '@lib/solo/server-gemini'
 import { getPrompts, assistantParams, getContext } from '@lib/solo/solo'
@@ -47,7 +47,7 @@ export const GET = async ({ request, locals, redirect }) => {
     await locals.supabase.from('unread_threads').upsert({ user_id: locals.user.id, thread_id: gameData.thread, unread_count: 0 }, { onConflict: 'user_id, thread_id', ignoreDuplicates: true })
 
     // Generate character portrait image
-    const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, portraitPrompt, 'npc')
+    const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, portraitPrompt, 'character')
     if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
     if (portraitImage) {
       const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: portraitPrompt } })
