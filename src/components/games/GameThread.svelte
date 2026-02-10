@@ -40,7 +40,6 @@
   const activeCharacter = $derived(game.characters.find((char) => { return char.id === $gameStore.activeCharacterId }))
 
   onMount(() => {
-    if (user.id) { delete game.unread.gameThread }
     setAudienceIds(getActiveAudience()) // set audience from localStorage or default
     game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
     mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })

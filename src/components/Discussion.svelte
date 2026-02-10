@@ -38,7 +38,6 @@
 
   onMount(async () => {
     if (user.id) {
-      if (data.unread?.gameChat) { delete data.unread.gameChat }
       if (showDiscussion && useIdentities) {
         $discussionStore.activeIdentity = $discussionStore.activeIdentity || identities[0].id
         identitySelect.value = $discussionStore.activeIdentity
