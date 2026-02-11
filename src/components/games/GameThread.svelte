@@ -34,12 +34,15 @@
   let promptValue = $state('')
   let generating = $state(false)
   let abortController = $state()
+  let threadUnread = $state(unread)
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const myCharacters = $derived(game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' }))
   const activeCharacter = $derived(game.characters.find((char) => { return char.id === $gameStore.activeCharacterId }))
 
   onMount(() => {
+    threadUnread = unread
+    if (user.id && game.unread?.gameThread) { game.unread.gameThread = 0 }
     setAudienceIds(getActiveAudience()) // set audience from localStorage or default
     game.characters.sort((a, b) => a.name.localeCompare(b.name)) // sort characters by name
     mentionList = game.characters.filter((char) => { return char.accepted && char.state === 'alive' }).map((char) => { return { name: char.name, id: char.id, type: 'character' } })
@@ -258,7 +261,7 @@
   <!--({activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
   {#if activeTool !== 'maps'}
-    <Thread type='game' {loading} {posts} {user} {unread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection='games' contentId={game.id} />
+    <Thread type='game' {loading} {posts} {user} unread={threadUnread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection='games' contentId={game.id} />
   {/if}
 {:else}
   <div class='info'><span class='material'>info</span>Hra je soukromá</div>

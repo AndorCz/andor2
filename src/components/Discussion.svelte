@@ -23,6 +23,7 @@
   let page = $state(0)
   let pages = $state()
   let loading = $state(true)
+  let threadUnread = $state(unread)
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -37,7 +38,9 @@
   identities.push(userIdentity)
 
   onMount(async () => {
+    threadUnread = unread
     if (user.id) {
+      if (data.unread?.gameChat) { data.unread.gameChat = 0 }
       if (showDiscussion && useIdentities) {
         $discussionStore.activeIdentity = $discussionStore.activeIdentity || identities[0].id
         identitySelect.value = $discussionStore.activeIdentity
@@ -204,7 +207,7 @@
       {/if}
     {/if}
 
-    <Thread type='discussion' {loading} {posts} {user} {unread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    <Thread type='discussion' {loading} {posts} {user} unread={threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
