@@ -15,7 +15,7 @@ export const POST = async ({ request, locals }) => {
       if (!postData || !postData.post || !postData.post.trim()) {
         throw new Error('Cannot save empty post content')
       }
-      const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration })
+      const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration, nsfw: postData.nsfw === true })
       if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
 
       // update solo_limit for the user

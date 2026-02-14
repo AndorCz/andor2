@@ -315,6 +315,7 @@ create table posts (
   identifier text,
   illustration text,
   moderated boolean default false,
+  nsfw boolean default false,
   dice boolean default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
@@ -636,7 +637,7 @@ create or replace view npc_posts_random as
 
 create materialized view game_showcase_pool as
   select
-    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.moderated, p.dice, p.created_at,
+    p.id, p.thread, p.owner, p.owner_type, p.content, p.audience, p.moderated, p.nsfw, p.dice, p.created_at,
     c.name as owner_name,
     c.portrait as owner_portrait,
     g.id as game_id,
@@ -651,6 +652,7 @@ create materialized view game_showcase_pool as
     and p.audience is null
     and p.dice is false
     and p.moderated is false
+    and coalesce(p.nsfw, false) is false
     and length(p.content) > 500
     and p.owner_type = 'character';
 
@@ -662,7 +664,8 @@ create or replace materialized view npc_posts_pool as
     join npcs on po.owner = npcs.id
     left join solo_concepts sc on npcs.solo_concept = sc.id
   where po.owner_type = 'npc'
-    and po.created_at >= now() - interval '1 month';
+    and po.created_at >= now() - interval '1 month'
+    and coalesce(po.nsfw, false) is false;
 
 
 -- FUNCTIONS --------------------------------------------
