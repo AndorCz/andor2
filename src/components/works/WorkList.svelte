@@ -5,7 +5,10 @@
   import { getSavedStore } from '@lib/stores'
   import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
 
-  const { user = {}, works = [], activeTab = 'articles', showHeadline = false, page = 0, maxPage = 0 } = $props()
+  const { user = {}, works = [], activeTab = 'articles', tag = '', showHeadline = false, page = 0, maxPage = 0 } = $props()
+
+  const tagSources = { articles: workTagsText, images: workTagsImage, music: workTagsMusic }
+  const activeTagSource = $derived(tagSources[activeTab] || [])
 
   let listView = $state(false)
   let workListStore
@@ -51,6 +54,14 @@
     const url = new URL(window.location)
     url.searchParams.set('tab', tab)
     url.searchParams.delete('page')
+    url.searchParams.delete('tag')
+    window.location.href = url.toString()
+  }
+
+  function navigateTag (newTag) {
+    const url = new URL(window.location)
+    if (newTag) { url.searchParams.set('tag', newTag) } else { url.searchParams.delete('tag') }
+    url.searchParams.delete('page')
     window.location.href = url.toString()
   }
 </script>
@@ -82,6 +93,15 @@
     Hudba
   </button>
 </nav>
+
+<div class='filters'>
+  <select onchange={(e) => { navigateTag(e.currentTarget.value) }} value={tag} title='Filtrovat podle tagu'>
+    <option value=''>Všechny tagy</option>
+    {#each activeTagSource as t (t.value)}
+      <option value={t.value}>{t.label}</option>
+    {/each}
+  </select>
+</div>
 
 {#if isFilledArray(works)}
   {#if listView}
@@ -168,6 +188,13 @@
   .tabs {
     margin-bottom: 20px;
   }
+  .filters {
+    margin-bottom: 20px;
+  }
+    .filters select {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
   .editorial {
     background-color: var(--prominent) !important;
   }
