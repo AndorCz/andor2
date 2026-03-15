@@ -70,6 +70,12 @@
   <div class='headline flex'>
     <h1>Tvorba</h1>
     <div class='buttons'>
+      <select onchange={(e) => { navigateTag(e.currentTarget.value) }} value={tag} title='Filtrovat podle tagu'>
+        <option value=''>Všechny tagy</option>
+        {#each activeTagSource as t (t.value)}
+          <option value={t.value}>{t.label}</option>
+        {/each}
+      </select>
       <div class='toggle'>
         <button onclick={() => { setListView(false) }} class:active={!listView} class='material'>table_rows</button>
         <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
@@ -93,15 +99,6 @@
     Hudba
   </button>
 </nav>
-
-<div class='filters'>
-  <select onchange={(e) => { navigateTag(e.currentTarget.value) }} value={tag} title='Filtrovat podle tagu'>
-    <option value=''>Všechny tagy</option>
-    {#each activeTagSource as t (t.value)}
-      <option value={t.value}>{t.label}</option>
-    {/each}
-  </select>
-</div>
 
 {#if isFilledArray(works)}
   {#if listView}
@@ -180,7 +177,14 @@
   .buttons {
     display: flex;
     gap: 20px;
+    align-items: center;
   }
+    .buttons select {
+      width: fit-content;
+      padding: 10px;
+      padding-right: 35px;
+      font-size: 16px;
+    }
 
   .name a:first-letter {
     text-transform: uppercase;
@@ -188,13 +192,6 @@
   .tabs {
     margin-bottom: 20px;
   }
-  .filters {
-    margin-bottom: 20px;
-  }
-    .filters select {
-      padding: 6px 10px;
-      font-size: 14px;
-    }
   .editorial {
     background-color: var(--prominent) !important;
   }
