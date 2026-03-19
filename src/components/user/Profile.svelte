@@ -5,8 +5,11 @@
   import SoloList from '@components/solo/SoloList.svelte'
   import WorkList from '@components/works/WorkList.svelte'
   import BoardList from '@components/boards/BoardList.svelte'
+  import DOMPurify from 'dompurify'
 
   const { user = {}, data = {} } = $props()
+
+  const genderLabels = { man: 'Muž', woman: 'Žena', other: 'Jiné' }
 
   function openConversation () {
     $activeConversation = { us: user, them: data, type: 'user' }
@@ -22,12 +25,23 @@
   <div class='wide'>
     <h1>{data.name}</h1>
     <ul>
+      {#if data.city}<li>Město: <span class='value'>{data.city}</span></li>{/if}
+      {#if data.gender}<li>Pohlaví: <span class='value'>{genderLabels[data.gender] || data.gender}</span></li>{/if}
       <li>Naposledy online: <span class='date'>{new Date(data.last_activity).toLocaleString('cs')}</span></li>
       <li>Datum registrace: <span class='date'>{new Date(data.created_at).toLocaleDateString('cs')}</span></li>
     </ul>
-    <button onclick={openConversation}>Napsat zprávu</button>
+    {#if user.id && user.id !== data.id}
+      <button onclick={openConversation}>Napsat zprávu</button>
+    {/if}
   </div>
 </main>
+
+{#if data.about}
+  <section class='about'>
+    <h2>O mně</h2>
+    <div class='about-content'>{@html DOMPurify.sanitize(data.about, { ADD_ATTR: ['target'], ADD_TAGS: ['iframe'] })}</div>
+  </section>
+{/if}
 
 <h2>Hry</h2>
 <GameList {user} games={data.games} showTabs={false} />
@@ -63,8 +77,14 @@
       li {
         margin: 5px 0px;
       }
-      .date {
+      .date, .value {
         font-weight: bold;
         margin-left: 10px;
       }
+  .about {
+    margin-top: 30px;
+  }
+  .about-content {
+    max-width: 800px;
+  }
 </style>
