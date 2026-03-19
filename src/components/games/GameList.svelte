@@ -394,11 +394,6 @@
       flex-direction: row;
       gap: 30px;
     }
-    .newGame {
-      position: absolute;
-      top: 30px;
-      right: 20px;
-    }
   }
 
   @media (max-width: 500px) {
@@ -420,6 +415,11 @@
     }
     .searchBox input {
       width: 140px;
+    }
+    .newGame {
+      position: absolute;
+      top: 30px;
+      right: 20px;
     }
   }
 </style>

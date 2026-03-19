@@ -81,8 +81,8 @@
         <button onclick={() => { setListView(true) }} class:active={listView} class='material'>table_rows_narrow</button>
       </div>
       {#if user.id}
-        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button desktop'>Vytvořit nové dílo</a>
-        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button mobile material'>add</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button desktop newWork'>Vytvořit nové dílo</a>
+        <a href={'./work/work-form?type=' + (activeTab === 'articles' ? 'text' : activeTab === 'images' ? 'image' : 'audio')} class='button mobile material newWork square'>add</a>
       {/if}
     </div>
   </div>
@@ -343,8 +343,17 @@
       padding: 15px 10px;
     }
     .block .image { width: 100% }
+    .headline {
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
     .headline .button, .headline button {
       padding: 7px;
+    }
+    .newWork {
+      position: absolute;
+      top: 30px;
+      right: 20px;
     }
   }
 </style>
