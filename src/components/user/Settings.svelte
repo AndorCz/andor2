@@ -4,7 +4,6 @@
   import { supabase } from '@lib/database-browser'
   import { activeConversation } from '@lib/stores'
   import { showSuccess, showError } from '@lib/toasts'
-  import Editor from '@components/common/Editor.svelte'
 
   let { user = $bindable() } = $props()
 
@@ -16,10 +15,6 @@
   // let originalEditorBubble = user.editor_bubble
   let originalTheme = $state(user.theme)
   let newColor = $state('')
-  let originalCity = $state(user.city || '')
-  let originalGender = $state(user.gender || '')
-  let originalAbout = $state(user.about || '')
-  let aboutValue = $state(user.about || '')
 
   async function setPassword () {
     if (password.length < 6) { return showError('Heslo musí mít alespoň 6 znaků') }
@@ -46,21 +41,6 @@
     originalTheme = user.theme
     showSuccess('Nastavení bylo uloženo')
     if (theme) { window.location.href = '/settings' }
-  }
-
-  async function updateProfile () {
-    const data = {
-      city: user.city || null,
-      gender: user.gender || null,
-      about: aboutValue || null
-    }
-    const { error } = await supabase.from('profiles').update(data).eq('id', user.id)
-    if (error) { return showError(error.message) }
-    originalCity = user.city || ''
-    originalGender = user.gender || ''
-    originalAbout = aboutValue
-    user.about = aboutValue
-    showSuccess('Profil byl uložen')
   }
 
   async function deleteUser () {
@@ -102,34 +82,6 @@
       Pokud jsi uživatel ze starého Andoru, můžeš si propojit účty a přenést si své hry a články.<br><br>
       <a href='/migrate' class='button'>Přejít na import</a>
     </p>
-
-    <h2>Informace o profilu</h2>
-    <div class='row'>
-      <div class='label'><label for='city'>Město</label></div>
-      <div class='value'><input type='text' id='city' size='30' maxlength='100' bind:value={user.city} /></div>
-    </div>
-    <br>
-    <div class='row'>
-      <div class='label'><label for='gender'>Pohlaví</label></div>
-      <div class='value'>
-        <select bind:value={user.gender} id='gender' name='gender'>
-          <option value=''>— neuvedeno —</option>
-          <option value='man'>Muž</option>
-          <option value='woman'>Žena</option>
-          <option value='other'>Jiné</option>
-        </select>
-      </div>
-    </div>
-    <br>
-    <div class='aboutRow'>
-      <label for='about'>O mě</label>
-      <div class='aboutEditor'>
-        <!-- onChange is required: Editor calls it unconditionally in its $effect -->
-        <Editor bind:value={aboutValue} {user} minHeight={140} onChange={() => {}} />
-      </div>
-    </div>
-    <br>
-    <button onclick={updateProfile} class='material' disabled={originalCity === (user.city || '') && originalGender === (user.gender || '') && originalAbout === aboutValue} title='Uložit profil' use:tooltip>check</button>
 
     <h2>Nastavit heslo</h2>
     <div class='row'>
@@ -242,14 +194,6 @@
   }
   .rowInner {
     align-items: center;
-  }
-  .aboutRow {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .aboutEditor {
-    width: 100%;
   }
   select {
     width: fit-content;
