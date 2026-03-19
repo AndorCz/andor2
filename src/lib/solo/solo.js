@@ -91,7 +91,10 @@ Tvým cílem je vést příběh podle "Plánu hry". Každá odpověď by měla p
 Pokud plán hry v kontextu chybí, napiš "<p class='info'>Plán hry není k dispozici, pokračuji improvizací</p>".
 
 Konec hry:
-Pokud postava zemře, nebo se příběh dostane do konceptem definovaného konce, popiš uspokojivě závěr hry a nastav "end" na true. Jinak pole vynech.`
+Pokud postava zemře, nebo se příběh dostane do konceptem definovaného konce, popiš uspokojivě závěr hry a nastav "end" na true. Jinak pole vynech.
+
+Bezpečnost obsahu:
+Pokud odpověď obsahuje sexuálně explicitní nebo jinak potenciálně problematický NSFW obsah, nastav pole "nsfw" na true. Pokud takový obsah neobsahuje, nastav "nsfw" na false.`
 
 export const fieldNames = { prompt_world: 'Svět', prompt_factions: 'Frakce', prompt_locations: 'Lokace', prompt_characters: 'Postavy', prompt_protagonist: 'Postava hráče', prompt_plan: 'Plán hry', prompt_header_image: 'Ilustrační obrázek', prompt_storyteller_image: 'Portrét vypravěče', protagonist_names: 'Jména postavy', annotation: 'Reklamní text', first_image: 'Obrázek první scény', protagonist_image: 'Portrét postavy', inventory: 'Inventář postavy', abilities: 'Schopnosti postavy' }
 
@@ -146,8 +149,12 @@ export const getResponseSchema = (illustrationStyleAffix) => {
       end: {
         type: 'BOOLEAN',
         description: 'Pokud tímto příspěvkem hra skončila, nastav na true. Například pokud postava zemřela. Jinak ponech false, nebo pole vynechej.'
+      },
+      nsfw: {
+        type: 'BOOLEAN',
+        description: 'Nastav na true, pokud příspěvek obsahuje sexuálně explicitní nebo jinak potenciálně problematický NSFW obsah. Jinak nastav na false.'
       }
     },
-    required: ['post', 'character', 'scene']
+    required: ['post', 'character', 'scene', 'nsfw']
   }
 }

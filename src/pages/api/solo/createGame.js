@@ -87,7 +87,7 @@ export const GET = async ({ request, locals, redirect }) => {
     }
 
     // Save the first post
-    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost.post, owner_type: 'npc', owner: concept.storyteller, identifier: getStamp() })
+    const { error: addPostError } = await locals.supabase.from('posts').insert({ thread: gameData.thread, content: firstPost.post, owner_type: 'npc', owner: concept.storyteller, identifier: getStamp(), nsfw: firstPost.nsfw === true })
     if (addPostError) { throw new Error(addPostError.message) }
 
     // Return success object

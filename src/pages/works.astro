@@ -4,16 +4,19 @@
 
   const { supabase, user } = Astro.locals
   const activeTab = Astro.url.searchParams.get('tab') || 'articles'
+  const tag = Astro.url.searchParams.get('tag') || ''
 
   const page = parseInt(Astro.url.searchParams.get('page') || '0')
   const limit = 20
 
   const typeMap = { articles: 'text', images: 'image', music: 'audio' }
-  const { data: works, count, error } = await supabase.from('work_list').select('*', { count: 'exact' }).match({ published: true, type: typeMap[activeTab] }).range(page * limit, page * limit + limit - 1)
+  let query = supabase.from('work_list').select('*', { count: 'exact' }).match({ published: true, type: typeMap[activeTab] })
+  if (tag) { query = query.contains('tags', [tag]) }
+  const { data: works, count, error } = await query.range(page * limit, page * limit + limit - 1)
   const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
 ---
 
 <Layout title='Tvorba'>
-  <WorkList {user} {works} {activeTab} {page} {maxPage} showHeadline client:load />
+  <WorkList {user} {works} {activeTab} {tag} {page} {maxPage} showHeadline client:load />
 </Layout>
