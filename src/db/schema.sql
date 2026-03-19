@@ -75,6 +75,9 @@ create table profiles (
   -- editor_bubble boolean default false,
   colors text[] default '{}',
   publish_consent boolean,
+  city text default null,
+  gender text default null,
+  about text default null,
   reward_icon text default null,
   reward_link text default null,
   constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade
