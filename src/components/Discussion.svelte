@@ -25,7 +25,12 @@
   let loading = $state(true)
   let threadUnread = $state(unread)
   let showImportantOnly = $state(false)
-  let displayedPosts = $derived(showImportantOnly ? posts.filter(p => p.important) : posts)
+
+  function switchTab (important) {
+    showImportantOnly = important
+    page = 0
+    loadPosts()
+  }
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -69,7 +74,7 @@
       if (!user.id) { return }
       query = await supabase.rpc('get_discussion_posts_special', { user_id: user.id, _thread: thread, page, _limit: limit })
     } else {
-      query = await supabase.rpc('get_discussion_posts', { _thread: thread, page, _limit: limit, ascending: false })
+      query = await supabase.rpc('get_discussion_posts', { _thread: thread, page, _limit: limit, ascending: false, _important_only: showImportantOnly })
     }
     const { data: rpcData, error } = await query
     if (error) { return handleError(error) }
@@ -210,11 +215,11 @@
     {/if}
 
     <div class='tabs tertiary'>
-      <button onclick={() => { showImportantOnly = false }} class:active={!showImportantOnly}>Vše</button>
-      <button onclick={() => { showImportantOnly = true }} class:active={showImportantOnly}><span class='material'>label_important</span>Důležité</button>
+      <button onclick={() => { switchTab(false) }} class:active={!showImportantOnly}>Vše</button>
+      <button onclick={() => { switchTab(true) }} class:active={showImportantOnly}>Důležité</button>
     </div>
 
-    <Thread type='discussion' {loading} posts={displayedPosts} {user} unread={showImportantOnly ? 0 : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    <Thread type='discussion' {loading} {posts} {user} unread={showImportantOnly ? 0 : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} /><!-- unread=0 in important-only mode: filtered subset makes the unread separator position meaningless -->
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
