@@ -24,6 +24,8 @@
   let pages = $state()
   let loading = $state(true)
   let threadUnread = $state(unread)
+  let showImportantOnly = $state(false)
+  let displayedPosts = $derived(showImportantOnly ? posts.filter(p => p.important) : posts)
 
   // set identities for discussion
   const getMyCharacters = () => {
@@ -207,7 +209,12 @@
       {/if}
     {/if}
 
-    <Thread type='discussion' {loading} {posts} {user} unread={threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    <div class='tabs tertiary'>
+      <button onclick={() => { showImportantOnly = false }} class:active={!showImportantOnly}>Vše</button>
+      <button onclick={() => { showImportantOnly = true }} class:active={showImportantOnly}><span class='material'>label_important</span>Důležité</button>
+    </div>
+
+    <Thread type='discussion' {loading} posts={displayedPosts} {user} unread={showImportantOnly ? 0 : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
