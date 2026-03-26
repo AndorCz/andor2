@@ -9,7 +9,7 @@
   import Reactions from '@components/common/Reactions.svelte'
   import PollRenderer from '@components/boards/PollRenderer.svelte'
 
-  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, onToggleImportant = null, iconSize = 70, showEdited = true } = $props()
+  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, showEdited = true } = $props()
 
   let expanded = $state(false)
   let contentEl = $state()
@@ -48,7 +48,6 @@
     post.important = important
     const { error } = await supabase.from('posts').update({ important }).eq('id', post.id)
     if (error) { return handleError(error) }
-    if (onToggleImportant) { onToggleImportant() }
   }
 
   function checkMeMentioned () {
@@ -121,7 +120,7 @@
       </span>
       <span class='toolbar'>
         <span class='time'>{formatDate(post.created_at)}</span>
-        {#if canModerate || (isMyPost && post.important)}
+        {#if canModerate}
           <button onclick={toggleImportant} class='material label' title={post.important ? 'Odebrat důležitost' : 'Přidat důležitost'} use:tooltip>label_important</button>
         {/if}
         {#if onEdit && isMyPost}
