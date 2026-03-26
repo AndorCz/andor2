@@ -17,7 +17,6 @@
   let autorefreshRunning = false
   let frameId
 
-
   const replies = {}
 
   onMount(async () => {
@@ -200,7 +199,11 @@
 </main>
 
 <style>
-  main, center {
+  main {
+    padding-top: 10px;
+  }
+
+  center {
     margin-top: 30px;
   }
 

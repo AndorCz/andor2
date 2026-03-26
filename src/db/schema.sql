@@ -898,7 +898,7 @@ end;
 $$ language plpgsql;
 
 
-create or replace function get_discussion_posts (_thread integer, page integer, _limit int, ascending boolean)
+create or replace function get_discussion_posts (_thread integer, page integer, _limit int, ascending boolean, _important_only boolean default false)
 returns json as $$
 declare
   postdata json;
@@ -908,7 +908,7 @@ begin
   select count(*)
   into total_count
   from discussion_posts_owner po
-  where po.thread = _thread;
+  where po.thread = _thread and (not _important_only or po.important = true);
 
   -- get the paginated posts
   select json_agg(t)
@@ -916,7 +916,7 @@ begin
   from (
     select po.*, get_character_names(po.audience) as audience_names
     from discussion_posts_owner po
-    where po.thread = _thread
+    where po.thread = _thread and (not _important_only or po.important = true)
     order by
       case when ascending then po.created_at end asc,
       case when not ascending then po.created_at end desc
