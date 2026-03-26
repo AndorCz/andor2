@@ -242,8 +242,6 @@
   }
   .pinnedPosts {
     margin-bottom: 20px;
-    border: 1px solid var(--linkVisited);
-    border-radius: 4px;
     padding: 10px 15px;
     background-color: var(--prominent);
   }
