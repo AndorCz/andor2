@@ -214,7 +214,7 @@
       {/if}
     {/if}
 
-    <div class='tabs tertiary'>
+    <div class='tabs secondary importance'>
       <button onclick={() => { switchTab(false) }} class:active={!showImportantOnly}>Vše</button>
       <button onclick={() => { switchTab(true) }} class:active={showImportantOnly}>Důležité</button>
     </div>
@@ -255,6 +255,9 @@
     display: flex;
     gap: 10px;
     justify-content: center;
+  }
+  .importance {
+    margin-top: 20px;
   }
 
   @media (max-width: 860px) {
