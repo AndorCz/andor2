@@ -7,6 +7,7 @@
   import { clone, isFilledArray, addCharacterNameStyles } from '@lib/utils'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
+  import Post from '@components/common/Post.svelte'
 
   let { user = {}, data = {}, canModerate = false, slug, contentSection, isPermitted = true, thread, unread = $bindable(0), useIdentities = false, mentionList = [] } = $props()
 
@@ -15,6 +16,7 @@
   const discussionStore = getSavedStore(slug)
 
   let posts = $state([])
+  let importantPosts = $state([])
   let textareaRef = $state()
   let textareaValue = $state($discussionStore.unsent || '') // load unsent post
   let identitySelect = $state()
@@ -46,7 +48,10 @@
         identitySelect.value = $discussionStore.activeIdentity
       }
     } else { unread = 0 }
-    if (showDiscussion) { loadPosts() }
+    if (showDiscussion) {
+      loadPosts()
+      loadImportantPosts()
+    }
     const posters = await loadAllPosters()
     if (isFilledArray(mentionList)) { // combine and deduplicate, used for game discussions to add players to characters
       const combined = [...mentionList, ...posters]
@@ -93,6 +98,16 @@
       }
       return acc
     }, [])
+  }
+
+  async function loadImportantPosts () {
+    const { data: pinned, error } = await supabase.from('discussion_posts_owner').select('*').eq('thread', thread).eq('important', true).order('created_at', { ascending: false })
+    if (error) { return handleError(error) }
+    importantPosts = pinned || []
+  }
+
+  function isMyIdentity (ownerId) {
+    return identities.some(i => i.id === ownerId)
   }
 
   async function submitPost () {
@@ -175,6 +190,14 @@
 
 <main>
   {#if showDiscussion}
+    {#if importantPosts.length > 0}
+      <div class='pinnedPosts'>
+        <h3 class='pinnedHeader'><span class='material'>label_important</span> Důležité příspěvky</h3>
+        {#each importantPosts as post (post.id)}
+          <Post {post} {user} canModerate={canModerate} isMyPost={isMyIdentity(post.owner)} onToggleImportant={loadImportantPosts} iconSize={$platform === 'desktop' ? 70 : 40} showEdited={false} />
+        {/each}
+      </div>
+    {/if}
     {#if user.id}
       {#if $platform === 'desktop'}
         <div class='headlines'>
@@ -207,7 +230,7 @@
       {/if}
     {/if}
 
-    <Thread type='discussion' {loading} {posts} {user} unread={threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    <Thread type='discussion' {loading} {posts} {user} unread={threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} onToggleImportant={loadImportantPosts} />
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
@@ -217,6 +240,19 @@
   main {
     padding-top: 10px;
   }
+  .pinnedPosts {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: var(--prominent);
+  }
+    .pinnedHeader {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: var(--linkVisited);
+    }
   .addPostWrapper {
     display: flex;
     width: 100%;

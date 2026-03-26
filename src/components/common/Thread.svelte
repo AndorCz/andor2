@@ -6,7 +6,7 @@
   import { onMount, onDestroy, mount } from 'svelte'
   import Post from '@components/common/Post.svelte'
 
-  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none', onToggleImportant = null } = $props()
 
   let postCount = $state(0)
   let lastPostId = $state()
@@ -176,7 +176,7 @@
           </span>
         {/if}
       {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
-        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} {onToggleImportant} />
       {/if}
     {/each}
     {#if pages}
