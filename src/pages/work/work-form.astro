@@ -15,15 +15,23 @@
     let content = formData.get('workContent')
 
     if (formType !== 'text') {
-      const file = formData.get('workFile')
-      if (!file || file.size === 0) {
+      const files = formType === 'image' ? formData.getAll('workFile') : [formData.get('workFile')]
+      const validFiles = files.filter(file => file && file.size > 0)
+
+      if (!validFiles.length) {
         return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chybí soubor')}`)
       }
-      const fileExt = file.name.split('.').pop()
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('works').upload(filePath, file)
-      if (uploadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba uploadu: ' + uploadError.message)}`) }
-      content = filePath
+
+      const uploadedPaths = []
+      for (const file of validFiles) {
+        const fileExt = file.name.split('.').pop()
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(-5)}.${fileExt}`
+        const { error: uploadError } = await supabase.storage.from('works').upload(filePath, file)
+        if (uploadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba uploadu: ' + uploadError.message)}`) }
+        uploadedPaths.push(filePath)
+      }
+
+      content = formType === 'image' ? JSON.stringify(uploadedPaths) : uploadedPaths[0]
     }
 
     const { data, error } = await supabase.from('works').insert({ owner: user.id, name, category, content, annotation, tags, type: formType }).select().single()
