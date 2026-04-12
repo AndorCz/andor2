@@ -53,7 +53,7 @@
         <label for='workName'>Název</label>
       </div>
       <div class='inputs'>
-        <input type='text' id='workName' name='workName' maxlength='80' onkeydown={preventSubmit} />
+        <input type='text' id='workName' name='workName' maxlength='80' required onkeydown={preventSubmit} />
       </div>
     </div>
 
