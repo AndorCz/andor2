@@ -11,14 +11,21 @@
   const limit = 20
 
   const typeMap = { articles: 'text', images: 'image', music: 'audio' }
+  const categoryMap = {
+    articles: ['prose', 'poetry', 'game', 'other'],
+    images: ['painting', 'drawing', 'photo', 'digital', 'other'],
+    music: ['instrumental', 'vocal', 'orchestral', 'electronic', 'other']
+  }
+  const allowedCategories = categoryMap[activeTab] || []
+  const activeCategory = allowedCategories.includes(category) ? category : ''
   let query = supabase.from('work_list').select('*', { count: 'exact' }).match({ published: true, type: typeMap[activeTab] })
   if (tag) { query = query.contains('tags', [tag]) }
-  if (category) { query = query.eq('category', category) }
+  if (activeCategory) { query = query.eq('category', activeCategory) }
   const { data: works, count, error } = await query.range(page * limit, page * limit + limit - 1)
   const maxPage = Math.ceil(count / limit) - 1
   if (error) { console.error(error) }
 ---
 
 <Layout title='Tvorba'>
-  <WorkList {user} {works} {activeTab} {tag} {category} {page} {maxPage} showHeadline client:load />
+  <WorkList {user} {works} {activeTab} {tag} category={activeCategory} {page} {maxPage} showHeadline client:load />
 </Layout>
