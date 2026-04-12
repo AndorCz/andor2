@@ -7,7 +7,7 @@
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
-    const name = formData.get('workName')
+    const name = formData.get('workName')?.trim()
     const annotation = formData.get('workAnnotation')
     const category = formData.get('workCategory')
     const tags = formData.get('workTags') ? formData.get('workTags').split(',') : []
@@ -32,6 +32,10 @@
       }
 
       content = formType === 'image' ? JSON.stringify(uploadedPaths) : uploadedPaths[0]
+    }
+
+    if (!name) {
+      return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Název díla je povinný')}`)
     }
 
     const { data, error } = await supabase.from('works').insert({ owner: user.id, name, category, content, annotation, tags, type: formType }).select().single()
