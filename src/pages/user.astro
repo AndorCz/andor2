@@ -24,7 +24,7 @@
   data.boards = boards
 
   // load user's works
-  const { data: works, error: worksError } = await supabase.from('work_list').select('*').eq('owner', userId)
+  const { data: works, error: worksError } = await supabase.from('work_list').select('*').eq('owner', userId).eq('published', true)
   if (worksError) { console.error('error loading user works', worksError) }
   data.works = works
 ---
