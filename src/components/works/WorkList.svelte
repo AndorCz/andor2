@@ -5,10 +5,12 @@
   import { getSavedStore } from '@lib/stores'
   import { workTagsText, workTagsImage, workTagsMusic, workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
 
-  const { user = {}, works = [], activeTab = 'articles', tag = '', showHeadline = false, page = 0, maxPage = 0 } = $props()
+  const { user = {}, works = [], activeTab = 'articles', tag = '', category = '', showHeadline = false, page = 0, maxPage = 0 } = $props()
 
   const tagSources = { articles: workTagsText, images: workTagsImage, music: workTagsMusic }
+  const categorySources = { articles: workCategoriesText, images: workCategoriesImage, music: workCategoriesMusic }
   const activeTagSource = $derived(tagSources[activeTab] || [])
+  const activeCategorySource = $derived(categorySources[activeTab] || [])
 
   let listView = $state(false)
   let workListStore
@@ -55,12 +57,20 @@
     url.searchParams.set('tab', tab)
     url.searchParams.delete('page')
     url.searchParams.delete('tag')
+    url.searchParams.delete('category')
     window.location.href = url.toString()
   }
 
   function navigateTag (newTag) {
     const url = new URL(window.location)
     if (newTag) { url.searchParams.set('tag', newTag) } else { url.searchParams.delete('tag') }
+    url.searchParams.delete('page')
+    window.location.href = url.toString()
+  }
+
+  function navigateCategory (newCategory) {
+    const url = new URL(window.location)
+    if (newCategory) { url.searchParams.set('category', newCategory) } else { url.searchParams.delete('category') }
     url.searchParams.delete('page')
     window.location.href = url.toString()
   }
@@ -74,6 +84,12 @@
         <option value=''>Všechny tagy</option>
         {#each activeTagSource as t (t.value)}
           <option value={t.value}>{t.label}</option>
+        {/each}
+      </select>
+      <select onchange={(e) => { navigateCategory(e.currentTarget.value) }} value={category} title='Filtrovat podle kategorie'>
+        <option value=''>Všechny kategorie</option>
+        {#each activeCategorySource as c (c.value)}
+          <option value={c.value}>{c.label}</option>
         {/each}
       </select>
       <div class='toggle'>
