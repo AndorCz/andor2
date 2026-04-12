@@ -61,18 +61,19 @@
     window.location.href = url.toString()
   }
 
-  function navigateTag (newTag) {
+  function updateFilterParam (param, value) {
     const url = new URL(window.location)
-    if (newTag) { url.searchParams.set('tag', newTag) } else { url.searchParams.delete('tag') }
+    if (value) { url.searchParams.set(param, value) } else { url.searchParams.delete(param) }
     url.searchParams.delete('page')
     window.location.href = url.toString()
   }
 
+  function navigateTag (newTag) {
+    updateFilterParam('tag', newTag)
+  }
+
   function navigateCategory (newCategory) {
-    const url = new URL(window.location)
-    if (newCategory) { url.searchParams.set('category', newCategory) } else { url.searchParams.delete('category') }
-    url.searchParams.delete('page')
-    window.location.href = url.toString()
+    updateFilterParam('category', newCategory)
   }
 </script>
 

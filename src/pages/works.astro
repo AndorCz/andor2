@@ -1,6 +1,7 @@
 ---
 	import Layout from '@layouts/layout.astro'
   import WorkList from '@components/works/WorkList.svelte'
+  import { workCategoriesText, workCategoriesImage, workCategoriesMusic } from '@lib/constants'
 
   const { supabase, user } = Astro.locals
   const activeTab = Astro.url.searchParams.get('tab') || 'articles'
@@ -12,12 +13,12 @@
 
   const typeMap = { articles: 'text', images: 'image', music: 'audio' }
   const categoryMap = {
-    articles: ['prose', 'poetry', 'game', 'other'],
-    images: ['painting', 'drawing', 'photo', 'digital', 'other'],
-    music: ['instrumental', 'vocal', 'orchestral', 'electronic', 'other']
+    articles: workCategoriesText,
+    images: workCategoriesImage,
+    music: workCategoriesMusic
   }
   const allowedCategories = categoryMap[activeTab] || []
-  const activeCategory = allowedCategories.includes(category) ? category : ''
+  const activeCategory = allowedCategories.some((item) => item.value === category) ? category : ''
   let query = supabase.from('work_list').select('*', { count: 'exact' }).match({ published: true, type: typeMap[activeTab] })
   if (tag) { query = query.contains('tags', [tag]) }
   if (activeCategory) { query = query.eq('category', activeCategory) }
