@@ -75,6 +75,15 @@
   function navigateCategory (newCategory) {
     updateFilterParam('category', newCategory)
   }
+
+  function getPreviewImagePath (work) {
+    if (work.type !== 'image' || !work.content) { return work.content }
+    try {
+      const parsed = JSON.parse(work.content)
+      if (Array.isArray(parsed) && parsed.length) { return parsed[0] }
+    } catch (_) {}
+    return work.content
+  }
 </script>
 
 {#if showHeadline}
@@ -146,7 +155,7 @@
         {#if work.custom_header || work.type === 'image'}
           <div class='col image'>
             {#if work.type === 'image'}
-              <img src={getWorkFileUrl(work.content)} alt={work.name} />
+              <img src={getWorkFileUrl(getPreviewImagePath(work))} alt={work.name} />
             {:else}
               <img src={getHeaderUrl('work', work.id, work.custom_header)} alt='work header' />
             {/if}

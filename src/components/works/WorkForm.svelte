@@ -10,7 +10,7 @@
   let files = $state()
   let tagItems = $state([])
   let editorRef = $state()
-  let previewUrl = $state()
+  let previewUrls = $state([])
   let selectedTags = $state()
   let tagsInputRef = $state()
   let fileInputRef = $state()
@@ -41,9 +41,8 @@
   }
 
   function showPreview () {
-    if (files && files[0]) {
-      previewUrl = URL.createObjectURL(files[0])
-    }
+    if (!files?.length || type !== 'image') { return }
+    previewUrls = Array.from(files).map(file => URL.createObjectURL(file))
   }
 </script>
 
@@ -75,11 +74,15 @@
       <div class='row'>
         <div class='labels'><label for='workFile'>Soubor</label></div>
         <div class='inputs'>
-          <input type='file' bind:this={fileInputRef} bind:files onchange={showPreview} id='workFile' name='workFile' accept={type === 'image' ? 'image/*' : 'audio/*'} />
+          <input type='file' bind:this={fileInputRef} bind:files onchange={showPreview} id='workFile' name='workFile' accept={type === 'image' ? 'image/*' : 'audio/*'} multiple={type === 'image'} />
         </div>
       </div>
-      {#if previewUrl && type === 'image'}
-        <div class='row'><img src={previewUrl} alt='preview' class='preview'/></div>
+      {#if previewUrls.length && type === 'image'}
+        <div class='row previewList'>
+          {#each previewUrls as previewUrl, i (previewUrl)}
+            <img src={previewUrl} alt={`preview ${i + 1}`} class='preview'/>
+          {/each}
+        </div>
       {/if}
     {/if}
 
@@ -145,8 +148,13 @@
   center {
     margin-top: 20px;
   }
+  .previewList {
+    display: block;
+  }
   .preview {
     max-width: 100%;
+    display: block;
+    margin-bottom: 20px;
   }
   @media (max-width: 860px) {
     .row {
