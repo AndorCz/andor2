@@ -84,15 +84,6 @@
     } catch (_) {}
     return work.content
   }
-
-  function getPreviewImagePath (work) {
-    if (work.type !== 'image' || !work.content) { return work.content }
-    try {
-      const parsed = JSON.parse(work.content)
-      if (Array.isArray(parsed) && parsed.length) { return parsed[0] }
-    } catch (_) {}
-    return work.content
-  }
 </script>
 
 {#if showHeadline}
