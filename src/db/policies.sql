@@ -130,7 +130,7 @@ create policy "posts_select_policy" on public.posts
     -- User owns the post
     owner = (select auth.uid())
     -- User owns the character that made the post
-    OR is_players_character(owner)
+    OR owner in (select id from characters where player = (select auth.uid()))
     -- Global chat access
     OR thread = 1
     -- Player in solo game
@@ -142,8 +142,17 @@ create policy "posts_select_policy" on public.posts
     OR thread in (select discussion_thread from games where open_discussion = false and is_player(id))
     OR thread in (select game_thread from games where open_game = false and is_player(id))
     -- Storytellers in their games
-    OR thread in (select discussion_thread from games where is_storyteller(id))
-    OR thread in (select game_thread from games where is_storyteller(id))
+OR thread in (
+  select g.game_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+  union all
+  select g.discussion_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+)
     -- Open boards except banned users
     OR exists (select 1 from boards where boards.open = true AND boards.thread = posts.thread AND NOT ((select auth.uid()) = any (boards.bans)))
     -- Closed boards for members
@@ -158,7 +167,7 @@ create policy "posts_insert_policy" on public.posts
     -- User owns the post
     owner = (select auth.uid())
     -- User owns the character that made the post
-    OR is_players_character(owner)
+    OR owner in (select id from characters where player = (select auth.uid()))
     -- Global chat access
     OR thread = 1
     -- Player in solo game
@@ -166,8 +175,17 @@ create policy "posts_insert_policy" on public.posts
     -- Players can insert in board/work/game threads
     OR thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id))
     -- Storytellers in their games
-    OR thread in (select discussion_thread from games where is_storyteller(id))
-    OR thread in (select game_thread from games where is_storyteller(id))
+OR thread in (
+  select g.game_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+  union all
+  select g.discussion_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+)
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
     -- Work owners
@@ -180,12 +198,21 @@ create policy "posts_update_policy" on public.posts
     -- User owns the post (covers the "UPDATE for owners" policy)
     owner = (select auth.uid())
     -- User owns the character that made the post
-    OR is_players_character(owner)
+    OR owner in (select id from characters where player = (select auth.uid()))
     -- Player in solo game
     OR thread in (select thread from solo_games where player = (select auth.uid()))
     -- Storytellers in their games
-    OR thread in (select discussion_thread from games where is_storyteller(id))
-    OR thread in (select game_thread from games where is_storyteller(id))
+OR thread in (
+  select g.game_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+  union all
+  select g.discussion_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+)
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
     -- Work owners
@@ -202,8 +229,17 @@ create policy "posts_delete_policy" on public.posts
     -- Player in solo game
     OR thread in (select thread from solo_games where player = (select auth.uid()))
     -- Storytellers in their games
-    OR thread in (select discussion_thread from games where is_storyteller(id))
-    OR thread in (select game_thread from games where is_storyteller(id))
+OR thread in (
+  select g.game_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+  union all
+  select g.discussion_thread from games g
+  join characters c on c.game = g.id
+  where c.player = (select auth.uid())
+    and c.storyteller = true and c.accepted = true
+)
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
     -- Work owners
