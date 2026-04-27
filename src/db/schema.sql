@@ -335,8 +335,6 @@ create table poll_votes (
   constraint poll_votes_unique unique (poll_id, profile_id)
 );
 
-create index poll_votes_poll_id_idx on poll_votes (poll_id);
-
 create table reactions (
   item_id int4 not null,
   item_type text not null check (item_type in ('post', 'news')),
@@ -1791,6 +1789,59 @@ create or replace trigger clear_character_unreads_after_death after update of st
 -- Trigger to update profile last_activity on new post
 create or replace trigger posts_update_last_activity after insert on public.posts for each row execute function public.update_profile_last_activity_from_post();
 
+-- INDEXES ---------------------------------------------
+
+CREATE UNIQUE INDEX boards_name_key ON public.boards USING btree (name);
+CREATE UNIQUE INDEX boards_pkey ON public.boards USING btree (id);
+CREATE UNIQUE INDEX bookmarks_pkey ON public.bookmarks USING btree (id);
+CREATE UNIQUE INDEX unique_user_article ON public.bookmarks USING btree (user_id, work_id);
+CREATE UNIQUE INDEX unique_user_board ON public.bookmarks USING btree (user_id, board_id);
+CREATE UNIQUE INDEX unique_user_game ON public.bookmarks USING btree (user_id, game_id);
+CREATE UNIQUE INDEX unique_user_solo ON public.bookmarks USING btree (user_id, solo_id);
+CREATE UNIQUE INDEX characters_pkey ON public.characters USING btree (id);
+CREATE UNIQUE INDEX codex_pages_pkey ON public.codex_pages USING btree (id);
+CREATE UNIQUE INDEX codex_sections_pkey ON public.codex_sections USING btree (id);
+CREATE UNIQUE INDEX contacts_pkey ON public.contacts USING btree (owner, contact_user);
+CREATE UNIQUE INDEX games_name_key ON public.games USING btree (name);
+CREATE UNIQUE INDEX games_pkey ON public.games USING btree (id);
+CREATE INDEX idx_game_thread_id ON public.games USING btree (game_thread);
+CREATE UNIQUE INDEX maps_pkey ON public.maps USING btree (id);
+CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id);
+CREATE UNIQUE INDEX news_pkey ON public.news USING btree (id);
+CREATE UNIQUE INDEX npcs_pkey ON public.npcs USING btree (id);
+CREATE UNIQUE INDEX old_characters_pkey ON public.old_chars USING btree (id_char);
+CREATE UNIQUE INDEX old_games_pkey ON public.old_games USING btree (id_game);
+CREATE UNIQUE INDEX old_homepages_pkey ON public.old_homepages USING btree (id);
+CREATE UNIQUE INDEX old_posts_pkey ON public.old_posts USING btree (id_post);
+CREATE UNIQUE INDEX old_users_id_key ON public.old_users USING btree (id);
+CREATE UNIQUE INDEX old_users_pkey ON public.old_users USING btree (id);
+CREATE UNIQUE INDEX old_works_id_key ON public.old_works USING btree (id);
+CREATE UNIQUE INDEX old_works_pkey ON public.old_works USING btree (id);
+CREATE UNIQUE INDEX poll_votes_pkey ON public.poll_votes USING btree (id);
+CREATE INDEX poll_votes_poll_id_idx ON public.poll_votes USING btree (poll_id);
+CREATE UNIQUE INDEX poll_votes_unique ON public.poll_votes USING btree (poll_id, profile_id);
+CREATE INDEX idx_posts_audience ON public.posts USING gin (audience);
+CREATE INDEX idx_posts_owner ON public.posts USING btree (owner);
+CREATE INDEX idx_posts_thread ON public.posts USING btree (thread);
+CREATE UNIQUE INDEX posts_pkey ON public.posts USING btree (id);
+CREATE UNIQUE INDEX profiles_name_key ON public.profiles USING btree (name);
+CREATE UNIQUE INDEX profiles_old_id_key ON public.profiles USING btree (old_id);
+CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id);
+CREATE UNIQUE INDEX reactions_post_id_key ON public.reactions USING btree (item_id);
+CREATE UNIQUE INDEX unique_item ON public.reactions USING btree (item_id, item_type);
+CREATE UNIQUE INDEX read_character_conversations_pkey ON public.read_character_conversations USING btree (reader_character_id, peer_character_id);
+CREATE UNIQUE INDEX read_threads_pkey ON public.read_threads USING btree (user_id, thread_id);
+CREATE UNIQUE INDEX read_user_conversations_pkey ON public.read_user_conversations USING btree (reader_user_id, peer_user_id);
+CREATE UNIQUE INDEX solo_concepts_pkey ON public.solo_concepts USING btree (id);
+CREATE UNIQUE INDEX solo_games_pkey ON public.solo_games USING btree (id);
+CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id);
+CREATE UNIQUE INDEX subscriptions_user_game_unique ON public.subscriptions USING btree (user_id, game);
+CREATE UNIQUE INDEX threads_pkey ON public.threads USING btree (id);
+CREATE UNIQUE INDEX unread_character_message_counts_pkey ON public.unread_character_message_counts USING btree (recipient_character_id, sender_character_id);
+CREATE UNIQUE INDEX unique_user_thread ON public.unread_threads USING btree (user_id, thread_id);
+CREATE UNIQUE INDEX unread_threads_pkey ON public.unread_threads USING btree (id);
+CREATE UNIQUE INDEX unread_user_message_counts_pkey ON public.unread_user_message_counts USING btree (recipient_user_id, sender_user_id);
+CREATE UNIQUE INDEX articles_pkey ON public.works USING btree (id);
 
 -- WEBHOOKS --------------------------------------------
 
