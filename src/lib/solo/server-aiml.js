@@ -6,6 +6,12 @@ const models = {
   'bytedance/seedream-3.0': { minWidth: 512, minHeight: 512, cellSize: 32, extras: { guidance_scale: 8 } }
 }
 
+function getErrorMessage (error) {
+  if (!error) return 'Neznámá chyba'
+  if (typeof error === 'string') return error
+  return error.message || JSON.stringify(error)
+}
+
 export async function generateImage (env, prompt, imageType) {
   console.log(`Generating '${imageType}' with prompt:`, prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
@@ -63,7 +69,7 @@ export async function generateImage (env, prompt, imageType) {
     // crop to exact size
     if (width !== sizes.width || height !== sizes.height) {
       const { data, error } = await cropImageBackEnd(imageBuffer, sizes.width, sizes.height)
-      return { data, error }
+      return error ? { error: { message: getErrorMessage(error) } } : { data }
     } else {
       return { data: imageBuffer }
     }
@@ -73,6 +79,6 @@ export async function generateImage (env, prompt, imageType) {
       return { error: { message: 'Generování obrázku vypršel čas (120s)' } }
     }
     console.error('Error generating image:', error)
-    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
+    return { error: { message: 'Chyba při generování obrázku: ' + getErrorMessage(error) } }
   }
 }

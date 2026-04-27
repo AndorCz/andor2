@@ -9,7 +9,7 @@ export async function cropImageBackEnd (buffer, w, h) {
     return { data: await image.getBuffer('image/jpeg') }
   } catch (error) {
     console.error('Error cropping image:', error)
-    return { error: 'Chyba při zpracování obrázku' }
+    return { error: { message: 'Chyba při zpracování obrázku: ' + (error.message || String(error)) } }
   }
 }
 

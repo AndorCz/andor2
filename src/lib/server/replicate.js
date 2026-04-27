@@ -17,6 +17,12 @@ export const imageSizes = {
   map: { width: 1024, height: 1024 }
 }
 
+function getErrorMessage (error) {
+  if (!error) return 'Neznámá chyba'
+  if (typeof error === 'string') return error
+  return error.message || JSON.stringify(error)
+}
+
 export async function generateImage (env, prompt, imageType, useModel = defaultModel) {
   console.log(`Generating '${imageType}' with prompt:`, prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
@@ -46,14 +52,14 @@ export async function generateImage (env, prompt, imageType, useModel = defaultM
     const width = imageSizes[imageType].width
     const height = imageSizes[imageType].height
     const { data, error } = await cropImageBackEnd(imageBuffer, width, height)
-    return { data, error }
+    return error ? { error: { message: getErrorMessage(error) } } : { data }
   } catch (error) {
     if (error.name === 'AbortError') {
       console.error('Image generation timed out')
       return { error: { message: 'Generování obrázku vypršel čas (120s)' } }
     }
     console.error('Error generating image:', error)
-    return { error: { message: 'Chyba při generování obrázku: ' + error.message } }
+    return { error: { message: 'Chyba při generování obrázku: ' + getErrorMessage(error) } }
   }
 }
 

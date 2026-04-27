@@ -4,6 +4,12 @@ import { getStamp, getImageUrl } from '@lib/utils'
 import { getAI, getStorytellerParams } from '@lib/solo/server-gemini'
 import { getPrompts, assistantParams, getContext } from '@lib/solo/solo'
 
+function getErrorMessage (error) {
+  if (!error) return 'Neznámá chyba'
+  if (typeof error === 'string') return error
+  return error.message || JSON.stringify(error)
+}
+
 export const GET = async ({ request, locals, redirect }) => {
   let game = null
   try {
@@ -48,7 +54,7 @@ export const GET = async ({ request, locals, redirect }) => {
 
     // Generate character portrait image
     const { data: portraitImage, error: portraitError } = await generateImage(locals.runtime.env, portraitPrompt, 'character')
-    if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + portraitError.message) }
+    if (portraitError) { throw new Error('Chyba při generování portrétu postavy: ' + getErrorMessage(portraitError)) }
     if (portraitImage) {
       const { error: uploadError } = await locals.supabase.storage.from('portraits').upload(`${characterData.id}.jpg`, portraitImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: portraitPrompt } })
       if (uploadError) { throw new Error('Chyba při nahrávání portrétu: ' + uploadError.message) }
@@ -76,7 +82,7 @@ export const GET = async ({ request, locals, redirect }) => {
       firstImagePrompt = firstImagePromptResponse.text
     }
     const { data: sceneImage, error: sceneImageError } = await generateImage(locals.runtime.env, firstImagePrompt, 'scene')
-    if (sceneImageError) { throw new Error(sceneImageError.message) }
+    if (sceneImageError) { throw new Error(getErrorMessage(sceneImageError)) }
     if (sceneImage) {
       const { data: uploadData, error: uploadError } = await locals.supabase.storage.from('scenes').upload(`${gameData.id}/${new Date().getTime()}.jpg`, sceneImage, { contentType: 'image/jpg', upsert: true, metadata: { prompt: firstImagePrompt } })
       if (uploadError) { throw new Error(uploadError.message) }
@@ -95,6 +101,6 @@ export const GET = async ({ request, locals, redirect }) => {
   } catch (error) {
     console.error('API Error in creating new game:', error)
     if (game) { await locals.supabase.from('solo_games').delete().eq('id', game.id) } // clean up
-    return new Response(JSON.stringify({ error: { message: 'Chyba při vytváření nové hry: ' + error.message } }), { status: 500 })
+    return new Response(JSON.stringify({ error: { message: 'Chyba při vytváření nové hry: ' + getErrorMessage(error) } }), { status: 500 })
   }
 }

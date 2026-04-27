@@ -110,12 +110,18 @@
     window.location.href = `${window.location.pathname}?settings=true`
   }
 
+  function getErrorMessage (error) {
+    if (!error) return 'Neznámá chyba'
+    if (typeof error === 'string') return error
+    return error.message || JSON.stringify(error)
+  }
+
   async function startGame () {
     creatingGame = true
     try {
       const response = await fetch(`/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`, { method: 'GET' })
       const data = await response.json()
-      if (!response.ok || data.error) { throw new Error(data.error.message) }
+      if (!response.ok || data.error) { throw new Error(getErrorMessage(data.error)) }
       if (data.success) {
         showSuccess('Hra byla úspěšně vytvořena')
         window.location.href = `/solo/game/${data.gameId}`
