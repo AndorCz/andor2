@@ -1,14 +1,7 @@
-import * as JimpModule from 'jimp'
-
-function getJimp () {
-  const Jimp = JimpModule?.Jimp || JimpModule?.default?.Jimp || JimpModule?.default
-  if (!Jimp?.read) { throw new Error('Jimp is not available in this runtime') }
-  return Jimp
-}
+import { Jimp } from 'jimp'
 
 export async function cropImageBackEnd (buffer, w, h) {
   try {
-    const Jimp = getJimp()
     const image = await Jimp.read(buffer)
     image.cover({ w, h }) // resize/crop to header size (centered)
     return { data: await image.getBuffer('image/jpeg') }

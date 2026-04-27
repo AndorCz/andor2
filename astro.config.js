@@ -3,7 +3,10 @@ import svelte from '@astrojs/svelte'
 import cloudflare from '@astrojs/cloudflare'
 import { loadEnv } from 'vite'
 import { defineConfig } from 'astro/config'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
+const rootDir = dirname(fileURLToPath(import.meta.url))
 const env = loadEnv('', process.cwd(), '')
 const SENTRY_AUTH_TOKEN = env.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN
 
@@ -33,6 +36,11 @@ export default defineConfig({
     */
   }),
   vite: {
+    resolve: {
+      alias: [
+        { find: /^jimp$/, replacement: resolve(rootDir, 'node_modules/jimp/dist/esm/index.js') }
+      ]
+    },
     build: {
       minify: false
     },
