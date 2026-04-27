@@ -522,32 +522,64 @@ create or replace view discussion_posts_owner as
   order by p.created_at desc;
 
 
-create or replace view posts_owner as
-  select
-    p.*,
-    case
-      when p.owner_type = 'user' then profiles.name
-      when p.owner_type = 'character' then characters.name
-      when p.owner_type = 'npc' then npcs.name
-    end as owner_name,
-    case
-      when p.owner_type = 'user' then profiles.portrait
-      when p.owner_type = 'character' then characters.portrait
-      when p.owner_type = 'npc' then npcs.portrait
-    end as owner_portrait,
-    get_character_names (p.audience) as audience_names,
-    reactions.*,
-    case
-      when p.owner_type = 'user' then profiles.reward_icon
-      else null
-    end as owner_reward_icon
-  from
-    posts p
-    left join profiles on p.owner = profiles.id and p.owner_type = 'user'
-    left join characters on p.owner = characters.id and p.owner_type = 'character'
-    left join reactions on p.id = reactions.item_id and reactions.item_type = 'post'
-  left join npcs on p.owner = npcs.id and p.owner_type = 'npc'
-  order by p.created_at desc;
+create view public.posts_owner as
+select
+  p.id,
+  p.thread,
+  p.owner,
+  p.owner_type,
+  p.content,
+  p.audience,
+  p.note,
+  p.moderated,
+  p.dice,
+  p.created_at,
+  p.important,
+  p.updated_at,
+  p.post_type,
+  p.identifier,
+  p.illustration,
+  p.nsfw,
+  case
+    when p.owner_type = 'user'::text then profiles.name::text
+    when p.owner_type = 'character'::text then characters.name
+    when p.owner_type = 'npc'::text then npcs.name
+    else null::text
+  end as owner_name,
+  case
+    when p.owner_type = 'user'::text then profiles.portrait
+    when p.owner_type = 'character'::text then characters.portrait
+    when p.owner_type = 'npc'::text then npcs.portrait
+    else null::text
+  end as owner_portrait,
+(
+  select array_agg(c.name order by c.name)
+  from unnest(p.audience) as aid
+  join characters c on c.id = aid
+) as audience_names,
+  reactions.item_id,
+  reactions.thumbs,
+  reactions.frowns,
+  reactions.shocks,
+  reactions.hearts,
+  reactions.laughs,
+  reactions.item_type,
+  case
+    when p.owner_type = 'user'::text then profiles.reward_icon
+    else null::text
+  end as owner_reward_icon
+from
+  posts p
+  left join profiles on p.owner = profiles.id
+  and p.owner_type = 'user'::text
+  left join characters on p.owner = characters.id
+  and p.owner_type = 'character'::text
+  left join reactions on p.id = reactions.item_id
+  and reactions.item_type = 'post'::text
+  left join npcs on p.owner = npcs.id
+  and p.owner_type = 'npc'::text
+order by
+  p.created_at desc;
 
 
 create or replace view game_posts_owner as
@@ -1842,6 +1874,10 @@ CREATE UNIQUE INDEX unique_user_thread ON public.unread_threads USING btree (use
 CREATE UNIQUE INDEX unread_threads_pkey ON public.unread_threads USING btree (id);
 CREATE UNIQUE INDEX unread_user_message_counts_pkey ON public.unread_user_message_counts USING btree (recipient_user_id, sender_user_id);
 CREATE UNIQUE INDEX articles_pkey ON public.works USING btree (id);
+CREATE index idx_characters_player ON characters (player);
+CREATE index idx_characters_game ON characters (game);
+CREATE index idx_characters_storyteller ON characters (game, player) WHERE storyteller = true AND accepted = true;
+CREATE index idx_characters_player_storyteller ON characters (player, storyteller) WHERE storyteller = true;
 
 -- WEBHOOKS --------------------------------------------
 
