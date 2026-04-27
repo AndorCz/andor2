@@ -5,30 +5,44 @@
   const { supabase, user } = Astro.locals
 
   const userId = Astro.url.searchParams.get('id')
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
-  if (error) { console.error('error loading user profile', error) }
+  let data = null
 
-  // load user's games
-  const { data: games, error: gamesError } = await supabase.from('game_list').select('*').eq('owner', userId)
-  if (gamesError) { console.error('error loading user games', gamesError) }
-  data.games = games
+  if (userId) {
+    const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+    if (error) { console.error('error loading user profile', error) }
+    data = profileData
+  }
 
-  // load user's concepts
-  const { data: concepts, error: conceptsError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('author', userId)
-  if (conceptsError) { console.error('error loading user concepts', conceptsError) }
-  data.concepts = concepts
+  if (!data) {
+    Astro.response.status = 404
+  } else {
+    // load user's games
+    const { data: games, error: gamesError } = await supabase.from('game_list').select('*').eq('owner', userId)
+    if (gamesError) { console.error('error loading user games', gamesError) }
+    data.games = games || []
 
-  // load user's boards
-  const { data: boards, error: boardsError } = await supabase.from('board_list').select('*').eq('owner', userId)
-  if (boardsError) { console.error('error loading user boards', boardsError) }
-  data.boards = boards
+    // load user's concepts
+    const { data: concepts, error: conceptsError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').eq('author', userId)
+    if (conceptsError) { console.error('error loading user concepts', conceptsError) }
+    data.concepts = concepts || []
 
-  // load user's works
-  const { data: works, error: worksError } = await supabase.from('work_list').select('*').eq('owner', userId).eq('published', true)
-  if (worksError) { console.error('error loading user works', worksError) }
-  data.works = works
+    // load user's boards
+    const { data: boards, error: boardsError } = await supabase.from('board_list').select('*').eq('owner', userId)
+    if (boardsError) { console.error('error loading user boards', boardsError) }
+    data.boards = boards || []
+
+    // load user's works
+    const { data: works, error: worksError } = await supabase.from('work_list').select('*').eq('owner', userId).eq('published', true)
+    if (worksError) { console.error('error loading user works', worksError) }
+    data.works = works || []
+  }
 ---
 
-<Layout title={data.name}>
-  <Profile {data} {user} client:only='svelte' />
+<Layout title={data?.name || 'Uživatel nenalezen'}>
+  {data
+    ? <Profile {data} {user} client:only='svelte' />
+    : <>
+    <h1>Uživatel nenalezen</h1>
+    <p>Požadovaný profil neexistuje nebo už byl odstraněn.</p>
+    </>}
 </Layout>
