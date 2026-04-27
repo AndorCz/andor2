@@ -1,10 +1,15 @@
-import { Jimp } from 'jimp'
+import sharp from 'sharp'
 
 export async function cropImageBackEnd (buffer, w, h) {
   try {
-    const image = await Jimp.read(buffer)
-    image.cover({ w, h }) // resize/crop to header size (centered)
-    return { data: await image.getBuffer('image/jpeg') }
+    const data = await sharp(buffer)
+      .resize(w, h, {
+        fit: 'cover',
+        position: 'center'
+      })
+      .jpeg({ quality: 90 })
+      .toBuffer()
+    return { data }
   } catch (error) {
     console.error('Error cropping image:', error)
     return { error: { message: 'Chyba při zpracování obrázku: ' + (error.message || String(error)) } }
