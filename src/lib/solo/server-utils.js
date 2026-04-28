@@ -1,11 +1,7 @@
-async function getSharp () {
-  const module = await import('sharp')
-  return module.default || module
-}
+import sharp from 'sharp'
 
 export async function cropImageBackEnd (buffer, w, h) {
   try {
-    const sharp = await getSharp()
     const data = await sharp(buffer)
       .resize(w, h, {
         fit: 'cover',
