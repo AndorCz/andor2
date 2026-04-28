@@ -1,15 +1,10 @@
-import sharp from 'sharp'
+import { Image } from 'imagescript'
 
 export async function cropImageBackEnd (buffer, w, h) {
   try {
-    const data = await sharp(buffer)
-      .resize(w, h, {
-        fit: 'cover',
-        position: 'center'
-      })
-      .jpeg({ quality: 90 })
-      .toBuffer()
-    return { data }
+    const image = await Image.decode(buffer)
+    const data = await image.cover(w, h).encodeJPEG(90)
+    return { data: new Blob([data], { type: 'image/jpeg' }) }
   } catch (error) {
     console.error('Error cropping image:', error)
     return { error: { message: 'Chyba při zpracování obrázku: ' + (error.message || String(error)) } }

@@ -36,7 +36,7 @@ export async function generateImage (env, prompt, imageType, useModel = defaultM
 
     // run the model
     const output = await replicate.run(model.id, {
-      input: { prompt, aspect_ratio: model.aspect[imageType] || '1:1' }
+      input: { prompt, aspect_ratio: model.aspect[imageType] || '1:1', output_format: 'jpg' }
     })
     const url = output.url()
     if (!url) { throw new Error('Nevygenerován žádný obrázek') }

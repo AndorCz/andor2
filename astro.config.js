@@ -37,8 +37,7 @@ export default defineConfig({
       minify: false
     },
     ssr: {
-      external: ['node:buffer'],
-      noExternal: ['sharp']
+      external: ['node:buffer']
     }
   },
   prefetch: false
