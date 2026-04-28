@@ -10,15 +10,27 @@ function getErrorMessage (error) {
   return error.message || JSON.stringify(error)
 }
 
-export const GET = async ({ request, locals, redirect }) => {
+function jsonResponse (body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  })
+}
+
+function errorResponse (message, status = 500) {
+  return jsonResponse({ error: { message } }, status)
+}
+
+export const GET = async ({ request, locals }) => {
   let game = null
   try {
     const ai = getAI(locals.runtime.env)
     const { searchParams } = new URL(request.url)
     const conceptId = searchParams.get('conceptId')
     const characterName = searchParams.get('characterName')
-    const referer = request.headers.get('referer')
-    if (!locals.user.id || !conceptId || !characterName) { return redirect(referer + '?toastType=error&toastText=' + encodeURIComponent('Chybí přihlášení, data o konceptu nebo jméno postavy')) }
+    if (!locals.user?.id) { return errorResponse('Chybí přihlášení', 401) }
+    if (!conceptId) { return errorResponse('Chybí id konceptu', 400) }
+    if (!characterName) { return errorResponse('Chybí jméno postavy', 400) }
 
     // Check if the concept exists
     const { data: concept, error: conceptError } = await locals.supabase.from('solo_concepts').select('*').eq('id', conceptId).single()
@@ -97,10 +109,14 @@ export const GET = async ({ request, locals, redirect }) => {
     if (addPostError) { throw new Error(addPostError.message) }
 
     // Return success object
-    return new Response(JSON.stringify({ success: true, gameId: gameData.id }), { status: 200 })
+    return jsonResponse({ success: true, gameId: gameData.id })
   } catch (error) {
     console.error('API Error in creating new game:', error)
-    if (game) { await locals.supabase.from('solo_games').delete().eq('id', game.id) } // clean up
-    return new Response(JSON.stringify({ error: { message: 'Chyba při vytváření nové hry: ' + getErrorMessage(error) } }), { status: 500 })
+    let cleanupMessage = ''
+    if (game) {
+      const { error: cleanupError } = await locals.supabase.from('solo_games').delete().eq('id', game.id)
+      if (cleanupError) { cleanupMessage = `; cleanup selhal: ${cleanupError.message}` }
+    }
+    return errorResponse('Chyba při vytváření nové hry: ' + getErrorMessage(error) + cleanupMessage, 500)
   }
 }

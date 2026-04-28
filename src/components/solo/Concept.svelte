@@ -120,7 +120,13 @@
     creatingGame = true
     try {
       const response = await fetch(`/api/solo/createGame?conceptId=${concept.id}&characterName=${encodeURIComponent(selectedName)}`, { method: 'GET' })
-      const data = await response.json()
+      const body = await response.text()
+      let data = {}
+      try {
+        data = body ? JSON.parse(body) : {}
+      } catch {
+        throw new Error(`API vrátilo nečitelnou odpověď (${response.status}): ${body.slice(0, 300)}`)
+      }
       if (!response.ok || data.error) { throw new Error(getErrorMessage(data.error)) }
       if (data.success) {
         showSuccess('Hra byla úspěšně vytvořena')
