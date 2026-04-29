@@ -1,7 +1,12 @@
-import { Image } from 'imagescript'
+async function getImageScript () {
+  const module = await import('imagescript')
+  return module.Image || module.default?.Image || module.default
+}
 
 export async function cropImageBackEnd (buffer, w, h) {
   try {
+    const Image = await getImageScript()
+    if (!Image?.decode) { throw new Error('ImageScript decode není dostupný v tomto runtime') }
     const image = await Image.decode(buffer)
     const data = await image.cover(w, h).encodeJPEG(90)
     return { data: new Blob([data], { type: 'image/jpeg' }) }
