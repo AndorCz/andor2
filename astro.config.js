@@ -37,7 +37,8 @@ export default defineConfig({
       minify: false
     },
     ssr: {
-      external: ['node:buffer']
+      external: ['node:buffer'],
+      noExternal: ['@cf-wasm/photon']
     }
   },
   prefetch: false

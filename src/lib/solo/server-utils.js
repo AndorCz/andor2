@@ -1,14 +1,6 @@
-async function getPhoton () {
-  const module = await import('@cf-wasm/photon')
-  const PhotonImage = module.PhotonImage
-  const crop = module.crop
-  const resize = module.resize
-  const samplingFilter = module.SamplingFilter?.Lanczos3 || 5
-  if (!PhotonImage?.new_from_byteslice || !crop || !resize) {
-    throw new Error('Photon API není dostupné v tomto runtime')
-  }
-  return { PhotonImage, crop, resize, samplingFilter }
-}
+import { PhotonImage, SamplingFilter, crop, resize } from '@cf-wasm/photon'
+
+const samplingFilter = SamplingFilter?.Lanczos3 || 5
 
 function getCoverCrop (sourceWidth, sourceHeight, targetWidth, targetHeight) {
   const sourceAspect = sourceWidth / sourceHeight
@@ -46,7 +38,9 @@ export async function cropImageBackEnd (buffer, w, h) {
   let croppedImage
   let outputImage
   try {
-    const { PhotonImage, crop, resize, samplingFilter } = await getPhoton()
+    if (!PhotonImage?.new_from_byteslice || !crop || !resize) {
+      throw new Error('Photon API není dostupné v tomto runtime')
+    }
     inputImage = PhotonImage.new_from_byteslice(await toUint8Array(buffer))
     const sourceWidth = inputImage.get_width()
     const sourceHeight = inputImage.get_height()
