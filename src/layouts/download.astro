@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer'
 
 const { pathname } = new URL(Astro.url, Astro.site)
 const { title, headerStatic, headerStorage } = Astro.props
+const ogImage = 'https://andor2.cz/header.jpg'
 
 let headerImage
 try {
@@ -28,6 +29,7 @@ const obsidian = await fetch('https://andor2.cz/css/obsidian.css').then((res) =>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width' />
     <meta name='description' content='Andor2.cz ― Dračí Doupě online, TTRPG, VTT, RPG hry online, Dungeons & Dragons, D&D, DnD, Dračí Hlídka, Vampire, Call of Cthulhu, Pathfinder, Shadowrun, One Ring, Cyberpunk, Fate, Star Wars, Warhammer, Pán Prstenů' />
+    <meta property='og:image' content={ogImage} />
 
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
