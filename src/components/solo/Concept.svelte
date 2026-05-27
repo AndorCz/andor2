@@ -18,6 +18,7 @@
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
   let selectedScore = $state(0)
   let savingScore = $state(false)
+  const userScore = $derived(getUserScore())
 
   onMount(async () => {
     if (user.id) {
@@ -200,8 +201,6 @@
     }
   }
 </script>
-
-{@const userScore = getUserScore()}
 
 {#if concept.generating.length > 0 || concept.generation_error}
   <h1>{concept.name}</h1>
