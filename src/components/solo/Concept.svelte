@@ -9,6 +9,7 @@
   import { illustrationStyles } from '@lib/solo/solo'
   import { supabase, handleError } from '@lib/database-browser'
   import Loading from '@components/common/Loading.svelte'
+  import StarRatingInput from '@components/solo/StarRatingInput.svelte'
 
   let { concept = $bindable(), user } = $props()
 
@@ -16,6 +17,8 @@
   let creatingGame = $state(false)
   let retryingGeneration = $state(false)
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
+  let savingScore = $state(false)
+  const userScore = $derived(getUserScore())
 
   onMount(async () => {
     if (user.id) {
@@ -114,6 +117,37 @@
     if (!error) return 'Neznámá chyba'
     if (typeof error === 'string') return error
     return error.message || JSON.stringify(error)
+  }
+
+  function getUserScore () {
+    const scores = concept.scores || {}
+    if (!user?.id || !(user.id in scores)) { return 0 }
+    return Number(scores[user.id]) || 0
+  }
+
+  async function setScore (score) {
+    if (!user?.id || savingScore) { return }
+    savingScore = true
+    try {
+      const scores = { ...(concept.scores || {}) }
+      scores[user.id] = score
+      const values = Object.values(scores).map(value => Number(value)).filter(value => Number.isFinite(value) && value >= 1 && value <= 5)
+      const scoreCount = values.length
+      const scoreTotal = values.reduce((total, value) => total + value, 0)
+      const scoreAvg = scoreCount > 0 ? Number((scoreTotal / scoreCount).toFixed(2)) : 0
+      const { error } = await supabase.from('solo_concepts').update({ scores, score_count: scoreCount, score_total: scoreTotal, score_avg: scoreAvg }).eq('id', concept.id)
+      if (error) { throw error }
+      concept.scores = scores
+      concept.score_count = scoreCount
+      concept.score_total = scoreTotal
+      concept.score_avg = scoreAvg
+      concept = { ...concept }
+      showSuccess('Hodnocení bylo uloženo')
+    } catch (error) {
+      handleError(error)
+    } finally {
+      savingScore = false
+    }
   }
 
   async function startGame () {
@@ -291,9 +325,16 @@
         </li>
         <li><span class='label'>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
         <li><span class='label'>Počet her:</span> {concept.game_count}</li>
+        <li><span class='label'>Hodnocení:</span> {Math.round(Number(concept.score_avg || 0))} / 5 ({concept.score_count || 0}×)</li>
         <li><span class='label'>Tagy:</span> {getTagNames(concept.tags)}</li>
         <li><span class='label'>Styl:</span> {illustrationStyles.find(style => style.value === concept.illustration_style)?.label}</li>
       </ul>
+      {#if user.id}
+        <div class='rating'>
+          <h3>Tvoje hodnocení</h3>
+          <StarRatingInput value={userScore} onChange={setScore} disabled={savingScore} />
+        </div>
+      {/if}
     </aside>
   </div>
 {/if}
@@ -327,6 +368,10 @@
         align-items: center;
         gap: 10px;
       }
+    .rating h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
     /* generating */
     .row {
       display: flex;

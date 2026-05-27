@@ -6,7 +6,7 @@
 
   const { user = {}, concepts = [], page = 0, maxPage = 0, showHeadline = false, searchTerm = '' } = $props()
 
-  let sort = $state('games')
+  let sort = $state('rating')
   let searchValue = $state(searchTerm || '')
   const showClearButton = $derived(Boolean(searchTerm) && searchValue.trim() === searchTerm)
 
@@ -79,6 +79,7 @@
           {/if}
         </div>
         <select bind:value={sort} onchange={setSort}>
+          <option value='rating'>Dle hodnocení</option>
           <option value='games'>Dle popularity</option>
           <option value='new'>Dle data</option>
           <option value='name'>Dle názvu</option>
@@ -105,6 +106,9 @@
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
           <div class='games' title='počet her' use:tooltip>{concept.game_count}</div>
+          {#if (concept.score_count || 0) > 0}
+            <div class='rating' title='hodnocení' use:tooltip>{Math.round(Number(concept.score_avg || 0))}★</div>
+          {/if}
           <div class='tags' title='tagy' use:tooltip>{getTags(concept)}</div>
           <a href='./user?id={concept.author.id}' class='user author' title='autor' use:tooltip>
             {concept.author.name}
