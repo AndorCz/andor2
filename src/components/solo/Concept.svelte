@@ -16,6 +16,8 @@
   let creatingGame = $state(false)
   let retryingGeneration = $state(false)
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
+  let selectedScore = $state(0)
+  let savingScore = $state(false)
 
   onMount(async () => {
     if (user.id) {
@@ -116,6 +118,38 @@
     return error.message || JSON.stringify(error)
   }
 
+  function getUserScore () {
+    const scores = concept.scores || {}
+    if (!user?.id || !(user.id in scores)) { return 0 }
+    return Number(scores[user.id]) || 0
+  }
+
+  async function setScore (score) {
+    if (!user?.id || savingScore) { return }
+    savingScore = true
+    try {
+      const scores = { ...(concept.scores || {}) }
+      scores[user.id] = score
+      const values = Object.values(scores).map(value => Number(value)).filter(value => Number.isFinite(value) && value >= 1 && value <= 5)
+      const scoreCount = values.length
+      const scoreTotal = values.reduce((total, value) => total + value, 0)
+      const scoreAvg = scoreCount > 0 ? Number((scoreTotal / scoreCount).toFixed(2)) : 0
+      const { error } = await supabase.from('solo_concepts').update({ scores, score_count: scoreCount, score_total: scoreTotal, score_avg: scoreAvg }).eq('id', concept.id)
+      if (error) { throw error }
+      concept.scores = scores
+      concept.score_count = scoreCount
+      concept.score_total = scoreTotal
+      concept.score_avg = scoreAvg
+      selectedScore = score
+      concept = { ...concept }
+      showSuccess('Hodnocení bylo uloženo')
+    } catch (error) {
+      handleError(error)
+    } finally {
+      savingScore = false
+    }
+  }
+
   async function startGame () {
     creatingGame = true
     try {
@@ -166,6 +200,8 @@
     }
   }
 </script>
+
+{@const userScore = getUserScore()}
 
 {#if concept.generating.length > 0 || concept.generation_error}
   <h1>{concept.name}</h1>
@@ -291,9 +327,20 @@
         </li>
         <li><span class='label'>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
         <li><span class='label'>Počet her:</span> {concept.game_count}</li>
+        <li><span class='label'>Hodnocení:</span> {Number(concept.score_avg || 0).toFixed(2)} / 5 ({concept.score_count || 0}×)</li>
         <li><span class='label'>Tagy:</span> {getTagNames(concept.tags)}</li>
         <li><span class='label'>Styl:</span> {illustrationStyles.find(style => style.value === concept.illustration_style)?.label}</li>
       </ul>
+      {#if user.id}
+        <div class='rating'>
+          <h3>Tvoje hodnocení</h3>
+          <div class='stars'>
+            {#each [1, 2, 3, 4, 5] as score (score)}
+              <button class='material square {score <= (selectedScore || userScore) ? "active" : ""}' title={`Ohodnotit ${score} hvězd`} onclick={() => setScore(score)} disabled={savingScore}>star</button>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </aside>
   </div>
 {/if}
@@ -326,6 +373,20 @@
         display: flex;
         align-items: center;
         gap: 10px;
+      }
+    .rating h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .stars {
+      display: flex;
+      gap: 6px;
+    }
+      .stars button {
+        color: var(--dim);
+      }
+      .stars button.active {
+        color: #f0b429;
       }
     /* generating */
     .row {

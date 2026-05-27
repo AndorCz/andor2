@@ -26,7 +26,7 @@ let soloMaxPage = 0
 if (Number.isNaN(soloPage) || soloPage < 0) { soloPage = 0 }
 
 if (section === 'solo') {
-  const sort = Astro.url.searchParams.get('sort') || 'popular'
+  const sort = Astro.url.searchParams.get('sort') || 'rating'
 
   function createBaseQuery () {
     return supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)', { count: 'exact' }).match({ published: true })
@@ -37,8 +37,9 @@ if (section === 'solo') {
       case 'name': return query.order('name')
       case 'new': return query.order('created_at', { ascending: false })
       case 'games': return query.order('game_count', { ascending: false })
+      case 'rating': return query.order('score_avg', { ascending: false }).order('score_count', { ascending: false }).order('created_at', { ascending: false })
       case 'author': return query.order('author')
-      default: return query.order('game_count', { ascending: false })
+      default: return query.order('score_avg', { ascending: false }).order('score_count', { ascending: false }).order('created_at', { ascending: false })
     }
   }
 
