@@ -9,6 +9,7 @@
   import { illustrationStyles } from '@lib/solo/solo'
   import { supabase, handleError } from '@lib/database-browser'
   import Loading from '@components/common/Loading.svelte'
+  import StarRatingInput from '@components/solo/StarRatingInput.svelte'
 
   let { concept = $bindable(), user } = $props()
 
@@ -16,7 +17,6 @@
   let creatingGame = $state(false)
   let retryingGeneration = $state(false)
   let selectedName = $state(isFilledArray(concept.protagonist_names) ? concept.protagonist_names[0] : '')
-  let selectedScore = $state(0)
   let savingScore = $state(false)
   const userScore = $derived(getUserScore())
 
@@ -141,7 +141,6 @@
       concept.score_count = scoreCount
       concept.score_total = scoreTotal
       concept.score_avg = scoreAvg
-      selectedScore = score
       concept = { ...concept }
       showSuccess('Hodnocení bylo uloženo')
     } catch (error) {
@@ -326,18 +325,14 @@
         </li>
         <li><span class='label'>Vytvořeno:</span> {new Date(concept.created_at).toLocaleDateString('cs-CZ')}</li>
         <li><span class='label'>Počet her:</span> {concept.game_count}</li>
-        <li><span class='label'>Hodnocení:</span> {Number(concept.score_avg || 0).toFixed(2)} / 5 ({concept.score_count || 0}×)</li>
+        <li><span class='label'>Hodnocení:</span> {Math.round(Number(concept.score_avg || 0))} / 5 ({concept.score_count || 0}×)</li>
         <li><span class='label'>Tagy:</span> {getTagNames(concept.tags)}</li>
         <li><span class='label'>Styl:</span> {illustrationStyles.find(style => style.value === concept.illustration_style)?.label}</li>
       </ul>
       {#if user.id}
         <div class='rating'>
           <h3>Tvoje hodnocení</h3>
-          <div class='stars'>
-            {#each [1, 2, 3, 4, 5] as score (score)}
-              <button class='material square {score <= (selectedScore || userScore) ? "active" : ""}' title={`Ohodnotit ${score} hvězd`} onclick={() => setScore(score)} disabled={savingScore}>star</button>
-            {/each}
-          </div>
+          <StarRatingInput value={userScore} onChange={setScore} disabled={savingScore} />
         </div>
       {/if}
     </aside>
@@ -377,16 +372,6 @@
       margin-top: 20px;
       margin-bottom: 10px;
     }
-    .stars {
-      display: flex;
-      gap: 6px;
-    }
-      .stars button {
-        color: var(--dim);
-      }
-      .stars button.active {
-        color: #f0b429;
-      }
     /* generating */
     .row {
       display: flex;

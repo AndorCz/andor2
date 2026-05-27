@@ -106,7 +106,7 @@
         <div class='annotation'>{concept.annotation || ''}</div>
         <div class='meta'>
           <div class='games' title='počet her' use:tooltip>{concept.game_count}</div>
-          <div class='rating' title='hodnocení' use:tooltip>{Number(concept.score_avg || 0).toFixed(2)}★</div>
+          <div class='rating' title='hodnocení' use:tooltip>{Math.round(Number(concept.score_avg || 0))}★</div>
           <div class='tags' title='tagy' use:tooltip>{getTags(concept)}</div>
           <a href='./user?id={concept.author.id}' class='user author' title='autor' use:tooltip>
             {concept.author.name}
