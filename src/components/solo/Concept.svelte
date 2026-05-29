@@ -8,6 +8,7 @@
   import { getPortraitUrl } from '@lib/database-browser'
   import { illustrationStyles } from '@lib/solo/solo'
   import { supabase, handleError } from '@lib/database-browser'
+  import Discussion from '@components/Discussion.svelte'
   import Loading from '@components/common/Loading.svelte'
   import StarRatingInput from '@components/solo/StarRatingInput.svelte'
 
@@ -337,6 +338,10 @@
       {/if}
     </aside>
   </div>
+  {#if concept.thread}
+    <br><br>
+    <Discussion data={concept} {user} thread={concept.thread} canModerate={concept.author.id === user.id} unread={concept.unread} slug={'solo-concept-' + concept.id} contentSection='solo' />
+  {/if}
 {/if}
 
 <style>

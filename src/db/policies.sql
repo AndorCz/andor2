@@ -157,8 +157,9 @@ OR thread in (
     OR exists (select 1 from boards where boards.open = true AND boards.thread = posts.thread AND NOT ((select auth.uid()) = any (boards.bans)))
     -- Closed boards for members
     OR exists (select 1 from boards where boards.open = false AND boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.members) OR (select auth.uid()) = any (boards.mods)))
-    -- Posts in works
+    -- Posts in works and solo concepts
     OR thread in (select thread from works)
+    OR thread in (select thread from solo_concepts)
   );
 
 -- Consolidated INSERT policy
@@ -172,8 +173,8 @@ create policy "posts_insert_policy" on public.posts
     OR thread = 1
     -- Player in solo game
     OR thread in (select thread from solo_games where player = (select auth.uid()))
-    -- Players can insert in board/work/game threads
-    OR thread in (select thread from boards union select thread from works union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id))
+    -- Players can insert in board/work/solo concept/game threads
+    OR thread in (select thread from boards union select thread from works union select thread from solo_concepts union select discussion_thread as thread from games where is_player(id) union select game_thread as thread from games where is_player(id))
     -- Storytellers in their games
 OR thread in (
   select g.game_thread from games g
@@ -188,8 +189,9 @@ OR thread in (
 )
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
-    -- Work owners
+    -- Work and solo concept owners
     OR thread in (select thread from works where owner = (select auth.uid()))
+    OR thread in (select thread from solo_concepts where author = (select auth.uid()))
   );
 
 -- Consolidated UPDATE policy
@@ -215,8 +217,9 @@ OR thread in (
 )
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
-    -- Work owners
+    -- Work and solo concept owners
     OR thread in (select thread from works where owner = (select auth.uid()))
+    OR thread in (select thread from solo_concepts where author = (select auth.uid()))
   );
 
 -- Consolidated DELETE policy
@@ -242,8 +245,9 @@ OR thread in (
 )
     -- Mods and owners in boards
     OR exists (select 1 from boards where boards.thread = posts.thread AND ((select auth.uid()) = boards.owner OR (select auth.uid()) = any (boards.mods)))
-    -- Work owners
+    -- Work and solo concept owners
     OR thread in (select thread from works where owner = (select auth.uid()))
+    OR thread in (select thread from solo_concepts where author = (select auth.uid()))
   );
 
 
