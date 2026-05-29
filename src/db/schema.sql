@@ -165,6 +165,8 @@ create table solo_concepts (
   published boolean default false,
   created_at timestamp with time zone default current_timestamp,
   updated_at timestamp with time zone default current_timestamp,
+  thread int4,
+  constraint solo_concepts_thread_fkey foreign key (thread) references threads(id) on delete cascade,
   constraint solo_concepts_st_fkey foreign key (storyteller) references npcs(id) on delete set null,
   constraint solo_concepts_author_fkey foreign key (author) references profiles(id) on delete cascade
 );
@@ -1151,6 +1153,8 @@ select exists (
   select 1 from games where (discussion_thread = thread_id or game_thread = thread_id) and owner = auth.uid()
   union all
   select 1 from works where thread = thread_id and owner = auth.uid()
+  union all
+  select 1 from solo_concepts where thread = thread_id and author = auth.uid()
 );
 $$ language sql security definer;
 
@@ -1803,6 +1807,8 @@ create or replace trigger delete_board_thread after delete on boards for each ro
 -- Triggers for solo games
 create or replace trigger add_solo_game_thread before insert on solo_games for each row execute function add_thread();
 create or replace trigger delete_solo_game_thread after delete on solo_games for each row execute procedure delete_thread();
+create or replace trigger add_solo_concept_thread before insert on solo_concepts for each row execute function add_thread();
+create or replace trigger delete_solo_concept_thread after delete on solo_concepts for each row execute procedure delete_thread();
 create or replace trigger update_solo_concept_updated_at before update on solo_concepts for each row execute procedure update_updated_at();
 -- Triggers for works
 create or replace trigger add_work_thread before insert on works for each row execute function add_thread();

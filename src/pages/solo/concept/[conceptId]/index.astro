@@ -9,6 +9,29 @@
 
   const { data: concept, error } = await supabase.from('solo_concepts').select('*, author:profiles(*)').eq('id', conceptId).single();
   if (error) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + error.message)}`) }
+
+  if (!concept.thread) {
+    const { data: threadData, error: threadError } = await supabase.from('threads').insert({ name: concept.name }).select('id').single()
+    if (threadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + threadError.message)}`) }
+
+    const { error: conceptThreadError } = await supabase.from('solo_concepts').update({ thread: threadData.id }).eq('id', concept.id)
+    if (conceptThreadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + conceptThreadError.message)}`) }
+    concept.thread = threadData.id
+
+    if (user.id) {
+      const { error: readError } = await supabase.from('read_threads').upsert({ user_id: user.id, thread_id: concept.thread, read_at: new Date().toISOString() }, { onConflict: 'user_id, thread_id' })
+      if (readError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + readError.message)}`) }
+
+      const { error: unreadInitError } = await supabase.from('unread_threads').upsert({ user_id: user.id, thread_id: concept.thread, unread_count: 0 }, { onConflict: 'user_id, thread_id' })
+      if (unreadInitError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + unreadInitError.message)}`) }
+    }
+  }
+
+  if (user.id) {
+    const { data: unreadData, error: unreadError } = await supabase.from('unread_threads').select('unread_count').match({ user_id: user.id, thread_id: concept.thread }).maybeSingle()
+    if (unreadError) { return Astro.redirect(`/?toastType=error&toastText=${encodeURIComponent('Chyba: ' + unreadError.message)}`) }
+    if (unreadData) { concept.unread = unreadData?.unread_count || 0 }
+  }
 ---
 
 <Layout title={concept?.name} headerStorage={concept?.custom_header ? `solo-${concept.id}.jpg?hash=${concept.custom_header}` : null}>
