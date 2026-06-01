@@ -26,7 +26,7 @@ export const POST = async ({ locals, request }) => {
     }
   ]
 
-  const completion = await ai.chat.completions.create({ model: 'kimi-k2-0905-preview', messages, stream: true }, { signal: request.signal })
+  const completion = await ai.chat.completions.create({ model: 'kimi-k2.6', messages, stream: true }, { signal: request.signal })
   const stream = await getReadableStream(completion)
 
   // Return stream response
