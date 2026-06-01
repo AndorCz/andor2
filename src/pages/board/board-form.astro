@@ -6,8 +6,10 @@
 
   if (Astro.request.method === 'POST') {
     const formData = await Astro.request.formData()
-    const boardName = formData.get('boardName')
+    const boardName = String(formData.get('boardName') || '').trim()
     const boardAnnotation = formData.get('boardAnnotation')
+
+    if (!boardName) { return Astro.redirect(`/board/board-form?toastType=error&toastText=${encodeURIComponent('Chyba: Prosím vyplň název diskuze.')}`) }
 
     // Check if the board name already exists
     const { data: existingBoard, error: checkError } = await supabase.from('boards').select('name').eq('name', boardName).single()
