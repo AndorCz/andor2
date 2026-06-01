@@ -11,7 +11,7 @@
   <form method='POST' autocomplete='off'>
     <div class='row'>
       <div class='labels'><label for='boardName'>Název</label></div>
-      <div class='inputs'><input type='text' id='boardName' name='boardName' maxlength='80' onkeydown={preventSubmit} /></div>
+      <div class='inputs'><input type='text' id='boardName' name='boardName' maxlength='80' required onkeydown={preventSubmit} /></div>
     </div>
 
     <div class='row'>
