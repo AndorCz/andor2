@@ -75,6 +75,7 @@ alter table public.codex_sections enable row level security;
 
 create policy "READ for everyone in open codex" on public.codex_sections for select to public using (game in (select id from games where open_codex = true));
 create policy "READ for players in closed codex" on public.codex_sections for select to authenticated using (is_player(game));
+create policy "ALL for game owners" on public.codex_sections for all to authenticated using (game in (select id from games where owner = (select auth.uid()))) with check (game in (select id from games where owner = (select auth.uid())));
 create policy "ALL for storytellers in their game" on public.codex_sections for all to authenticated using (is_storyteller(game));
 
 -- Codex pages --
@@ -83,6 +84,7 @@ alter table public.codex_pages enable row level security;
 
 create policy "READ for everyone in open codex" on public.codex_pages for select to public using (game in (select id from games where open_codex = true));
 create policy "READ for players in closed codex" on public.codex_pages for select to authenticated using (is_player(game));
+create policy "ALL for game owners" on public.codex_pages for all to authenticated using (game in (select id from games where owner = (select auth.uid()))) with check (game in (select id from games where owner = (select auth.uid())));
 create policy "ALL for storytellers in their game" on public.codex_pages for all to authenticated using (is_storyteller(game));
 
 -- Maps --
