@@ -1,5 +1,5 @@
 import { formPost } from '@lib/common/context'
-import { getAI, getReadableStream } from '@lib/solo/server-moonshot'
+import { getAI, getChatParams, getReadableStream } from '@lib/solo/server-deepseek'
 import { getPostGenerationInstructions } from '@lib/ai'
 
 export const POST = async ({ locals, request }) => {
@@ -26,7 +26,7 @@ export const POST = async ({ locals, request }) => {
     }
   ]
 
-  const completion = await ai.chat.completions.create({ model: 'kimi-k2.6', messages, stream: true }, { signal: request.signal })
+  const completion = await ai.chat.completions.create({ ...getChatParams(), messages, stream: true }, { signal: request.signal })
   const stream = await getReadableStream(completion)
 
   // Return stream response

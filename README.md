@@ -38,7 +38,7 @@ The platform is primarily targeted at Czech-speaking TTRPG players but supports 
 
 ### AI Integration
 - AI Storyteller Assistant for game masters
-- Multiple AI providers: OpenAI, Google Gemini, AIML, Replicate, Moonshot
+- Multiple AI providers: OpenAI, Google Gemini, AIML, Replicate, DeepSeek
 - Intelligent NPC generation and management
 
 ## Tech Stack
@@ -65,7 +65,7 @@ The platform is primarily targeted at Czech-speaking TTRPG players but supports 
 - **Database & Auth**: Supabase
 - **Hosting**: Cloudflare Pages/Workers
 - **Email**: Amazon SES
-- **AI Providers**: OpenAI, Google Gemini, AIML, Replicate, Moonshot
+- **AI Providers**: OpenAI, Google Gemini, AIML, Replicate, DeepSeek
 - **Push Notifications**: OneSignal
 - **CAPTCHA**: Cloudflare Turnstile
 
@@ -150,4 +150,3 @@ For local Cloudflare development:
 ```bash
 npm run dev-cloudflare
 ```
-

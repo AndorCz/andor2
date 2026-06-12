@@ -1,7 +1,7 @@
 import { generateImage } from '@lib/server/replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
 import { getImageUrl, getStamp } from '@lib/utils'
-import { getStorytellerParams, getAI } from '@lib/solo/server-moonshot'
+import { getStorytellerParams, getAI } from '@lib/solo/server-deepseek'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
 import { storytellerInstructions, getContext, illustrationStyleAffixes, getResponseSchema } from '@lib/solo/solo'
 
