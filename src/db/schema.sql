@@ -28,6 +28,7 @@ drop view if exists work_list;
 drop view if exists last_posts;
 drop view if exists game_messages;
 drop view if exists user_bookmarks;
+drop materialized view if exists public.homepage_latest;
 
 
 -- EXTENSIONS --------------------------------------------
@@ -41,6 +42,9 @@ select cron.schedule('reset-limits', '0 5 * * *', $$select reset_limits()$$);
 -- update random posts showcase every hour
 select cron.schedule('refresh-game-showcase', '0 * * * *', 'refresh materialized view game_showcase_pool;');
 select cron.schedule('refresh-npc-posts', '0 * * * *', 'refresh materialized view npc_posts_pool;');
+-- update homepage left column every 30 minutes
+select cron.unschedule(jobid) from cron.job where jobname = 'refresh-homepage-latest';
+select cron.schedule('refresh-homepage-latest', '*/30 * * * *', 'refresh materialized view concurrently public.homepage_latest;');
 
 create extension if not exists citext;
 
@@ -705,6 +709,122 @@ create or replace materialized view npc_posts_pool as
   where po.owner_type = 'npc'
     and po.created_at >= now() - interval '1 month'
     and coalesce(po.nsfw, false) is false;
+
+
+create materialized view public.homepage_latest as
+  select *
+  from (
+    select
+      'latestGames'::text as section,
+      (row_number() over (order by gl.created_at desc, gl.id desc))::int as rank,
+      gl.id::text as item_id,
+      gl.name,
+      gl.owner_id,
+      gl.owner_name::text,
+      gl.owner_portrait,
+      null::text as item_portrait,
+      gl.created_at,
+      gl.last_post
+    from game_list gl
+    where gl.published is true
+  ) latest_games
+  where rank <= 5
+union all
+  select *
+  from (
+    select
+      'activeGames'::text as section,
+      (row_number() over (order by gl.last_post desc nulls last, gl.id desc))::int as rank,
+      gl.id::text as item_id,
+      gl.name,
+      gl.owner_id,
+      gl.owner_name::text,
+      gl.owner_portrait,
+      null::text as item_portrait,
+      gl.created_at,
+      gl.last_post
+    from game_list gl
+    where gl.published is true
+      and gl.last_post is not null
+  ) active_games
+  where rank <= 5
+union all
+  select *
+  from (
+    select
+      'concepts'::text as section,
+      (row_number() over (order by sc.created_at desc, sc.id desc))::int as rank,
+      sc.id::text as item_id,
+      sc.name,
+      p.id as owner_id,
+      p.name::text as owner_name,
+      p.portrait as owner_portrait,
+      null::text as item_portrait,
+      sc.created_at,
+      null::timestamp with time zone as last_post
+    from solo_concepts sc
+      left join profiles p on sc.author = p.id
+    where sc.published is true
+  ) concepts
+  where rank <= 5
+union all
+  select *
+  from (
+    select
+      'works'::text as section,
+      (row_number() over (order by wl.published_at desc nulls last, wl.id desc))::int as rank,
+      wl.id::text as item_id,
+      wl.name,
+      wl.owner_id,
+      wl.owner_name::text,
+      wl.owner_portrait,
+      null::text as item_portrait,
+      wl.created_at,
+      null::timestamp with time zone as last_post
+    from work_list wl
+    where wl.published is true
+      and wl.editorial is distinct from true
+  ) works
+  where rank <= 5
+union all
+  select *
+  from (
+    select
+      'boards'::text as section,
+      (row_number() over (order by bl.created_at desc, bl.id desc))::int as rank,
+      bl.id::text as item_id,
+      bl.name,
+      bl.owner_id,
+      bl.owner_name::text,
+      bl.owner_portrait,
+      null::text as item_portrait,
+      bl.created_at,
+      bl.last_post
+    from board_list bl
+    where bl.published is true
+  ) boards
+  where rank <= 5
+union all
+  select
+    'characters'::text as section,
+    (row_number() over (order by c.name, c.id))::int as rank,
+    c.id::text as item_id,
+    c.name,
+    c.player as owner_id,
+    null::text as owner_name,
+    null::text as owner_portrait,
+    c.portrait as item_portrait,
+    c.created_at,
+    null::timestamp with time zone as last_post
+  from characters c
+  where c.open is true
+    and c.state = 'alive'
+    and c.transfer_to is null;
+
+create unique index homepage_latest_section_item_idx on public.homepage_latest(section, item_id);
+create index homepage_latest_section_rank_idx on public.homepage_latest(section, rank);
+
+grant select on public.homepage_latest to anon, authenticated;
 
 
 -- FUNCTIONS --------------------------------------------

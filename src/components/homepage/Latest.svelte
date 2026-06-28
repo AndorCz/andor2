@@ -17,31 +17,39 @@
   async function loadData () {
     loading = true
 
-    const gameQuery = supabase.from('game_list').select('*').match({ published: true })
-    switch ($userStore.hpGameSort) {
-      case 'latestGames': gameQuery.order('created_at', { ascending: false }); break
-      case 'activeGames': gameQuery.not('last_post', 'is', null).order('last_post', { ascending: false }); break
-      default: gameQuery.order('created_at', { ascending: false }); break
-    }
-    const { data: games, error: gameError } = await gameQuery.limit(5)
-    if (gameError) { handleError(gameError) }
+    const { data, error } = await supabase
+      .from('homepage_latest')
+      .select('*')
+      .order('section')
+      .order('rank')
 
-    const { data: concepts, error: soloError } = await supabase.from('solo_concepts').select('*, author: profiles(id, name, portrait)').match({ published: true }).order('created_at', { ascending: false }).limit(5)
-    if (soloError) { handleError(soloError) }
+    if (error) { handleError(error) }
 
-    const { data: works, error: workError } = await supabase.from('work_list').select('*').match({ published: true }).order('published_at', { ascending: false, nullsLast: true }).not('editorial', 'eq', true).limit(5)
-    if (workError) { handleError(workError) }
-
-    const { data: boards, error: boardError } = await supabase.from('board_list').select('*').match({ published: true }).order('created_at', { ascending: false }).limit(5)
-    if (boardError) { handleError(boardError) }
-
-    const { data: characters, error: characterError } = await supabase.from('characters').select('*').match({ open: true, state: 'alive' }).is('transfer_to', null).order('name')
-    if (characterError) { handleError(characterError) }
-
-    if (games && works && boards && characters && concepts) {
-      latestData = { games, works, boards, characters, concepts }
+    if (data) {
+      latestData = {
+        games: rowsToItems(data, $userStore.hpGameSort),
+        works: rowsToItems(data, 'works'),
+        boards: rowsToItems(data, 'boards'),
+        characters: rowsToItems(data, 'characters'),
+        concepts: rowsToItems(data, 'concepts')
+      }
     }
     loading = false
+  }
+
+  function rowsToItems (rows, section) {
+    return rows
+      .filter(row => row.section === section)
+      .map(row => ({
+        id: row.item_id,
+        name: row.name,
+        owner_id: row.owner_id,
+        owner_name: row.owner_name,
+        owner_portrait: row.owner_portrait,
+        portrait: row.item_portrait,
+        created_at: row.created_at,
+        last_post: row.last_post
+      }))
   }
 
   async function onGameSortChange (e) {
@@ -81,11 +89,11 @@
         <a href='/ai' class='headline'><h4>Nové sólo koncepty</h4></a>
         {#each latestData.concepts as concept (concept.id)}
           <div class='item'>
-            <a href='./user?id={concept.author.id}' class='user owner' title={concept.author.name} use:tooltip>
-              {#if concept.author.portrait}
-                <img src={getPortraitUrl(concept.author.id, concept.author.portrait)} class='icon' alt={concept.author.name} />
+            <a href='./user?id={concept.owner_id}' class='user owner' title={concept.owner_name} use:tooltip>
+              {#if concept.owner_portrait}
+                <img src={getPortraitUrl(concept.owner_id, concept.owner_portrait)} class='icon' alt={concept.owner_name} />
               {:else}
-                <img src='/default_user.jpg' class='icon' alt={concept.author.name} />
+                <img src='/default_user.jpg' class='icon' alt={concept.owner_name} />
               {/if}
             </a>
             <a href={`/solo/concept/${concept.id}`}>
