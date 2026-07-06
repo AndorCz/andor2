@@ -25,6 +25,7 @@
   let welcomeMessageRef = $state()
   let newCodexSection = $state('')
   let newFont = $state('')
+  let newOwnerName = $state('')
   let isWelcomeMessageDirty = $state(false)
   let headlineEl = $state()
   let sectionListEl = $state(null)
@@ -39,6 +40,19 @@
   }
 
   const codexSections = $derived(Array.isArray(game.codexSections) ? sortSections(game.codexSections) : [])
+  const transferablePlayers = $derived.by(() => {
+    const seenPlayers = new Set()
+
+    return (game.characters || [])
+      .filter((character) => character.player?.id && character.accepted)
+      .map((character) => character.player)
+      .filter((player) => {
+        if (!player || player.id === game.owner?.id || seenPlayers.has(player.id)) { return false }
+        seenPlayers.add(player.id)
+        return true
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'cs'))
+  })
 
   onMount(() => {
     setOriginal()
@@ -188,6 +202,31 @@
   async function removeFont (font) {
     game.fonts = game.fonts.filter((f) => { return f !== font })
     await updateGame()
+  }
+
+  async function transferGame () {
+    const playerName = newOwnerName.trim()
+    if (!playerName) { return showError('Vyplň jméno hráče') }
+
+    saving = true
+
+    try {
+      const response = await fetch('/api/game/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId: game.id, playerName })
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok || result.error) { throw new Error(result.error || 'Převod hry se nezdařil') }
+
+      game.owner = result.owner
+      newOwnerName = ''
+      showSuccess(`Hra byla převedena na hráče ${result.owner.name}`)
+    } catch (error) {
+      showError('Chyba: ' + error.message)
+    } finally {
+      saving = false
+    }
   }
 </script>
 
@@ -362,6 +401,22 @@
       <button class='archive' onclick={() => { if (confirm('Opravdu chcete tuto archivovat?')) { toggleArchived() } }}>
         <span class='material'>archive</span><span>Archivovat hru</span>
       </button>
+    {/if}
+
+    <h2>Převést hru</h2>
+    {#if transferablePlayers.length}
+      Zadej jméno hráče, který je přijatý do této hry.<br><br>
+      <div class='row'>
+        <input type='text' id='gameOwnerTransfer' name='gameOwnerTransfer' bind:value={newOwnerName} list='gameOwnerTransferList' placeholder='Jméno hráče' />
+        <datalist id='gameOwnerTransferList'>
+          {#each transferablePlayers as player (player.id)}
+            <option value={player.name}></option>
+          {/each}
+        </datalist>
+        <button class='material square' onclick={transferGame} disabled={saving || newOwnerName.trim() === ''} title='Převést hru' use:tooltip>swap_horiz</button>
+      </div>
+    {:else}
+      <p class='info'>Pro převod hry zatím není k dispozici žádný jiný přijatý hráč.</p>
     {/if}
 
     <h2>Smazání hry</h2>

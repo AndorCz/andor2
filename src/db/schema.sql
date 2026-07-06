@@ -1266,6 +1266,17 @@ end;
 $$ language plpgsql security definer;
 
 
+create or replace function validate_game_owner_change () returns trigger as $$
+begin
+  if new.owner is distinct from old.owner and auth.uid() is not null then
+    if auth.uid() != old.owner then raise exception 'Hru může převést jen její vlastník'; end if;
+    if not exists(select 1 from characters where game = old.id and player = new.owner and accepted = true) then raise exception 'Nový vlastník musí být přijatý hráč této hry'; end if;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+
 create or replace function is_thread_owner (thread_id int4) returns boolean as $$
 select exists (
   select 1 from boards where thread = thread_id and owner = auth.uid()
@@ -1921,6 +1932,7 @@ create or replace trigger add_codex_index after insert on games for each row exe
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads();
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
+create or replace trigger validate_game_owner_change before update on games for each row execute function validate_game_owner_change();
 -- Triggers for boards
 create or replace trigger add_board_thread before insert on boards for each row execute function add_thread();
 create or replace trigger delete_board_thread after delete on boards for each row execute procedure delete_thread();
