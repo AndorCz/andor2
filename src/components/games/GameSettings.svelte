@@ -413,7 +413,7 @@
             <option value={player.name}></option>
           {/each}
         </datalist>
-        <button class='material square' onclick={transferGame} disabled={saving || newOwnerName.trim() === ''} title='Převést hru' use:tooltip>swap_horiz</button>
+        <button onclick={transferGame} disabled={saving || newOwnerName.trim() === ''} title='Převést hru' use:tooltip>Převést</button>
       </div>
     {:else}
       <p class='info'>Pro převod hry zatím není k dispozici žádný jiný přijatý hráč.</p>
