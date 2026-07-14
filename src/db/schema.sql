@@ -614,12 +614,14 @@ create or replace view board_list as
 
 
 create or replace view game_list as
-  select g.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, count(p.id) as post_count, max(p.created_at) as last_post
+  select g.*, pr.id as owner_id, pr.name as owner_name, pr.portrait as owner_portrait, post_stats.post_count, post_stats.last_post
   from games g
-    left join threads t on g.game_thread = t.id
     left join profiles pr on g.owner = pr.id
-    left join posts p on t.id = p.thread
-  group by g.id, pr.id, pr.name
+    left join lateral (
+      select count(*) as post_count, max(p.created_at) as last_post
+      from posts p
+      where p.thread = g.game_thread
+    ) post_stats on true
   order by g.created_at desc;
 
 
@@ -1124,56 +1126,108 @@ $$ language plpgsql;
 create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
   returns json as $$
 declare
+  current_user_id uuid := auth.uid();
   is_storyteller boolean;
   player_characters uuid[];
+  search_character_ids uuid[];
   search_lower text;
 begin
   -- normalize the search term to lowercase, handling NULL cases
   search_lower := lower(coalesce(_search, ''));
 
-  -- check if the user is a storyteller in this game
-  select exists(select 1 from characters where game = game_id and player = auth.uid() and storyteller) into is_storyteller;
+  -- Resolve both pieces of player context with one indexed character lookup.
+  select coalesce(bool_or(c.storyteller), false), array_agg(c.id)
+  into is_storyteller, player_characters
+  from characters c
+  where c.game = game_id and c.player = current_user_id;
 
-  -- get array of player's character ids
-  select array_agg(id) into player_characters from characters where game = game_id and player = auth.uid();
+  -- Keep the overwhelmingly common non-search path free of text predicates and
+  -- materialize only narrow identifiers before fetching the requested wide rows.
+  if _search is null then
+    return (
+      with filtered_post_ids as materialized (
+        select p.id, p.game_id, p.created_at
+        from game_posts_owner p
+        where p.thread = thread_id
+        and (
+          p.audience is null or is_storyteller or
+          (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
+        )
+        and (owners is null or p.owner = any(owners))
+      ), paged_post_ids as (
+        select fp.id, fp.game_id, fp.created_at
+        from filtered_post_ids fp
+        order by fp.created_at desc, fp.id desc
+        limit _limit offset _offset
+      ), paged_posts as (
+        select p.*, p.content as highlighted_content
+        from paged_post_ids fp
+        join game_posts_owner p on p.id = fp.id and p.game_id = fp.game_id
+      )
+      select json_build_object(
+        'posts', (
+          select coalesce(
+            json_agg(
+              (to_jsonb(pp) - 'content' || jsonb_build_object('content', pp.highlighted_content)) ||
+              jsonb_build_object('audience_names', get_character_names(pp.audience))
+              order by pp.created_at desc, pp.id desc
+            ),
+            '[]'::json
+          )
+          from paged_posts pp
+        ),
+        'count', (select count(*) from filtered_post_ids)
+      )
+    );
+  end if;
+
+  -- Resolve matching character names once. This is equivalent to checking the
+  -- owner and every audience character name separately for every post.
+  select coalesce(array_agg(c.id), '{}'::uuid[])
+  into search_character_ids
+  from characters c
+  where lower(c.name) like '%' || search_lower || '%';
 
   return (
-    with filtered_posts as (
-      select p.*,
-        -- check if a search term is provided, if not, use the original content
-        case
-          when search_lower = '' then p.content
-          else regexp_replace(p.content, '(?i)' || _search, '<span class="highlight">' ||UPPER(_search)||'</span>', 'g')
-        end as highlighted_content
-      from game_posts_owner p where p.thread = thread_id
+    with filtered_post_ids as materialized (
+      select p.id, p.game_id, p.created_at
+      from game_posts_owner p
+      where p.thread = thread_id
       and (
         p.audience is null or is_storyteller or
         (not is_storyteller and (p.audience && player_characters or p.owner = any(player_characters)))
       )
       and (owners is null or p.owner = any(owners))
-      -- search content, owner character name, and any characters in the audience
       and (
-        _search is null
-        or lower(p.content) like '%' || search_lower || '%'
-        or lower(p.owner_name) like '%' || search_lower || '%'
-        or exists (
-          select 1
-          from unnest(coalesce(p.audience, '{}'::uuid[])) as audience_id
-          join characters c on c.id = audience_id
-          where lower(c.name) like '%' || search_lower || '%'
-        )
+        lower(p.content) like '%' || search_lower || '%'
+        or p.owner = any(search_character_ids)
+        or p.audience && search_character_ids
       )
-    ), ordered_posts as (
-      select
-        to_jsonb(fp) - 'content' || jsonb_build_object('content', fp.highlighted_content) as post,
-        get_character_names(fp.audience) as audience_names
-      from filtered_posts fp
-      order by fp.created_at desc
+    ), paged_post_ids as (
+      select fp.id, fp.game_id, fp.created_at
+      from filtered_post_ids fp
+      order by fp.created_at desc, fp.id desc
       limit _limit offset _offset
+    ), paged_posts as (
+      select
+        p.*,
+        regexp_replace(p.content, '(?i)' || _search, '<span class="highlight">' || upper(_search) || '</span>', 'g') as highlighted_content
+      from paged_post_ids fp
+      join game_posts_owner p on p.id = fp.id and p.game_id = fp.game_id
     )
     select json_build_object(
-      'posts', (select coalesce(json_agg(op.post || jsonb_build_object('audience_names', op.audience_names)), '[]'::json) from ordered_posts op),
-      'count', (select count(*) from filtered_posts)
+      'posts', (
+        select coalesce(
+          json_agg(
+            (to_jsonb(pp) - 'content' || jsonb_build_object('content', pp.highlighted_content)) ||
+            jsonb_build_object('audience_names', get_character_names(pp.audience))
+            order by pp.created_at desc, pp.id desc
+          ),
+          '[]'::json
+        )
+        from paged_posts pp
+      ),
+      'count', (select count(*) from filtered_post_ids)
     )
   );
 end;
@@ -1961,14 +2015,20 @@ CREATE UNIQUE INDEX unique_user_board ON public.bookmarks USING btree (user_id, 
 CREATE UNIQUE INDEX unique_user_game ON public.bookmarks USING btree (user_id, game_id);
 CREATE UNIQUE INDEX unique_user_solo ON public.bookmarks USING btree (user_id, solo_id);
 CREATE UNIQUE INDEX characters_pkey ON public.characters USING btree (id);
+CREATE INDEX idx_characters_game_player ON public.characters USING btree (game, player) INCLUDE (id, storyteller);
 CREATE UNIQUE INDEX codex_pages_pkey ON public.codex_pages USING btree (id);
 CREATE UNIQUE INDEX codex_sections_pkey ON public.codex_sections USING btree (id);
 CREATE UNIQUE INDEX contacts_pkey ON public.contacts USING btree (owner, contact_user);
 CREATE UNIQUE INDEX games_name_key ON public.games USING btree (name);
 CREATE UNIQUE INDEX games_pkey ON public.games USING btree (id);
 CREATE INDEX idx_game_thread_id ON public.games USING btree (game_thread);
+CREATE INDEX idx_games_list_recruitment_created_at ON public.games USING btree (archived, published, recruitment_open, created_at DESC);
+CREATE INDEX idx_games_list_visibility_created_at ON public.games USING btree (archived, published, open_game, created_at DESC);
 CREATE UNIQUE INDEX maps_pkey ON public.maps USING btree (id);
 CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id);
+CREATE INDEX idx_messages_user_conversation_created_at ON public.messages USING btree (recipient_user, sender_user, created_at DESC) WHERE recipient_character IS NULL AND sender_character IS NULL;
+CREATE INDEX idx_messages_character_inbound_created_at ON public.messages USING btree (recipient_character, recipient_user, sender_character, created_at DESC) WHERE recipient_character IS NOT NULL AND sender_character IS NOT NULL;
+CREATE INDEX idx_messages_character_outbound_created_at ON public.messages USING btree (sender_character, sender_user, recipient_character, created_at DESC) WHERE recipient_character IS NOT NULL AND sender_character IS NOT NULL;
 CREATE UNIQUE INDEX news_pkey ON public.news USING btree (id);
 CREATE UNIQUE INDEX npcs_pkey ON public.npcs USING btree (id);
 CREATE UNIQUE INDEX old_characters_pkey ON public.old_chars USING btree (id_char);
@@ -1985,6 +2045,7 @@ CREATE UNIQUE INDEX poll_votes_unique ON public.poll_votes USING btree (poll_id,
 CREATE INDEX idx_posts_audience ON public.posts USING gin (audience);
 CREATE INDEX idx_posts_owner ON public.posts USING btree (owner);
 CREATE INDEX idx_posts_thread ON public.posts USING btree (thread);
+CREATE INDEX idx_posts_game_feed ON public.posts USING btree (thread, created_at DESC, id DESC) INCLUDE (owner, audience);
 CREATE UNIQUE INDEX posts_pkey ON public.posts USING btree (id);
 CREATE UNIQUE INDEX profiles_name_key ON public.profiles USING btree (name);
 CREATE UNIQUE INDEX profiles_old_id_key ON public.profiles USING btree (old_id);
