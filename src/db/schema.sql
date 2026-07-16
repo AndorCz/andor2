@@ -1160,9 +1160,15 @@ begin
         order by fp.created_at desc, fp.id desc
         limit _limit offset _offset
       ), paged_posts as (
-        select p.*, p.content as highlighted_content
+        select
+          p.*,
+          c.name as owner_name,
+          c.portrait as owner_portrait,
+          fp.game_id,
+          p.content as highlighted_content
         from paged_post_ids fp
-        join game_posts_owner p on p.id = fp.id and p.game_id = fp.game_id
+        join posts p on p.id = fp.id
+        left join characters c on c.id = p.owner
       )
       select json_build_object(
         'posts', (
@@ -1211,9 +1217,13 @@ begin
     ), paged_posts as (
       select
         p.*,
+        c.name as owner_name,
+        c.portrait as owner_portrait,
+        fp.game_id,
         regexp_replace(p.content, '(?i)' || _search, '<span class="highlight">' || upper(_search) || '</span>', 'g') as highlighted_content
       from paged_post_ids fp
-      join game_posts_owner p on p.id = fp.id and p.game_id = fp.game_id
+      join posts p on p.id = fp.id
+      left join characters c on c.id = p.owner
     )
     select json_build_object(
       'posts', (

@@ -13,7 +13,7 @@ export const POST = async ({ request, locals }) => {
   } else {
     async function addPost (thread, ownerType, ownerId, postData, postHash) {
       if (!postData || !postData.post || !postData.post.trim()) {
-        throw new Error('Cannot save empty post content')
+        throw new Error('AI vygenerovala prázdný příspěvek')
       }
       const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration, nsfw: postData.nsfw === true })
       if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
@@ -25,16 +25,16 @@ export const POST = async ({ request, locals }) => {
 
     async function addImage (prompt, type, gameId, threadId) {
       const { data, error } = await generateImage(locals.runtime.env, prompt, type === 'npc' ? 'character' : type)
-      if (error) { throw new Error('Image generation failed: ' + error.message) }
+      if (error) { throw new Error('Generování obrázku selhalo: ' + error.message) }
       // Save image to storage
       const { data: imageData, error: imageError } = await locals.supabase.storage.from(imageBuckets[type]).upload(`/${gameId}/${new Date().getTime()}.jpg`, data, { contentType: 'image/jpg', upsert: true, metadata: { prompt } })
-      if (imageError) { throw new Error('Image upload failed: ' + imageError.message) }
+      if (imageError) { throw new Error('Nahrání vygenerovaného obrázku selhalo: ' + imageError.message) }
       // For scene add as standalone post
       let postData = null
       if (type === 'scene') {
         const imageUrl = getImageUrl(locals.supabase, imageData.path, imageBuckets.scene)
         const { data: postDataSaved, error: postError } = await locals.supabase.from('posts').insert({ thread: threadId, content: `<img src='${imageUrl}' alt='scene illustration' title='${imageData.prompt}' />`, owner_type: 'npc', identifier: getStamp() }).select().single()
-        if (postError) { throw new Error('Error saving image post: ' + postError.message) }
+        if (postError) { throw new Error('Uložení obrázkového příspěvku selhalo: ' + postError.message) }
         postData = postDataSaved
       }
       return { postData, imageData }
@@ -124,7 +124,7 @@ export const POST = async ({ request, locals }) => {
 
           // Validate that we have the required data
           if (!finalData || typeof finalData !== 'object') {
-            yield { error: 'Invalid response format from AI. Please try again.' }
+            yield { error: 'AI vrátila odpověď v neplatném formátu. Zkus to prosím znovu.' }
             return
           }
 
@@ -161,13 +161,13 @@ export const POST = async ({ request, locals }) => {
             await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
           } else {
             // No post content generated, send error
-            yield { error: 'No response was generated. Please try again.' }
+            yield { error: 'AI nevygenerovala žádný text příspěvku. Zkus to prosím znovu.' }
           }
         } catch (error) {
           if (error.name !== 'AbortError') {
             console.error('Error in AI stream:', error)
-            // Send error to client through the stream instead of throwing
-            yield { error: 'An error occurred while generating the response. Please try again.' }
+            // Preserve the concrete cause so the user knows which generation step failed.
+            yield { error: `Generování příspěvku selhalo: ${error.message || 'neznámá chyba'}` }
           } // Client disconnected, just end the stream gracefully
         }
       }
