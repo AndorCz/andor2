@@ -5,7 +5,7 @@ export const getChatParams = () => {
 }
 
 export const getStorytellerParams = () => {
-  return { ...getChatParams(), response_format: { type: 'json_object' } }
+  return { ...getChatParams(), response_format: { type: 'json_object' }, max_tokens: 8192 }
 }
 
 export function getAI (env) {

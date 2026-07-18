@@ -95,13 +95,16 @@ export const POST = async ({ request, locals }) => {
       // Create async generator for streaming
       async function * generateStreamData () {
         let finalData = null
+        let finishReason = null
         const parser = new StreamingJSONParser()
 
         try {
           // Process the OpenAI stream
           for await (const chunk of response) {
             // Extract content from OpenAI streaming format
-            const content = chunk.choices?.[0]?.delta?.content
+            const choice = chunk.choices?.[0]
+            const content = choice?.delta?.content
+            if (choice?.finish_reason) { finishReason = choice.finish_reason }
             if (content) {
               const events = parser.processChunk(content)
 
@@ -118,8 +121,51 @@ export const POST = async ({ request, locals }) => {
             }
           }
 
-          // Finalize parsing
-          finalData = parser.finalize()
+          // DeepSeek documents that JSON mode can occasionally return empty
+          // content. Retry that case once before reporting a failure.
+          if (!parser.hasContent() && finishReason !== 'content_filter') {
+            const retryResponse = await ai.chat.completions.create({ ...storytellerParams, stream: false })
+            const retryChoice = retryResponse.choices?.[0]
+            const retryContent = retryChoice?.message?.content
+            finishReason = retryChoice?.finish_reason || finishReason
+
+            if (retryContent) {
+              const events = parser.processChunk(retryContent)
+              for (const event of events) {
+                if (event.character) {
+                  const npc = npcs.find(npc => npc.slug === event.character.slug)
+                  const characterData = npc || { name: 'Vypravěč', slug: 'vypravec', id: conceptData.storyteller }
+                  yield { character: characterData }
+                } else if (event.post) {
+                  yield { post: event.post }
+                }
+              }
+            }
+          }
+
+          // Finalize parsing. DeepSeek can cut JSON off when the output/context
+          // limit is reached or its inference resources are interrupted.
+          try {
+            finalData = parser.finalize()
+          } catch {
+            const completedPostData = finishReason === 'content_filter' ? null : parser.getCompletedPostData()
+            if (!completedPostData) {
+              const reasonMessages = {
+                length: 'Odpověď AI byla ukončena po dosažení limitu délky.',
+                content_filter: 'Odpověď AI byla zablokována bezpečnostním filtrem.',
+                insufficient_system_resource: 'AI ukončila odpověď kvůli dočasnému nedostatku výpočetních zdrojů.'
+              }
+              throw new Error(reasonMessages[finishReason] || 'AI vrátila neúplnou JSON odpověď.')
+            }
+
+            // Missing safety metadata is treated conservatively so a recovered
+            // post cannot appear in public showcases as known-safe content.
+            finalData = { ...completedPostData, nsfw: true }
+            const warning = finishReason === 'length'
+              ? 'Odpověď AI dosáhla limitu délky. Text příspěvku byl uložen, ale doplňková data mohla být vynechána.'
+              : 'AI nedokončila doplňková data odpovědi. Text příspěvku byl přesto bezpečně uložen.'
+            yield { warning }
+          }
           // console.log('Final data received:', finalData)
 
           // Validate that we have the required data

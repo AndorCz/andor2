@@ -9,6 +9,7 @@ export class StreamingJSONParser {
     this.lastPostLength = 0
     this.postStartIndex = -1
     this.postContentStart = -1
+    this.characterSlug = null
     this.events = []
   }
 
@@ -33,13 +34,18 @@ export class StreamingJSONParser {
     return this.events
   }
 
+  hasContent () {
+    return this.buffer.trim().length > 0
+  }
+
   /**
    * Extract character information from the buffer
    */
   extractCharacter () {
     const charMatch = this.buffer.match(/"character"\s*:\s*\{[^}]*"slug"\s*:\s*"([^"]*)"/)
     if (charMatch) {
-      this.events.push({ character: { slug: charMatch[1] } })
+      this.characterSlug = charMatch[1]
+      this.events.push({ character: { slug: this.characterSlug } })
       this.characterSent = true
     }
   }
@@ -67,7 +73,7 @@ export class StreamingJSONParser {
     }
 
     // Extract the current post content
-    const postContent = this.extractJSONStringContent(this.postContentStart)
+    const { content: postContent } = this.extractJSONStringContent(this.postContentStart)
 
     // Send only new content
     if (postContent.length > this.lastPostLength) {
@@ -87,6 +93,7 @@ export class StreamingJSONParser {
     let content = ''
     let i = startIndex
     let escaped = false
+    let complete = false
 
     while (i < this.buffer.length) {
       const char = this.buffer[i]
@@ -99,13 +106,35 @@ export class StreamingJSONParser {
         escaped = true
       } else if (char === '"') {
         // Found the closing quote
+        complete = true
         break
       } else {
         content += char
       }
       i++
     }
-    return content
+    return { content, complete }
+  }
+
+  /**
+   * Recover a fully generated post when optional JSON fields after it were cut off.
+   * An unfinished post string is deliberately not returned because it may contain
+   * a partial sentence, escape sequence or HTML tag.
+   */
+  getCompletedPostData () {
+    if (!this.characterSlug || this.postContentStart === -1) return null
+
+    const { content, complete } = this.extractJSONStringContent(this.postContentStart)
+    if (!complete) return null
+
+    try {
+      const post = JSON.parse(`"${content}"`)
+      if (!post.trim()) return null
+      return { character: { slug: this.characterSlug }, post }
+    } catch (error) {
+      console.error('Error parsing completed post from partial JSON:', error)
+      return null
+    }
   }
 
   /**
@@ -129,7 +158,6 @@ export class StreamingJSONParser {
       return finalData
     } catch (error) {
       console.error('Error parsing final JSON:', error)
-      console.log('Buffer content:', this.buffer)
       throw error
     }
   }

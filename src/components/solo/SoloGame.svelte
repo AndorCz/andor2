@@ -138,6 +138,7 @@
               hasError = true
               showError(chunk.error)
             }
+            if (chunk.warning) { showError(chunk.warning) }
             if (postsEl) { postsEl.scrollTop = postsEl.scrollHeight }
           }
         })
