@@ -1985,6 +1985,16 @@ end;
 $$ language plpgsql;
 
 
+create or replace function clear_character_unreads_on_game_delete () returns trigger as $$
+begin
+  delete from unread_character_message_counts
+  where recipient_character_id in (select id from characters where game = old.id)
+     or sender_character_id in (select id from characters where game = old.id);
+  return old;
+end;
+$$ language plpgsql;
+
+
 -- TRIGGERS --------------------------------------------
 
 
@@ -1995,6 +2005,7 @@ create or replace trigger add_storyteller after insert on games for each row exe
 create or replace trigger add_codex_index after insert on games for each row execute function add_codex_index();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads();
+create or replace trigger clear_character_unreads_before_game_delete before delete on games for each row execute function clear_character_unreads_on_game_delete();
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
 create or replace trigger validate_game_owner_change before update on games for each row execute function validate_game_owner_change();
 -- Triggers for boards
