@@ -1995,6 +1995,40 @@ end;
 $$ language plpgsql;
 
 
+create or replace function notify_game_players_on_end () returns trigger as $$
+declare
+  system_user_id constant uuid := '282b58f0-cfe0-4cdf-902b-a8957b1c79f6'; -- Domovnik
+  game_name text;
+  message_content text;
+begin
+  if not exists (select 1 from profiles where id = system_user_id) then
+    raise exception 'System user Domovnik (%) does not exist', system_user_id;
+  end if;
+
+  game_name := replace(replace(replace(old.name, '&', '&amp;'), '<', '&lt;'), '>', '&gt;');
+
+  if tg_op = 'UPDATE' then
+    message_content := 'Jeskyně „' || game_name || '“ byla ukončena a přesunuta do archivu.';
+  else
+    message_content := 'Jeskyně „' || game_name || '“ byla smazána.';
+  end if;
+
+  insert into messages (sender_user, recipient_user, content)
+  select distinct system_user_id, c.player, message_content
+  from characters c
+  where c.game = old.id
+    and c.accepted = true
+    and c.player is not null
+    and c.player <> system_user_id;
+
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+
 -- TRIGGERS --------------------------------------------
 
 
@@ -2005,6 +2039,8 @@ create or replace trigger add_storyteller after insert on games for each row exe
 create or replace trigger add_codex_index after insert on games for each row execute function add_codex_index();
 create or replace trigger update_codex_updated_at before update on codex_pages for each row execute procedure update_updated_at();
 create or replace trigger add_game_threads before insert on games for each row execute function add_game_threads();
+create or replace trigger notify_game_players_after_archive after update of archived on games for each row when (old.archived is distinct from true and new.archived is true) execute function notify_game_players_on_end();
+create or replace trigger notify_game_players_before_delete before delete on games for each row execute function notify_game_players_on_end();
 create or replace trigger clear_character_unreads_before_game_delete before delete on games for each row execute function clear_character_unreads_on_game_delete();
 create or replace trigger delete_game_threads after delete on games for each row execute procedure delete_game_threads();
 create or replace trigger validate_game_owner_change before update on games for each row execute function validate_game_owner_change();
