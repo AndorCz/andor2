@@ -1997,14 +1997,9 @@ $$ language plpgsql;
 
 create or replace function notify_game_players_on_end () returns trigger as $$
 declare
-  system_user_id constant uuid := '282b58f0-cfe0-4cdf-902b-a8957b1c79f6'; -- Domovnik
   game_name text;
   message_content text;
 begin
-  if not exists (select 1 from profiles where id = system_user_id) then
-    raise exception 'System user Domovnik (%) does not exist', system_user_id;
-  end if;
-
   game_name := replace(replace(replace(old.name, '&', '&amp;'), '<', '&lt;'), '>', '&gt;');
 
   if tg_op = 'UPDATE' then
@@ -2014,12 +2009,12 @@ begin
   end if;
 
   insert into messages (sender_user, recipient_user, content)
-  select distinct system_user_id, c.player, message_content
+  select distinct old.owner, c.player, message_content
   from characters c
   where c.game = old.id
     and c.accepted = true
     and c.player is not null
-    and c.player <> system_user_id;
+    and c.player <> old.owner;
 
   if tg_op = 'DELETE' then
     return old;
