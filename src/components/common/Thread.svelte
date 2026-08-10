@@ -7,7 +7,7 @@
   import Post from '@components/common/Post.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, enableAutorefresh = true, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
   let postCount = $state(0)
   let lastPostId = $state()
@@ -25,7 +25,7 @@
   const replies = {}
 
   onMount(async () => {
-    if (user.autorefresh) { refresh() }
+    if (user.autorefresh && enableAutorefresh) { refresh() }
     setRead(user.id, id)
     if (isFilledArray(posts)) { postCount = posts.length }
   })
@@ -43,7 +43,7 @@
   }
 
   function removeListeners () {
-    const cites = document.querySelectorAll('cite[data-id]')
+    const cites = threadEl?.querySelectorAll('cite[data-id]') || []
     for (const citeEl of cites) {
       citeEl.removeEventListener('pointerdown', addReply)
       citeEl.removeEventListener('mouseenter', showReply)
@@ -55,7 +55,7 @@
   function setupReplyListeners () { // pre-requisite for replies
     setTimeout(async () => { // wait for DOM to update
       // look through <cite> tags with data-id attributes and load posts from subapase with that post id. Register the post as a tippy tooltip when hovered over the quote.
-      const cites = document.querySelectorAll('cite[data-id]')
+      const cites = threadEl?.querySelectorAll('cite[data-id]') || []
       for (const citeEl of cites) {
         const id = parseInt(citeEl.getAttribute('data-id'))
         // for each cite, load the post from supabase and save it's data

@@ -118,9 +118,9 @@ create policy "READ for everyone" on public.news for select to public using (tru
 
 alter table public.wall enable row level security;
 create policy "READ published wall entries" on public.wall for select to public using (published = true or owner = (select auth.uid()));
-create policy "INSERT own wall entries" on public.wall for insert to authenticated with check (owner = (select auth.uid()));
-create policy "UPDATE wall post arrays" on public.wall for update to authenticated using (owner = (select auth.uid()) or published = true) with check (owner = (select auth.uid()) or published = true);
-create policy "DELETE own wall entries" on public.wall for delete to authenticated using (owner = (select auth.uid()));
+create policy "INSERT own wall entries" on public.wall for insert to authenticated with check (entry_type = 'thread' and owner = (select auth.uid()));
+create policy "UPDATE wall post arrays" on public.wall for update to authenticated using (entry_type = 'thread' and (owner = (select auth.uid()) or published = true)) with check (entry_type = 'thread' and (owner = (select auth.uid()) or published = true));
+create policy "DELETE own wall entries" on public.wall for delete to authenticated using (entry_type = 'thread' and owner = (select auth.uid()));
 
 -- Threads --
 

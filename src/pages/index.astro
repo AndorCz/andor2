@@ -30,16 +30,17 @@
   }
 
   try {
-    const wallThreadsRes = await supabase.from('wall').select('id', { count: 'exact' }).eq('published', true).order('created_at', { ascending: false }).range(wallPage * limit, wallPage * limit + limit - 1)
-    if (wallThreadsRes.error) { throw wallThreadsRes.error }
-    const wallIds = (wallThreadsRes.data || []).map(thread => thread.id)
-    wall = []
-    if (wallIds.length) {
-      const wallPostsRes = await supabase.from('wall_posts').select('*').in('wall_id', wallIds).order('wall_created_at', { ascending: false }).order('position', { ascending: true })
+    const wallEntriesRes = await supabase.from('wall').select('*', { count: 'exact' }).eq('published', true).order('created_at', { ascending: false }).order('id', { ascending: false }).range(wallPage * limit, wallPage * limit + limit - 1)
+    if (wallEntriesRes.error) { throw wallEntriesRes.error }
+    const threadIds = (wallEntriesRes.data || []).filter(entry => entry.entry_type === 'thread').map(entry => entry.id)
+    let wallPosts = []
+    if (threadIds.length) {
+      const wallPostsRes = await supabase.from('wall_posts').select('*').in('wall_id', threadIds).order('position', { ascending: true })
       if (wallPostsRes.error) { throw wallPostsRes.error }
-      wall = wallPostsRes.data
+      wallPosts = wallPostsRes.data || []
     }
-    wallMaxPage = Math.ceil(wallThreadsRes.count / limit) - 1
+    wall = (wallEntriesRes.data || []).map(entry => ({ ...entry, posts: entry.entry_type === 'thread' ? wallPosts.filter(post => post.wall_id === entry.id) : [] }))
+    wallMaxPage = Math.ceil(wallEntriesRes.count / limit) - 1
   } catch (error) {
     newsError = 'Chyba načtení zdi: ' + error.message
   }

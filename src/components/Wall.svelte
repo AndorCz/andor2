@@ -3,12 +3,14 @@
   import { showSuccess } from '@lib/toasts'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
+  import WallEvent from '@components/homepage/WallEvent.svelte'
 
   const { user = {}, items = [], page = 0, maxPage = 0 } = $props()
 
   const limit = 5
   const myIdentities = user.id ? [{ id: user.id }] : []
-  let posts = $state(items || [])
+  let entries = $state(items || [])
+  let wallElement = $state()
   let textareaRef = $state()
   let textareaValue = $state('')
   let editing = $state(false)
@@ -24,36 +26,45 @@
     window.history.replaceState({}, '', `/?${params.toString()}`)
   }
 
-  async function loadPosts (newPage = currentPage) {
+  function addPostsToEntries (wallEntries, wallPosts) {
+    return (wallEntries || []).map(entry => ({
+      ...entry,
+      posts: entry.entry_type === 'thread'
+        ? wallPosts.filter(post => post.wall_id === entry.id)
+        : []
+    }))
+  }
+
+  async function loadEntries (newPage = currentPage) {
     loading = true
-    const { data: wallThreads, error: wallError, count } = await supabase
+    const { data: wallEntries, error: wallError, count } = await supabase
       .from('wall')
-      .select('id', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .eq('published', true)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .range(newPage * limit, newPage * limit + limit - 1)
     if (wallError) {
       loading = false
       return handleError(wallError)
     }
 
-    const wallIds = (wallThreads || []).map(thread => thread.id)
-    let data = []
-    if (wallIds.length) {
-      const { data: wallPosts, error: postsError } = await supabase
+    const threadIds = (wallEntries || []).filter(entry => entry.entry_type === 'thread').map(entry => entry.id)
+    let wallPosts = []
+    if (threadIds.length) {
+      const { data: postsData, error: postsError } = await supabase
         .from('wall_posts')
         .select('*')
-        .in('wall_id', wallIds)
-        .order('wall_created_at', { ascending: false })
+        .in('wall_id', threadIds)
         .order('position', { ascending: true })
       if (postsError) {
         loading = false
         return handleError(postsError)
       }
-      data = wallPosts
+      wallPosts = postsData || []
     }
 
-    posts = data
+    entries = addPostsToEntries(wallEntries, wallPosts)
     pages = Math.max(1, Math.ceil(count / limit))
     currentPage = newPage
     updatePageUrl(newPage)
@@ -81,7 +92,7 @@
     textareaRef.clearContent()
     editing = false
     editingPost = null
-    await loadPosts(wasEditing ? currentPage : 0)
+    await loadEntries(wasEditing ? currentPage : 0)
     saving = false
     return true
   }
@@ -100,7 +111,7 @@
       handleError(error)
       return false
     }
-    await loadPosts(currentPage)
+    await loadEntries(currentPage)
     return true
   }
 
@@ -112,24 +123,65 @@
     const { error } = result
     if (error) { return handleError(error) }
     showSuccess('Příspěvek smazán')
-    const threadCount = new Set(posts.map(item => item.wall_id)).size
-    const nextPage = post.position === 1 && threadCount === 1 && currentPage > 0 ? currentPage - 1 : currentPage
-    await loadPosts(nextPage)
+    const nextPage = post.position === 1 && entries.length === 1 && currentPage > 0 ? currentPage - 1 : currentPage
+    await loadEntries(nextPage)
+  }
+
+  async function changePage (newPage) {
+    await loadEntries(newPage)
+    wallElement?.scrollIntoView({ behavior: 'smooth' })
   }
 </script>
 
-<section id='wall'>
+<section id='wall' bind:this={wallElement}>
   {#if user.id}
     <div id='wall-editor'>
       <TextareaExpandable {user} allowHtml forceBubble minHeight={50} placeholder='Napiš něco na zeď…' bind:this={textareaRef} bind:value={textareaValue} disabled={saving} onSave={submitPost} bind:editing showButton disableEmpty />
     </div>
   {/if}
 
-  <Thread type='wall' id={null} {loading} {posts} {user} bind:page={currentPage} pages={pages > 1 ? pages : null} allowReactions onPaging={loadPosts} onCreateReply={submitReply} {myIdentities} onDelete={deletePost} onEdit={triggerEdit} />
+  {#if loading}
+    <p class='info'>Načítám zeď…</p>
+  {:else if entries.length}
+    {#each entries as entry (entry.id)}
+      {#if entry.entry_type === 'event'}
+        <WallEvent item={entry} />
+      {:else}
+        <Thread type='wall' id={null} loading={false} posts={entry.posts} {user} enableAutorefresh={false} allowReactions onCreateReply={submitReply} {myIdentities} onDelete={deletePost} onEdit={triggerEdit} />
+      {/if}
+    {/each}
+    {#if pages > 1}
+      <div class='pagination'>
+        {#each { length: pages } as _, i (i)}
+          <button onclick={() => changePage(i)} disabled={i === currentPage}>{i + 1}</button>
+        {/each}
+      </div>
+    {/if}
+  {:else}
+    <center>Žádné příspěvky</center>
+  {/if}
 </section>
 
 <style>
   #wall-editor {
     margin-bottom: 20px;
   }
+  .info {
+    margin: 60px 0px;
+    text-align: center;
+  }
+  center {
+    margin-top: 30px;
+  }
+  .pagination {
+    margin-top: 70px;
+    text-align: left;
+  }
+    .pagination button {
+      width: 40px;
+      height: 40px;
+      margin: 5px;
+      padding: 0px;
+      font-size: 22px;
+    }
 </style>
