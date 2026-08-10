@@ -109,10 +109,13 @@ create policy "ALL for works for Sargo and Hitomi" on public.works to authentica
 
 -- GENERAL --------------------------------------------
 
--- News --
+-- Wall --
 
-alter table public.news enable row level security;
-create policy "READ for everyone" on public.news for select to public using (true);
+alter table public.wall enable row level security;
+create policy "READ published wall entries" on public.wall for select to public using (published = true or is_admin());
+create policy "INSERT wall entries for admins" on public.wall for insert to authenticated with check (is_admin());
+create policy "UPDATE wall entries for admins" on public.wall for update to authenticated using (is_admin()) with check (is_admin());
+create policy "DELETE wall entries for admins" on public.wall for delete to authenticated using (is_admin());
 
 -- Threads --
 
@@ -135,6 +138,8 @@ create policy "posts_select_policy" on public.posts
     OR owner in (select id from characters where player = (select auth.uid()))
     -- Global chat access
     OR thread = 1
+    -- Published wall posts (admins can also preview unpublished entries)
+    OR exists (select 1 from wall where posts.id = any(wall.post) and (wall.published = true or is_admin()))
     -- Player in solo game
     OR thread in (select thread from solo_games where player = (select auth.uid()))
     -- Posts in open games and discussions

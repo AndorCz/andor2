@@ -1,7 +1,7 @@
 ---
   import Layout from '@layouts/layout.astro'
   import Latest from '@components/homepage/Latest.svelte'
-  import NewsFeed from '@components/homepage/NewsFeed.svelte'
+  import Wall from '@components/Wall.svelte'
   import NewsItem from '@components/homepage/NewsItem.svelte'
   import Editorial from '@components/homepage/Editorial.svelte'
 
@@ -21,7 +21,7 @@
   const page = params.page ? parseInt(params.page) : 0
   const limit = 5
   try {
-    const res2 = await supabase.from('news_reactions').select('*', { count: 'exact' }).eq('published', publishedOnly).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
+    const res2 = await supabase.from('wall_posts').select('*', { count: 'exact' }).eq('published', publishedOnly).order('created_at', { ascending: false }).range(page * limit, page * limit + limit - 1)
     if (res2.error) { throw res2.error }
     news = res2.data
     maxPage = Math.ceil(res2.count / limit) - 1
@@ -59,7 +59,7 @@
 		</aside>
     <content>
       {addShowcase ? <NewsItem {user} item={showcasePost} client:only='svelte' /> : null}
-      <NewsFeed {user} {news} {page} {maxPage} client:only='svelte' />
+      <Wall {user} items={news} {page} {maxPage} preview={Boolean(params.preview)} client:only='svelte' />
     </content>
   </main>
 </Layout>
