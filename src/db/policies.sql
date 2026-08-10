@@ -109,13 +109,18 @@ create policy "ALL for works for Sargo and Hitomi" on public.works to authentica
 
 -- GENERAL --------------------------------------------
 
+-- News --
+
+alter table public.news enable row level security;
+create policy "READ for everyone" on public.news for select to public using (true);
+
 -- Wall --
 
 alter table public.wall enable row level security;
-create policy "READ published wall entries" on public.wall for select to public using (published = true or is_admin());
-create policy "INSERT wall entries for admins" on public.wall for insert to authenticated with check (is_admin());
-create policy "UPDATE wall entries for admins" on public.wall for update to authenticated using (is_admin()) with check (is_admin());
-create policy "DELETE wall entries for admins" on public.wall for delete to authenticated using (is_admin());
+create policy "READ published wall entries" on public.wall for select to public using (published = true or owner = (select auth.uid()));
+create policy "INSERT own wall entries" on public.wall for insert to authenticated with check (owner = (select auth.uid()));
+create policy "UPDATE wall post arrays" on public.wall for update to authenticated using (owner = (select auth.uid()) or published = true) with check (owner = (select auth.uid()) or published = true);
+create policy "DELETE own wall entries" on public.wall for delete to authenticated using (owner = (select auth.uid()));
 
 -- Threads --
 
@@ -138,8 +143,8 @@ create policy "posts_select_policy" on public.posts
     OR owner in (select id from characters where player = (select auth.uid()))
     -- Global chat access
     OR thread = 1
-    -- Published wall posts (admins can also preview unpublished entries)
-    OR exists (select 1 from wall where posts.id = any(wall.post) and (wall.published = true or is_admin()))
+    -- Published wall posts (owners can also see their unpublished entries)
+    OR exists (select 1 from wall where posts.id = any(wall.post) and (wall.published = true or wall.owner = (select auth.uid())))
     -- Player in solo game
     OR thread in (select thread from solo_games where player = (select auth.uid()))
     -- Posts in open games and discussions
@@ -262,7 +267,7 @@ OR thread in (
 
 alter table public.reactions enable row level security;
 
-create policy "SELECT for users" on public.reactions for select to authenticated using (true);
+create policy "SELECT for users" on public.reactions for select to public using (item_type = 'news' or (select auth.uid()) is not null);
 create policy "UPDATE for users" on public.reactions for update to authenticated using (true);
 create policy "INSERT for users" on public.reactions for insert to authenticated with check (true);
 

@@ -6,7 +6,7 @@
   import DOMPurify from 'dompurify'
   import Reactions from '@components/common/Reactions.svelte'
 
-  const { item = {}, user = {} } = $props()
+  const { item = {}, user = {}, reactionType = 'news', flushBottom = false } = $props()
 
   let textEl = $state()
   let trimmed = $state(true)
@@ -36,7 +36,7 @@
 </script>
 
 {#if item.content_type === 'post'}
-  <div class='item' style='--textMaxHeight: {textMaxHeight}px'>
+  <div class='item' class:flushBottom style='--textMaxHeight: {textMaxHeight}px'>
     {#if subHeadline[item.content_type] || item.subheadline}
       <h4 class='subheadline'>{subHeadline[item.content_type] || item.subheadline}</h4>
     {/if}
@@ -83,7 +83,7 @@
             <a href={path[item.content_type] + item.content_id} class='button'>{item.button_text || buttonText[item.content_type] || 'Otevřít'}</a>
           {/if}
           {#if item.owner_id !== user.id}
-            <Reactions {user} post={item} type='post' />
+            <Reactions {user} post={item} type={reactionType} />
           {/if}
           {#if item.owner_id && item.owner_name}
             <a href={'./user?id=' + item.owner_id} class='owner user' title='autor'>
@@ -96,7 +96,7 @@
     </div>
   </div>
 {:else}
-  <div class='item promo' style='--textMaxHeight: {textMaxHeight}px'>
+  <div class='item promo' class:flushBottom style='--textMaxHeight: {textMaxHeight}px'>
     {#if item.image_url}
       <img class='image' src={item.image_url} alt='Upoutávka' />
     {/if}
@@ -125,7 +125,7 @@
         <a href={item.url} class='button' target='_blank'>{item.button_text || 'Otevřít'}</a>
       {/if}
       {#if item.owner_id !== user.id}
-        <Reactions {user} post={item} type='post' />
+        <Reactions {user} post={item} type={reactionType} />
       {/if}
       {#if item.owner_id}
         <a href={'./user?id=' + item.owner_id} class='owner user' title='autor'>
@@ -154,6 +154,9 @@
   .item {
     margin-bottom: 20px;
   }
+    .item.flushBottom {
+      margin-bottom: 0px;
+    }
     .promo {
       padding: 20px;
       background-color: var(--block);

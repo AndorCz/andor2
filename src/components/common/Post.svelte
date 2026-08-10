@@ -9,7 +9,7 @@
   import Reactions from '@components/common/Reactions.svelte'
   import PollRenderer from '@components/boards/PollRenderer.svelte'
 
-  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, showEdited = true } = $props()
+  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, compact = false, showEdited = true } = $props()
 
   let expanded = $state(false)
   let contentEl = $state()
@@ -90,9 +90,9 @@
   })
 </script>
 
-<div onclick={onImageClick} class={'post ' + $platform} class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important}>
+<div onclick={onImageClick} class={'post ' + $platform} class:compact class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important} style='--fullIconSize: {iconSize}px'>
   {#if $platform === 'desktop'}
-    <div class='icon' style='--iconSize: {iconSize}px' bind:this={iconEl}>
+    <div class='icon' style='--iconSize: {compact ? Math.min(iconSize, 40) : iconSize}px' bind:this={iconEl}>
       {#if post.owner_portrait}
         <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} bind:this={portraitEl} onload={onPortraitLoad} />
       {:else if post.owner_type === 'character'}
@@ -140,7 +140,7 @@
     </div>
     <div class='content' bind:this={contentEl}>
       {#if $platform === 'mobile'}
-        <div class='icon' style='--iconSize: {iconSize}px'>
+        <div class='icon' style='--iconSize: {compact ? Math.min(iconSize, 40) : iconSize}px'>
           {#if post.owner_portrait}
             <img src={getPortraitUrl(post.owner, post.owner_portrait)} class='portrait' alt={post.owner_name} />
           {:else if post.owner_type === 'character'}
@@ -177,6 +177,13 @@
     text-align: left;
     gap: 10px;
   }
+    .post.compact {
+      width: calc(100% - var(--fullIconSize) - 10px);
+      margin-left: calc(var(--fullIconSize) + 10px);
+      margin-top: 5px;
+      padding-bottom: 5px;
+      gap: 8px;
+    }
     .moderated {
       opacity: 0.5;
       padding-top: 0px;
@@ -247,6 +254,10 @@
       padding: 5px 15px;
       color: var(--dim);
     }
+      .compact .header {
+        min-height: 40px;
+        padding: 3px 10px;
+      }
       .whispered .content, .whispered .header {
         background-color: var(--whisper);
       }
@@ -292,6 +303,10 @@
       clear: both;
     }
 
+    .compact .content {
+      padding: 10px 15px;
+    }
+
     .important .content, .important .header {
       background-color: var(--prominent);
     }
@@ -324,6 +339,10 @@
   @media (max-width: 860px) {
     .post {
       gap: 0px;
+    }
+    .post.compact {
+      width: 100%;
+      margin-left: 0px;
     }
     .toolbar {
       gap: 5px;

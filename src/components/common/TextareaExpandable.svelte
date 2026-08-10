@@ -52,6 +52,7 @@
       isEmpty = value ? value.length === 0 : true
     }
     setHeight()
+    if (autoFocus) { focus() }
   })
 
   function setHeight (node) { // textarea only
@@ -66,6 +67,10 @@
 
   export async function getContent () { // 2DO: Remove
     return value
+  }
+
+  export function focus () {
+    if (allowHtml) { editorRef?.getEditor().commands.focus() } else { textareaRef?.focus() }
   }
 
   export async function triggerEdit (id, content) {

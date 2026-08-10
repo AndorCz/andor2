@@ -3,16 +3,21 @@
   import { isFilledArray } from '@lib/utils'
   import { tooltipContent } from '@lib/tooltip'
   import { setRead, getReply } from '@lib/database-browser'
-  import { onMount, onDestroy, mount } from 'svelte'
+  import { onMount, onDestroy, mount, tick } from 'svelte'
   import Post from '@components/common/Post.svelte'
+  import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
   let postCount = $state(0)
   let lastPostId = $state()
   let threadEl = $state()
   let replyPostEl = $state()
   let replyPostData = $state()
+  let replyEditor = $state()
+  let replyTarget = $state()
+  let replyValue = $state('')
+  let replySaving = $state(false)
   let lastRefresh = Date.now()
   let autorefreshRunning = false
   let frameId
@@ -106,6 +111,29 @@
     return myIdentities.find((identity) => { return identity.id === id })
   }
 
+  async function openReplyEditor (post) {
+    if (replyTarget?.id === post.id) {
+      replyTarget = null
+      replyValue = ''
+      return
+    }
+    replyTarget = post
+    replyValue = ''
+    await tick()
+    replyEditor?.focus()
+  }
+
+  async function submitReply () {
+    if (replySaving || !replyValue.trim() || !replyTarget) { return false }
+    replySaving = true
+    const saved = await onCreateReply(replyTarget, replyValue)
+    replySaving = false
+    if (saved === false) { return false }
+    replyEditor.clearContent()
+    replyTarget = null
+    return true
+  }
+
   function triggerPaging (newPage) {
     page = newPage
     onPaging(page)
@@ -163,6 +191,7 @@
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray(posts)}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
+      {@const isLastWallPost = type === 'wall' && posts[index + 1]?.wall_id !== post.wall_id}
       {#if index === unread && unread > 0}
         <hr class='unreadLine' />
       {/if}
@@ -175,7 +204,17 @@
           </span>
         {/if}
       {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
-        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+        {#if isLastWallPost && onCreateReply && user.id}
+          <div class='thread-reply-action' style='--fullIconSize: {iconSize}px'>
+            <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
+          </div>
+        {/if}
+        {#if replyTarget?.id === post.id}
+          <div class='thread-reply-editor' style='--fullIconSize: {iconSize}px'>
+            <TextareaExpandable {user} allowHtml forceBubble autoFocus minHeight={50} placeholder='Napiš reakci…' bind:this={replyEditor} bind:value={replyValue} disabled={replySaving} onSave={submitReply} showButton disableEmpty />
+          </div>
+        {/if}
       {/if}
     {/each}
     {#if pages}
@@ -238,6 +277,30 @@
     justify-content: center;
   }
 
+  .thread-reply-editor {
+    width: calc(100% - var(--fullIconSize) - 10px);
+    margin: 5px 0px 10px calc(var(--fullIconSize) + 10px);
+  }
+
+  .thread-reply-action {
+    width: calc(100% - var(--fullIconSize) - 10px);
+    margin: 0px 0px 10px calc(var(--fullIconSize) + 10px);
+    text-align: center;
+  }
+    .thread-reply-action button {
+      padding: 5px 8px;
+      color: var(--dim);
+      opacity: 0.7;
+      background: none;
+      border: none;
+      box-shadow: none;
+      white-space: nowrap;
+    }
+      .thread-reply-action button:hover {
+        color: var(--dim);
+        opacity: 1;
+      }
+
   .pagination {
     text-align: left;
     margin-top: 70px;
@@ -262,6 +325,10 @@
     z-index: 110;
   }
   @media (max-width: 860px) {
+    .thread-reply-editor, .thread-reply-action {
+      width: 100%;
+      margin-left: 0px;
+    }
     #replyPreview {
       width: 150%;
     }
