@@ -18,6 +18,7 @@
   let replyTarget = $state()
   let replyValue = $state('')
   let replySaving = $state(false)
+  let wallRepliesExpanded = $state(false)
   let lastRefresh = Date.now()
   let autorefreshRunning = false
   let frameId
@@ -190,30 +191,39 @@
   {#if loading && !user.autorefresh}
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray(posts)}
+    {@const collapseWallReplies = type === 'wall' && posts.length - 1 > 3 && !wallRepliesExpanded}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
       {@const isLastWallPost = type === 'wall' && posts[index + 1]?.wall_id !== post.wall_id}
-      {#if index === unread && unread > 0}
-        <hr class='unreadLine' />
+      {@const hideWallReply = collapseWallReplies && index > 0 && index < posts.length - 1}
+      {#if collapseWallReplies && index === 1}
+        <div class='wall-more' style='--fullIconSize: {iconSize}px'>
+          <button onclick={() => { wallRepliesExpanded = true }}>zobrazit více</button>
+        </div>
       {/if}
-      {#if post.dice}
-        {#if diceMode === 'post'}
-          <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
-        {:else if diceMode === 'icon'}
-          <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
+      {#if !hideWallReply}
+        {#if index === unread && unread > 0}
+          <hr class='unreadLine' />
+        {/if}
+        {#if post.dice}
+          {#if diceMode === 'post'}
             <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
-          </span>
-        {/if}
-      {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
-        <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
-        {#if isLastWallPost && onCreateReply && user.id}
-          <div class='thread-reply-action' style='--fullIconSize: {iconSize}px'>
-            <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
-          </div>
-        {/if}
-        {#if replyTarget?.id === post.id}
-          <div class='thread-reply-editor' style='--fullIconSize: {iconSize}px'>
-            <TextareaExpandable {user} allowHtml forceBubble autoFocus minHeight={50} placeholder='Napiš reakci…' bind:this={replyEditor} bind:value={replyValue} disabled={replySaving} onSave={submitReply} showButton disableEmpty />
-          </div>
+          {:else if diceMode === 'icon'}
+            <span class='dicePost' use:tooltipContent={{ maxWidth: 'none' }}>
+              <Post {post} {user} {allowReactions} {canDeleteAll} {iconSize} {onDelete} isMyPost={isMyPost(post.owner)} />
+            </span>
+          {/if}
+        {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
+          <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+          {#if isLastWallPost && onCreateReply && user.id}
+            <div class='thread-reply-action' style='--fullIconSize: {iconSize}px'>
+              <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
+            </div>
+          {/if}
+          {#if replyTarget?.id === post.id}
+            <div class='thread-reply-editor' style='--fullIconSize: {iconSize}px'>
+              <TextareaExpandable {user} allowHtml forceBubble autoFocus minHeight={50} placeholder='Napiš reakci…' bind:this={replyEditor} bind:value={replyValue} disabled={replySaving} onSave={submitReply} showButton disableEmpty />
+            </div>
+          {/if}
         {/if}
       {/if}
     {/each}
@@ -301,6 +311,25 @@
         opacity: 1;
       }
 
+  .wall-more {
+    width: calc(100% - var(--fullIconSize) - 10px);
+    margin: 0px 0px 5px calc(var(--fullIconSize) + 10px);
+    text-align: center;
+  }
+    .wall-more button {
+      padding: 5px 8px;
+      color: var(--dim);
+      opacity: 0.7;
+      background: none;
+      border: none;
+      box-shadow: none;
+      white-space: nowrap;
+    }
+      .wall-more button:hover {
+        color: var(--dim);
+        opacity: 1;
+      }
+
   .pagination {
     text-align: left;
     margin-top: 70px;
@@ -328,6 +357,10 @@
     .thread-reply-editor, .thread-reply-action {
       width: 100%;
       margin-left: 0px;
+    }
+    .wall-more {
+      width: calc(100% - 30px);
+      margin-left: 30px;
     }
     #replyPreview {
       width: 150%;

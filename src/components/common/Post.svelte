@@ -341,8 +341,8 @@
       gap: 0px;
     }
     .post.compact {
-      width: 100%;
-      margin-left: 0px;
+      width: calc(100% - 30px);
+      margin-left: 30px;
     }
     .toolbar {
       gap: 5px;
