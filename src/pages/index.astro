@@ -4,7 +4,7 @@
   import HomepageTabs from '@components/homepage/HomepageTabs.svelte'
   import Editorial from '@components/homepage/Editorial.svelte'
 
-  let newsError, lastEditorial, news, wall, newsMaxPage, wallMaxPage, addShowcase, showcasePost
+  let newsError, lastEditorial, news, wall, newsMaxPage, wallMaxPage, wallUnread = 0, addShowcase, showcasePost
   const { supabase, user } = Astro.locals
 	const params = Object.fromEntries(Astro.url.searchParams)
 
@@ -30,7 +30,12 @@
   }
 
   try {
-    const wallEntriesRes = await supabase.from('wall').select('*', { count: 'exact' }).eq('published', true).order('created_at', { ascending: false }).order('id', { ascending: false }).range(wallPage * limit, wallPage * limit + limit - 1)
+    if (user.id) {
+      const wallReadRes = await supabase.from('wall_reads').select('unread_count').eq('user_id', user.id).maybeSingle()
+      if (wallReadRes.error) { throw wallReadRes.error }
+      wallUnread = wallReadRes.data?.unread_count || 0
+    }
+    const wallEntriesRes = await supabase.from('wall').select('*, author:profiles!wall_author_id_fkey(id, name, portrait)', { count: 'exact' }).eq('published', true).order('activity_at', { ascending: false }).order('id', { ascending: false }).range(wallPage * limit, wallPage * limit + limit - 1)
     if (wallEntriesRes.error) { throw wallEntriesRes.error }
     const threadIds = (wallEntriesRes.data || []).filter(entry => entry.entry_type === 'thread').map(entry => entry.id)
     let wallPosts = []
@@ -74,7 +79,7 @@
 			<Latest client:only='svelte' />
     </aside>
     <content>
-      <HomepageTabs {user} {news} {wall} showcasePost={addShowcase ? showcasePost : null} {newsPage} {newsMaxPage} {wallPage} {wallMaxPage} client:only='svelte' />
+      <HomepageTabs {user} {news} {wall} {wallUnread} showcasePost={addShowcase ? showcasePost : null} {newsPage} {newsMaxPage} {wallPage} {wallMaxPage} client:only='svelte' />
     </content>
   </main>
 </Layout>

@@ -351,7 +351,9 @@ create table wall (
   header_hash text,
   published boolean not null default true,
   owner uuid default auth.uid(),
+  author_id uuid,
   created_at timestamp with time zone default current_timestamp,
+  activity_at timestamp with time zone not null default current_timestamp,
   constraint wall_entry_type_check check (entry_type in ('thread', 'event')),
   constraint wall_entry_shape_check check (
     (
@@ -359,6 +361,7 @@ create table wall (
       and post is not null
       and cardinality(post) > 0
       and owner is not null
+      and author_id is null
       and num_nonnulls(game_id, solo_concept_id, work_id, board_id) = 0
       and title is null
       and summary is null
@@ -375,10 +378,18 @@ create table wall (
     )
   ),
   constraint wall_owner_fkey foreign key (owner) references profiles (id) on delete cascade,
+  constraint wall_author_id_fkey foreign key (author_id) references profiles (id) on delete set null,
   constraint wall_game_id_fkey foreign key (game_id) references games (id) on delete cascade,
   constraint wall_solo_concept_id_fkey foreign key (solo_concept_id) references solo_concepts (id) on delete cascade,
   constraint wall_work_id_fkey foreign key (work_id) references works (id) on delete cascade,
   constraint wall_board_id_fkey foreign key (board_id) references boards (id) on delete cascade
+);
+
+create table wall_reads (
+  user_id uuid not null primary key references profiles (id) on delete cascade,
+  read_at timestamp with time zone not null default current_timestamp,
+  unread_count int4 not null default 0,
+  constraint wall_reads_unread_count_check check (unread_count >= 0)
 );
 
 create table poll_votes (
@@ -577,7 +588,8 @@ create or replace view wall_posts with (security_invoker = true) as
     r.frowns,
     r.shocks,
     r.hearts,
-    r.laughs
+    r.laughs,
+    coalesce(root.created_at > wall_reader.read_at and root.owner is distinct from wall_reader.user_id, false) as unread
   from wall w
   cross join lateral unnest(w.post) with ordinality as wall_position(post_id, position)
   join posts root on root.id = wall_position.post_id
@@ -585,10 +597,13 @@ create or replace view wall_posts with (security_invoker = true) as
   left join characters character_owner on root.owner = character_owner.id and root.owner_type = 'character'
   left join npcs npc_owner on root.owner = npc_owner.id and root.owner_type = 'npc'
   left join reactions r on root.id = r.item_id and r.item_type = 'post'
+  left join wall_reads wall_reader on wall_reader.user_id = (select auth.uid())
   where w.entry_type = 'thread';
 
 grant select on public.wall_posts to anon, authenticated;
 grant select on public.wall to anon, authenticated;
+grant select on public.wall_reads to anon, authenticated;
+grant insert, update on public.wall_reads to authenticated;
 revoke insert, update, delete on public.wall from anon;
 revoke update on public.wall from authenticated;
 grant insert, delete on public.wall to authenticated;
@@ -1056,11 +1071,27 @@ grant execute on function update_wall_entry(int4, text) to authenticated;
 grant execute on function delete_wall_entry(int4) to authenticated;
 
 
+create or replace function wall_read () returns void as $$
+begin
+  if auth.uid() is null then raise exception 'Pro označení Zdi jako přečtené se musíš přihlásit'; end if;
+
+  insert into wall_reads (user_id, read_at, unread_count)
+  values (auth.uid(), current_timestamp, 0)
+  on conflict (user_id) do update
+  set read_at = excluded.read_at, unread_count = 0;
+end;
+$$ language plpgsql security invoker set search_path = public;
+
+revoke execute on function wall_read() from public, anon;
+grant execute on function wall_read() to authenticated;
+
+
 create schema if not exists private;
 
 create or replace function private.sync_wall_event () returns trigger as $$
 declare
   source_column text;
+  source_author uuid;
 begin
   source_column := case tg_table_name
     when 'games' then 'game_id'
@@ -1073,6 +1104,11 @@ begin
     raise exception 'Nepodporovaný zdroj události: %', tg_table_name;
   end if;
 
+  source_author := coalesce(
+    nullif(to_jsonb(new)->>'author', '')::uuid,
+    nullif(to_jsonb(new)->>'owner', '')::uuid
+  );
+
   if new.published is not true then
     execute format('delete from public.wall where entry_type = ''event'' and %I = $1', source_column)
       using new.id;
@@ -1081,22 +1117,23 @@ begin
 
   if tg_op = 'INSERT' or old.published is distinct from true then
     execute format(
-      'insert into public.wall (entry_type, %I, title, summary, header_hash, published, owner)
-       values (''event'', $1, $2, $3, $4, true, null)
+      'insert into public.wall (entry_type, %I, title, summary, header_hash, published, owner, author_id)
+       values (''event'', $1, $2, $3, $4, true, null, $5)
        on conflict (%I) where %I is not null do update
        set title = excluded.title,
            summary = excluded.summary,
            header_hash = excluded.header_hash,
-           published = true',
+           published = true,
+           author_id = excluded.author_id',
       source_column, source_column, source_column
-    ) using new.id, new.name, new.annotation, new.custom_header;
+    ) using new.id, new.name, new.annotation, new.custom_header, source_author;
   else
     execute format(
       'update public.wall
-       set title = $2, summary = $3, header_hash = $4
+       set title = $2, summary = $3, header_hash = $4, author_id = $5
        where entry_type = ''event'' and %I = $1',
       source_column
-    ) using new.id, new.name, new.annotation, new.custom_header;
+    ) using new.id, new.name, new.annotation, new.custom_header, source_author;
   end if;
 
   return new;
@@ -1104,6 +1141,87 @@ end;
 $$ language plpgsql security definer set search_path = '';
 
 revoke all on function private.sync_wall_event() from public, anon, authenticated;
+
+
+create or replace function private.sync_wall_activity () returns trigger as $$
+begin
+  if new.entry_type = 'thread' and (tg_op = 'INSERT' or new.post is distinct from old.post) then
+    select p.created_at into new.activity_at
+    from public.posts p
+    where p.id = new.post[cardinality(new.post)];
+    new.activity_at := coalesce(new.activity_at, new.created_at, current_timestamp);
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer set search_path = '';
+
+create or replace function private.increment_wall_unread () returns trigger as $$
+declare
+  new_post_id int4;
+  post_owner uuid;
+  post_created_at timestamp with time zone;
+begin
+  if new.entry_type <> 'thread' or new.published is not true then return new; end if;
+
+  if tg_op = 'INSERT' then
+    new_post_id := new.post[1];
+  elsif cardinality(new.post) = cardinality(old.post) + 1
+    and new.post[1:cardinality(old.post)] is not distinct from old.post then
+    new_post_id := new.post[cardinality(new.post)];
+  else
+    return new;
+  end if;
+
+  select p.owner, p.created_at into post_owner, post_created_at
+  from public.posts p
+  where p.id = new_post_id;
+
+  update public.wall_reads
+  set unread_count = unread_count + 1
+  where user_id is distinct from post_owner
+    and read_at < post_created_at;
+
+  return new;
+end;
+$$ language plpgsql security definer set search_path = '';
+
+create or replace function private.decrement_wall_unread_for_post () returns trigger as $$
+begin
+  if exists (
+    select 1 from public.wall w
+    where w.entry_type = 'thread' and w.published is true and old.id = any(w.post)
+  ) then
+    update public.wall_reads
+    set unread_count = greatest(0, unread_count - 1)
+    where user_id is distinct from old.owner
+      and read_at < old.created_at
+      and unread_count > 0;
+  end if;
+  return old;
+end;
+$$ language plpgsql security definer set search_path = '';
+
+create or replace function private.decrement_wall_unread_for_thread () returns trigger as $$
+begin
+  if old.entry_type = 'thread' and old.published is true then
+    update public.wall_reads wall_reader
+    set unread_count = greatest(0, wall_reader.unread_count - (
+      select count(*)::int
+      from public.posts p
+      where p.id = any(old.post)
+        and p.owner is distinct from wall_reader.user_id
+        and p.created_at > wall_reader.read_at
+    ))
+    where wall_reader.unread_count > 0;
+  end if;
+  return old;
+end;
+$$ language plpgsql security definer set search_path = '';
+
+revoke all on function private.sync_wall_activity() from public, anon, authenticated;
+revoke all on function private.increment_wall_unread() from public, anon, authenticated;
+revoke all on function private.decrement_wall_unread_for_post() from public, anon, authenticated;
+revoke all on function private.decrement_wall_unread_for_thread() from public, anon, authenticated;
 
 
 create or replace function get_affected_users_for_post_change (p_thread_id int4, p_post_owner_id uuid, p_post_owner_type text, p_post_type public.post_content_type, p_post_audience uuid[]) returns setof uuid as $$
@@ -2327,13 +2445,17 @@ create or replace trigger add_work_thread before insert on works for each row ex
 create or replace trigger delete_work_thread after delete on works for each row execute procedure delete_thread();
 create or replace trigger update_work_updated_at before update on works for each row execute procedure update_updated_at();
 -- Public content events for the homepage wall
-create or replace trigger sync_game_wall_event after insert or update of published, name, annotation, custom_header on games for each row execute function private.sync_wall_event();
-create or replace trigger sync_solo_concept_wall_event after insert or update of published, name, annotation, custom_header on solo_concepts for each row execute function private.sync_wall_event();
-create or replace trigger sync_work_wall_event after insert or update of published, name, annotation, custom_header on works for each row execute function private.sync_wall_event();
-create or replace trigger sync_board_wall_event after insert or update of published, name, annotation, custom_header on boards for each row execute function private.sync_wall_event();
+create or replace trigger sync_game_wall_event after insert or update of published, name, annotation, custom_header, owner on games for each row execute function private.sync_wall_event();
+create or replace trigger sync_solo_concept_wall_event after insert or update of published, name, annotation, custom_header, author on solo_concepts for each row execute function private.sync_wall_event();
+create or replace trigger sync_work_wall_event after insert or update of published, name, annotation, custom_header, owner on works for each row execute function private.sync_wall_event();
+create or replace trigger sync_board_wall_event after insert or update of published, name, annotation, custom_header, owner on boards for each row execute function private.sync_wall_event();
 -- Triggers for posts and messages
 create or replace trigger update_post_updated_at before update on posts for each row execute procedure update_post_updated_at();
+create or replace trigger sync_wall_activity_before_write before insert or update of post on wall for each row execute function private.sync_wall_activity();
 create or replace trigger validate_wall_posts_before_write before insert or update of post on wall for each row execute function validate_wall_posts();
+create or replace trigger increment_wall_unread_after_write after insert or update of post on wall for each row execute function private.increment_wall_unread();
+create or replace trigger decrement_wall_unread_before_delete before delete on wall for each row execute function private.decrement_wall_unread_for_thread();
+create or replace trigger decrement_wall_unread_before_post_delete before delete on posts for each row execute function private.decrement_wall_unread_for_post();
 create or replace trigger remove_post_from_wall_after_delete after delete on posts for each row execute function remove_post_from_wall();
 create or replace trigger update_message_updated_at before update on messages for each row execute procedure update_updated_at();
 create or replace trigger ensure_contact before insert on messages for each row execute function add_contact_before_message();
@@ -2392,8 +2514,9 @@ CREATE INDEX idx_posts_thread ON public.posts USING btree (thread);
 CREATE INDEX idx_posts_game_feed ON public.posts USING btree (thread, created_at DESC, id DESC) INCLUDE (owner, audience);
 CREATE UNIQUE INDEX posts_pkey ON public.posts USING btree (id);
 CREATE INDEX idx_wall_post ON public.wall USING gin (post);
-CREATE INDEX idx_wall_published_created_at ON public.wall USING btree (published, created_at DESC);
+CREATE INDEX idx_wall_published_activity_at ON public.wall USING btree (published, activity_at DESC, id DESC);
 CREATE INDEX idx_wall_owner ON public.wall USING btree (owner);
+CREATE INDEX idx_wall_author ON public.wall USING btree (author_id);
 CREATE UNIQUE INDEX wall_game_id_key ON public.wall USING btree (game_id) WHERE game_id IS NOT NULL;
 CREATE UNIQUE INDEX wall_solo_concept_id_key ON public.wall USING btree (solo_concept_id) WHERE solo_concept_id IS NOT NULL;
 CREATE UNIQUE INDEX wall_work_id_key ON public.wall USING btree (work_id) WHERE work_id IS NOT NULL;

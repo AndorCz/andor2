@@ -9,7 +9,7 @@
   import Reactions from '@components/common/Reactions.svelte'
   import PollRenderer from '@components/boards/PollRenderer.svelte'
 
-  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, compact = false, showEdited = true } = $props()
+  const { post, user = null, unread = false, isMyPost = false, allowReactions = false, allowedReactions = ['frowns', 'laughs', 'shocks', 'hearts', 'thumbs'], canDeleteAll = false, canModerate = false, onModerate = null, onDelete = null, onEdit = null, onReply = null, iconSize = 70, compact = false, wall = false, showEdited = true } = $props()
 
   let expanded = $state(false)
   let contentEl = $state()
@@ -90,7 +90,7 @@
   })
 </script>
 
-<div onclick={onImageClick} class={'post ' + $platform} class:compact class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important} style='--fullIconSize: {iconSize}px'>
+<div onclick={onImageClick} class={'post ' + $platform} class:compact class:wall class:moderated={post.moderated} class:hidden={post.moderated && !expanded} class:unread={unread} class:whispered={post.audience_names} class:important={post.important} style='--fullIconSize: {iconSize}px'>
   {#if $platform === 'desktop'}
     <div class='icon' style='--iconSize: {compact ? Math.min(iconSize, 40) : iconSize}px' bind:this={iconEl}>
       {#if post.owner_portrait}
@@ -183,6 +183,9 @@
       margin-top: 5px;
       padding-bottom: 5px;
       gap: 8px;
+    }
+    .post.wall {
+      padding-bottom: 0px;
     }
     .moderated {
       opacity: 0.5;

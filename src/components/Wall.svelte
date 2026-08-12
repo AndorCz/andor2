@@ -1,11 +1,12 @@
 <script>
   import { supabase, handleError } from '@lib/database-browser'
   import { showSuccess } from '@lib/toasts'
+  import { onMount } from 'svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
   import Thread from '@components/common/Thread.svelte'
   import WallEvent from '@components/homepage/WallEvent.svelte'
 
-  const { user = {}, items = [], page = 0, maxPage = 0 } = $props()
+  const { user = {}, items = [], page = 0, maxPage = 0, onRead = null } = $props()
 
   const limit = 5
   const myIdentities = user.id ? [{ id: user.id }] : []
@@ -19,6 +20,13 @@
   let loading = $state(false)
   let currentPage = $state(page)
   let pages = $state(maxPage + 1)
+
+  onMount(async () => {
+    if (!user.id) { return }
+    const { error } = await supabase.rpc('wall_read')
+    if (error) { return handleError(error) }
+    onRead?.()
+  })
 
   function updatePageUrl (newPage) {
     const params = new URLSearchParams(window.location.search)
@@ -39,9 +47,9 @@
     loading = true
     const { data: wallEntries, error: wallError, count } = await supabase
       .from('wall')
-      .select('*', { count: 'exact' })
+      .select('*, author:profiles!wall_author_id_fkey(id, name, portrait)', { count: 'exact' })
       .eq('published', true)
-      .order('created_at', { ascending: false })
+      .order('activity_at', { ascending: false })
       .order('id', { ascending: false })
       .range(newPage * limit, newPage * limit + limit - 1)
     if (wallError) {

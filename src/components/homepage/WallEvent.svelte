@@ -1,5 +1,5 @@
 <script>
-  import { getHeaderUrl } from '@lib/database-browser'
+  import { getHeaderUrl, getPortraitUrl } from '@lib/database-browser'
 
   const { item } = $props()
 
@@ -14,130 +14,122 @@
 </script>
 
 <article class='event'>
-  <a class='visual' href={event.url} aria-label={`${event.label}: ${item.title}`}>
-    {#if item.header_hash}
+  {#if item.header_hash}
+    <a class='image' href={event.url} aria-label={`${event.label}: ${item.title}`}>
       <img src={getHeaderUrl(event.type, event.id, item.header_hash)} alt='' />
-    {:else}
-      <span class='material placeholder'>{event.icon}</span>
-    {/if}
-  </a>
+    </a>
+  {/if}
   <div class='body'>
-    <div class='meta'>
-      <span class='material'>{event.icon}</span>
-      <span>{event.label}</span>
-      <time datetime={item.created_at}>{date}</time>
-    </div>
     <a class='title' href={event.url}>{item.title}</a>
     {#if item.summary}
-      <p>{item.summary}</p>
+      <div class='annotation' title={item.summary}>{item.summary}</div>
     {/if}
-    <a class='open' href={event.url}>otevřít <span class='material'>arrow_forward</span></a>
+    <div class='meta'>
+      <span class='event-type'><span class='material'>{event.icon}</span>{event.label}</span>
+      <time datetime={item.created_at}>{date}</time>
+      {#if item.author}
+        <a href={`/user?id=${item.author.id}`} class='user owner' title='autor'>
+          <span>{item.author.name}</span>
+          {#if item.author.portrait}<img src={getPortraitUrl(item.author.id, item.author.portrait)} class='portrait' alt={item.author.name} />{/if}
+        </a>
+      {/if}
+    </div>
   </div>
 </article>
 
 <style>
   .event {
-    display: grid;
-    grid-template-columns: minmax(150px, 32%) 1fr;
-    min-height: 150px;
-    margin: 10px 0px 20px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--panel) 82%, var(--accent) 18%);
-    border-left: 4px solid var(--accent);
-  }
-  .visual {
-    min-height: 150px;
-    color: var(--accent);
+    display: flex;
+    min-height: 115px;
+    margin: 10px 0px 5px;
+    flex-direction: row-reverse;
     background: var(--block);
   }
-    .visual img {
+  .image {
+    width: 30%;
+    overflow: hidden;
+  }
+    .image img {
       display: block;
       width: 100%;
       height: 100%;
-      min-height: 150px;
       object-fit: cover;
     }
-    .placeholder {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      min-height: 150px;
-      align-items: center;
-      justify-content: center;
-      font-size: 52px;
-      opacity: 0.65;
-    }
   .body {
-    display: flex;
+    display: grid;
     min-width: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 18px 22px 16px;
+    flex: 1;
+    grid-template-columns: 1fr;
+    padding: 20px 20px 10px;
+  }
+  .title {
+    font-size: 24px;
+    line-height: 1.15;
+  }
+  .annotation {
+    overflow: hidden;
+    padding: 5px 0px;
+    color: var(--dim);
+    font-style: italic;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .meta {
     display: flex;
     width: 100%;
     align-items: center;
-    gap: 7px;
+    justify-content: flex-end;
+    gap: 20px;
     color: var(--dim);
-    font-size: 15px;
-    letter-spacing: 0.02em;
-  }
-    .meta .material {
-      color: var(--accent);
-      font-size: 19px;
-    }
-    .meta time {
-      margin-left: auto;
-      white-space: nowrap;
-    }
-  .title {
-    margin-top: 8px;
-    font-family: var(--headlineFont);
-    font-size: 27px;
-    line-height: 1.15;
-  }
-  p {
-    display: -webkit-box;
-    margin: 8px 0px 10px;
-    overflow: hidden;
-    color: var(--text);
-    font-size: 17px;
-    line-height: 1.35;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-  .open {
-    display: inline-flex;
-    margin-top: auto;
-    align-items: center;
-    gap: 4px;
     font-size: 16px;
   }
-    .open .material {
-      font-size: 18px;
+    .event-type {
+      display: flex;
+      margin-right: auto;
+      align-items: center;
+      gap: 6px;
+    }
+      .event-type .material {
+        color: var(--accent);
+        font-size: 18px;
+      }
+    time {
+      white-space: nowrap;
+    }
+  .owner {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+    .portrait {
+      display: block;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center 20%;
+      border-radius: 100%;
+      background: var(--background);
     }
 
-  @media (max-width: 600px) {
+  @media (max-width: 500px) {
     .event {
-      grid-template-columns: 1fr;
+      display: block;
+      margin-bottom: 10px;
     }
-    .visual, .visual img, .placeholder {
-      min-height: 110px;
-      max-height: 150px;
+    .image {
+      width: 100%;
+      height: 120px;
     }
     .body {
-      padding: 15px 17px;
+      padding: 15px 15px 10px;
     }
     .meta {
       flex-wrap: wrap;
+      gap: 10px 15px;
     }
-    .meta time {
+    .event-type {
       width: 100%;
-      margin-left: 26px;
-    }
-    .title {
-      font-size: 24px;
     }
   }
 </style>

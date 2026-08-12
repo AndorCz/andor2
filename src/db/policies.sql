@@ -122,6 +122,11 @@ create policy "INSERT own wall entries" on public.wall for insert to authenticat
 create policy "UPDATE wall post arrays" on public.wall for update to authenticated using (entry_type = 'thread' and (owner = (select auth.uid()) or published = true)) with check (entry_type = 'thread' and (owner = (select auth.uid()) or published = true));
 create policy "DELETE own wall entries" on public.wall for delete to authenticated using (entry_type = 'thread' and owner = (select auth.uid()));
 
+alter table public.wall_reads enable row level security;
+create policy "READ own wall state" on public.wall_reads for select to authenticated using (user_id = (select auth.uid()));
+create policy "INSERT own wall state" on public.wall_reads for insert to authenticated with check (user_id = (select auth.uid()));
+create policy "UPDATE own wall state" on public.wall_reads for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
 -- Threads --
 
 alter table public.threads enable row level security;

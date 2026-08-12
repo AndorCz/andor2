@@ -192,16 +192,21 @@
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray(posts)}
     {@const collapseWallReplies = type === 'wall' && posts.length - 1 > 3 && !wallRepliesExpanded}
+    {@const firstHiddenWallReply = collapseWallReplies ? posts.findIndex((post, index) => index > 0 && index < posts.length - 1 && !post.unread) : -1}
+    {@const hiddenWallReplies = collapseWallReplies ? posts.filter((post, index) => index > 0 && index < posts.length - 1 && !post.unread) : []}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
       {@const isLastWallPost = type === 'wall' && posts[index + 1]?.wall_id !== post.wall_id}
-      {@const hideWallReply = collapseWallReplies && index > 0 && index < posts.length - 1}
-      {#if collapseWallReplies && index === 1}
-        <div class='wall-more' style='--fullIconSize: {iconSize}px'>
-          <button onclick={() => { wallRepliesExpanded = true }}>zobrazit více</button>
-        </div>
+      {@const postIsUnread = type === 'wall' ? post.unread : index < unread}
+      {@const hideWallReply = collapseWallReplies && index > 0 && index < posts.length - 1 && !postIsUnread}
+      {#if index === firstHiddenWallReply}
+        <button class='wall-more plain' style='--fullIconSize: {iconSize}px' title='Zobrazit všechny odpovědi' aria-label='Zobrazit všechny odpovědi' onclick={() => { wallRepliesExpanded = true }}>
+          {#each hiddenWallReplies as hiddenPost (hiddenPost.id)}
+            <span></span>
+          {/each}
+        </button>
       {/if}
       {#if !hideWallReply}
-        {#if index === unread && unread > 0}
+        {#if type !== 'wall' && index === unread && unread > 0}
           <hr class='unreadLine' />
         {/if}
         {#if post.dice}
@@ -213,7 +218,7 @@
             </span>
           {/if}
         {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
-          <Post {post} unread={index < unread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
+          <Post {post} unread={postIsUnread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} wall={type === 'wall'} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
           {#if isLastWallPost && onCreateReply && user.id}
             <div class='thread-reply-action' style='--fullIconSize: {iconSize}px'>
               <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
@@ -312,23 +317,25 @@
       }
 
   .wall-more {
+    display: block;
     width: calc(100% - var(--fullIconSize) - 10px);
-    margin: 0px 0px 5px calc(var(--fullIconSize) + 10px);
-    text-align: center;
+    margin: 5px 0px 5px calc(var(--fullIconSize) + 10px);
+    padding: 2px 0px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    opacity: 1;
   }
-    .wall-more button {
-      padding: 5px 8px;
-      color: var(--dim);
-      opacity: 0.7;
-      background: none;
-      border: none;
-      box-shadow: none;
-      white-space: nowrap;
+    .wall-more:hover span {
+      background: color-mix(in srgb, var(--block) 95%, #fff 5%);
     }
-      .wall-more button:hover {
-        color: var(--dim);
-        opacity: 1;
-      }
+    .wall-more span {
+      display: block;
+      width: 100%;
+      height: 4px;
+      margin: 2px 0px;
+      background: var(--block);
+    }
 
   .pagination {
     text-align: left;
