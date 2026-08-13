@@ -135,6 +135,12 @@
     return true
   }
 
+  async function collapseWallThread () {
+    wallRepliesExpanded = false
+    await tick()
+    threadEl?.querySelector('.post')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   function triggerPaging (newPage) {
     page = newPage
     onPaging(page)
@@ -192,6 +198,7 @@
     <p class='info'>Načítám příspěvky...</p>
   {:else if isFilledArray(posts)}
     {@const collapseWallReplies = type === 'wall' && posts.length - 1 > 3 && !wallRepliesExpanded}
+    {@const canCollapseWallReplies = type === 'wall' && posts.length - 1 > 3}
     {@const firstHiddenWallReply = collapseWallReplies ? posts.findIndex((post, index) => index > 0 && index < posts.length - 1 && !post.unread) : -1}
     {@const hiddenWallReplies = collapseWallReplies ? posts.filter((post, index) => index > 0 && index < posts.length - 1 && !post.unread) : []}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
@@ -219,9 +226,14 @@
           {/if}
         {:else if diceMode !== 'post'}<!-- don't show regular posts in this mode -->
           <Post {post} unread={postIsUnread} {user} {allowReactions} {canDeleteAll} {iconSize} compact={type === 'wall' && post.position > 1} wall={type === 'wall'} {onReply} {onDelete} {onEdit} {onModerate} isMyPost={isMyPost(post.owner)} {canModerate} />
-          {#if isLastWallPost && onCreateReply && user.id}
+          {#if isLastWallPost && ((onCreateReply && user.id) || (canCollapseWallReplies && wallRepliesExpanded))}
             <div class='thread-reply-action' style='--fullIconSize: {iconSize}px'>
-              <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
+              {#if onCreateReply && user.id}
+                <button class:active={replyTarget?.id === post.id} aria-expanded={replyTarget?.id === post.id} onclick={() => openReplyEditor(post)}>reagovat</button>
+              {/if}
+              {#if canCollapseWallReplies && wallRepliesExpanded}
+                <button onclick={collapseWallThread}>sbalit</button>
+              {/if}
             </div>
           {/if}
           {#if replyTarget?.id === post.id}
