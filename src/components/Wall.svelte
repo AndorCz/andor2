@@ -114,12 +114,26 @@
   }
 
   async function submitReply (post, content) {
-    const { error } = await supabase.rpc('create_wall_reply', { target_wall_id: post.wall_id, new_content: content })
+    const { data: newPostId, error } = await supabase.rpc('create_wall_reply', { target_wall_id: post.wall_id, new_content: content })
     if (error) {
       handleError(error)
       return false
     }
-    await loadEntries(currentPage)
+
+    const { data: newPost, error: postError } = await supabase
+      .from('wall_posts')
+      .select('*')
+      .eq('wall_id', post.wall_id)
+      .eq('id', newPostId)
+      .single()
+    if (postError) {
+      handleError(postError)
+      return false
+    }
+
+    entries = entries.map(entry => entry.id === post.wall_id
+      ? { ...entry, posts: [...entry.posts, newPost] }
+      : entry)
     return true
   }
 
