@@ -54,4 +54,21 @@
   .homepage-tabs button.hasUnread {
     margin-right: 5px;
   }
+
+  @media (max-width: 500px) {
+    .homepage-tabs {
+      justify-content: flex-start;
+      gap: 10px;
+    }
+    .homepage-tabs button,
+    .homepage-tabs button.active {
+      padding: 10px;
+    }
+    .homepage-tabs button.hasUnread {
+      margin-right: 0;
+    }
+    .homepage-tabs .info {
+      margin-left: auto;
+    }
+  }
 </style>
