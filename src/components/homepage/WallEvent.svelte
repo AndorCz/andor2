@@ -5,7 +5,7 @@
 
   const event = $derived.by(() => {
     if (item.game_id) return { label: 'Nová skupinová hra', icon: 'groups', type: 'game', url: `/game/${item.game_id}`, id: item.game_id }
-    if (item.solo_concept_id) return { label: 'Nová sólo hra', icon: 'person_play', type: 'solo', url: `/solo/concept/${item.solo_concept_id}`, id: item.solo_concept_id }
+    if (item.solo_concept_id) return { label: 'Nová sólo hra', icon: 'robot_2', type: 'solo', url: `/solo/concept/${item.solo_concept_id}`, id: item.solo_concept_id }
     if (item.work_id) return { label: 'Nové dílo', icon: 'auto_stories', type: 'work', url: `/work/${item.work_id}`, id: item.work_id }
     return { label: 'Nová diskuze', icon: 'forum', type: 'board', url: `/board/${item.board_id}`, id: item.board_id }
   })
