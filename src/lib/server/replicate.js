@@ -2,9 +2,9 @@ import Replicate from 'replicate'
 import { Buffer } from 'node:buffer'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 
-const defaultModel = 'imagen4fast'
+const defaultModel = 'nanoBanana2Lite'
 const models = {
-  imagen4fast: { aspect: { header: '16:9', scene: '16:9', item: '9:16', character: '9:16', map: '1:1' }, extras: { safety_filter_level: 'block_only_high' }, id: 'google/imagen-4-fast' },
+  nanoBanana2Lite: { aspect: { header: '16:9', scene: '16:9', item: '9:16', character: '9:16', map: '1:1' }, id: 'google/nano-banana-2-lite' },
   imagen4: { aspect: { header: '16:9', scene: '16:9', item: '9:16', character: '9:16', map: '1:1' }, extras: { safety_filter_level: 'block_only_high' }, id: 'google/imagen-4' },
   sanaSprint: { extras: { guidance_scale: 8 }, id: 'nvidia/sana-sprint-1.6b:6ed1ce77cdc8db65550e76d5ab82556d0cb31ac8ab3c4947b168a0bda7b962e4' }
 }
