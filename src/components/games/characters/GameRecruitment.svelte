@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError } from '@lib/database-browser'
+  import { notifyCharacterChange } from '@lib/character-notifications'
   import { isFilledArray, redirectWithToast } from '@lib/utils'
   import EditableLong from '@components/common/EditableLong.svelte'
   import Character from '@components/games/characters/Character.svelte'
@@ -57,11 +58,10 @@
   */
 
   async function signExisting () {
-    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller: false }).eq('id', myOpenSelected)
-    if (user.id !== game.owner.id) {
-      await supabase.from('messages').insert({ content: `Hlásím se do tvé hry ${game.name}`, sender_user: user.id, recipient_user: game.owner.id })
-    }
+    const { error } = await supabase.from('characters').update({ game: game.id, accepted: false, storyteller: false }).eq('id', myOpenSelected).select('id').single()
     if (error) { return handleError(error) }
+    const { error: messageError } = await notifyCharacterChange(supabase, { gameId: game.id, character: characters.myOpen.find(char => char.id === myOpenSelected), senderId: user.id, action: 'Přihlásil/a jsem postavu do hry.' })
+    if (messageError) { return handleError(messageError) }
     // await charactersChanged()
     redirectWithToast({ toastType: 'success', toastText: 'Postava byla přihlášena do hry' })
   }

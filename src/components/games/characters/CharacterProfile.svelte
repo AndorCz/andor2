@@ -5,6 +5,7 @@
   import { tooltip } from '@lib/tooltip'
   import { showSuccess } from '@lib/toasts'
   import { supabase, handleError, getPortraitUrl } from '@lib/database-browser'
+  import { notifyCharacterChange } from '@lib/character-notifications'
 
   let { isStoryteller, character = $bindable({}), user = {} } = $props()
 
@@ -21,8 +22,12 @@
   }
 
   async function updateCharacter () {
-    const { error } = await supabase.from('characters').update({ storyteller: character.storyteller, color: character.color }).eq('id', character.id)
+    const { error } = await supabase.from('characters').update({ storyteller: character.storyteller, color: character.color }).eq('id', character.id).select('id').single()
     if (error) { return handleError(error) }
+    if (originalStoryteller !== character.storyteller) {
+      const { error: messageError } = await notifyCharacterChange(supabase, { gameId: character.game?.id, character, senderId: user.id, action: character.storyteller ? 'Přidal/a jsem postavě roli vypravěče.' : 'Odebral/a jsem postavě roli vypravěče.' })
+      if (messageError) { return handleError(messageError) }
+    }
     originalStoryteller = character.storyteller
     originalColor = character.color
     showSuccess('Postava byl upravena')

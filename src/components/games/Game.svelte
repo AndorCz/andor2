@@ -19,6 +19,7 @@
   const isPlayer = game.characters.some(c => c.accepted && c.player.id === user.id)
   const isGameOwner = game.owner.id === user.id
   const isStoryteller = game.characters.some(c => c.storyteller && c.player.id === user.id)
+  const mentionList = $derived(game.characters.filter(char => char.state !== 'deleted').map(char => ({ id: char.id, name: char.name, type: 'character' })))
   const bookmarkId = $derived($bookmarks.games.find(b => b.id === game.id)?.bookmark_id)
   // let notificationEnabled = game.subscription?.notification || false
   let emailEnabled = $state(game.subscription?.email || false)
@@ -130,7 +131,7 @@
       <GameCodex {game} {user} {isStoryteller} {isPlayer} />
     {:else if $gameStore.activeTab === 'chat'}
       {#if game.open_discussion}<h2>Veřejná diskuze</h2>{/if}
-      <Discussion data={game} {user} canModerate={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection='games' mentionList={game.characters} />
+      <Discussion data={game} {user} canModerate={isStoryteller} unread={game.unread.gameChat} thread={game.discussion_thread} useIdentities isPermitted={isPlayer} slug={'game-discussion-' + game.id} contentSection='games' {mentionList} />
     {:else if $gameStore.activeTab === 'game'}
       <GameThread {game} {user} {isStoryteller} {isPlayer} unread={game.unread.gameThread} {gameStore} />
     {:else if $gameStore.activeTab === 'chars'}

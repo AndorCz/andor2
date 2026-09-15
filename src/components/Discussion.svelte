@@ -54,14 +54,10 @@
       }
     } else { unread = 0 }
     if (showDiscussion) { loadPosts() }
-    const posters = await loadAllPosters()
-    if (isFilledArray(mentionList)) { // combine and deduplicate, used for game discussions to add players to characters
-      const combined = [...mentionList, ...posters]
-      const uniquePosters = new Map(combined.map((poster) => [poster.id, poster]))
-      mentionList = Array.from(uniquePosters.values())
-    } else {
-      mentionList = posters
-    }
+    const posters = await loadAllPosters() || []
+    // Game characters come from the current roster, never from historical posts.
+    const combined = [...posters.filter(poster => !useIdentities || poster.type !== 'character'), ...mentionList]
+    mentionList = Array.from(new Map(combined.map(poster => [`${poster.type}:${poster.id}`, poster])).values())
     if (isFilledArray(mentionList) && isFilledArray(data.characters)) {
       addCharacterNameStyles(data.characters)
     }
