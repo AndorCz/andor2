@@ -79,6 +79,7 @@
     let hasError = false
     let postAdded = false
     let postGenerated = false
+    let timeout
     const postHash = getStamp()
 
     const showAIPost = (npc) => {
@@ -101,21 +102,34 @@
       const decoder = new TextDecoder()
 
       // Set a timeout for the generation process
-      const timeout = setTimeout(() => {
+      let timedOut = false
+      timeout = setTimeout(() => {
+        timedOut = true
         reader.cancel()
-        throw new Error('AI generation timed out. Please refresh the page and try again.')
-      }, 60000) // 60 second timeout
+      }, 180000) // Allow the server's single retry to finish.
 
+      let buffer = ''
       while (true) {
         const { value, done } = await reader.read()
+        if (timedOut) { throw new Error('Generování trvalo příliš dlouho. Zkus to prosím znovu.') }
         if (done) break
-        const text = decoder.decode(value)
-        text.split('\n\n').forEach(line => {
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop()
+        lines.forEach(line => {
           if (!line.startsWith('data:')) return
 
           const jsonString = line.substring(5)
           if (jsonString) {
             const chunk = JSON.parse(jsonString)
+
+            if (chunk.replacePost) {
+              const { character, post } = chunk.replacePost
+              if (!postAdded) { showAIPost(character) }
+              Object.assign(reactiveAiPost, { owner: character.id, owner_name: character.name, owner_portrait: character.portrait, content: post })
+              postAdded = true
+              postGenerated = true
+            }
 
             // First chunk contains the NPC data
             if (chunk.character && !postAdded) {
@@ -182,6 +196,7 @@
         }
       }
     } finally {
+      clearTimeout(timeout)
       isGenerating = false
     }
   }

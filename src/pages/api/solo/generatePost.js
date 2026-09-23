@@ -1,5 +1,6 @@
 import { generateImage } from '@lib/server/replicate'
 import { StreamingJSONParser } from '@lib/solo/streaming-json-parser'
+import { retryStoryteller } from '@lib/solo/retry-storyteller'
 import { getImageUrl, getStamp } from '@lib/utils'
 import { getStorytellerParams, getAI } from '@lib/solo/server-deepseek'
 import { createSSEStream, getSSEHeaders } from '@lib/solo/server-utils'
@@ -73,6 +74,7 @@ export const POST = async ({ request, locals }) => {
       if (npcSlugs) { responseSchema.properties.character.properties.slug.enum = npcSlugs } // Update the enum with available NPC slugs
 
       systemInstruction += `\n\nOčekávaná JSON struktura odpovědi:\n${JSON.stringify(responseSchema)}`
+      systemInstruction += `\n\nPříklad formátu JSON (obsah nahraď pokračováním hry): ${JSON.stringify({ character: { name: 'Vypravěč', slug: npcSlugs[0] || 'vypravec' }, post: '<p>Za dveřmi se ozvaly kroky.</p>', scene: 'Chodba', nsfw: false })}\nVrať jeden úplný JSON objekt, nejprve character a post, poté doplňková data. Žádný markdown ani text mimo JSON.`
 
       // Add a system message with current inventory and abilities for the model's context
       if (gameData.inventory && gameData.inventory.length > 0) {
@@ -121,50 +123,27 @@ export const POST = async ({ request, locals }) => {
             }
           }
 
-          // DeepSeek documents that JSON mode can occasionally return empty
-          // content. Retry that case once before reporting a failure.
-          if (!parser.hasContent() && finishReason !== 'content_filter') {
-            const retryResponse = await ai.chat.completions.create({ ...storytellerParams, stream: false })
-            const retryChoice = retryResponse.choices?.[0]
-            const retryContent = retryChoice?.message?.content
-            finishReason = retryChoice?.finish_reason || finishReason
-
-            if (retryContent) {
-              const events = parser.processChunk(retryContent)
-              for (const event of events) {
-                if (event.character) {
-                  const npc = npcs.find(npc => npc.slug === event.character.slug)
-                  const characterData = npc || { name: 'Vypravěč', slug: 'vypravec', id: conceptData.storyteller }
-                  yield { character: characterData }
-                } else if (event.post) {
-                  yield { post: event.post }
-                }
-              }
-            }
-          }
-
           // Finalize parsing. DeepSeek can cut JSON off when the output/context
           // limit is reached or its inference resources are interrupted.
+          if (finishReason === 'content_filter') { throw new Error('Odpověď AI byla zablokována bezpečnostním filtrem.') }
           try {
             finalData = parser.finalize()
           } catch {
-            const completedPostData = finishReason === 'content_filter' ? null : parser.getCompletedPostData()
+            console.warn('Incomplete storyteller JSON', { finishReason, contentLength: parser.buffer.length })
+            const completedPostData = parser.getCompletedPostData()
             if (!completedPostData) {
-              const reasonMessages = {
-                length: 'Odpověď AI byla ukončena po dosažení limitu délky.',
-                content_filter: 'Odpověď AI byla zablokována bezpečnostním filtrem.',
-                insufficient_system_resource: 'AI ukončila odpověď kvůli dočasnému nedostatku výpočetních zdrojů.'
-              }
-              throw new Error(reasonMessages[finishReason] || 'AI vrátila neúplnou JSON odpověď.')
+              finalData = await retryStoryteller(ai, storytellerParams)
+              const npc = npcs.find(npc => npc.slug === finalData.character.slug)
+              const character = npc || { name: 'Vypravěč', slug: 'vypravec', id: conceptData.storyteller }
+              yield { replacePost: { character, post: finalData.post } }
+            } else {
+              // Missing safety metadata must not mark recovered content as safe.
+              finalData = { ...completedPostData, nsfw: true }
+              const warning = finishReason === 'length'
+                ? 'Odpověď AI dosáhla limitu délky. Text příspěvku byl uložen, ale doplňková data mohla být vynechána.'
+                : 'AI nedokončila doplňková data odpovědi. Text příspěvku byl přesto bezpečně uložen.'
+              yield { warning }
             }
-
-            // Missing safety metadata is treated conservatively so a recovered
-            // post cannot appear in public showcases as known-safe content.
-            finalData = { ...completedPostData, nsfw: true }
-            const warning = finishReason === 'length'
-              ? 'Odpověď AI dosáhla limitu délky. Text příspěvku byl uložen, ale doplňková data mohla být vynechána.'
-              : 'AI nedokončila doplňková data odpovědi. Text příspěvku byl přesto bezpečně uložen.'
-            yield { warning }
           }
           // console.log('Final data received:', finalData)
 
