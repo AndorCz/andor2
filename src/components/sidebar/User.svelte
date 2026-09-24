@@ -29,12 +29,15 @@
     <div id='buttons'>
       <a href='/settings' id='settings' class='button material square' title='Nastavení' use:tooltip>settings</a>
       <a href='/search' id='search' class='button material square' title='Vyhledat v konverzacích' use:tooltip>search</a>
+      <a href='/notes' id='notes' class='button material square' title='Poznámky' use:tooltip>contract_edit</a>
       <button onclick={logout} id='logout' class='material square' title='Odhlásit' use:tooltip>logout</button>
     </div>
   </div>
 </div>
 
 <style>
+  @font-face { font-family: 'Notes Icon'; src: url('/fonts/NotesIcon.ttf') format('truetype'); font-weight: 400; font-display: block; }
+  #notes { font-family: 'Notes Icon'; }
   #user {
     margin: 20px 0px;
     display: flex;
@@ -57,7 +60,7 @@
       display: flex;
       gap: 10px;
     }
-      #logout, #settings, #search {
+      #logout, #settings, #search, #notes {
         padding: 0px;
         padding: 5px;
       }

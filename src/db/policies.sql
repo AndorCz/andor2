@@ -29,6 +29,16 @@ create policy "insert for contacts owner" on public.contacts for insert to authe
 create policy "delete for contacts owner" on public.contacts for delete to authenticated using (owner = (select auth.uid()));
 
 
+-- Personal notes --
+alter table public.notes enable row level security;
+revoke all on public.notes from anon, authenticated;
+grant select, insert, update, delete on public.notes to authenticated;
+create policy "Owners read notes" on public.notes for select to authenticated using (owner = (select auth.uid()));
+create policy "Owners create notes" on public.notes for insert to authenticated with check (owner = (select auth.uid()));
+create policy "Owners update notes" on public.notes for update to authenticated using (owner = (select auth.uid())) with check (owner = (select auth.uid()));
+create policy "Owners delete notes" on public.notes for delete to authenticated using (owner = (select auth.uid()));
+
+
 -- BOARDS --------------------------------------------
 
 

@@ -1,0 +1,9 @@
+---
+import Layout from '@layouts/layout.astro'
+import Notes from '@components/notes/Notes.svelte'
+const { user } = Astro.locals
+---
+
+<Layout title='Poznámky'>
+  {user.id ? <Notes {user} client:only='svelte' /> : <><h1>Poznámky</h1><p>Pro přístup ke svým poznámkám se přihlas.</p></>}
+</Layout>

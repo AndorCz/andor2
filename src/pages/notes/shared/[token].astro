@@ -1,0 +1,12 @@
+---
+import Layout from '@layouts/layout.astro'
+import SharedNote from '@components/notes/SharedNote.svelte'
+const { token } = Astro.params
+Astro.response.headers.set('Cache-Control', 'private, no-store')
+Astro.response.headers.set('Referrer-Policy', 'no-referrer')
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+---
+
+<Layout title='Sdílená poznámka'>
+  <SharedNote {token} client:only='svelte' />
+</Layout>

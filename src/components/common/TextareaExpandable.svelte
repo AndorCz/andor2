@@ -31,6 +31,7 @@
     fonts = null,
     mentionList = null,
     forceBubble = false,
+    immediate = false,
     autoFocus = false,
     cancelClearsValue = true
   } = $props()
@@ -135,7 +136,7 @@
 
 <div class='wrapper' class:singleLine class:bubbleMenu={allowHtml && forceBubble} style='--menuOffset:{allowHtml ? 50 : 0}px' onkeydown={handleKeyDown} role="group">
   {#if allowHtml}
-    <Editor bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
+    <Editor {immediate} bind:value={value} bind:this={editorRef} {singleLine} {forceBubble} {onKeyUp} {onChange} {minHeight} {triggerSave} {enterSend} {user} {fonts} {mentionList} />
   {:else}
     {#if maxlength}
       <span class='counter'>{maxlength - (value ? value.length : 0)}</span>

@@ -3,3 +3,4 @@
 .temp
 .env
 migrations/*
+!migrations/20260924202815_notes.sql

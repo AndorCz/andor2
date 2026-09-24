@@ -29,7 +29,7 @@
   import DropdownSlot from '@components/common/DropdownSlot.svelte'
   import HorizontalRule from '@tiptap/extension-horizontal-rule'
 
-  let { user, triggerSave, value = $bindable(''), onKeyUp = null, onChange = null, minHeight = 140, enterSend = false, fonts = null, mentionList = null, forceBubble = false, singleLine = false } = $props()
+  let { user, triggerSave, value = $bindable(''), onKeyUp = null, onChange = null, minHeight = 140, enterSend = false, fonts = null, mentionList = null, forceBubble = false, singleLine = false, immediate = false } = $props()
 
   let menuEl = $state()
   let editor = $state()
@@ -199,7 +199,7 @@
       onUpdate () {
         if (onKeyUp) { onKeyUp() }
         if (onChange) {
-          setValue() // update content after a delay
+          if (immediate) { value = editor.getHTML() } else { setValue() }
           onChange()
           canUndo = editor.can().undo()
           canRedo = editor.can().redo()
