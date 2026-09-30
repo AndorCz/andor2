@@ -1335,6 +1335,52 @@ end;
 $$ language plpgsql;
 
 
+create or replace function public.clear_sidebar_unread(panel text) returns void
+language plpgsql security invoker set search_path = '' as $$
+declare
+  reader_id uuid := auth.uid();
+begin
+  if reader_id is null then raise exception 'Pro označení příspěvků jako přečtených se musíš přihlásit' using errcode = '42501'; end if;
+
+  if panel = 'booked' then
+    with cleared as (
+      update public.unread_threads u set unread_count = 0
+      where u.user_id = reader_id and u.unread_count > 0 and exists (
+        select 1 from public.bookmarks b where b.user_id = reader_id
+        and u.thread_id in (b.game_main_thread, b.game_discussion_thread, b.board_thread, b.work_thread)
+      ) returning u.thread_id
+    )
+    insert into public.read_threads (user_id, thread_id, read_at)
+    select reader_id, thread_id, now() from cleared
+    on conflict (user_id, thread_id) do update set read_at = excluded.read_at;
+  elsif panel = 'people' then
+    with cleared as (
+      update public.unread_user_message_counts set unread_count = 0
+      where recipient_user_id = reader_id and unread_count > 0 returning sender_user_id
+    )
+    insert into public.read_user_conversations (reader_user_id, peer_user_id, read_at)
+    select reader_id, sender_user_id, now() from cleared
+    on conflict (reader_user_id, peer_user_id) do update set read_at = excluded.read_at;
+  elsif panel = 'characters' then
+    with cleared as (
+      update public.unread_character_message_counts u set unread_count = 0
+      where u.unread_count > 0 and exists (
+        select 1 from public.characters c where c.id = u.recipient_character_id and c.player = reader_id
+      ) returning u.recipient_character_id, u.sender_character_id
+    )
+    insert into public.read_character_conversations (reader_character_id, peer_character_id, read_at)
+    select recipient_character_id, sender_character_id, now() from cleared
+    on conflict (reader_character_id, peer_character_id) do update set read_at = excluded.read_at;
+  else
+    raise exception 'Neznámá sekce sidebaru' using errcode = '22023';
+  end if;
+end;
+$$;
+
+revoke execute on function public.clear_sidebar_unread(text) from public, anon;
+grant execute on function public.clear_sidebar_unread(text) to authenticated;
+
+
 create or replace function add_storyteller () returns trigger as $$
 begin
   insert into characters (name, game, player, accepted, storyteller) values ('Vypravěč', new.id, new.owner, true, true);

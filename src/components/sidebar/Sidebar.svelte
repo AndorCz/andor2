@@ -3,6 +3,7 @@
   import { supabase, handleError } from '@lib/database-browser'
   import { redirectWithToast, isFilledArray } from '@lib/utils'
   import { getSavedStore, activeConversation, bookmarks } from '@lib/stores'
+  import SidebarTab from '@components/sidebar/SidebarTab.svelte'
   import User from '@components/sidebar/User.svelte'
   import People from '@components/sidebar/People.svelte'
   import Bookmarks from '@components/sidebar/Bookmarks.svelte'
@@ -29,6 +30,7 @@
   let unreadBookmarks = $state(false)
   let unreadUsers = $state(false)
   let unreadCharacters = $state(false)
+  const clearingUnread = $state({})
 
   // users
   let userStore = $state()
@@ -47,7 +49,6 @@
   onMount(async () => {
     userStore = getSavedStore('user')
     $userStore.activePanel = $userStore.activePanel || 'booked'
-    document.getElementById($userStore.activePanel)?.classList.add('active')
     window.addEventListener('resize', updateHeight) // update height on window resize
     setupResizeObserver()
 
@@ -126,9 +127,6 @@
   async function activate (panel) {
     if ($userStore.activePanel !== panel) {
       $userStore.activePanel = panel
-      document.querySelectorAll('#tabs button').forEach(button => {
-        button.classList.toggle('active', button.id === panel)
-      })
       // Load data for the newly activated tab
       await loadTabData(panel)
     }
@@ -145,6 +143,29 @@
       unreadBookmarks = data.unread_bookmarks > 0
       unreadUsers = data.unread_user_messages > 0
       unreadCharacters = data.unread_character_messages > 0
+    }
+  }
+
+  async function clearTabUnread (panel) {
+    if (clearingUnread[panel]) return
+    clearingUnread[panel] = true
+    try {
+      const { error } = await supabase.rpc('clear_sidebar_unread', { panel })
+      if (error) throw error
+      if (panel === 'booked') {
+        unreadBookmarks = false
+        await loadBookmarksData()
+      } else if (panel === 'people') {
+        unreadUsers = false
+        await loadUsersData()
+      } else if (panel === 'characters') {
+        unreadCharacters = false
+        await loadCharactersData()
+      }
+    } catch (error) {
+      handleError(error)
+    } finally {
+      clearingUnread[panel] = false
     }
   }
 
@@ -287,20 +308,9 @@
 
         {#if $userStore?.activePanel}
           <div id='tabs'>
-            <button id='booked' class:active={$userStore?.activePanel === 'booked'} onclick={() => { activate('booked') }}>
-              {#if unreadBookmarks && $userStore.activePanel !== 'booked'}<span class='unread badge'></span>{/if}
-              <span class='material'>bookmark</span><span class='label'>Záložky</span>
-            </button>
-            <button id='people' class:active={$userStore?.activePanel === 'people'} onclick={() => { activate('people') }}>
-              {#if unreadUsers && $userStore.activePanel !== 'people'}<span class='unread badge'></span>{/if}
-              <span class='material'>person</span>
-              <span class='label'>Lidé{#if activeUsers}&nbsp;({activeUsers}){/if}</span>
-            </button>
-            <button id='characters' class:active={$userStore?.activePanel === 'characters'} onclick={() => { activate('characters') }}>
-              {#if unreadCharacters && $userStore?.activePanel !== 'characters'}<span class='unread badge'></span>{/if}
-              <span class='material'>domino_mask</span>
-              <span class='label'>Postavy</span>
-            </button>
+            <SidebarTab id='booked' icon='bookmark' label='Záložky' active={$userStore.activePanel === 'booked'} unread={unreadBookmarks} clearing={clearingUnread.booked} onactivate={() => activate('booked')} onclear={() => clearTabUnread('booked')} />
+            <SidebarTab id='people' icon='person' label={`Lidé${activeUsers ? ` (${activeUsers})` : ''}`} active={$userStore.activePanel === 'people'} unread={unreadUsers} clearing={clearingUnread.people} onactivate={() => activate('people')} onclear={() => clearTabUnread('people')} />
+            <SidebarTab id='characters' icon='domino_mask' label='Postavy' active={$userStore.activePanel === 'characters'} unread={unreadCharacters} clearing={clearingUnread.characters} onactivate={() => activate('characters')} onclear={() => clearTabUnread('characters')} />
           </div>
         {/if}
         <div id='panels'>
@@ -387,41 +397,6 @@
     height: 76px;
     display: flex;
   }
-    #tabs button {
-      position: relative;
-      flex: 1;
-      display: flex;
-      gap: 10px;
-      color: var(--linkVisited);
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 15px 0px;
-      background: none;
-      border: 0px;
-      margin-bottom: -10px;
-      border-radius: 10px 10px 0px 0px;
-      box-shadow: none;
-    }
-      #tabs button:hover {
-        color: var(--text);
-      }
-    #tabs button.active {
-      background: var(--panel);
-      color: var(--text);
-      pointer-events: none;
-    }
-    #tabs button .label {
-      font-size: 14px;
-      font-weight: 500;
-    }
-      .badge {
-        top: 10px;
-        right: 10px;
-      }
-      .unread {
-        color: var(--new);
-      }
 
   #panels, .login {
     padding: 20px;
