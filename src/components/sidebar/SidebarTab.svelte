@@ -4,7 +4,7 @@
 
 <div class='tab'>
   <button {id} class:active onclick={onactivate}><span class='material'>{icon}</span><span class='label'>{label}</span></button>
-  {#if unread && !active}<button class='badge' title='Označit vše jako přečtené' aria-label={`${label}: označit vše jako přečtené`} disabled={clearing} onclick={onclear}></button>{/if}
+  {#if unread && !active}<button class='badge' title='Dvojklikem označit vše jako přečtené' aria-label={`${label}: dvojklikem označit vše jako přečtené`} disabled={clearing} ondblclick={onclear}></button>{/if}
 </div>
 
 <style>
