@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SESClient, SendEmailCommand } from 'npm:@aws-sdk/client-ses'
+import { sendEmail } from '../_shared/resend.ts'
 
 function handleError(error) {
   console.error(error);
@@ -10,13 +10,10 @@ function handleError(error) {
   });
 }
 
-const sesClient = new SESClient({ region: 'eu-north-1' });
-const sourceEmail = 'info@andor2.cz';
-const replyToEmail = sourceEmail;
-const version = '1.0.1';
+const version = '1.0.2'
 console.log(`Migration function version ${version} starting up`);
 
-Deno.serve(async (req)=>{
+Deno.serve(async () => {
   try {
     const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', {
       global: {
@@ -198,39 +195,11 @@ Děkujeme za Vaši dřívější účast a doufáme že se opět shledáme na no
 
 Andor2.cz: https://www.andor2.cz`;
 
-    const sendCommand = new SendEmailCommand({
-      Source: sourceEmail,
-      Destination: {
-        ToAddresses: [oldUser.old_email]
-      },
-      ReplyToAddresses: [
-        replyToEmail
-      ],
-      Message: {
-        Subject: {
-          Data: subject,
-          Charset: 'UTF-8'
-        },
-        Body: {
-          Html: {
-            Data: htmlBody,
-            Charset: 'UTF-8'
-          },
-          Text: {
-            Data: textBody,
-            Charset: 'UTF-8'
-          }
-        }
-      }
-    });
-
-    const sendResult = await sesClient.send(sendCommand);
+    await sendEmail(supabase, { to: [oldUser.old_email], subject, html: htmlBody, text: textBody }, `migration/${oldUser.id}`)
 
     // Mark user as notified
     const { error: updateError } = await supabase.from('old_users').update({ notified: true }).eq('id', oldUser.id);
-    if (updateError) {
-      console.error('Failed to mark user as notified:', updateError);
-    }
+    if (updateError) return handleError(updateError)
 
     return new Response(JSON.stringify({
       message: 'Migration email sent successfully',

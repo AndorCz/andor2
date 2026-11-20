@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { SESClient, SendEmailCommand } from 'npm:@aws-sdk/client-ses';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 function handleError(error) {
   console.error(error);
   return new Response(`Edge function (Notify) error: ${error.message}`, {
@@ -9,12 +9,7 @@ function handleError(error) {
     }
   });
 }
-const sesClient = new SESClient({
-  region: 'eu-north-1'
-});
-const sourceEmail = 'info@andor2.cz';
-const replyToEmail = sourceEmail;
-const version = '1.0.1';
+const version = '1.0.2'
 console.log(`Notify function version ${version} starting up`);
 Deno.serve(async (req)=>{
   try {
@@ -103,32 +98,7 @@ Deno.serve(async (req)=>{
             </p>
           </div>`;
         const textBody = `${character.name}${record.audience ? ' (soukromý příspěvek)' : ''}\n\n${record.content}\n\nOtevřít hru: https://andor2.cz/game/${character.game.id}?tab=game&tool=post`;
-        const sendCommand = new SendEmailCommand({
-          Source: sourceEmail,
-          Destination: {
-            ToAddresses: emailList
-          },
-          ReplyToAddresses: [
-            replyToEmail
-          ],
-          Message: {
-            Subject: {
-              Data: subject,
-              Charset: 'UTF-8'
-            },
-            Body: {
-              Html: {
-                Data: htmlBody,
-                Charset: 'UTF-8'
-              },
-              Text: {
-                Data: textBody,
-                Charset: 'UTF-8'
-              }
-            }
-          }
-        });
-        const sendResult = await sesClient.send(sendCommand);
+        await sendEmail(supabase, { to: emailList, subject, html: htmlBody, text: textBody }, `notify/${record.id}`)
       }
       return new Response(JSON.stringify({
         message: 'Notifications processed'
