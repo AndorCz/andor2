@@ -7,10 +7,11 @@
   import Post from '@components/common/Post.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, enableAutorefresh = true, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, ascending = false, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, enableAutorefresh = true, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
   let postCount = $state(0)
   let lastPostId = $state()
+  let previousPosts
   let threadEl = $state()
   let replyPostEl = $state()
   let replyPostData = $state()
@@ -149,7 +150,7 @@
 
   function seen () {
     setRead(user.id, id)
-    if (isFilledArray(posts)) { lastPostId = posts[0].id }
+    lastPostId = (ascending ? posts.at(-1) : posts[0])?.id
     if (contentId && contentSection && isFilledArray($bookmarks[contentSection])) {
       const bookmark = $bookmarks[contentSection].find((page) => { return page.id === contentId })
       if (bookmark) {
@@ -163,7 +164,7 @@
 
   // autorefresh every 10 seconds, if enabled in user settings
   async function refresh () {
-    if (Date.now() - lastRefresh > 10000) {
+    if (!loading && Date.now() - lastRefresh > 10000) {
       if (autorefreshRunning) return
       autorefreshRunning = true
       lastRefresh = Date.now()
@@ -175,9 +176,12 @@
 
   $effect(() => {
     if (isFilledArray(posts)) {
-      if (loading === false && postCount !== posts.length) {
+      if (!loading && posts !== previousPosts) {
+        previousPosts = posts
         postsUpdate()
-        if (posts[0].id !== lastPostId) {
+      }
+      if (loading === false && postCount !== posts.length) {
+        if ((ascending ? posts.at(-1) : posts[0]).id !== lastPostId) {
           // If this is autorefresh and we have new posts, increment unread
           if (user.autorefresh && postCount > 0 && posts.length > postCount) {
             const newPostsCount = posts.length - postCount
@@ -203,7 +207,7 @@
     {@const hiddenWallReplies = collapseWallReplies ? posts.filter((post, index) => index > 0 && index < posts.length - 1 && !post.unread) : []}
     {#each posts as post, index (`${post.id}-${post.updated_at}`)}
       {@const isLastWallPost = type === 'wall' && posts[index + 1]?.wall_id !== post.wall_id}
-      {@const postIsUnread = type === 'wall' ? post.unread : index < unread}
+      {@const postIsUnread = type === 'wall' ? post.unread : (ascending ? posts.length - 1 - index : index) < unread}
       {@const hideWallReply = collapseWallReplies && index > 0 && index < posts.length - 1 && !postIsUnread}
       {#if index === firstHiddenWallReply}
         <button class='wall-more plain' style='--fullIconSize: {iconSize}px' title='Zobrazit všechny odpovědi' aria-label='Zobrazit všechny odpovědi' onclick={() => { wallRepliesExpanded = true }}>
@@ -213,7 +217,7 @@
         </button>
       {/if}
       {#if !hideWallReply}
-        {#if type !== 'wall' && index === unread && unread > 0}
+        {#if type !== 'wall' && index > 0 && unread > 0 && index === (ascending ? posts.length - unread : unread)}
           <hr class='unreadLine' />
         {/if}
         {#if post.dice}

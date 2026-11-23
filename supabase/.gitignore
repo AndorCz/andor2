@@ -5,3 +5,4 @@
 migrations/*
 !migrations/20260924202815_notes.sql
 !migrations/20261120111446_resend_vault_access.sql
+!migrations/20261123184438_discussion_chronology.sql

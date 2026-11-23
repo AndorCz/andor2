@@ -1529,7 +1529,9 @@ begin
     where po.thread = _thread and (not _important_only or po.important = true)
     order by
       case when ascending then po.created_at end asc,
-      case when not ascending then po.created_at end desc
+      case when ascending then po.id end asc,
+      case when not ascending then po.created_at end desc,
+      case when not ascending then po.id end desc
     limit _limit
     offset page * _limit
   ) t;
@@ -1542,7 +1544,7 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function get_discussion_posts_special (user_id uuid, _thread integer, page integer, _limit int)
+create or replace function get_discussion_posts_special (user_id uuid, _thread integer, page integer, _limit int, ascending boolean)
 returns json as $$
 declare
   postdata json;
@@ -1561,7 +1563,11 @@ begin
     select po.*, get_character_names(po.audience) as audience_names
     from discussion_posts_owner po
     where po.thread = _thread and (po.owner = user_id or user_id = any (po.audience))
-    order by po.created_at desc
+    order by
+      case when ascending then po.created_at end asc,
+      case when ascending then po.id end asc,
+      case when not ascending then po.created_at end desc,
+      case when not ascending then po.id end desc
     limit _limit
     offset page * _limit
   ) t;
@@ -1573,6 +1579,11 @@ begin
   );
 end;
 $$ language plpgsql;
+
+create or replace function get_discussion_posts_special (user_id uuid, _thread integer, page integer, _limit int)
+returns json as $$
+  select get_discussion_posts_special(user_id, _thread, page, _limit, false);
+$$ language sql;
 
 
 create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)

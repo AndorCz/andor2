@@ -13,6 +13,9 @@
   const limit = unread > 50 ? Math.min(unread, 500) : 50
   const showDiscussion = data.open_discussion || isPermitted
   const discussionStore = getSavedStore(slug)
+  const canChangeOrder = contentSection === 'games' || contentSection === 'boards'
+  const isReportBoard = contentSection === 'boards' && data.id === 3
+  const orderStore = canChangeOrder ? getSavedStore('discussion-order-' + thread, { ascending: false }) : null
 
   let posts = $state([])
   let textareaRef = $state()
@@ -25,6 +28,15 @@
   let loading = $state(true)
   let threadUnread = $state(unread)
   let showImportantOnly = $state(false)
+  const ascending = $derived($orderStore?.ascending === true)
+  let pageUnread = $state(0)
+  let loadRequest = 0
+
+  function changeOrder (event) {
+    $orderStore.ascending = event.currentTarget.value === 'asc'
+    page = 0
+    loadPosts()
+  }
 
   function switchTab (important) {
     showImportantOnly = important
@@ -63,23 +75,35 @@
     }
   })
 
-  async function loadPosts () {
+  async function loadPosts (targetPage = page, showLatest = false) {
+    const request = ++loadRequest
+    const params = { _thread: thread, page: targetPage, _limit: limit, ascending }
     loading = true
     let query
-    if (data.id === 3 && !canModerate) { // Special board "Nahlášení obsahu" (see only your posts and responses from mods)
-      if (!user.id) { return }
-      query = await supabase.rpc('get_discussion_posts_special', { user_id: user.id, _thread: thread, page, _limit: limit })
+    if (isReportBoard && !canModerate) {
+      query = user.id
+        ? await supabase.rpc('get_discussion_posts_special', { ...params, user_id: user.id })
+        : { data: { count: 0, postdata: [] } }
     } else {
-      query = await supabase.rpc('get_discussion_posts', { _thread: thread, page, _limit: limit, ascending: false, _important_only: showImportantOnly })
+      query = await supabase.rpc('get_discussion_posts', { ...params, _important_only: showImportantOnly })
     }
-    const { data: rpcData, error } = await query
-    if (error) { return handleError(error) }
+    if (request !== loadRequest) { return }
+    const { data: rpcData, error } = query
+    if (error) {
+      loading = false
+      return handleError(error)
+    }
     const { postdata, count } = rpcData
-    loading = false
-    if (postdata) {
-      posts = postdata
-    }
     pages = Math.ceil(count / limit)
+    const lastPage = Math.max(0, pages - 1)
+    const nextPage = showLatest ? lastPage : Math.min(targetPage, lastPage)
+    if (nextPage !== targetPage) { return loadPosts(nextPage, showLatest) }
+
+    page = targetPage
+    posts = postdata || []
+    const newerPosts = params.ascending ? count - targetPage * limit - posts.length : targetPage * limit
+    pageUnread = Math.min(posts.length, Math.max(0, threadUnread - newerPosts))
+    loading = false
   }
 
   function getIdentity () {
@@ -108,7 +132,7 @@
     }
     let audience = null
     let response
-    if (data.id === 3) { // Special board "Nahlášení obsahu"
+    if (isReportBoard) {
       const repliedIds = [...textareaValue.matchAll(/data-user="([^"]+)"/g)].map(match => match[1])
       if (repliedIds.length) { audience = repliedIds }
     }
@@ -118,10 +142,11 @@
       response = await sendPost('POST', { thread, content: textareaValue, owner: identity.id, ownerType: identity.type, audience, postType: contentSection === 'games' ? 'game' : 'other' })
     }
     if (!response.error) {
-      page = 0
+      const showLatest = ascending && !editing && !showImportantOnly
+      if (!ascending) { page = 0 }
       textareaRef.clearContent()
       $discussionStore.unsent = ''
-      await loadPosts()
+      await loadPosts(showLatest ? Math.max(0, (pages || 1) - 1) : page, showLatest)
       editing = false
       saving = false
       return true
@@ -215,7 +240,13 @@
       <button onclick={() => { switchTab(true) }} class:active={showImportantOnly}>Důležité</button>
     </div>
 
-    <Thread type='discussion' {loading} {posts} {user} unread={showImportantOnly ? 0 : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} /><!-- unread=0 in important-only mode: filtered subset makes the unread separator position meaningless -->
+    <Thread type='discussion' {loading} {posts} {user} {ascending} unread={showImportantOnly ? 0 : canChangeOrder ? pageUnread : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
+    {#if canChangeOrder}
+      <select class='discussion-order' aria-label='Pořadí příspěvků' value={ascending ? 'asc' : 'desc'} onchange={changeOrder}>
+        <option value='desc'>Od konce</option>
+        <option value='asc'>Od začátku</option>
+      </select>
+    {/if}
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
@@ -254,6 +285,10 @@
   }
   .importance {
     margin-top: 20px;
+  }
+  .discussion-order {
+    margin: 10px 0 0 5px;
+    width: auto;
   }
 
   @media (max-width: 860px) {
