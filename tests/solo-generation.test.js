@@ -9,7 +9,7 @@ const source = readFileSync(new URL('../src/pages/api/solo/generatePost.js', imp
 const body = source.match(/async function \* generateStreamData \(\) \{([\s\S]*?)\n {6}\}\n\n {6}const stream/)[1]
 const AsyncGeneratorFunction = Object.getPrototypeOf(async function * () {}).constructor
 
-async function generate (content, finishReason = 'stop', retryContent = JSON.stringify(data)) {
+async function generate (content, finishReason = 'stop', retryContent = JSON.stringify(data), overrides = {}) {
   const calls = []
   const saved = []
   const response = (async function * () {
@@ -27,7 +27,8 @@ async function generate (content, finishReason = 'stop', retryContent = JSON.str
     gameData: { thread: 'thread' },
     postHash: 'hash',
     addPost: async (...args) => saved.push(args),
-    console: { warn () {}, error () {} }
+    console: { warn () {}, error () {} },
+    ...overrides
   }
   const events = []
   for await (const event of new AsyncGeneratorFunction(...Object.keys(dependencies), body)(...Object.values(dependencies))) { events.push(event) }
@@ -39,6 +40,65 @@ test('complete streamed JSON is saved without retry', async () => {
   assert.equal(result.calls.length, 0)
   assert.equal(result.saved.length, 1)
   assert.deepEqual(result.saved[0][3], data)
+})
+
+test('an illustration failure leaves the saved post and game updates intact', async () => {
+  const image = { prompt: 'A corridor', type: 'scene' }
+  const inventory = { items: ['klíč'] }
+  const writes = []
+  const content = JSON.stringify({ ...data, image, inventory, end: true })
+  const result = await generate(content, 'stop', undefined, {
+    addPost: async (thread, ownerType, owner, post) => {
+      writes.push(post.post)
+      return 42
+    },
+    locals: { supabase: { from: () => ({ update: value => ({ eq: async () => writes.push(value) }) }) } },
+    addImage: async () => {
+      writes.push('image')
+      throw new TypeError('output.url is not a function')
+    }
+  })
+  assert.deepEqual(writes, [data.post, { inventory: inventory.items }, { ended: true }, 'image'])
+  assert.ok(result.events.some(event => event.inventory && event.inventory.items[0] === 'klíč'))
+  assert.ok(result.events.some(event => event.end))
+  assert.ok(result.events.some(event => event.warning))
+  assert.ok(!result.events.some(event => event.error))
+})
+
+test('item illustrations are attached to the saved post before being sent to the client', async () => {
+  const image = { prompt: 'A silver key', type: 'item' }
+  const illustration = 'https://example.com/key.jpg'
+  const writes = []
+  const result = await generate(JSON.stringify({ ...data, image }), 'stop', undefined, {
+    addPost: async () => {
+      writes.push('post')
+      return 42
+    },
+    addImage: async () => {
+      writes.push('image')
+      return { imageData: { path: 'key.jpg' } }
+    },
+    getImageUrl: () => illustration,
+    imageBuckets: { item: 'items' },
+    locals: {
+      supabase: {
+        from: table => ({
+          update: values => ({
+            eq: (column, id) => ({
+              select: () => ({
+                single: async () => {
+                  writes.push({ table, values, column, id })
+                  return {}
+                }
+              })
+            })
+          })
+        })
+      }
+    }
+  })
+  assert.deepEqual(writes, ['post', 'image', { table: 'posts', values: { illustration }, column: 'id', id: 42 }])
+  assert.deepEqual(result.events.find(event => event.illustration), { illustration, prompt: image.prompt })
 })
 
 test('unfinished post is regenerated and replaces the partial preview, then saved once', async () => {

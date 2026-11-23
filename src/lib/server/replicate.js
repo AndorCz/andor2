@@ -1,5 +1,4 @@
 import Replicate from 'replicate'
-import { Buffer } from 'node:buffer'
 import { cropImageBackEnd } from '@lib/solo/server-utils'
 
 const defaultModel = 'nanoBanana2Lite'
@@ -26,27 +25,29 @@ function getErrorMessage (error) {
 export async function generateImage (env, prompt, imageType, useModel = defaultModel) {
   console.log(`Generating '${imageType}' with prompt:`, prompt)
   if (!prompt) { return { error: { message: 'Chybí prompt pro generování obrázku' } } }
+  const abortController = new AbortController()
+  const { signal } = abortController
+  const timeoutId = setTimeout(() => abortController.abort(), 50000)
   try {
-    // configure the model
-    const replicate = new Replicate({ auth: env.REPLICATE_API_TOKEN })
-    const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 50000) // 50 second timeout
     const model = models[useModel]
     if (!model) { throw new Error(`Neznámý model pro generování obrázku: ${useModel}`) }
 
-    // run the model
+    const replicate = new Replicate({ auth: env.REPLICATE_API_TOKEN, useFileOutput: false, fetch: (url, options) => fetch(url, { ...options, signal }) })
     const output = await replicate.run(model.id, {
-      input: { prompt, aspect_ratio: model.aspect[imageType] || '1:1', output_format: 'jpg' }
+      // Replicate 1.4 can return an unfinished prediction in block mode.
+      wait: { mode: 'poll' },
+      signal,
+      input: { prompt, aspect_ratio: model.aspect?.[imageType] || '1:1', output_format: 'jpg' }
     })
-    const url = output.url()
-    if (!url) { throw new Error('Nevygenerován žádný obrázek') }
-    clearTimeout(timeoutId)
+    const url = Array.isArray(output) ? output[0] : output
+    if (typeof url !== 'string' || !/^(https:\/\/|data:image\/)/i.test(url)) {
+      const outputType = Array.isArray(output) ? `array(${output.length})` : url === null ? 'null' : typeof url
+      throw new Error(`Model ${model.id} nevrátil obrázek (typ výstupu: ${outputType})`)
+    }
 
-    // download resulting image
-    const imageResponse = await fetch(url)
+    const imageResponse = await fetch(url, { signal })
     if (!imageResponse.ok) { throw new Error(`Chyba při stahování obrázku, status: ${imageResponse.status}`) }
-    const imageBlob = await imageResponse.blob()
-    const imageBuffer = Buffer.from(await imageBlob.arrayBuffer())
+    const imageBuffer = await imageResponse.arrayBuffer()
 
     // crop to exact size
     const width = imageSizes[imageType].width
@@ -54,12 +55,14 @@ export async function generateImage (env, prompt, imageType, useModel = defaultM
     const { data, error } = await cropImageBackEnd(imageBuffer, width, height)
     return error ? { error: { message: getErrorMessage(error) } } : { data }
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if (signal.aborted) {
       console.error('Image generation timed out')
-      return { error: { message: 'Generování obrázku vypršel čas (120s)' } }
+      return { error: { message: 'Vypršel čas na generování obrázku (50 s)' } }
     }
     console.error('Error generating image:', error)
     return { error: { message: 'Chyba při generování obrázku: ' + getErrorMessage(error) } }
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 

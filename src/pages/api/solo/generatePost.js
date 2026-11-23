@@ -13,15 +13,13 @@ export const POST = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'Denní limit počtu odpovědí od AI vypravěče byl vyčerpán. Pokračuj zítra.' }), { status: 403 })
   } else {
     async function addPost (thread, ownerType, ownerId, postData, postHash) {
-      if (!postData || !postData.post || !postData.post.trim()) {
-        throw new Error('AI vygenerovala prázdný příspěvek')
-      }
-      const { error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, illustration: postData.illustration, nsfw: postData.nsfw === true })
+      const { data: savedPost, error: postError } = await locals.supabase.from('posts').insert({ thread, owner: ownerId, owner_type: ownerType, content: postData.post, identifier: postHash, nsfw: postData.nsfw === true }).select('id').single()
       if (postError) { throw new Error('Chyba při ukládání příspěvku: ' + postError.message) }
 
       // update solo_limit for the user
       const { error: limitError } = await locals.supabase.from('profiles').update({ solo_limit: locals.user.solo_limit - 1 }).eq('id', locals.user.id)
       if (limitError) { throw new Error('Chyba při aktualizaci limitu: ' + limitError.message) }
+      return savedPost.id
     }
 
     async function addImage (prompt, type, gameId, threadId) {
@@ -153,17 +151,14 @@ export const POST = async ({ request, locals }) => {
             return
           }
 
-          // Generate image if needed
-          // console.log('Image data:', finalData.image)
-          if (finalData.image && finalData.image.prompt) {
-            const { imageData, postData } = await addImage(finalData.image.prompt, finalData.image.type, gameData.id, gameData.thread)
-            if (finalData.image.type === 'scene') {
-              yield { image: postData }
-            } else {
-              finalData.illustration = getImageUrl(locals.supabase, imageData.path, imageBuckets[finalData.image.type])
-              yield { illustration: finalData.illustration, prompt: finalData.image.prompt }
-            }
+          if (typeof finalData.post !== 'string' || !finalData.post.trim()) {
+            yield { error: 'AI nevygenerovala žádný text příspěvku. Zkus to prosím znovu.' }
+            return
           }
+
+          const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
+          const ownerId = ownerNpc ? ownerNpc.id : conceptData.storyteller
+          const postId = await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
 
           // console.log('Inventory data:', finalData.inventory)
           if (finalData.inventory && Array.isArray(finalData.inventory.items)) {
@@ -177,16 +172,22 @@ export const POST = async ({ request, locals }) => {
             yield { end: true }
           }
 
-          // Save the complete post to the database
-          const ownerNpc = npcs.find(npc => npc.slug === finalData.character?.slug)
-          const ownerId = ownerNpc ? ownerNpc.id : conceptData.storyteller
-
-          // Only save post if we actually have content
-          if (finalData.post && finalData.post.trim()) {
-            await addPost(gameData.thread, 'npc', ownerId, finalData, postHash)
-          } else {
-            // No post content generated, send error
-            yield { error: 'AI nevygenerovala žádný text příspěvku. Zkus to prosím znovu.' }
+          if (finalData.image?.prompt) {
+            const { prompt, type } = finalData.image
+            try {
+              const { imageData, postData } = await addImage(prompt, type, gameData.id, gameData.thread)
+              if (type === 'scene') {
+                yield { image: postData }
+              } else {
+                const illustration = getImageUrl(locals.supabase, imageData.path, imageBuckets[type])
+                const { error } = await locals.supabase.from('posts').update({ illustration }).eq('id', postId).select('id').single()
+                if (error) { throw new Error('Uložení ilustrace k příspěvku selhalo: ' + error.message) }
+                yield { illustration, prompt }
+              }
+            } catch (error) {
+              console.warn('Error adding solo post illustration:', { postId, type, error })
+              yield { warning: 'Ilustraci se nepodařilo přidat. Text příspěvku byl uložen.' }
+            }
           }
         } catch (error) {
           if (error.name !== 'AbortError') {
