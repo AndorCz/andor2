@@ -1796,18 +1796,20 @@ end;
 $$ language plpgsql;
 
 
-create or replace function is_storyteller (game_id int4) returns boolean as $$
+create or replace function public.is_storyteller(game_id integer)
+returns boolean as $$
 begin
-  return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid() and storyteller);
+  return exists(select 1 from public.characters where game = game_id and accepted = true and player = auth.uid() and storyteller);
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = '';
 
 
-create or replace function is_player (game_id int4) returns boolean as $$
+create or replace function public.is_player(game_id integer)
+returns boolean as $$
 begin
-  return exists(select 1 from characters where game = game_id and accepted = true and player = auth.uid());
+  return exists(select 1 from public.characters where game = game_id and accepted = true and player = auth.uid());
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = '';
 
 
 create or replace function is_players_character (character_id uuid) returns boolean as $$

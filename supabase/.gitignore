@@ -8,3 +8,4 @@ migrations/*
 !migrations/20261123184438_discussion_chronology.sql
 !migrations/20261124014438_game_thread_chronology.sql
 !migrations/20261124014538_qualify_character_names_lookup.sql
+!migrations/20261124112930_qualify_game_membership_policy_lookups.sql
