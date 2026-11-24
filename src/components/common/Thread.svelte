@@ -7,7 +7,7 @@
   import Post from '@components/common/Post.svelte'
   import TextareaExpandable from '@components/common/TextareaExpandable.svelte'
 
-  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, ascending = false, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, enableAutorefresh = true, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
+  let { id, type, user, posts, loading, contentId, contentSection, unread = 0, ascending = false, canDeleteAll = false, canModerate = false, myIdentities = [], allowReactions = false, enableAutorefresh = true, onDelete = null, onEdit = null, onModerate = null, onReply = null, onCreateReply = null, onPaging = null, onOrderChange = null, page = $bindable(0), pages = null, iconSize = 70, diceMode = 'none' } = $props()
 
   let postCount = $state(0)
   let lastPostId = $state()
@@ -259,6 +259,13 @@
     <center>Žádné příspěvky</center>
   {/if}
 
+  {#if onOrderChange}
+    <select class='thread-order' aria-label='Pořadí příspěvků' value={ascending ? 'asc' : 'desc'} onchange={(event) => onOrderChange(event.currentTarget.value === 'asc')}>
+      <option value='desc'>Od konce</option>
+      <option value='asc'>Od začátku</option>
+    </select>
+  {/if}
+
   <div id='replyPreview' bind:this={replyPostEl}>
     {#if replyPostData}
       {#key replyPostData}
@@ -356,6 +363,11 @@
   .pagination {
     text-align: left;
     margin-top: 70px;
+  }
+  .thread-order {
+    background: none;
+    margin: 10px 0 0 5px;
+    width: auto;
   }
     .pagination button {
       margin: 5px;

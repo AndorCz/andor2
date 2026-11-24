@@ -32,8 +32,8 @@
   let pageUnread = $state(0)
   let loadRequest = 0
 
-  function changeOrder (event) {
-    $orderStore.ascending = event.currentTarget.value === 'asc'
+  function changeOrder (nextAscending) {
+    $orderStore.ascending = nextAscending
     page = 0
     loadPosts()
   }
@@ -240,13 +240,7 @@
       <button onclick={() => { switchTab(true) }} class:active={showImportantOnly}>Důležité</button>
     </div>
 
-    <Thread type='discussion' {loading} {posts} {user} {ascending} unread={showImportantOnly ? 0 : canChangeOrder ? pageUnread : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
-    {#if canChangeOrder}
-      <select class='discussion-order' aria-label='Pořadí příspěvků' value={ascending ? 'asc' : 'desc'} onchange={changeOrder}>
-        <option value='desc'>Od konce</option>
-        <option value='asc'>Od začátku</option>
-      </select>
-    {/if}
+    <Thread type='discussion' {loading} {posts} {user} {ascending} unread={showImportantOnly ? 0 : canChangeOrder ? pageUnread : threadUnread} id={thread} bind:page={page} {pages} allowReactions onPaging={loadPosts} onOrderChange={canChangeOrder ? changeOrder : null} {canModerate} myIdentities={identities} onReply={triggerReply} onModerate={moderatePost} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 70 : 40} {contentSection} contentId={data.id} />
   {:else}
     <div class='info'><span class='material'>info</span>Tato diskuze není veřejná</div>
   {/if}
@@ -285,10 +279,6 @@
   }
   .importance {
     margin-top: 20px;
-  }
-  .discussion-order {
-    margin: 10px 0 0 5px;
-    width: auto;
   }
 
   @media (max-width: 860px) {

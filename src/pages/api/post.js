@@ -5,11 +5,13 @@ import { isFilledArray } from '@lib/utils'
 
 export const GET = async ({ url, redirect, locals }) => {
   try {
-    const { thread, game, owners, limit = 100, offset = 0, search } = Object.fromEntries(url.searchParams)
+    const { thread, game, owners, limit = 100, offset = 0, search, order } = Object.fromEntries(url.searchParams)
     const filterOwners = owners && isFilledArray(JSON.parse(owners)) ? JSON.parse(owners) : null
     let res, posts, count
     if (game) { // handle game thread
-      res = await locals.supabase.rpc('get_game_posts', { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset, _search: search })
+      const params = { thread_id: thread, game_id: game, owners: filterOwners, _limit: limit, _offset: offset, _search: search ?? null }
+      if (order === 'asc') { params._ascending = true }
+      res = await locals.supabase.rpc('get_game_posts', params)
       if (res.error) { return new Response(JSON.stringify({ error: res.error.message }), { status: 500 }) }
       posts = res.data.posts || []
       count = res.data.count

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { sendPost } from '@lib/database-browser'
   import { platform } from '@components/common/MediaQuery.svelte'
+  import { getSavedStore } from '@lib/stores'
   import { outputTextStream } from '@lib/browser/generation'
   import { clone, addURLParam } from '@lib/utils'
   import { showSuccess, showError } from '@lib/toasts'
@@ -35,8 +36,13 @@
   let generating = $state(false)
   let abortController = $state()
   let threadUnread = $state(unread)
+  let pageUnread = $state(0)
+  let loadRequest = 0
 
   const limit = unread > 50 ? Math.min(unread, 500) : 50
+  const orderStore = getSavedStore('discussion-order-' + game.game_thread, { ascending: false })
+  const ascending = $derived($orderStore.ascending === true)
+  const latestPage = $derived(Math.max(0, (pages || 1) - 1))
   const myCharacters = $derived(game.characters.filter((char) => { return char.accepted && char.player?.id === user.id && char.state === 'alive' }))
   const activeCharacter = $derived(game.characters.find((char) => { return char.id === $gameStore.activeCharacterId }))
 
@@ -81,11 +87,19 @@
     }, 500) // Delay in ms, adjust as needed
   }
 
-  async function loadPosts () {
+  function changeOrder (nextAscending) {
+    $orderStore.ascending = nextAscending
+    loadPosts(0)
+  }
+
+  async function loadPosts (targetPage = page, showLatest = false) {
+    const request = ++loadRequest
+    const params = new URLSearchParams({ thread: game.game_thread, game: game.id, offset: targetPage * limit, limit })
+    const oldestFirst = ascending
+    if (oldestFirst) { params.set('order', 'asc') }
     loading = true
-    let res
     if (searchTerms) {
-      res = await fetch(`/api/post?thread=${game.game_thread}&game=${game.id}&offset=${page * limit}&limit=${limit}&search=${searchTerms}`, { method: 'GET' })
+      params.set('search', searchTerms)
     } else {
       // filter posts based on current audience selection
       let ownersToFilter = []
@@ -96,13 +110,33 @@
       } else {
         filterActive = false
       }
-      res = await fetch(`/api/post?thread=${game.game_thread}&game=${game.id}&offset=${page * limit}&limit=${limit}&owners=${encodeURIComponent(JSON.stringify(ownersToFilter))}`, { method: 'GET' })
+      params.set('owners', JSON.stringify(ownersToFilter))
     }
-    const json = await res.json()
-    if (res.error || json.error) { return showError(res.error || json.error) }
-    posts = json.posts
-    pages = Math.ceil(json.count / limit)
-    loading = false
+    try {
+      const res = await fetch(`/api/post?${params}`)
+      const json = await res.json()
+      if (request !== loadRequest) { return }
+      if (!res.ok || json.error) { return showError(json.error || res.statusText) }
+
+      pages = Math.ceil(json.count / limit)
+      const lastPage = Math.max(0, pages - 1)
+      const nextPage = showLatest ? lastPage : Math.min(targetPage, lastPage)
+      if (nextPage !== targetPage) { return loadPosts(nextPage, showLatest) }
+
+      page = targetPage
+      posts = json.posts
+      const newerPosts = oldestFirst ? json.count - targetPage * limit - posts.length : targetPage * limit
+      pageUnread = searchTerms || filterActive ? 0 : Math.min(posts.length, Math.max(0, threadUnread - newerPosts))
+    } catch (error) {
+      if (request === loadRequest) { showError(error.message) }
+    } finally {
+      if (request === loadRequest) { loading = false }
+    }
+  }
+
+  function reloadAfterRoll () {
+    if (ascending && !searchTerms) { return loadPosts(latestPage, true) }
+    return loadPosts()
   }
 
   async function submitPost () {
@@ -116,10 +150,11 @@
       response = await sendPost('POST', { thread: game.game_thread, content: textareaValue, owner: $gameStore.activeCharacterId, ownerType: 'character', audience, postType: 'game' })
     }
     if (!response.error) {
-      page = 0
+      const showLatest = ascending && !editing && !searchTerms
       textareaRef.clearContent()
       $gameStore.unsent = ''
-      await loadPosts()
+      if (!ascending) { page = 0 }
+      await loadPosts(showLatest ? latestPage : page, showLatest)
       editing = false
       saving = false
       return true
@@ -172,13 +207,13 @@
     } else {
       setAudienceIds(nextSelection)
     }
-    await loadPosts() // filter posts based on audience selection
+    await loadPosts(0) // filter posts based on audience selection
   }
 
   async function handleSearch () {
     if (searchEl?.value) {
       searchTerms = searchEl.value
-      await loadPosts()
+      await loadPosts(0)
     }
   }
 
@@ -226,7 +261,7 @@
 
     <div class='toolWrapper'>
       {#if activeTool === 'dice' && user.id && $gameStore.activeCharacterId}
-        <DiceBox {game} threadId={game.game_thread} onRoll={loadPosts} {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
+        <DiceBox {game} threadId={game.game_thread} onRoll={reloadAfterRoll} {onAudienceSelect} {myCharacters} {otherCharacters} bind:activeAudienceIds {gameStore} />
       {:else if activeTool === 'maps'}
         <Maps {user} {game} {isStoryteller} />
       {:else if activeTool === 'find'}
@@ -254,14 +289,14 @@
   </main>
 
   {#if searchTerms}
-    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' onclick={async () => { searchTerms = ''; await loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky obsahující "{searchTerms}" <button class='material cancel' onclick={async () => { searchTerms = ''; await loadPosts(0) }}>close</button></h2>
   {:else if filterActive}
-    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' onclick={async () => { setAudienceIds(['*']); await loadPosts() }}>close</button></h2>
+    <h2 class='filterHeadline'>Příspěvky vybraných postav <button class='material cancel' onclick={async () => { setAudienceIds(['*']); await loadPosts(0) }}>close</button></h2>
   {/if}
   <!--({activeAudienceIds.map((id) => { return otherCharacters.find((char) => { return char.id === id }).name }).join(', ')})-->
 
   {#if activeTool !== 'maps'}
-    <Thread type='game' {loading} {posts} {user} unread={threadUnread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection='games' contentId={game.id} />
+    <Thread type='game' {loading} {posts} {user} {ascending} unread={pageUnread} id={game.game_thread} bind:page={page} {diceMode} {pages} onPaging={loadPosts} onOrderChange={changeOrder} canDeleteAll={isStoryteller} myIdentities={myCharacters} onDelete={deletePost} onEdit={triggerEdit} iconSize={$platform === 'desktop' ? 100 : 50} contentSection='games' contentId={game.id} />
   {/if}
 {:else}
   <div class='info'><span class='material'>info</span>Hra je soukromá</div>

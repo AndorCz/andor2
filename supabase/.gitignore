@@ -6,3 +6,5 @@ migrations/*
 !migrations/20260924202815_notes.sql
 !migrations/20261120111446_resend_vault_access.sql
 !migrations/20261123184438_discussion_chronology.sql
+!migrations/20261124014438_game_thread_chronology.sql
+!migrations/20261124014538_qualify_character_names_lookup.sql

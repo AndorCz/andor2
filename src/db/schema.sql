@@ -1498,14 +1498,17 @@ end;
 $$ language plpgsql security definer;
 
 
-create or replace function get_character_names (audience_ids uuid[]) returns text[] as $$
+create or replace function public.get_character_names(audience_ids uuid[])
+returns text[] as $$
 declare
   names text[];
 begin
-  select array_agg(name) into names from unnest(audience_ids) as audience_id join characters on characters.id = audience_id;
+  select array_agg(c.name) into names
+  from unnest(audience_ids) as audience_id
+  join public.characters c on c.id = audience_id;
   return names;
 end;
-$$ language plpgsql;
+$$ language plpgsql set search_path = '';
 
 
 create or replace function get_discussion_posts (_thread integer, page integer, _limit int, ascending boolean, _important_only boolean default false)
@@ -1586,7 +1589,7 @@ returns json as $$
 $$ language sql;
 
 
-create or replace function get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
+create or replace function public.get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text, _ascending boolean)
   returns json as $$
 declare
   current_user_id uuid := auth.uid();
@@ -1601,7 +1604,7 @@ begin
   -- Resolve both pieces of player context with one indexed character lookup.
   select coalesce(bool_or(c.storyteller), false), array_agg(c.id)
   into is_storyteller, player_characters
-  from characters c
+  from public.characters c
   where c.game = game_id and c.player = current_user_id;
 
   -- Keep the overwhelmingly common non-search path free of text predicates and
@@ -1610,7 +1613,7 @@ begin
     return (
       with filtered_post_ids as materialized (
         select p.id, p.game_id, p.created_at
-        from game_posts_owner p
+        from public.game_posts_owner p
         where p.thread = thread_id
         and (
           p.audience is null or is_storyteller or
@@ -1620,7 +1623,11 @@ begin
       ), paged_post_ids as (
         select fp.id, fp.game_id, fp.created_at
         from filtered_post_ids fp
-        order by fp.created_at desc, fp.id desc
+        order by
+          case when _ascending then fp.created_at end asc,
+          case when _ascending then fp.id end asc,
+          case when not _ascending then fp.created_at end desc,
+          case when not _ascending then fp.id end desc
         limit _limit offset _offset
       ), paged_posts as (
         select
@@ -1630,16 +1637,20 @@ begin
           fp.game_id,
           p.content as highlighted_content
         from paged_post_ids fp
-        join posts p on p.id = fp.id
-        left join characters c on c.id = p.owner
+        join public.posts p on p.id = fp.id
+        left join public.characters c on c.id = p.owner
       )
       select json_build_object(
         'posts', (
           select coalesce(
             json_agg(
               (to_jsonb(pp) - 'content' || jsonb_build_object('content', pp.highlighted_content)) ||
-              jsonb_build_object('audience_names', get_character_names(pp.audience))
-              order by pp.created_at desc, pp.id desc
+              jsonb_build_object('audience_names', public.get_character_names(pp.audience))
+              order by
+                case when _ascending then pp.created_at end asc,
+                case when _ascending then pp.id end asc,
+                case when not _ascending then pp.created_at end desc,
+                case when not _ascending then pp.id end desc
             ),
             '[]'::json
           )
@@ -1654,13 +1665,13 @@ begin
   -- owner and every audience character name separately for every post.
   select coalesce(array_agg(c.id), '{}'::uuid[])
   into search_character_ids
-  from characters c
+  from public.characters c
   where lower(c.name) like '%' || search_lower || '%';
 
   return (
     with filtered_post_ids as materialized (
       select p.id, p.game_id, p.created_at
-      from game_posts_owner p
+      from public.game_posts_owner p
       where p.thread = thread_id
       and (
         p.audience is null or is_storyteller or
@@ -1675,7 +1686,11 @@ begin
     ), paged_post_ids as (
       select fp.id, fp.game_id, fp.created_at
       from filtered_post_ids fp
-      order by fp.created_at desc, fp.id desc
+      order by
+        case when _ascending then fp.created_at end asc,
+        case when _ascending then fp.id end asc,
+        case when not _ascending then fp.created_at end desc,
+        case when not _ascending then fp.id end desc
       limit _limit offset _offset
     ), paged_posts as (
       select
@@ -1685,16 +1700,20 @@ begin
         fp.game_id,
         regexp_replace(p.content, '(?i)' || _search, '<span class="highlight">' || upper(_search) || '</span>', 'g') as highlighted_content
       from paged_post_ids fp
-      join posts p on p.id = fp.id
-      left join characters c on c.id = p.owner
+      join public.posts p on p.id = fp.id
+      left join public.characters c on c.id = p.owner
     )
     select json_build_object(
       'posts', (
         select coalesce(
           json_agg(
             (to_jsonb(pp) - 'content' || jsonb_build_object('content', pp.highlighted_content)) ||
-            jsonb_build_object('audience_names', get_character_names(pp.audience))
-            order by pp.created_at desc, pp.id desc
+            jsonb_build_object('audience_names', public.get_character_names(pp.audience))
+            order by
+              case when _ascending then pp.created_at end asc,
+              case when _ascending then pp.id end asc,
+              case when not _ascending then pp.created_at end desc,
+              case when not _ascending then pp.id end desc
           ),
           '[]'::json
         )
@@ -1704,7 +1723,12 @@ begin
     )
   );
 end;
-$$ language plpgsql;
+$$ language plpgsql set search_path = '';
+
+create or replace function public.get_game_posts (thread_id integer, game_id integer, owners uuid[], _limit integer, _offset integer, _search text default null)
+returns json as $$
+  select public.get_game_posts(thread_id, game_id, owners, _limit, _offset, _search, false);
+$$ language sql set search_path = '';
 
 
 create or replace function get_solo_game (solo_id uuid) returns json as $$
